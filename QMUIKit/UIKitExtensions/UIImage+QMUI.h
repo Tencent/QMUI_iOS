@@ -12,9 +12,9 @@
 #define CGContextInspectSize(size) [QMUIHelper inspectContextSize:size]
 
 #ifdef DEBUG
-    #define CGContextInspectContext(context) [QMUIHelper inspectContextIfInvalidatedInDebugMode:context]
+#define CGContextInspectContext(context) [QMUIHelper inspectContextIfInvalidatedInDebugMode:context]
 #else
-    #define CGContextInspectContext(context) if(![QMUIHelper inspectContextIfInvalidatedInReleaseMode:context]){return nil;}
+#define CGContextInspectContext(context) if(![QMUIHelper inspectContextIfInvalidatedInReleaseMode:context]){return nil;}
 #endif
 
 typedef NS_ENUM(NSInteger, QMUIImageShape) {
@@ -157,7 +157,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *  返回一个被mask的图片
  *
  *  @param maskImage             mask图片
- *  @param usingMaskImageMode    是否使用“mask image”的方式
+ *  @param usingMaskImageMode    是否使用“mask image”的方式，若为 YES，则黑色部分显示，白色部分消失，透明部分显示，其他颜色会按照颜色的灰色度对图片做透明处理。若为 NO，则 maskImage 要求必须为灰度颜色空间的图片（黑白图），白色部分显示，黑色部分消失，透明部分消失，其他灰色度对图片做透明处理。
  *
  *  @return 被mask的图片
  */
@@ -248,19 +248,19 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 
 /**
  对传进来的 `UIView` 截图，生成一个 `UIImage` 并返回
-
+ 
  @param view 要截图的 `UIView`
-
+ 
  @return `UIView` 的截图
  */
 + (UIImage *)imageWithView:(UIView *)view;
 
 /**
  对传进来的 `UIView` 截图，生成一个 `UIImage` 并返回
-
+ 
  @param view         要截图的 `UIView`
  @param afterUpdates 是否要在界面更新完成后才截图
-
+ 
  @return `UIView` 的截图
  */
 + (UIImage *)imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates;
