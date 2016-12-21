@@ -21,7 +21,6 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 
 #ifdef IS_QMUI_FRAMEWORK
 
-
 /// QMUIBase
 #import <QMUIKit/QMUIHelper.h>
 #import <QMUIKit/QMUICommonDefines.h>
