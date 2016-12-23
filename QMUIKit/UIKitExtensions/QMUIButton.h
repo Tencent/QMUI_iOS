@@ -238,7 +238,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 @property(nonatomic, assign) CGFloat underlineWidth;
 
 /// 控制下划线颜色，若设置为nil，则使用当前按钮的titleColor的颜色作为下划线的颜色。默认为 nil。
-@property(nonatomic, assign) UIColor *underlineColor;
+@property(nonatomic, strong) UIColor *underlineColor;
 
 /// 下划线的位置是基于 titleLabel 的位置来计算的，默认x、width均和titleLabel一致，而可以通过这个属性来调整下划线的偏移值。默认为UIEdgeInsetsZero。
 @property(nonatomic, assign) UIEdgeInsets underlineInsets;
