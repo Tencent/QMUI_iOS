@@ -449,10 +449,13 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     UIImage *resultImage = nil;
     tintColor = tintColor ? tintColor : UIColorWhite;
     
+    
     UIGraphicsBeginImageContextWithOptions(size, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
-    UIBezierPath *path;
+    UIBezierPath *path = nil;
+    BOOL drawByStroke = NO;
+    CGFloat drawOffset = lineWidth / 2;
     switch (shape) {
         case QMUIImageShapeOval: {
             path = [UIBezierPath bezierPathWithOvalInRect:CGRectMakeWithSize(size)];
@@ -467,25 +470,21 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
         }
             break;
         case QMUIImageShapeNavBack: {
+            drawByStroke = YES;
             path = [UIBezierPath bezierPath];
-            [path moveToPoint:CGPointMake(0, size.height / 2)];
-            [path addLineToPoint:CGPointMake(size.width - lineWidth, 0)];
-            [path addLineToPoint:CGPointMake(size.width, 2)];
-            [path addLineToPoint:CGPointMake(lineWidth * 2, size.height / 2)];
-            [path addLineToPoint:CGPointMake(size.width, size.height - lineWidth)];
-            [path addLineToPoint:CGPointMake(size.width - lineWidth, size.height)];
-            [path closePath];
+            path.lineWidth = lineWidth;
+            [path moveToPoint:CGPointMake(size.width - drawOffset, drawOffset)];
+            [path addLineToPoint:CGPointMake(0 + drawOffset, size.height / 2.0)];
+            [path addLineToPoint:CGPointMake(size.width - drawOffset, size.height - drawOffset)];
         }
             break;
         case QMUIImageShapeDisclosureIndicator: {
             path = [UIBezierPath bezierPath];
-            [path moveToPoint:CGPointMake(size.width - lineWidth * 2, size.height / 2)];
-            [path addLineToPoint:CGPointMake(0, size.height - lineWidth)];
-            [path addLineToPoint:CGPointMake(lineWidth, size.height)];
-            [path addLineToPoint:CGPointMake(size.width, size.height / 2)];
-            [path addLineToPoint:CGPointMake(lineWidth, 0)];
-            [path addLineToPoint:CGPointMake(0, lineWidth)];
-            [path closePath];
+            drawByStroke = YES;
+            path.lineWidth = lineWidth;
+            [path moveToPoint:CGPointMake(drawOffset, drawOffset)];
+            [path addLineToPoint:CGPointMake(size.width - drawOffset, size.height / 2)];
+            [path addLineToPoint:CGPointMake(drawOffset, size.height - drawOffset)];
         }
             break;
         case QMUIImageShapeCheckmark: {
@@ -501,6 +500,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
         }
             break;
         case QMUIImageShapeNavClose: {
+            drawByStroke = YES;
             path = [UIBezierPath bezierPath];
             [path moveToPoint:CGPointMake(0, 0)];
             [path addLineToPoint:CGPointMake(size.width, size.height)];
@@ -516,7 +516,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
             break;
     }
     
-    if (shape == QMUIImageShapeNavClose) {
+    if (drawByStroke) {
         CGContextSetStrokeColorWithColor(context, tintColor.CGColor);
         [path stroke];
     } else {
