@@ -407,8 +407,6 @@
 @interface QMUINavigationButton()
 
 @property(nonatomic, assign) QMUINavigationButtonPosition buttonPosition;
-@property(nonatomic, assign) CALayer *tipsLayer;
-
 @end
 
 
