@@ -30,9 +30,9 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 提供高效的工具方法，包括设备信息、动态字体、键盘管理、状态栏管理等，可以解决各种常见场景并大幅度提升开发效率。
 
 ##开始使用
-安装及使用：[http://qmuiteam.com/ios/start.html](http://qmuiteam.com/ios/start.html)
+安装及使用：[http://qmuiteam.com/ios/page/start.html](http://qmuiteam.com/ios/page/start.html)
 
-相关文档：[http://qmuiteam.com/ios/document.html](http://qmuiteam.com/ios/document.html)
+相关文档：[http://qmuiteam.com/ios/page/document.html](http://qmuiteam.com/ios/page/document.html)
 
 下载Demo：[https://github.com/QMUI/QMUIDemo_iOS](https://github.com/QMUI/QMUIDemo_iOS)
 
