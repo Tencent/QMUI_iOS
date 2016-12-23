@@ -251,12 +251,14 @@
     if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
         [self.indexPathHeightCache buildCachesAtIndexPathsIfNeeded:@[sourceIndexPath, destinationIndexPath]];
         [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
-            NSMutableArray *sourceRows = heightsBySection[sourceIndexPath.section];
-            NSMutableArray *destinationRows = heightsBySection[destinationIndexPath.section];
-            NSNumber *sourceValue = sourceRows[sourceIndexPath.item];
-            NSNumber *destinationValue = destinationRows[destinationIndexPath.item];
-            sourceRows[sourceIndexPath.item] = destinationValue;
-            destinationRows[destinationIndexPath.item] = sourceValue;
+            if (heightsBySection.count > 0 && heightsBySection.count > sourceIndexPath.section && heightsBySection.count > destinationIndexPath.section) {
+                NSMutableArray *sourceRows = heightsBySection[sourceIndexPath.section];
+                NSMutableArray *destinationRows = heightsBySection[destinationIndexPath.section];
+                NSNumber *sourceValue = sourceRows[sourceIndexPath.item];
+                NSNumber *destinationValue = destinationRows[destinationIndexPath.item];
+                sourceRows[sourceIndexPath.item] = destinationValue;
+                destinationRows[destinationIndexPath.item] = sourceValue;
+            }
         }];
     }
     [self qmui_moveItemAtIndexPath:sourceIndexPath toIndexPath:destinationIndexPath];

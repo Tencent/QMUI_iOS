@@ -82,8 +82,10 @@
 }
 
 - (void)enumerateAllOrientationsUsingBlock:(void (^)(NSMutableArray *heightsBySection))block {
-    block(_heightsBySectionForPortrait);
-    block(_heightsBySectionForLandscape);
+    if (block) {
+        block(_heightsBySectionForPortrait);
+        block(_heightsBySectionForLandscape);
+    }
 }
 
 - (BOOL)existsHeightAtIndexPath:(NSIndexPath *)indexPath {

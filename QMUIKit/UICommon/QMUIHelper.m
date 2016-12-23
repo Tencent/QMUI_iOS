@@ -68,35 +68,33 @@ NSString *const QMUIResourcesQQEmotionBundleName = @"QMUI_QQEmotion.bundle";
 + (NSNumber *)preferredContentSizeLevel {
     NSNumber *index = nil;
     if ([UIApplication instancesRespondToSelector:@selector(preferredContentSizeCategory)]) {
-        if(!index){
-            NSString *contentSizeCategory = [[UIApplication sharedApplication] preferredContentSizeCategory];
-            if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraSmall]) {
-                index = [NSNumber numberWithInt:0];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategorySmall]) {
-                index = [NSNumber numberWithInt:1];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryMedium]) {
-                index = [NSNumber numberWithInt:2];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryLarge]) {
-                index = [NSNumber numberWithInt:3];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraLarge]) {
-                index = [NSNumber numberWithInt:4];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraExtraLarge]) {
-                index = [NSNumber numberWithInt:5];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraExtraExtraLarge]) {
-                index = [NSNumber numberWithInt:6];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityMedium]) {
-                index = [NSNumber numberWithInt:6];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityLarge]) {
-                index = [NSNumber numberWithInt:6];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityExtraLarge]) {
-                index = [NSNumber numberWithInt:6];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityExtraExtraLarge]) {
-                index = [NSNumber numberWithInt:6];
-            } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityExtraExtraExtraLarge]) {
-                index = [NSNumber numberWithInt:6];
-            } else{
-                index = [NSNumber numberWithInt:6];
-            }
+        NSString *contentSizeCategory = [[UIApplication sharedApplication] preferredContentSizeCategory];
+        if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraSmall]) {
+            index = [NSNumber numberWithInt:0];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategorySmall]) {
+            index = [NSNumber numberWithInt:1];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryMedium]) {
+            index = [NSNumber numberWithInt:2];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryLarge]) {
+            index = [NSNumber numberWithInt:3];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraLarge]) {
+            index = [NSNumber numberWithInt:4];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraExtraLarge]) {
+            index = [NSNumber numberWithInt:5];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraExtraExtraLarge]) {
+            index = [NSNumber numberWithInt:6];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityMedium]) {
+            index = [NSNumber numberWithInt:6];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityLarge]) {
+            index = [NSNumber numberWithInt:6];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityExtraLarge]) {
+            index = [NSNumber numberWithInt:6];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityExtraExtraLarge]) {
+            index = [NSNumber numberWithInt:6];
+        } else if ([contentSizeCategory isEqualToString:UIContentSizeCategoryAccessibilityExtraExtraExtraLarge]) {
+            index = [NSNumber numberWithInt:6];
+        } else{
+            index = [NSNumber numberWithInt:6];
         }
     } else {
         index = [NSNumber numberWithInt:3];
