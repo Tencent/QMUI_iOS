@@ -31,8 +31,7 @@
         // 不管navigationBar的backgroundImage如何设置，都让布局撑到屏幕顶部，方便布局的统一
         self.extendedLayoutIncludesOpaqueBars = YES;
         
-        // 默认只支持竖屏
-        self.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;
+        self.supportedOrientationMask = SupportedOrientationMask;
         
         // 动态字体notification
         if (IS_RESPOND_DYNAMICTYPE) {

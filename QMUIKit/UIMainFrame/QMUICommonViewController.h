@@ -44,7 +44,7 @@
 @property(nonatomic,strong,readonly) QMUINavigationTitleView *titleView;
 
 /**
- *  修改当前界面要支持的横竖屏方向，默认为 UIInterfaceOrientationMaskPortrait，也即只支持竖屏
+ *  修改当前界面要支持的横竖屏方向，默认为 SupportedOrientationMask
  */
 @property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
 
@@ -84,9 +84,9 @@
  */
 - (void)showEmptyViewWithImage:(UIImage *)image
                           text:(NSString *)text
-                   detailText:(NSString *)detailText
-                  buttonTitle:(NSString *)buttonTitle
-                 buttonAction:(SEL)action;
+                    detailText:(NSString *)detailText
+                   buttonTitle:(NSString *)buttonTitle
+                  buttonAction:(SEL)action;
 
 /**
  *  隐藏emptyView
