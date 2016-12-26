@@ -38,3 +38,6 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 
 ##支持iOS版本
 QMUI iOS 支持 iOS7及以上的iOS版本
+
+##其他
+建议搭配 QMUI 专用的 Code Snippets 使用： [https://github.com/QMUI/qmui-ios-codesnippets](https://github.com/QMUI/qmui-ios-codesnippets)
