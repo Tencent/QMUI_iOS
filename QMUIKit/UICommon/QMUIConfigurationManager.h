@@ -188,6 +188,7 @@
 
 #pragma mark - Others
 
+@property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
 @property(nonatomic, assign) BOOL            statusbarStyleLightInitially;
 @property(nonatomic, assign) BOOL            needsBackBarButtonItemTitle;
 @property(nonatomic, assign) BOOL            hidesBottomBarWhenPushedInitially;

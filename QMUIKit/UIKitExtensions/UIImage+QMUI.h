@@ -12,9 +12,9 @@
 #define CGContextInspectSize(size) [QMUIHelper inspectContextSize:size]
 
 #ifdef DEBUG
-#define CGContextInspectContext(context) [QMUIHelper inspectContextIfInvalidatedInDebugMode:context]
+    #define CGContextInspectContext(context) [QMUIHelper inspectContextIfInvalidatedInDebugMode:context]
 #else
-#define CGContextInspectContext(context) if(![QMUIHelper inspectContextIfInvalidatedInReleaseMode:context]){return nil;}
+    #define CGContextInspectContext(context) if(![QMUIHelper inspectContextIfInvalidatedInReleaseMode:context]){return nil;}
 #endif
 
 typedef NS_ENUM(NSInteger, QMUIImageShape) {
@@ -248,19 +248,19 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 
 /**
  对传进来的 `UIView` 截图，生成一个 `UIImage` 并返回
- 
+
  @param view 要截图的 `UIView`
- 
+
  @return `UIView` 的截图
  */
 + (UIImage *)imageWithView:(UIView *)view;
 
 /**
  对传进来的 `UIView` 截图，生成一个 `UIImage` 并返回
- 
+
  @param view         要截图的 `UIView`
  @param afterUpdates 是否要在界面更新完成后才截图
- 
+
  @return `UIView` 的截图
  */
 + (UIImage *)imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates;

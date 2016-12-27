@@ -206,6 +206,7 @@
     
     #pragma mark - Others
     
+    self.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;
     self.statusbarStyleLightInitially = NO;
     self.needsBackBarButtonItemTitle = NO;
     self.hidesBottomBarWhenPushedInitially = YES;

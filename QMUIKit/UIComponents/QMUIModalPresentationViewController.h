@@ -58,17 +58,17 @@ typedef enum : NSUInteger {
  *
  *  支持 3 种方式显示浮层：
  *
- *  1. **推荐** 新起一个 `UIWindow` 盖在当前界面上，将 `QMUIModalPresentationViewController` 以 `rootViewController` 的形式显示出来，支持横竖屏自动调整方向和布局，不支持在浮层不消失的情况下做界面切换（因为 window 会把背后的 controller 盖住，看不到界面切换）
+ *  1. **推荐** 新起一个 `UIWindow` 盖在当前界面上，将 `QMUIModalPresentationViewController` 以 `rootViewController` 的形式显示出来，可通过 `supportedOrientationMask` 支持横竖屏，不支持在浮层不消失的情况下做界面切换（因为 window 会把背后的 controller 盖住，看不到界面切换）
  *  @code
  *  [modalPresentationViewController showWithAnimated:YES completion:nil];
  *  @endcode
  *
- *  2. 使用系统接口来显示，支持界面切换，**注意** 使用这种方法必定只能以动画的形式来显示浮层，无法以无动画的形式来显示，并且 `animated` 参数必须为 `NO`
+ *  2. 使用系统接口来显示，支持界面切换，**注意** 使用这种方法必定只能以动画的形式来显示浮层，无法以无动画的形式来显示，并且 `animated` 参数必须为 `NO`。可通过 `supportedOrientationMask` 支持横竖屏。
  *  @code
  *  [self presentViewController:modalPresentationViewController animated:NO completion:nil];
  *  @endcode
  *
- *  3. 将浮层作为一个 subview 添加到 `superview` 上，从而能够实现在浮层不消失的情况下进行界面切换，但需要 `superview` 自行管理浮层的大小和横竖屏旋转，而且 `QMUIModalPresentationViewController` 不能用局部变量来保存，会在显示后被释放，需要自行 retain。
+ *  3. 将浮层作为一个 subview 添加到 `superview` 上，从而能够实现在浮层不消失的情况下进行界面切换，但需要 `superview` 自行管理浮层的大小和横竖屏旋转，而且 `QMUIModalPresentationViewController` 不能用局部变量来保存，会在显示后被释放，需要自行 retain。横竖屏跟随当前界面的设置。
  *  @code
  *  self.modalPresentationViewController.view.frame = CGRectMake(50, 50, 100, 100);
  *  [self.view addSubview:self.modalPresentationViewController.view];
@@ -145,6 +145,11 @@ typedef enum : NSUInteger {
  *  标志当前浮层的显示/隐藏状态，默认为NO。
  */
 @property(nonatomic, assign, readonly, getter=isVisible) BOOL visible;
+
+/**
+ *  修改当前界面要支持的横竖屏方向，默认为 SupportedOrientationMask。
+ */
+@property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
 
 /**
  *  设置要使用的显示/隐藏动画的类型，默认为`QMUIModalPresentationAnimationStyleFade`。

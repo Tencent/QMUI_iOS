@@ -324,7 +324,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     } else {
         // 用一个纯CGImage作为mask。这个image必须是单色(例如：黑白色、灰色)、没有alpha通道、不能被其他图片mask。系统的文档：If `mask' is an image, then it must be in a monochrome color space (e.g. DeviceGray, GenericGray, etc...), may not have alpha, and may not itself be masked by an image mask or a masking color.
         // 白色部分显示，黑色部分消失，透明部分消失，其他灰色度对图片做透明处理。
-        mask = maskRef;
+         mask = maskRef;
     }
     CGImageRef maskedImage = CGImageCreateWithMask(self.CGImage, mask);
     UIImage *returnImage = [UIImage imageWithCGImage:maskedImage scale:self.scale orientation:self.imageOrientation];

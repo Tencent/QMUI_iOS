@@ -72,6 +72,7 @@ static QMUIModalPresentationViewController *appearance;
             self.maximumContentViewWidth = appearance.maximumContentViewWidth;
             self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
             self.modalPresentationStyle = UIModalPresentationCustom;
+            self.supportedOrientationMask = SupportedOrientationMask;
         }
         
         [self initDefaultDimmingViewWithoutAddToView];
@@ -501,7 +502,7 @@ static QMUIModalPresentationViewController *appearance;
     if (visibleViewController != self && [visibleViewController respondsToSelector:@selector(supportedInterfaceOrientations)]) {
         return [visibleViewController supportedInterfaceOrientations];
     }
-    return UIInterfaceOrientationMaskPortrait;
+    return self.supportedOrientationMask;
 }
 
 @end

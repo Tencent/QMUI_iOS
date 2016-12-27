@@ -202,6 +202,7 @@
     
     #pragma mark - Others
     
+    //- QMUICMI.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;  // SupportedOrientationMask : 默认支持的横竖屏方向
     //- QMUICMI.statusbarStyleLightInitially = NO;          // StatusbarStyleLightInitially : 默认的状态栏内容是否使用白色，默认为NO，也即黑色
     //- QMUICMI.needsBackBarButtonItemTitle = NO;           // NeedsBackBarButtonItemTitle : 全局是否需要返回按钮的title，不需要则只显示一个返回image
     //- QMUICMI.hidesBottomBarWhenPushedInitially = YES;    // HidesBottomBarWhenPushedInitially : QMUICommonViewController.hidesBottomBarWhenPushed的初始值，默认为YES
