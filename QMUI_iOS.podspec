@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
                        DESC
   s.homepage         = "http://qmuiteam.com/ios"
   s.license          = 'MIT'
-  s.author           = {"qmuiteam" => "sf_molice@qq.com"}
+  s.author           = {"qmuiteam" => "qmuiteam@qq.com"}
   s.source           = {:git => "https://github.com/QMUI/QMUI_iOS.git", :tag => s.version.to_s}
   s.social_media_url = 'https://github.com/QMUI/QMUI_iOS'
   s.requires_arc = true
