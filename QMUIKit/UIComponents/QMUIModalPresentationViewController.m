@@ -480,15 +480,6 @@ static QMUIModalPresentationViewController *appearance;
 
 #pragma mark - 屏幕旋转
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-    UIViewController *visibleViewController = [QMUIHelper visibleViewController];
-    if (visibleViewController != self && [visibleViewController respondsToSelector:@selector(shouldAutorotateToInterfaceOrientation:)]) {
-        return [visibleViewController shouldAutorotateToInterfaceOrientation:toInterfaceOrientation];
-    }
-    // TODO: 如果是以 presentViewController 的方式显示的话，就只支持竖屏了，要修改也只能通过继承的方式来改，不太方便
-    return toInterfaceOrientation == UIInterfaceOrientationPortrait;
-}
-
 - (BOOL)shouldAutorotate {
     UIViewController *visibleViewController = [QMUIHelper visibleViewController];
     if (visibleViewController != self && [visibleViewController respondsToSelector:@selector(shouldAutorotate)]) {

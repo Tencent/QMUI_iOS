@@ -82,9 +82,9 @@
  */
 - (void)showEmptyViewWithImage:(UIImage *)image
                           text:(NSString *)text
-                   detailText:(NSString *)detailText
-                  buttonTitle:(NSString *)buttonTitle
-                 buttonAction:(SEL)action;
+                    detailText:(NSString *)detailText
+                   buttonTitle:(NSString *)buttonTitle
+                  buttonAction:(SEL)action;
 
 /**
  *  隐藏emptyView

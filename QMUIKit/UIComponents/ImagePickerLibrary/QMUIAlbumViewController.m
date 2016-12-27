@@ -155,7 +155,6 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.tableViewInitialContentInset = UIEdgeInsetsMake(NavigationContentStaticTop, self.tableView.contentInset.left, self.tableView.contentInset.bottom, self.tableView.contentInset.right);
     if ([QMUIAssetsManager authorizationStatus] == QMUIAssetAuthorizationStatusNotAuthorized) {
         // 如果没有获取访问授权，或者访问授权状态已经被明确禁止，则显示提示语，引导用户开启授权
         if (!self.tipTextWhenNoPhotosAuthorization) {
