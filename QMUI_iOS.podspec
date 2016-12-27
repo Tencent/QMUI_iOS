@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
   s.platform     = :ios, '7.0'
 
   s.public_header_files = 'QMUIKit/*.h'
-  s.source_files = 'QMUIKit/*'
+  s.source_files = 'QMUIKit', 'QMUIKit/**/*.{h,m}'
 
   # s.ios.exclude_files = 'Classes/osx'
   # s.osx.exclude_files = 'Classes/ios'
