@@ -7,11 +7,10 @@
 //
 
 #import "QMUIConfigurationTemplate.h"
-#ifdef IS_QMUI_PROJECT
+
+// 如果这里找不到QMUIKit.h，请尝试替换为 #import <QMUIKit/QMUIKit.h>
 #import "QMUIKit.h"
-#else
-#import <QMUIKit/QMUIKit.h>
-#endif
+
 
 // 此文件仅供复制使用，不能加到静态库的Compile Sources里面。
 
