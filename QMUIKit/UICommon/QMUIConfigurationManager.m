@@ -10,6 +10,8 @@
 #import "QMUICommonDefines.h"
 #import "QMUIConfiguration.h"
 #import "UIImage+QMUI.h"
+#import "QMUIButton.h"
+#import "QMUITabBarViewController.h"
 
 @implementation QMUIConfigurationManager
 
@@ -31,10 +33,9 @@
 
 #pragma mark - 初始化默认值
 
-- (void)initDefaultConfiguration
-{
+- (void)initDefaultConfiguration {
     
-#pragma mark - Global Color
+    #pragma mark - Global Color
     
     self.clearColor = [UIColor colorWithRed:1 green:1 blue:1 alpha:0];
     self.whiteColor = [UIColor colorWithRed:1 green:1 blue:1 alpha:1];
@@ -46,7 +47,7 @@
     self.greenColor = UIColorMake(79, 214, 79);
     self.blueColor = UIColorMake(43, 133, 208);
     self.yellowColor = UIColorMake(255, 252, 233);
-    
+
     self.linkColor = UIColorMake(56, 116, 171);
     self.disabledColor = self.grayColor;
     self.backgroundColor = UIColorMake(246, 246, 246);
@@ -60,13 +61,13 @@
     self.testColorGreen = UIColorMakeWithRGBA(0, 255, 0, .3);
     self.testColorBlue = UIColorMakeWithRGBA(0, 0, 255, .3);
     
-#pragma mark - UIWindowLevel
+    #pragma mark - UIWindowLevel
     self.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;
     self.windowLevelQMUIActionSheet = UIWindowLevelAlert - 4.0;
     self.windowLevelQMUIMoreOperationController = UIWindowLevelStatusBar + 1;
     self.windowLevelQMUIImagePreviewView = UIWindowLevelStatusBar + 1;
     
-#pragma mark - UIControl
+    #pragma mark - UIControl
     
     self.controlHighlightedAlpha = 0.5f;
     self.controlDisabledAlpha = 0.5f;
@@ -75,7 +76,7 @@
     self.segmentTextSelectedTintColor = self.whiteColor;
     self.segmentFontSize = UIFontMake(13);
     
-#pragma mark - UIButton
+    #pragma mark - UIButton
     
     self.buttonHighlightedAlpha = self.controlHighlightedAlpha;
     self.buttonDisabledAlpha = self.controlDisabledAlpha;
@@ -93,12 +94,12 @@
     self.fillButtonColorGray = self.grayColor;
     self.fillButtonColorWhite = self.whiteColor;
     
-#pragma mark - UITextField & UITextView
+    #pragma mark - UITextField & UITextView
     
     self.textFieldTintColor = UIColorBlue;
     self.textFieldTextInsets = UIEdgeInsetsMake(0, 7, 0, 7);
     
-#pragma mark - ActionSheet
+    #pragma mark - ActionSheet
     
     self.actionSheetButtonTintColor = self.blueColor;
     self.actionSheetButtonBackgroundColor = UIColorMake(255, 255, 255);
@@ -106,7 +107,7 @@
     self.actionSheetButtonFont = UIFontMake(21);
     self.actionSheetButtonFontBold = UIFontBoldMake(21);
     
-#pragma mark - NavigationBar
+    #pragma mark - NavigationBar
     
     self.navBarHighlightedAlpha = 0.2f;
     self.navBarDisabledAlpha = 0.2f;
@@ -130,7 +131,7 @@
     self.navBarActivityIndicatorViewStyle = UIActivityIndicatorViewStyleGray;
     self.navBarAccessoryViewTypeDisclosureIndicatorImage = [[UIImage imageWithShape:QMUIImageShapeTriangle size:CGSizeMake(8, 5) tintColor:self.whiteColor] imageWithOrientation:UIImageOrientationDown];
     
-#pragma mark - TabBar
+    #pragma mark - TabBar
     
     self.tabBarBackgroundImage = nil;
     self.tabBarBarTintColor = nil;
@@ -139,7 +140,7 @@
     self.tabBarItemTitleColor = UIColorMake(119, 119, 119);
     self.tabBarItemTitleColorSelected = self.tabBarTintColor;
     
-#pragma mark - Toolbar
+    #pragma mark - Toolbar
     
     self.toolBarHighlightedAlpha = 0.4f;
     self.toolBarDisabledAlpha = 0.4f;
@@ -151,7 +152,7 @@
     self.toolBarShadowImageColor = UIColorMake(178, 178, 178);
     self.toolBarButtonFont = UIFontMake(17);
     
-#pragma mark - SearchBar
+    #pragma mark - SearchBar
     
     self.searchBarTextFieldBackground = self.whiteColor;
     self.searchBarTextFieldBorderColor = UIColorMake(205, 208, 210);
@@ -164,7 +165,7 @@
     self.searchBarClearIconImage = nil;
     self.searchBarTextFieldCornerRadius = 2.0;
     
-#pragma mark - TableView / TableViewCell
+    #pragma mark - TableView / TableViewCell
     
     self.tableViewBackgroundColor = self.whiteColor;
     self.tableViewGroupedBackgroundColor = self.backgroundColor;
@@ -204,12 +205,47 @@
     self.tableViewCellContentDefaultPaddingLeft = 15;
     self.tableViewCellContentDefaultPaddingRight = 10;
     
-#pragma mark - Others
+    #pragma mark - Others
     
     self.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;
     self.statusbarStyleLightInitially = NO;
     self.needsBackBarButtonItemTitle = NO;
     self.hidesBottomBarWhenPushedInitially = YES;
+}
+
+@end
+
+@implementation QMUIConfigurationManager (UIAppearance)
+
++ (void)renderGlobalAppearances {
+    
+    // QMUIButton
+    [QMUINavigationButton renderNavigationButtonAppearanceStyle];
+    [QMUIToolbarButton renderToolbarButtonAppearanceStyle];
+    
+    // UINavigationBar
+    UINavigationBar *navigationBarAppearance = [UINavigationBar appearance];
+    [navigationBarAppearance setBarTintColor:NavBarBarTintColor];
+    [navigationBarAppearance setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+    [navigationBarAppearance setShadowImage:NavBarShadowImage];
+    
+    // UIToolBar
+    UIToolbar *toolBarAppearance = [UIToolbar appearance];
+    [toolBarAppearance setBarTintColor:ToolBarBarTintColor];
+    [toolBarAppearance setBackgroundImage:ToolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+    [toolBarAppearance setShadowImage:[UIImage imageWithColor:ToolBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
+    
+    // UITabBar
+    UITabBar *tabBarAppearance = [UITabBar appearance];
+    [tabBarAppearance setBarTintColor:TabBarBarTintColor];
+    [tabBarAppearance setBackgroundImage:TabBarBackgroundImage];
+    [tabBarAppearance setShadowImage:[UIImage imageWithColor:TabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
+    
+    
+    // UITabBarItem
+    UITabBarItem *tabBarItemAppearance = [UITabBarItem appearanceWhenContainedIn:[QMUITabBarViewController class], nil];
+    [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:TabBarItemTitleColor} forState:UIControlStateNormal];
+    [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:TabBarItemTitleColorSelected} forState:UIControlStateSelected];
 }
 
 @end

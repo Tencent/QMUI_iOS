@@ -10,7 +10,7 @@
 #import <UIKit/UIKit.h>
 
 /**
- *  维护项目全局 UI 配置的单例，通过业务项目自己的 QMUIConfigurationTemplate 来为这个单例赋值，而业务代码里则通过 q 文件里的宏来使用这些值。
+ *  维护项目全局 UI 配置的单例，通过业务项目自己的 QMUIConfigurationTemplate 来为这个单例赋值，而业务代码里则通过 QMUIConfiguration.h 文件里的宏来使用这些值。
  */
 @interface QMUIConfigurationManager : NSObject
 
@@ -198,4 +198,12 @@
 + (QMUIConfigurationManager *)sharedInstance;
 - (void)initDefaultConfiguration;
 
+@end
+
+@interface QMUIConfigurationManager (UIAppearance)
+
+/**
+ * 设置全局 UIAppearance 的代码，一般在 `application:didFinishLaunchingWithOptions:` 里手动调用（在调用 `[QMUIConfigurationTemplate setupConfigurationTemplate]` 之后）
+ */
++ (void)renderGlobalAppearances;
 @end

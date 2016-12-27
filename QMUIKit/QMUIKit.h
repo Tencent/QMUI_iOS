@@ -25,7 +25,6 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import <QMUIKit/QMUIHelper.h>
 #import <QMUIKit/QMUICommonDefines.h>
 #import <QMUIKit/QMUIConfiguration.h>
-#import <QMUIKit/QMUICommonUI.h>
 
 /// QMUIKit
 #import <QMUIKit/QMUIVisualEffectView.h>
@@ -114,7 +113,6 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import "QMUIHelper.h"
 #import "QMUICommonDefines.h"
 #import "QMUIConfiguration.h"
-#import "QMUICommonUI.h"
 
 /// QMUIKit
 #import "QMUIVisualEffectView.h"

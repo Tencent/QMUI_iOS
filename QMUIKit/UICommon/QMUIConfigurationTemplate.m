@@ -7,7 +7,7 @@
 //
 
 #import "QMUIConfigurationTemplate.h"
-//#import <QMUIKit/QMUIKit.h>
+#import <QMUIKit/QMUIKit.h>
 
 // 此文件仅供复制使用，不能加到静态库的Compile Sources里面。
 
@@ -31,7 +31,7 @@
     
     // === 修改配置值 === //
     
-#pragma mark - Global Color
+    #pragma mark - Global Color
     
     //- QMUICMI.clearColor = [UIColor colorWithRed:1 green:1 blue:1 alpha:0];                                  // UIColorClear
     //- QMUICMI.whiteColor = [UIColor colorWithRed:1 green:1 blue:1 alpha:1];                                  // UIColorWhite
@@ -59,7 +59,7 @@
     //- QMUICMI.testColorBlue = UIColorMakeWithRGBA(0, 0, 255, .3);
     
     
-#pragma mark - UIControl
+    #pragma mark - UIControl
     
     //- QMUICMI.controlDisabledAlpha = 0.5f;                                                    // UIControlHighlightedAlpha : 全局的highlighted alpha值
     //- QMUICMI.controlDisabledAlpha = 0.5f;                                                    // UIControlDisabledAlpha : 全局的disabled alpha值
@@ -68,7 +68,7 @@
     //- QMUICMI.segmentTextSelectedTintColor = UIColorWhite;                                    // SegmentTextSelectedTintColor : segment选中态的tintColor
     //- QMUICMI.segmentFontSize = UIFontMake(13);                                               // SegmentFontSize : segment的字体大小
     
-#pragma mark - UIButton
+    #pragma mark - UIButton
     //- QMUICMI.buttonHighlightedAlpha = UIControlHighlightedAlpha;                             // ButtonHighlightedAlpha : 按钮的highlighted alpha值
     //- QMUICMI.buttonDisabledAlpha = UIControlDisabledAlpha;                                   // ButtonDisabledAlpha : 按钮的disabled alpha值
     //- QMUICMI.buttonTintColor = UIColorBlue;                                                  // ButtonTintColor : 按钮默认的tintColor
@@ -86,18 +86,18 @@
     //- QMUICMI.fillButtonColorWhite = UIColorWhite;                                           // FillButtonColorWhite
     
     
-#pragma mark - TextField & TextView
+    #pragma mark - TextField & TextView
     //- QMUICMI.textFieldTintColor = UIColorBlue;                                               // TextFieldTintColor : 全局UITextField、UITextView的tintColor
     //- QMUICMI.textFieldTextInsets = UIEdgeInsetsMake(0, 7, 0, 7);                             // TextFieldTextInsets : QMUITextField的内边距
     
-#pragma mark - ActionSheet
+    #pragma mark - ActionSheet
     //- QMUICMI.actionSheetButtonTintColor = UIColorBlue;                                       // ActionSheetButtonTintColor
     //- QMUICMI.actionSheetButtonBackgroundColor = UIColorMake(255, 255, 255);                  // ActionSheetButtonBackgroundColor
     //- QMUICMI.actionSheetButtonBackgroundColorHighlighted = UIColorMake(235, 235, 235);       // ActionSheetButtonBackgroundColorHighlighted
     //- QMUICMI.actionSheetButtonFont = UIFontMake(21);                                         // ActionSheetButtonFont
     //- QMUICMI.actionSheetButtonFontBold = UIFontBoldMake(21);                                 // ActionSheetButtonFontBold
     
-#pragma mark - NavigationBar
+    #pragma mark - NavigationBar
     
     //- QMUICMI.navBarHighlightedAlpha = 0.2f;                                          // NavBarHighlightedAlpha
     //- QMUICMI.navBarDisabledAlpha = 0.2f;                                             // NavBarDisabledAlpha
@@ -120,7 +120,7 @@
     //- QMUICMI.navBarActivityIndicatorViewStyle = UIActivityIndicatorViewStyleGray;    // NavBarActivityIndicatorViewStyle
     //- QMUICMI.navBarAccessoryViewTypeDisclosureIndicatorImage = [UIImage imageWithShape:QMUIImageShapeTriangle size:CGSizeMake(8, 5) tintColor:UIColorWhite];     // NavBarAccessoryViewTypeDisclosureIndicatorImage
     
-#pragma mark - TabBar
+    #pragma mark - TabBar
     
     //- QMUICMI.tabBarBackgroundImage = nil;                                                            // TabBarBackgroundImage
     //- QMUICMI.tabBarBarTintColor = nil;    // TabBarBarTintColor
@@ -129,7 +129,7 @@
     //- QMUICMI.tabBarItemTitleColor = UIColorMake(119, 119, 119);                                      // TabBarItemTitleColor
     //- QMUICMI.tabBarItemTitleColorSelected = TabBarTintColor;                                         // TabBarItemTitleColorSelected
     
-#pragma mark - Toolbar
+    #pragma mark - Toolbar
     
     //- QMUICMI.toolBarHighlightedAlpha = 0.4f;                                                                         // ToolBarHighlightedAlpha
     //- QMUICMI.toolBarDisabledAlpha = 0.4f;                                                                            // ToolBarDisabledAlpha
@@ -141,7 +141,7 @@
     //- QMUICMI.toolBarShadowImageColor = UIColorMake(178, 178, 178);                                                   // ToolBarShadowImageColor
     //- QMUICMI.toolBarButtonFont = UIFontMake(17);                                                                     // ToolBarButtonFont
     
-#pragma mark - SearchBar
+    #pragma mark - SearchBar
     
     //- QMUICMI.searchBarTextFieldBackground = UIColorWhite;                            // SearchBarTextFieldBackground
     //- QMUICMI.searchBarTextFieldBorderColor = UIColorMake(205, 208, 210);             // SearchBarTextFieldBorderColor
@@ -154,7 +154,7 @@
     //- QMUICMI.searchBarClearIconImage = nil;                                          // SearchBarClearIconImage
     //- QMUICMI.searchBarTextFieldCornerRadius = 2.0;                                   // SearchBarTextFieldCornerRadius
     
-#pragma mark - TableView / TableViewCell
+    #pragma mark - TableView / TableViewCell
     
     //- QMUICMI.tableViewBackgroundColor = UIColorWhite;                                    // TableViewBackgroundColor
     //- QMUICMI.tableViewGroupedBackgroundColor = UIColorForBackground;                     // TableViewGroupedBackgroundColor
@@ -194,13 +194,13 @@
     //- QMUICMI.tableViewCellContentDefaultPaddingLeft = 15;                                                // TableViewCellContentDefaultPaddingLeft
     //- QMUICMI.tableViewCellContentDefaultPaddingRight = 10;                                               // TableViewCellContentDefaultPaddingRight
     
-#pragma mark - UIWindowLevel
+    #pragma mark - UIWindowLevel
     //- QMUICMI.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;                    // UIWindowLevelQMUIAlertView
     //- QMUICMI.windowLevelQMUIActionSheet = UIWindowLevelAlert - 4.0;                  // UIWindowLevelQMUIActionSheet
     //- QMUICMI.windowLevelQMUIMoreOperationController = UIWindowLevelStatusBar + 1.0;  // UIWindowLevelQMUIMoreOperationController
     //- QMUICMI.windowLevelQMUIImagePreviewView = UIWindowLevelStatusBar + 1.0;              // UIWindowLevelQMUIImagePreviewView
     
-#pragma mark - Others
+    #pragma mark - Others
     
     //- QMUICMI.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;  // SupportedOrientationMask : 默认支持的横竖屏方向
     //- QMUICMI.statusbarStyleLightInitially = NO;          // StatusbarStyleLightInitially : 默认的状态栏内容是否使用白色，默认为NO，也即黑色
