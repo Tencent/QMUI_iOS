@@ -294,7 +294,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
     // 异步请求资源对应的缩略图（因系统接口限制，iOS 8.0 以下为实际上同步请求）
     [imageAsset requestThumbnailImageWithSize:[self referenceImageSize] completion:^(UIImage *result, NSDictionary *info) {
-        if ([[info objectForKey:PHImageResultIsDegradedKey] boolValue]) {
+        if (!info || [[info objectForKey:PHImageResultIsDegradedKey] boolValue]) {
             // 模糊，此时为同步调用
             cell.contentImageView.image = result;
         } else if ([collectionView itemVisibleAtIndexPath:indexPath]) {

@@ -13,7 +13,7 @@
 /**
  * 是否需要磨砂，默认NO。仅支持iOS8及以上版本。
  */
-@property(nonatomic, assign) BOOL shouldBlurBackgroundView UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) BOOL shouldBlurBackgroundView;
 
 /**
  * 如果不设置磨砂，则styleColor直接作为`QMUIToastBackgroundView`的backgroundColor；如果需要磨砂，则会新增加一个`UIVisualEffectView`放在`QMUIToastBackgroundView`上面
