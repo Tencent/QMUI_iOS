@@ -66,6 +66,10 @@ BeginIgnoreDeprecatedWarning
             self.searchController.searchResultsUpdater = self;
             self.searchController.delegate = self;
             _searchBar = self.searchController.searchBar;
+            if (CGRectIsEmpty(self.searchBar.frame)) {
+                // iOS8 下 searchBar.frame 默认是 CGRectZero，不 sizeToFit 就看不到了
+                [self.searchBar sizeToFit];
+            }
             [self.searchBar styledAsQMUISearchBar];
         } else {
             _searchBar = [[QMUISearchBar alloc] init];

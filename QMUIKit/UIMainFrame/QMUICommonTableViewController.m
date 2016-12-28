@@ -335,12 +335,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
         _searchController = [[QMUISearchController alloc] initWithContentsViewController:self];
         self.searchController.searchResultsDelegate = self;
         self.searchController.searchBar.placeholder = @"搜索";
-        if (CGSizeIsEmpty(self.searchController.searchBar.frame.size)) {
-            // iOS8下searchBar.frame默认是CGRectZero，不sizeToFit就看不到
-            [self.searchController.searchBar sizeToFit];
-        }
         self.tableView.tableHeaderView = self.searchController.searchBar;
-        
         _searchBar = self.searchController.searchBar;
     }
 }
