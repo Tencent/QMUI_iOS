@@ -11,7 +11,7 @@
 @interface UIView (QMUI)
 
 /**
- * 设置view的height和width
+ * 设置view的width和height
  */
 - (void)setWidth:(CGFloat)width height:(CGFloat)height;
 
@@ -21,7 +21,7 @@
 - (void)setWidth:(CGFloat)width;
 
 /**
- * 设置view的height和width
+ * 设置view的height
  */
 - (void)setHeight:(CGFloat)height;
 
@@ -36,7 +36,7 @@
 - (void)setOriginX:(CGFloat)x;
 
 /**
- * 设置view的x
+ * 设置view的y
  */
 - (void)setOriginY:(CGFloat)y;
 
