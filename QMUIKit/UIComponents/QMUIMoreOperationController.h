@@ -76,7 +76,7 @@ typedef NS_ENUM(NSInteger, QMUIMoreOperationItemType) {
 /// 代理
 @property(nonatomic, weak) id<QMUIMoreOperationDelegate> delegate;
 
-/// 获取当前当前所有的item
+/// 获取当前所有的item
 @property(nonatomic, copy, readonly) NSArray *items;
 
 /// 获取取消按钮
