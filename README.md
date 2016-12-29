@@ -59,7 +59,7 @@ github "QMUI/QMUI_iOS" ~>1.1.3
 ### 作为子项目
 具体请查看我们的[开始使用](http://qmuiteam.com/ios/page/start.html)文档。
 
-## 其他相关文档
+## 相关文档
 
 接口文档：[http://qmuiteam.com/ios/page/document.html](http://qmuiteam.com/ios/page/document.html)
 
