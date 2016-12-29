@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name             = "QMUI_iOS"
+  s.name             = "QMUIKit"
   s.version          = "1.1.1"
   s.summary          = "致力于提高项目 UI 开发效率的解决方案"
   s.description      = <<-DESC
