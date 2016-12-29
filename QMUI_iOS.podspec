@@ -10,15 +10,16 @@ Pod::Spec.new do |s|
   s.author           = {"qmuiteam" => "qmuiteam@qq.com"}
   s.source           = {:git => "https://github.com/QMUI/QMUI_iOS.git", :tag => s.version.to_s}
   s.social_media_url = 'https://github.com/QMUI/QMUI_iOS'
-  s.requires_arc = true
+  s.requires_arc     = true
 
-  s.platform     = :ios, '7.0'
+  s.platform         = :ios, '7.0'
 
-  s.source_files = 'QMUIKit', 'QMUIKit/**/*.{h,m}'
+  s.source_files     = 'QMUIKit/**/*.{h,m}'
+  s.resource         = 'QMUIKit/**/*.bundle'
 
   # s.ios.exclude_files = 'Classes/osx'
   # s.osx.exclude_files = 'Classes/ios'
   # s.public_header_files = 'Classes/**/*.h'
-  s.frameworks = 'Foundation', 'UIKit', 'CoreGraphics'
+  s.frameworks       = 'Foundation', 'UIKit', 'CoreGraphics'
 
 end
