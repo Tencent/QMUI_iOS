@@ -124,7 +124,7 @@
         self.detailTextLabel.frame = detailTextLabelFrame;
         
         // `layoutSubviews`这里不可以拿textLabel的minX来设置separatorInset，如果要设置只能写死一个值
-        // 否则会导致textLabel的minX逐渐叠加从而使textLabel被移除屏幕外
+        // 否则会导致textLabel的minX逐渐叠加从而使textLabel被移出屏幕外
     }
 }
 

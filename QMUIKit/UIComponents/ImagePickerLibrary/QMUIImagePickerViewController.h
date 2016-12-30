@@ -82,7 +82,7 @@
 
 @property(nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *imagesAssetArray;
 @property(nonatomic, strong, readonly) QMUIAssetsGroup *assetsGroup;
-@property(nonatomic, copy) NSMutableArray<QMUIAsset *> *selectedImageAssetArray; // 当前被选择的图片对应的 QMUIAsset 对象数组
+@property(nonatomic, strong) NSMutableArray<QMUIAsset *> *selectedImageAssetArray; // 当前被选择的图片对应的 QMUIAsset 对象数组
 
 @property(nonatomic, assign) BOOL allowsMultipleSelection; // 是否允许图片多选，默认为 YES。如果为 NO，则不显示 checkbox 和底部工具栏。
 @property(nonatomic, assign) NSInteger maximumSelectImageCount; // 最多可以选择的图片数，默认为无符号整形数的最大值，相当于没有限制
