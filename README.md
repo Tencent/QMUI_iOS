@@ -57,7 +57,7 @@ use_frameworks!
 github "QMUI/QMUI_iOS" ~>1.1.4
 ```
 ### 作为子项目
-具体请查看我们的[开始使用](http://qmuiteam.com/ios/page/start.html)文档。
+具体请查看我们的[开始使用](http://qmuiteam.com/ios/page/start.html#qw_downloadForUse)文档。
 
 ## 相关文档
 
