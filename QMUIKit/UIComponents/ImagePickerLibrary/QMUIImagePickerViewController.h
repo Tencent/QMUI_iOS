@@ -32,7 +32,7 @@
  *  @param imagePickerViewController 对应的 QMUIImagePickerViewController
  *  @param imagesAssetArray          包含被选择的图片的 QMUIAsset 对象的数组。
  */
-- (void)imagePickerViewController:(QMUIImagePickerViewController *)imagePickerViewController didFinishPickingImageWithImagesAssetArray:(NSMutableArray *)imagesAssetArray;
+- (void)imagePickerViewController:(QMUIImagePickerViewController *)imagePickerViewController didFinishPickingImageWithImagesAssetArray:(NSMutableArray<QMUIAsset *> *)imagesAssetArray;
 
 /**
  *  image被点击时调用（先调用这个接口，然后才去走预览大图的逻辑）
@@ -74,15 +74,15 @@
 /**
  *  由于组件需要通过本地图片的 QMUIAsset 对象读取图片的详细信息，因此这里的需要传入的是包含一个或多个 QMUIAsset 对象的数组，传入后会赋值到 imagesAssetArray ，并自动刷新 UI 展示
  */
-- (void)refreshWithImagesArray:(NSMutableArray *)imagesArray;
+- (void)refreshWithImagesArray:(NSMutableArray<QMUIAsset *> *)imagesArray;
 /**
  *  也可以直接传入 QMUIAssetsGroup，然后读取其中的 QMUIAsset 并储存到 imagesAssetArray 中，传入后会赋值到 QMUIAssetsGroup，并自动刷新 UI 展示
  */
 - (void)refreshWithAssetsGroup:(QMUIAssetsGroup *)assetsGroup;
 
-@property(nonatomic, strong, readonly) NSMutableArray *imagesAssetArray;
+@property(nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *imagesAssetArray;
 @property(nonatomic, strong, readonly) QMUIAssetsGroup *assetsGroup;
-@property(nonatomic, copy) NSMutableArray *selectedImageAssetArray; // 当前被选择的图片对应的 QMUIAsset 对象数组
+@property(nonatomic, copy) NSMutableArray<QMUIAsset *> *selectedImageAssetArray; // 当前被选择的图片对应的 QMUIAsset 对象数组
 
 @property(nonatomic, assign) BOOL allowsMultipleSelection; // 是否允许图片多选，默认为 YES。如果为 NO，则不显示 checkbox 和底部工具栏。
 @property(nonatomic, assign) NSInteger maximumSelectImageCount; // 最多可以选择的图片数，默认为无符号整形数的最大值，相当于没有限制

@@ -21,7 +21,7 @@
     return self;
 }
 
-- (void)setTheSameAppearanceAsLabel:(UILabel *)label {
+- (void)qmui_setTheSameAppearanceAsLabel:(UILabel *)label {
     self.font = label.font;
     self.textColor = label.textColor;
     self.backgroundColor = label.backgroundColor;
@@ -32,13 +32,13 @@
     }
 }
 
-- (void)calculateHeightAfterSetAppearance {
+- (void)qmui_calculateHeightAfterSetAppearance {
     self.text = @"测";
     [self sizeToFit];
     self.text = nil;
 }
 
-- (void)avoidBlendedLayersIfShowingChineseWithBackgroundColor:(UIColor *)color {
+- (void)qmui_avoidBlendedLayersIfShowingChineseWithBackgroundColor:(UIColor *)color {
     self.opaque = YES;// 本来默认就是YES，这里还是明确写一下，表意清晰
     self.backgroundColor = color;
     if (IOS_VERSION >= 8.0) {

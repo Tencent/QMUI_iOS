@@ -74,7 +74,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.tableView clearsSelection];
+    [self.tableView qmui_clearsSelection];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -92,7 +92,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
             // 默认和tableView.contentInset一致
             self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
         }
-        [self.tableView scrollToTop];
+        [self.tableView qmui_scrollToTop];
         self.hasSetInitialContentInset = YES;
     }
     

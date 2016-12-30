@@ -123,13 +123,13 @@
     self.navBarTitleColor = nil;
     self.navBarTitleFont = UIFontBoldMake(17);
     self.navBarBackButtonTitlePositionAdjustment = UIOffsetZero;
-    self.navBarBackIndicatorImage = [UIImage imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(12, 20) tintColor:self.navBarTintColor];
-    self.navBarCloseButtonImage = [UIImage imageWithShape:QMUIImageShapeNavClose size:CGSizeMake(16, 16) tintColor:self.navBarTintColor];
+    self.navBarBackIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(12, 20) tintColor:self.navBarTintColor];
+    self.navBarCloseButtonImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavClose size:CGSizeMake(16, 16) tintColor:self.navBarTintColor];
     
     self.navBarLoadingMarginRight = 3;
     self.navBarAccessoryViewMarginLeft = 5;
     self.navBarActivityIndicatorViewStyle = UIActivityIndicatorViewStyleGray;
-    self.navBarAccessoryViewTypeDisclosureIndicatorImage = [[UIImage imageWithShape:QMUIImageShapeTriangle size:CGSizeMake(8, 5) tintColor:self.whiteColor] imageWithOrientation:UIImageOrientationDown];
+    self.navBarAccessoryViewTypeDisclosureIndicatorImage = [[UIImage qmui_imageWithShape:QMUIImageShapeTriangle size:CGSizeMake(8, 5) tintColor:self.whiteColor] qmui_imageWithOrientation:UIImageOrientationDown];
     
     #pragma mark - TabBar
     
@@ -178,8 +178,8 @@
     self.tableViewCellWarningBackgroundColor = self.yellowColor;
     self.tableViewCellNormalHeight = 44;
     
-    self.tableViewCellDisclosureIndicatorImage = [UIImage imageWithShape:QMUIImageShapeDisclosureIndicator size:CGSizeMake(8, 13) tintColor:UIColorMakeWithRGBA(0, 0, 0, .2)];
-    self.tableViewCellCheckmarkImage = [UIImage imageWithShape:QMUIImageShapeCheckmark size:CGSizeMake(15, 12) tintColor:UIColorBlue];
+    self.tableViewCellDisclosureIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeDisclosureIndicator size:CGSizeMake(8, 13) tintColor:UIColorMakeWithRGBA(0, 0, 0, .2)];
+    self.tableViewCellCheckmarkImage = [UIImage qmui_imageWithShape:QMUIImageShapeCheckmark size:CGSizeMake(15, 12) tintColor:UIColorBlue];
     self.tableViewSectionHeaderBackgroundColor = UIColorMake(244, 244, 244);
     self.tableViewSectionFooterBackgroundColor = UIColorMake(244, 244, 244);
     self.tableViewSectionHeaderFont = UIFontBoldMake(12);
@@ -233,13 +233,13 @@
     UIToolbar *toolBarAppearance = [UIToolbar appearance];
     [toolBarAppearance setBarTintColor:ToolBarBarTintColor];
     [toolBarAppearance setBackgroundImage:ToolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-    [toolBarAppearance setShadowImage:[UIImage imageWithColor:ToolBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
+    [toolBarAppearance setShadowImage:[UIImage qmui_imageWithColor:ToolBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
     
     // UITabBar
     UITabBar *tabBarAppearance = [UITabBar appearance];
     [tabBarAppearance setBarTintColor:TabBarBarTintColor];
     [tabBarAppearance setBackgroundImage:TabBarBackgroundImage];
-    [tabBarAppearance setShadowImage:[UIImage imageWithColor:TabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
+    [tabBarAppearance setShadowImage:[UIImage qmui_imageWithColor:TabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
     
     
     // UITabBarItem

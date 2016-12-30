@@ -230,7 +230,7 @@
 - (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath {
     // 子类继承
     if (indexPath && self.parentTableView) {
-        QMUITableViewCellPosition position = [self.parentTableView positionForRowAtIndexPath:indexPath];
+        QMUITableViewCellPosition position = [self.parentTableView qmui_positionForRowAtIndexPath:indexPath];
         self.cellPosition = position;
     }
 }

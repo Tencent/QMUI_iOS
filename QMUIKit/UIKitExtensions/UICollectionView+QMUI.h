@@ -15,26 +15,26 @@
 /**
  *  清除所有已选中的item的选中状态
  */
-- (void)clearsSelection;
+- (void)qmui_clearsSelection;
 
 /**
  *  重新`reloadData`，同时保持`reloadData`前item的选中状态
  */
-- (void)reloadDataKeepingSelection;
+- (void)qmui_reloadDataKeepingSelection;
 
 /**
  *  获取某个view在collectionView内对应的indexPath
  *
- *  例如某个view是某个cell里的subview，在这个view的点击事件回调方法里，就能通过`indexPathForItemAtView:`获取被点击的view所处的cell的indexPath
+ *  例如某个view是某个cell里的subview，在这个view的点击事件回调方法里，就能通过`qmui_indexPathForItemAtView:`获取被点击的view所处的cell的indexPath
  *
  *  @warning 注意返回的indexPath有可能为nil，要做保护。
  */
-- (NSIndexPath *)indexPathForItemAtView:(id)sender;
+- (NSIndexPath *)qmui_indexPathForItemAtView:(id)sender;
 
 /**
  *  判断当前 indexPath 的 item 是否为可视的 item
  */
-- (BOOL)itemVisibleAtIndexPath:(NSIndexPath *)indexPath;
+- (BOOL)qmui_itemVisibleAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
  *  获取可视区域内第一个cell的indexPath。
@@ -43,7 +43,7 @@
  *
  *  @warning 若可视区域为CGRectZero，则返回nil
  */
-- (NSIndexPath *)indexPathForFirstVisibleCell;
+- (NSIndexPath *)qmui_indexPathForFirstVisibleCell;
 
 @end
 
@@ -56,20 +56,20 @@
 
 @interface UICollectionView (QMUIKeyedHeightCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightKeyCache *keyedHeightCache;
+@property (nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
 
 @end
 
 @interface UICollectionView (QMUICellHeightIndexPathCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightIndexPathCache *indexPathHeightCache;
+@property (nonatomic, strong, readonly) QMUICellHeightIndexPathCache *qmui_indexPathHeightCache;
 
 @end
 
 @interface UICollectionView (QMUIIndexPathHeightCacheInvalidation)
 
 /// 当需要reloadData的时候，又不想使布局失效，可以调用下面这个方法。例如，在底部加载更多。
-- (void)reloadDataWithoutInvalidateIndexPathHeightCache;
+- (void)qmui_reloadDataWithoutInvalidateIndexPathHeightCache;
 
 @end
 
@@ -78,12 +78,12 @@
 /// 也就是说我们自定义的cell里面需要重写sizeThatFits:并返回正确的值
 @interface UICollectionView (QMUILayoutCell)
 
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth configuration:(void (^)(id cell))configuration;
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth configuration:(void (^)(id cell))configuration;
 
 // 通过indexPath缓存高度
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(id cell))configuration;
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(id cell))configuration;
 
 // 通过key缓存高度
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth cacheByKey:(id<NSCopying>)key configuration:(void (^)(id cell))configuration;
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth cacheByKey:(id<NSCopying>)key configuration:(void (^)(id cell))configuration;
 
 @end

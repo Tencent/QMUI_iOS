@@ -22,38 +22,38 @@
 }
 
 static char kAssociatedObjectKey_PlaceholderColor;
-- (void)setPlaceholderColor:(UIColor *)argv {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_PlaceholderColor, argv, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setQmui_placeholderColor:(UIColor *)qmui_placeholderColor {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_PlaceholderColor, qmui_placeholderColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (self.placeholder) {
-        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:self.placeholder attributes:@{NSForegroundColorAttributeName: argv}];
+        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:self.placeholder attributes:@{NSForegroundColorAttributeName: qmui_placeholderColor}];
     }
 }
 
-- (UIColor *)placeholderColor {
+- (UIColor *)qmui_placeholderColor {
     return (UIColor *)objc_getAssociatedObject(self, &kAssociatedObjectKey_PlaceholderColor);
 }
 
 - (void)qmui_setPlaceholder:(NSString *)placeholder {
     [self qmui_setPlaceholder:placeholder];
     // placeholder的颜色
-    if (self.placeholderColor) {
-        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:@{NSForegroundColorAttributeName: self.placeholderColor}];
+    if (self.qmui_placeholderColor) {
+        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:@{NSForegroundColorAttributeName: self.qmui_placeholderColor}];
     }
 }
 
 static char kAssociatedObjectKey_TextColor;
-- (void)setTextColor:(UIColor *)argv {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_TextColor, argv, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    self.textField.textColor = argv;
+- (void)setQmui_textColor:(UIColor *)qmui_textColor {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_TextColor, qmui_textColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.textField.textColor = qmui_textColor;
 }
 
-- (UIColor *)textColor {
+- (UIColor *)qmui_textColor {
     return (UIColor *)objc_getAssociatedObject(self, &kAssociatedObjectKey_TextColor);
 }
 
-- (void)styledAsQMUISearchBar {
-    self.textColor = UIColorBlack;
-    self.placeholderColor = SearchBarPlaceholderColor;
+- (void)qmui_styledAsQMUISearchBar {
+    self.qmui_textColor = UIColorBlack;
+    self.qmui_placeholderColor = SearchBarPlaceholderColor;
     self.placeholder = @"搜索";
     self.autocorrectionType = UITextAutocorrectionTypeNo;
     self.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -75,11 +75,11 @@ static char kAssociatedObjectKey_TextColor;
     self.tintColor = SearchBarTintColor;
     
     // 输入框背景图
-    [self setSearchFieldBackgroundImage:[[[UIImage imageWithColor:SearchBarTextFieldBackground size:CGSizeMake(60, 28) cornerRadius:SearchBarTextFieldCornerRadius] imageWithBorderColor:SearchBarTextFieldBorderColor borderWidth:PixelOne cornerRadius:SearchBarTextFieldCornerRadius] resizableImageWithCapInsets:UIEdgeInsetsMake(14, 14, 14, 14)] forState:UIControlStateNormal];
+    [self setSearchFieldBackgroundImage:[[[UIImage qmui_imageWithColor:SearchBarTextFieldBackground size:CGSizeMake(60, 28) cornerRadius:SearchBarTextFieldCornerRadius] qmui_imageWithBorderColor:SearchBarTextFieldBorderColor borderWidth:PixelOne cornerRadius:SearchBarTextFieldCornerRadius] resizableImageWithCapInsets:UIEdgeInsetsMake(14, 14, 14, 14)] forState:UIControlStateNormal];
     
     // 整条bar的背景
     // iOS7及以后不用barTintColor设置背景是因为这么做的话会出现上下border，去不掉，所以iOS6和7都改为用backgroundImage实现
-    UIImage *backgroundImage = [[[UIImage imageWithColor:SearchBarBarTintColor size:CGSizeMake(10, 10) cornerRadius:0] imageWithBorderColor:SearchBarBottomBorderColor borderWidth:PixelOne borderPosition:QMUIImageBorderPositionBottom] resizableImageWithCapInsets:UIEdgeInsetsMake(1, 1, 1, 1)];
+    UIImage *backgroundImage = [[[UIImage qmui_imageWithColor:SearchBarBarTintColor size:CGSizeMake(10, 10) cornerRadius:0] qmui_imageWithBorderColor:SearchBarBottomBorderColor borderWidth:PixelOne borderPosition:QMUIImageBorderPositionBottom] resizableImageWithCapInsets:UIEdgeInsetsMake(1, 1, 1, 1)];
     [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
 }
 

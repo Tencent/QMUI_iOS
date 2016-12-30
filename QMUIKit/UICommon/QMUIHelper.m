@@ -425,7 +425,7 @@ static NSInteger isHighPerformanceDevice = -1;
 
 + (nullable UIViewController *)visibleViewController {
     UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-    UIViewController *visibleViewController = [rootViewController visibleViewControllerIfExist];
+    UIViewController *visibleViewController = [rootViewController qmui_visibleViewControllerIfExist];
     return visibleViewController;
 }
 

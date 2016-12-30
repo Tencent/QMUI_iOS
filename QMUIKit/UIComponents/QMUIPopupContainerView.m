@@ -411,7 +411,7 @@
     appearance.borderColor = UIColorGrayLighten;
     appearance.borderWidth = PixelOne;
     appearance.cornerRadius = 10;
-    appearance.outsideEdge = UIEdgeInsetsZero;
+    appearance.qmui_outsideEdge = UIEdgeInsetsZero;
     appearance.preferLayoutDirection = QMUIPopupContainerViewLayoutDirectionAbove;
 }
 

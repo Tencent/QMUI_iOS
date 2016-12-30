@@ -22,15 +22,15 @@
 }
 
 - (NSString *)qmui_description {
-    NSInteger red = self.red * 255;
-    NSInteger green = self.green * 255;
-    NSInteger blue = self.blue * 255;
-    CGFloat alpha = self.alpha;
-    NSString *description = [NSString stringWithFormat:@"color = RGBA: (%@, %@, %@, %.2f), AARRGGBB: %@", @(red), @(green), @(blue), alpha, [self hexString]];
+    NSInteger red = self.qmui_red * 255;
+    NSInteger green = self.qmui_green * 255;
+    NSInteger blue = self.qmui_blue * 255;
+    CGFloat alpha = self.qmui_alpha;
+    NSString *description = [NSString stringWithFormat:@"color = RGBA: (%@, %@, %@, %.2f), AARRGGBB: %@", @(red), @(green), @(blue), alpha, [self qmui_hexString]];
     return description;
 }
 
-+ (UIColor *)colorWithHexString: (NSString *) hexString {
++ (UIColor *)qmui_colorWithHexString: (NSString *) hexString {
     NSString *colorString = [[hexString stringByReplacingOccurrencesOfString: @"#" withString: @""] uppercaseString];
     CGFloat alpha, red, blue, green;
     switch ([colorString length]) {
@@ -65,16 +65,16 @@
     return [UIColor colorWithRed: red green: green blue: blue alpha: alpha];
 }
 
-- (NSString *)hexString {
-    NSInteger alpha = self.alpha * 255;
-    NSInteger red = self.red * 255;
-    NSInteger green = self.green * 255;
-    NSInteger blue = self.blue * 255;
+- (NSString *)qmui_hexString {
+    NSInteger alpha = self.qmui_alpha * 255;
+    NSInteger red = self.qmui_red * 255;
+    NSInteger green = self.qmui_green * 255;
+    NSInteger blue = self.qmui_blue * 255;
     return [[NSString stringWithFormat:@"#%@%@%@%@",
-            [self alignColorHexStringLength:[NSString hexStringWithInteger:alpha]],
-            [self alignColorHexStringLength:[NSString hexStringWithInteger:red]],
-            [self alignColorHexStringLength:[NSString hexStringWithInteger:green]],
-            [self alignColorHexStringLength:[NSString hexStringWithInteger:blue]]] lowercaseString];
+            [self alignColorHexStringLength:[NSString qmui_hexStringWithInteger:alpha]],
+            [self alignColorHexStringLength:[NSString qmui_hexStringWithInteger:red]],
+            [self alignColorHexStringLength:[NSString qmui_hexStringWithInteger:green]],
+            [self alignColorHexStringLength:[NSString qmui_hexStringWithInteger:blue]]] lowercaseString];
 }
 
 // 对于色值只有单位数的，在前面补一个0，例如“F”会补齐为“0F”
@@ -90,7 +90,7 @@
     return hexComponent / 255.0;
 }
 
-- (CGFloat)red {
+- (CGFloat)qmui_red {
     CGFloat r;
     if ([self getRed:&r green:0 blue:0 alpha:0]) {
         return r;
@@ -98,7 +98,7 @@
     return 0;
 }
 
-- (CGFloat)green {
+- (CGFloat)qmui_green {
     CGFloat g;
     if ([self getRed:0 green:&g blue:0 alpha:0]) {
         return g;
@@ -106,7 +106,7 @@
     return 0;
 }
 
-- (CGFloat)blue {
+- (CGFloat)qmui_blue {
     CGFloat b;
     if ([self getRed:0 green:0 blue:&b alpha:0]) {
         return b;
@@ -114,7 +114,7 @@
     return 0;
 }
 
-- (CGFloat)alpha {
+- (CGFloat)qmui_alpha {
     CGFloat a;
     if ([self getRed:0 green:0 blue:0 alpha:&a]) {
         return a;
@@ -122,7 +122,7 @@
     return 0;
 }
 
-- (CGFloat)hue {
+- (CGFloat)qmui_hue {
     CGFloat h;
     if ([self getHue:&h saturation:0 brightness:0 alpha:0]) {
         return h;
@@ -130,7 +130,7 @@
     return 0;
 }
 
-- (CGFloat)saturation {
+- (CGFloat)qmui_saturation {
     CGFloat s;
     if ([self getHue:0 saturation:&s brightness:0 alpha:0]) {
         return s;
@@ -138,7 +138,7 @@
     return 0;
 }
 
-- (CGFloat)brightness {
+- (CGFloat)qmui_brightness {
     CGFloat b;
     if ([self getHue:0 saturation:0 brightness:&b alpha:0]) {
         return b;
@@ -146,7 +146,7 @@
     return 0;
 }
 
-- (UIColor *)colorWithoutAlpha {
+- (UIColor *)qmui_colorWithoutAlpha {
     CGFloat r;
     CGFloat g;
     CGFloat b;
@@ -157,29 +157,29 @@
     }
 }
 
-- (UIColor *)colorWithAlpha:(CGFloat)alpha backgroundColor:(UIColor *)backgroundColor {
-    return [UIColor colorWithBackendColor:backgroundColor frontColor:[self colorWithAlphaComponent:alpha]];
+- (UIColor *)qmui_colorWithAlpha:(CGFloat)alpha backgroundColor:(UIColor *)backgroundColor {
+    return [UIColor qmui_colorWithBackendColor:backgroundColor frontColor:[self colorWithAlphaComponent:alpha]];
     
 }
 
-- (UIColor *)colorWithAlphaAddedToWhite:(CGFloat)alpha {
-    return [self colorWithAlpha:alpha backgroundColor:UIColorWhite];
+- (UIColor *)qmui_colorWithAlphaAddedToWhite:(CGFloat)alpha {
+    return [self qmui_colorWithAlpha:alpha backgroundColor:UIColorWhite];
 }
 
-- (UIColor *)transitionToColor:(UIColor *)toColor progress:(CGFloat)progress {
-    return [UIColor colorFromColor:self toColor:toColor progress:progress];
+- (UIColor *)qmui_transitionToColor:(UIColor *)toColor progress:(CGFloat)progress {
+    return [UIColor qmui_colorFromColor:self toColor:toColor progress:progress];
 }
 
-+ (UIColor *)colorWithBackendColor:(UIColor *)backendColor frontColor:(UIColor *)frontColor {
-    CGFloat bgAlpha = [backendColor alpha];
-    CGFloat bgRed = [backendColor red];
-    CGFloat bgGreen = [backendColor green];
-    CGFloat bgBlue = [backendColor blue];
++ (UIColor *)qmui_colorWithBackendColor:(UIColor *)backendColor frontColor:(UIColor *)frontColor {
+    CGFloat bgAlpha = [backendColor qmui_alpha];
+    CGFloat bgRed = [backendColor qmui_red];
+    CGFloat bgGreen = [backendColor qmui_green];
+    CGFloat bgBlue = [backendColor qmui_blue];
     
-    CGFloat frAlpha = [frontColor alpha];
-    CGFloat frRed = [frontColor red];
-    CGFloat frGreen = [frontColor green];
-    CGFloat frBlue = [frontColor blue];
+    CGFloat frAlpha = [frontColor qmui_alpha];
+    CGFloat frRed = [frontColor qmui_red];
+    CGFloat frGreen = [frontColor qmui_green];
+    CGFloat frBlue = [frontColor qmui_blue];
     
     CGFloat resultAlpha = frAlpha + bgAlpha * (1 - frAlpha);
     CGFloat resultRed = (frRed * frAlpha + bgRed * bgAlpha * (1 - frAlpha)) / resultAlpha;
@@ -188,17 +188,17 @@
     return [UIColor colorWithRed:resultRed green:resultGreen blue:resultBlue alpha:resultAlpha];
 }
 
-+ (UIColor *)colorFromColor:(UIColor *)fromColor toColor:(UIColor *)toColor progress:(CGFloat)progress {
++ (UIColor *)qmui_colorFromColor:(UIColor *)fromColor toColor:(UIColor *)toColor progress:(CGFloat)progress {
     progress = MIN(progress, 1.0f);
-    CGFloat fromRed = fromColor.red;
-    CGFloat fromGreen = fromColor.green;
-    CGFloat fromBlue = fromColor.blue;
-    CGFloat fromAlpha = fromColor.alpha;
+    CGFloat fromRed = fromColor.qmui_red;
+    CGFloat fromGreen = fromColor.qmui_green;
+    CGFloat fromBlue = fromColor.qmui_blue;
+    CGFloat fromAlpha = fromColor.qmui_alpha;
     
-    CGFloat toRed = toColor.red;
-    CGFloat toGreen = toColor.green;
-    CGFloat toBlue = toColor.blue;
-    CGFloat toAlpha = toColor.alpha;
+    CGFloat toRed = toColor.qmui_red;
+    CGFloat toGreen = toColor.qmui_green;
+    CGFloat toBlue = toColor.qmui_blue;
+    CGFloat toAlpha = toColor.qmui_alpha;
     
     CGFloat finalRed = fromRed + (toRed - fromRed) * progress;
     CGFloat finalGreen = fromGreen + (toGreen - fromGreen) * progress;
@@ -208,14 +208,14 @@
     return [UIColor colorWithRed:finalRed green:finalGreen blue:finalBlue alpha:finalAlpha];
 }
 
-+ (UIColor *)randomColor {
++ (UIColor *)qmui_randomColor {
     CGFloat red = ( arc4random() % 255 / 255.0 );
     CGFloat green = ( arc4random() % 255 / 255.0 );
     CGFloat blue = ( arc4random() % 255 / 255.0 );
     return [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
 }
 
-- (BOOL)colorIsDark {
+- (BOOL)qmui_colorIsDark {
     CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
     [self getRed:&red green:&green blue:&blue alpha:&alpha];
     
@@ -225,7 +225,7 @@
     return 1.0 - colorDelta > referenceValue;
 }
 
-- (UIColor *)inverseColor {
+- (UIColor *)qmui_inverseColor {
     const CGFloat *componentColors = CGColorGetComponents(self.CGColor);
     UIColor *newColor = [[UIColor alloc] initWithRed:(1.0 - componentColors[0])
                                                green:(1.0 - componentColors[1])

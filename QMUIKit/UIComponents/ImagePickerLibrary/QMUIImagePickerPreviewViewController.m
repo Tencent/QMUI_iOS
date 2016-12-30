@@ -88,7 +88,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     self.backButton.tintColor = self.topToolBarView.tintColor;
     [self.backButton sizeToFit];
     [self.backButton addTarget:self action:@selector(handleCancelPreviewImage:) forControlEvents:UIControlEventTouchUpInside];
-    self.backButton.outsideEdge = UIEdgeInsetsMake(-30, -20, -50, -80);
+    self.backButton.qmui_outsideEdge = UIEdgeInsetsMake(-30, -20, -50, -80);
     [self.topToolBarView addSubview:self.backButton];
     
     _checkboxButton = [[QMUIButton alloc] init];
@@ -99,7 +99,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     self.checkboxButton.tintColor = self.topToolBarView.tintColor;
     [self.checkboxButton sizeToFit];
     [self.checkboxButton addTarget:self action:@selector(handleCheckButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-    self.checkboxButton.outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
+    self.checkboxButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     [self.topToolBarView addSubview:self.checkboxButton];
     
     _progressView = [[QMUIPieProgressView alloc] init];
@@ -110,7 +110,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     [self.downloadRetryButton setImage:[QMUIHelper imageWithName:@"QMUI_icloud_download_fault"] forState:UIControlStateNormal];
     [self.downloadRetryButton sizeToFit];
     [self.downloadRetryButton addTarget:self action:@selector(handleDownloadRetryButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-    self.downloadRetryButton.outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
+    self.downloadRetryButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     self.downloadRetryButton.hidden = YES;
     [self.topToolBarView addSubview:self.downloadRetryButton];
 }
@@ -134,12 +134,12 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     self.topToolBarView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), TopToolBarViewHeight);
-    self.backButton.frame = CGRectSetXY(self.backButton.frame, 8, [self.backButton minYWhenCenterInSuperview]);
+    self.backButton.frame = CGRectSetXY(self.backButton.frame, 8, [self.backButton qmui_minYWhenCenterInSuperview]);
     if (!_singleCheckMode) {
-        self.checkboxButton.frame = CGRectFlatted(CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - CGRectGetWidth(self.checkboxButton.frame), [self.checkboxButton minYWhenCenterInSuperview]));
+        self.checkboxButton.frame = CGRectFlatted(CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - CGRectGetWidth(self.checkboxButton.frame), [self.checkboxButton qmui_minYWhenCenterInSuperview]));
     }
     UIImage *downloadRetryImage = [self.downloadRetryButton imageForState:UIControlStateNormal];
-    self.downloadRetryButton.frame = CGRectFlatted(CGRectSetXY(self.downloadRetryButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - downloadRetryImage.size.width, [self.downloadRetryButton minYWhenCenterInSuperview]));
+    self.downloadRetryButton.frame = CGRectFlatted(CGRectSetXY(self.downloadRetryButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - downloadRetryImage.size.width, [self.downloadRetryButton qmui_minYWhenCenterInSuperview]));
     /* 理论上 progressView 作为进度按钮，应该需要跟错误重试按钮 downloadRetryButton 的 frame 保持一致，但这里并没有直接使用
      * self.progressView.frame = self.downloadRetryButton.frame，这是因为 self.downloadRetryButton 具有 1pt 的 top 
      * contentEdgeInsets，因此最终的 frame 是椭圆型，如果按上面的操作，progressView 内部绘制出的饼状图形就会变成椭圆型，
@@ -194,8 +194,8 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     }
 }
 
-- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSMutableArray *)imageAssetArray
-                                 selectedImageAssetArray:(NSMutableArray *)selectedImageAssetArray
+- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSMutableArray<QMUIAsset *> *)imageAssetArray
+                                 selectedImageAssetArray:(NSMutableArray<QMUIAsset *> *)selectedImageAssetArray
                                        currentImageIndex:(NSInteger)currentImageIndex
                                          singleCheckMode:(BOOL)singleCheckMode {
     self.imagesAssetArray = imageAssetArray;

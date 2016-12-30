@@ -25,11 +25,11 @@ static char kAssociatedObjectKey_outsideEdge;
 
 @implementation UIControl (QMUI)
 
-- (void)setNeedsTakeOverTouchEvent:(BOOL)needsTakeOverTouchEvent {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent, [NSNumber numberWithBool:needsTakeOverTouchEvent], OBJC_ASSOCIATION_ASSIGN);
+- (void)setQmui_needsTakeOverTouchEvent:(BOOL)qmui_needsTakeOverTouchEvent {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent, [NSNumber numberWithBool:qmui_needsTakeOverTouchEvent], OBJC_ASSOCIATION_ASSIGN);
 }
 
-- (BOOL)needsTakeOverTouchEvent {
+- (BOOL)qmui_needsTakeOverTouchEvent {
     return (BOOL)[objc_getAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent) boolValue];
 }
 
@@ -49,11 +49,11 @@ static char kAssociatedObjectKey_outsideEdge;
     return [objc_getAssociatedObject(self, &kAssociatedObjectKey_touchEndCount) integerValue];
 }
 
-- (void)setOutsideEdge:(UIEdgeInsets)outsideEdge {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_outsideEdge, [NSValue valueWithUIEdgeInsets:outsideEdge], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setQmui_outsideEdge:(UIEdgeInsets)qmui_outsideEdge {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_outsideEdge, [NSValue valueWithUIEdgeInsets:qmui_outsideEdge], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (UIEdgeInsets)outsideEdge {
+- (UIEdgeInsets)qmui_outsideEdge {
     return [objc_getAssociatedObject(self, &kAssociatedObjectKey_outsideEdge) UIEdgeInsetsValue];
 }
 
@@ -90,7 +90,7 @@ static char kAssociatedObjectKey_outsideEdge;
 
 - (void)qmui_touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     self.touchEndCount = 0;
-    if (self.needsTakeOverTouchEvent) {
+    if (self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = YES;
         [self qmui_touchesBegan:touches withEvent:event];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -104,7 +104,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)qmui_touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.needsTakeOverTouchEvent) {
+    if (self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = NO;
         [self qmui_touchesMoved:touches withEvent:event];
     } else {
@@ -113,7 +113,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)qmui_touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.needsTakeOverTouchEvent) {
+    if (self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = NO;
         if (self.touchInside) {
             [self setHighlighted:YES];
@@ -135,7 +135,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)qmui_touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.needsTakeOverTouchEvent) {
+    if (self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = NO;
         [self qmui_touchesCancelled:touches withEvent:event];
         if (self.highlighted) {
@@ -150,8 +150,8 @@ static char kAssociatedObjectKey_outsideEdge;
     if (([event type] != UIEventTypeTouches)) {
         return [self qmui_pointInside:point withEvent:event];
     }
-    UIEdgeInsets outsideEdge = self.outsideEdge;
-    CGRect boundsInsetOutsideEdge = CGRectMake(CGRectGetMinX(self.bounds) + outsideEdge.left, CGRectGetMinY(self.bounds) + outsideEdge.top, CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(outsideEdge), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(outsideEdge));
+    UIEdgeInsets qmui_outsideEdge = self.qmui_outsideEdge;
+    CGRect boundsInsetOutsideEdge = CGRectMake(CGRectGetMinX(self.bounds) + qmui_outsideEdge.left, CGRectGetMinY(self.bounds) + qmui_outsideEdge.top, CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(qmui_outsideEdge), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(qmui_outsideEdge));
     return CGRectContainsPoint(boundsInsetOutsideEdge, point);
 }
 

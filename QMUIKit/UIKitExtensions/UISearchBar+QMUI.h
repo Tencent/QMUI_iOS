@@ -11,9 +11,9 @@
 
 @interface UISearchBar (QMUI)
 
-@property(nonatomic, strong) UIColor *placeholderColor;
-@property(nonatomic, strong) UIColor *textColor;
+@property(nonatomic, strong) UIColor *qmui_placeholderColor;
+@property(nonatomic, strong) UIColor *qmui_textColor;
 
-- (void)styledAsQMUISearchBar;
+- (void)qmui_styledAsQMUISearchBar;
 
 @end

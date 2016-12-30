@@ -52,7 +52,7 @@
         [self.contentView addSubview:self.detailTextLabel];
         
         _actionButton = [[UIButton alloc] init];
-        self.actionButton.outsideEdge = UIEdgeInsetsMake(-20, -20, -20, -20);
+        self.actionButton.qmui_outsideEdge = UIEdgeInsetsMake(-20, -20, -20, -20);
         [self.contentView addSubview:self.actionButton];
         
         
@@ -138,7 +138,7 @@
         NSAttributedString *string = [[NSAttributedString alloc] initWithString:text attributes:@{
                                                                                                   NSFontAttributeName: self.detailTextLabelFont,
                                                                                                   NSForegroundColorAttributeName: self.detailTextLabelTextColor,
-                                                                                                  NSParagraphStyleAttributeName: [NSMutableParagraphStyle paragraphStyleWithLineHeight:self.detailTextLabelFont.pointSize + 10 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]
+                                                                                                  NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:self.detailTextLabelFont.pointSize + 10 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]
                                                                                                   }];
         self.detailTextLabel.attributedText = string;
     }

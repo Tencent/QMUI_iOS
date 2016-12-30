@@ -70,7 +70,7 @@ BeginIgnoreDeprecatedWarning
                 // iOS8 下 searchBar.frame 默认是 CGRectZero，不 sizeToFit 就看不到了
                 [self.searchBar sizeToFit];
             }
-            [self.searchBar styledAsQMUISearchBar];
+            [self.searchBar qmui_styledAsQMUISearchBar];
         } else {
             _searchBar = [[QMUISearchBar alloc] init];
             self.searchDisplayController = [[UISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:viewController];
@@ -247,7 +247,7 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (void)searchDisplayController:(UISearchDisplayController *)controller didLoadSearchResultsTableView:(UITableView *)tableView {
-    [tableView styledAsQMUITableView];
+    [tableView qmui_styledAsQMUITableView];
     tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     
     if ([self.searchResultsDelegate respondsToSelector:@selector(searchController:didLoadSearchResultsTableView:)]) {

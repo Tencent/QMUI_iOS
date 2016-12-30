@@ -13,7 +13,7 @@
 /**
  *  按照中文 2 个字符、英文 1 个字符的方式来计算文本长度
  */
-- (NSUInteger)lengthWhenCountingNonASCIICharacterAsTwo;
+- (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo;
 
 @end
 

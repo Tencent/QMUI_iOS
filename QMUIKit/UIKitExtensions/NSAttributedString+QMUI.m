@@ -31,8 +31,8 @@
     return [self qmui_initWithString:str attributes:attrs];
 }
 
-- (NSUInteger)lengthWhenCountingNonASCIICharacterAsTwo {
-    return self.string.lengthWhenCountingNonASCIICharacterAsTwo;
+- (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
+    return self.string.qmui_lengthWhenCountingNonASCIICharacterAsTwo;
 }
 
 @end

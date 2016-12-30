@@ -12,7 +12,7 @@
 
 @implementation UIImageView (QMUI)
 
-- (void)sizeToFitKeepingImageAspectRatioInSize:(CGSize)limitSize {
+- (void)qmui_sizeToFitKeepingImageAspectRatioInSize:(CGSize)limitSize {
     if (!self.image) {
         return;
     }

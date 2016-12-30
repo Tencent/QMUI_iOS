@@ -18,7 +18,7 @@
     return self;
 }
 
-- (void)calculateHeightAfterSetAppearance {
+- (void)qmui_calculateHeightAfterSetAppearance {
     [self setTitle:@"测" forState:UIControlStateNormal];
     [self sizeToFit];
     [self setTitle:nil forState:UIControlStateHighlighted];

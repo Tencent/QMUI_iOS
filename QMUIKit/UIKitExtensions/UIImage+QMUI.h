@@ -42,14 +42,14 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 代表图片平均颜色的UIColor对象
  */
-- (UIColor *)averageColor;
+- (UIColor *)qmui_averageColor;
 
 /**
  *  置灰当前图片
  *
  *  @return 已经置灰的图片
  */
-- (UIImage *)grayImage;
+- (UIImage *)qmui_grayImage;
 
 /**
  *  设置一张图片的透明度
@@ -58,7 +58,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 设置了透明度之后的图片
  */
-- (UIImage *)imageWithAlpha:(CGFloat)alpha;
+- (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha;
 
 /**
  *  保持当前图片的形状不变，使用指定的颜色去重新渲染它，生成一张新图片并返回
@@ -67,7 +67,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 与当前图片形状一致但颜色与参数tintColor相同的新图片
  */
-- (UIImage *)imageWithTintColor:(UIColor *)tintColor;
+- (UIImage *)qmui_imageWithTintColor:(UIColor *)tintColor;
 
 /**
  *  在当前图片的基础上叠加一张图片，并指定绘制叠加图片的起始位置
@@ -79,14 +79,14 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 返回一张与原图大小一致的图片，所叠加的图片若超出原图大小，则超出部分被截掉
  */
-- (UIImage *)imageWithImageAbove:(UIImage *)image atPoint:(CGPoint)point;
+- (UIImage *)qmui_imageWithImageAbove:(UIImage *)image atPoint:(CGPoint)point;
 
 /**
  *  在当前图片的上下左右增加一些空白（不支持负值），通常用于调节NSAttributedString里的图片与文字的间距
  *  @param extension 要拓展的大小
  *  @return 拓展后的图片
  */
-- (UIImage *)imageWithSpacingExtensionInsets:(UIEdgeInsets)extension;
+- (UIImage *)qmui_imageWithSpacingExtensionInsets:(UIEdgeInsets)extension;
 
 /**
  *  切割出在指定位置中的图片
@@ -95,7 +95,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 切割后的新图片
  */
-- (UIImage *)imageWithClippedRect:(CGRect)rect;
+- (UIImage *)qmui_imageWithClippedRect:(CGRect)rect;
 
 /**
  *  将原图按指定的UIViewContentMode缩放到指定的大小，返回处理完的图片
@@ -104,8 +104,8 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 处理完的图片，scale和原图一致
  */
-- (UIImage *)imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode;
-- (UIImage *)imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale;
+- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode;
+- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale;
 
 /**
  *  将原图进行旋转，只能选择上下左右四个方向
@@ -114,7 +114,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 处理完的图片
  */
-- (UIImage *)imageWithOrientation:(UIImageOrientation)direction;
+- (UIImage *)qmui_imageWithOrientation:(UIImageOrientation)direction;
 
 /**
  *  为图片加上一个border，border的路径为path
@@ -125,7 +125,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *  @return 带border的UIImage
  *  @warning 注意通过`path.lineWidth`设置边框大小，同时注意路径要考虑像素对齐（`path.lineWidth / 2.0`）
  */
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor path:(UIBezierPath *)path;
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor path:(UIBezierPath *)path;
 
 /**
  *  为图片加上一个border，border的路径为borderColor、cornerRadius和borderWidth所创建的path
@@ -138,8 +138,8 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 带border的UIImage
  */
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius dashedLengths:(const CGFloat *)dashedLengths;
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius;
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius dashedLengths:(const CGFloat *)dashedLengths;
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius;
 
 
 /**
@@ -151,7 +151,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 带border的UIImage
  */
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth borderPosition:(QMUIImageBorderPosition)borderPosition;
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth borderPosition:(QMUIImageBorderPosition)borderPosition;
 
 /**
  *  返回一个被mask的图片
@@ -161,7 +161,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 被mask的图片
  */
-- (UIImage *)imageWithMaskImage:(UIImage *)maskImage usingMaskImageMode:(BOOL)usingMaskImageMode;
+- (UIImage *)qmui_imageWithMaskImage:(UIImage *)maskImage usingMaskImageMode:(BOOL)usingMaskImageMode;
 
 /**
  *  创建一个size为(4, 4)的纯色的UIImage
@@ -170,7 +170,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 纯色的UIImage
  */
-+ (UIImage *)imageWithColor:(UIColor *)color;
++ (UIImage *)qmui_imageWithColor:(UIColor *)color;
 
 /**
  *  创建一个纯色的UIImage
@@ -181,7 +181,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  * @return 纯色的UIImage
  */
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size cornerRadius:(CGFloat)cornerRadius;
++ (UIImage *)qmui_imageWithColor:(UIColor *)color size:(CGSize)size cornerRadius:(CGFloat)cornerRadius;
 
 /**
  *  创建一个纯色的UIImage，支持为四个角设置不同的圆角
@@ -189,7 +189,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *  @param  size                图片的大小
  *  @param  cornerRadius   四个角的圆角值的数组，长度必须为4，顺序分别为[左上角、左下角、右下角、右上角]
  */
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius;
++ (UIImage *)qmui_imageWithColor:(UIColor *)color size:(CGSize)size cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius;
 
 /**
  *  创建一个带边框路径，没有背景色的路径图片，border的路径为path
@@ -200,7 +200,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 带border的UIImage
  */
-+ (UIImage *)imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size path:(UIBezierPath *)path addClip:(BOOL)addClip;
++ (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size path:(UIBezierPath *)path addClip:(BOOL)addClip;
 
 /**
  *  创建一个带边框路径，没有背景色的路径图片，border的路径为strokeColor、cornerRadius和lineWidth所创建的path
@@ -211,7 +211,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 带border的UIImage
  */
-+ (UIImage *)imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth cornerRadius:(CGFloat)cornerRadius;
++ (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth cornerRadius:(CGFloat)cornerRadius;
 
 /**
  *  创建一个带边框路径，没有背景色的路径图片（可以是任意一条边，也可以是多条组合；只能创建矩形的border，不能添加圆角）
@@ -223,14 +223,14 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *
  *  @return 带路径，没有背景色的UIImage
  */
-+ (UIImage *)imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth borderPosition:(QMUIImageBorderPosition)borderPosition;
++ (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth borderPosition:(QMUIImageBorderPosition)borderPosition;
 /**
  *  创建一个指定大小和颜色的形状图片
  *  @param shape 图片形状
  *  @param size 图片大小
  *  @param tintColor 图片颜色
  */
-+ (UIImage *)imageWithShape:(QMUIImageShape)shape size:(CGSize)size tintColor:(UIColor *)tintColor;
++ (UIImage *)qmui_imageWithShape:(QMUIImageShape)shape size:(CGSize)size tintColor:(UIColor *)tintColor;
 
 /**
  *  创建一个指定大小和颜色的形状图片
@@ -239,12 +239,12 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *  @param lineWidth 路径大小，不会影响最终size
  *  @param tintColor 图片颜色
  */
-+ (UIImage *)imageWithShape:(QMUIImageShape)shape size:(CGSize)size lineWidth:(CGFloat)lineWidth tintColor:(UIColor *)tintColor;
++ (UIImage *)qmui_imageWithShape:(QMUIImageShape)shape size:(CGSize)size lineWidth:(CGFloat)lineWidth tintColor:(UIColor *)tintColor;
 
 /**
  *  将文字渲染成图片，最终图片和文字一样大
  */
-+ (UIImage *)imageWithAttributedString:(NSAttributedString *)attributedString;
++ (UIImage *)qmui_imageWithAttributedString:(NSAttributedString *)attributedString;
 
 /**
  对传进来的 `UIView` 截图，生成一个 `UIImage` 并返回
@@ -253,7 +253,7 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 
  @return `UIView` 的截图
  */
-+ (UIImage *)imageWithView:(UIView *)view;
++ (UIImage *)qmui_imageWithView:(UIView *)view;
 
 /**
  对传进来的 `UIView` 截图，生成一个 `UIImage` 并返回
@@ -263,6 +263,6 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 
  @return `UIView` 的截图
  */
-+ (UIImage *)imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates;
++ (UIImage *)qmui_imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates;
 
 @end

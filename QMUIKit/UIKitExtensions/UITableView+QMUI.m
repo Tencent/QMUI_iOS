@@ -13,7 +13,7 @@
 
 @implementation UITableView (QMUI)
 
-- (void)styledAsQMUITableView {
+- (void)qmui_styledAsQMUITableView {
     self.backgroundColor = self.style == UITableViewStylePlain ? TableViewBackgroundColor : TableViewGroupedBackgroundColor;
     self.separatorColor = TableViewSeparatorColor;
     self.tableFooterView = [[UIView alloc] init];// 去掉尾部空cell
@@ -24,7 +24,7 @@
     self.sectionIndexBackgroundColor = TableSectionIndexBackgroundColor;
 }
 
-- (NSIndexPath *)indexPathForRowAtView:(UIView *)view {
+- (NSIndexPath *)qmui_indexPathForRowAtView:(UIView *)view {
     if (view && [view isKindOfClass:[UIView class]]) {
         CGPoint origin = [self convertPoint:view.frame.origin fromView:view.superview];
         return [self indexPathForRowAtPoint:origin];
@@ -32,7 +32,7 @@
     return nil;
 }
 
-- (NSInteger)indexForSectionHeaderAtView:(UIView *)view {
+- (NSInteger)qmui_indexForSectionHeaderAtView:(UIView *)view {
     if (!view || ![view isKindOfClass:[UIView class]]) {
         return -1;
     }
@@ -53,7 +53,7 @@
     return -1;
 }
 
-- (QMUITableViewCellPosition)positionForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (QMUITableViewCellPosition)qmui_positionForRowAtIndexPath:(NSIndexPath *)indexPath {
     NSInteger numberOfRowsInSection = [self.dataSource tableView:self numberOfRowsInSection:indexPath.section];
     if (numberOfRowsInSection == 1) {
         return QMUITableViewCellPositionSingleInSection;
@@ -67,7 +67,7 @@
     return QMUITableViewCellPositionMiddleInSection;
 }
 
-- (BOOL)cellVisibleAtIndexPath:(NSIndexPath *)indexPath {
+- (BOOL)qmui_cellVisibleAtIndexPath:(NSIndexPath *)indexPath {
     NSArray *visibleCellIndexPaths = self.indexPathsForVisibleRows;
     for (NSIndexPath *visibleIndexPath in visibleCellIndexPaths) {
         if ([indexPath isEqual:visibleIndexPath]) {
@@ -77,15 +77,15 @@
     return NO;
 }
 
-- (void)clearsSelection {
+- (void)qmui_clearsSelection {
     NSArray *selectedIndexPaths = [self indexPathsForSelectedRows];
     for (NSIndexPath *indexPath in selectedIndexPaths) {
         [self deselectRowAtIndexPath:indexPath animated:YES];
     }
 }
 
-- (void)scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
-    if (![self canScroll]) {
+- (void)qmui_scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
+    if (![self qmui_canScroll]) {
         return;
     }
     
@@ -96,11 +96,11 @@
     if (canScrollRowToTop) {
         [self setContentOffset:CGPointMake(self.contentOffset.x, CGRectGetMinY(rectForRow) - offsetY) animated:animated];
     } else {
-        [self scrollToBottomAnimated:animated];
+        [self qmui_scrollToBottomAnimated:animated];
     }
 }
 
-- (CGSize)realContentSize {
+- (CGSize)qmui_realContentSize {
     if (!self.dataSource || !self.delegate) {
         return CGSizeZero;
     }
@@ -120,17 +120,17 @@
     return realContentSize;
 }
 
-- (BOOL)canScroll {
+- (BOOL)qmui_canScroll {
     // 没有高度就不用算了，肯定不可滚动，这里只是做个保护
     if (CGRectGetHeight(self.bounds) <= 0) {
         return NO;
     }
     
     if ([self.tableHeaderView isKindOfClass:[UISearchBar class]]) {
-        BOOL canScroll = self.realContentSize.height + UIEdgeInsetsGetVerticalValue(self.contentInset) > CGRectGetHeight(self.bounds);
+        BOOL canScroll = self.qmui_realContentSize.height + UIEdgeInsetsGetVerticalValue(self.contentInset) > CGRectGetHeight(self.bounds);
         return canScroll;
     } else {
-        return [super canScroll];
+        return [super qmui_canScroll];
     }
 }
 
@@ -141,7 +141,7 @@
 
 @implementation UITableView (QMUIKeyedHeightCache)
 
-- (QMUICellHeightKeyCache *)keyedHeightCache {
+- (QMUICellHeightKeyCache *)qmui_keyedHeightCache {
     QMUICellHeightKeyCache *cache = objc_getAssociatedObject(self, _cmd);
     if (!cache) {
         cache = [[QMUICellHeightKeyCache alloc] init];
@@ -154,7 +154,7 @@
 
 @implementation UITableView (QMUICellHeightIndexPathCache)
 
-- (QMUICellHeightIndexPathCache *)indexPathHeightCache {
+- (QMUICellHeightIndexPathCache *)qmui_indexPathHeightCache {
     QMUICellHeightIndexPathCache *cache = objc_getAssociatedObject(self, _cmd);
     if (!cache) {
         cache = [[QMUICellHeightIndexPathCache alloc] init];
@@ -167,7 +167,7 @@
 
 @implementation UITableView (QMUIIndexPathHeightCacheInvalidation)
 
-- (void)reloadDataWithoutInvalidateIndexPathHeightCache {
+- (void)qmui_reloadDataWithoutInvalidateIndexPathHeightCache {
     [self qmui_reloadData];
 }
 
@@ -193,8 +193,8 @@
 }
 
 - (void)qmui_reloadData {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
+        [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
             [heightsBySection removeAllObjects];
         }];
     }
@@ -202,10 +202,10 @@
 }
 
 - (void)qmui_insertSections:(NSIndexSet *)sections withRowAnimation:(UITableViewRowAnimation)animation {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
         [sections enumerateIndexesUsingBlock:^(NSUInteger section, BOOL *stop) {
-            [self.indexPathHeightCache buildSectionsIfNeeded:section];
-            [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+            [self.qmui_indexPathHeightCache buildSectionsIfNeeded:section];
+            [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
                 [heightsBySection insertObject:[NSMutableArray array] atIndex:section];
             }];
         }];
@@ -214,10 +214,10 @@
 }
 
 - (void)qmui_deleteSections:(NSIndexSet *)sections withRowAnimation:(UITableViewRowAnimation)animation {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
         [sections enumerateIndexesUsingBlock:^(NSUInteger section, BOOL *stop) {
-            [self.indexPathHeightCache buildSectionsIfNeeded:section];
-            [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+            [self.qmui_indexPathHeightCache buildSectionsIfNeeded:section];
+            [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
                 [heightsBySection removeObjectAtIndex:section];
             }];
         }];
@@ -226,10 +226,10 @@
 }
 
 - (void)qmui_reloadSections:(NSIndexSet *)sections withRowAnimation:(UITableViewRowAnimation)animation {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
         [sections enumerateIndexesUsingBlock: ^(NSUInteger section, BOOL *stop) {
-            [self.indexPathHeightCache buildSectionsIfNeeded:section];
-            [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+            [self.qmui_indexPathHeightCache buildSectionsIfNeeded:section];
+            [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
                 [heightsBySection[section] removeAllObjects];
             }];
         }];
@@ -238,10 +238,10 @@
 }
 
 - (void)qmui_moveSection:(NSInteger)section toSection:(NSInteger)newSection {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.indexPathHeightCache buildSectionsIfNeeded:section];
-        [self.indexPathHeightCache buildSectionsIfNeeded:newSection];
-        [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
+        [self.qmui_indexPathHeightCache buildSectionsIfNeeded:section];
+        [self.qmui_indexPathHeightCache buildSectionsIfNeeded:newSection];
+        [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
             [heightsBySection exchangeObjectAtIndex:section withObjectAtIndex:newSection];
         }];
     }
@@ -249,10 +249,10 @@
 }
 
 - (void)qmui_insertRowsAtIndexPaths:(NSArray *)indexPaths withRowAnimation:(UITableViewRowAnimation)animation {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.indexPathHeightCache buildCachesAtIndexPathsIfNeeded:indexPaths];
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
+        [self.qmui_indexPathHeightCache buildCachesAtIndexPathsIfNeeded:indexPaths];
         [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
-            [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+            [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
                 NSMutableArray *rows = heightsBySection[indexPath.section];
                 [rows insertObject:@-1 atIndex:indexPath.row];
             }];
@@ -262,8 +262,8 @@
 }
 
 - (void)qmui_deleteRowsAtIndexPaths:(NSArray *)indexPaths withRowAnimation:(UITableViewRowAnimation)animation {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.indexPathHeightCache buildCachesAtIndexPathsIfNeeded:indexPaths];
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
+        [self.qmui_indexPathHeightCache buildCachesAtIndexPathsIfNeeded:indexPaths];
         NSMutableDictionary *mutableIndexSetsToRemove = [NSMutableDictionary dictionary];
         [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
             NSMutableIndexSet *mutableIndexSet = mutableIndexSetsToRemove[@(indexPath.section)];
@@ -274,7 +274,7 @@
             [mutableIndexSet addIndex:indexPath.row];
         }];
         [mutableIndexSetsToRemove enumerateKeysAndObjectsUsingBlock:^(NSNumber *key, NSIndexSet *indexSet, BOOL *stop) {
-            [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+            [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
                 NSMutableArray *rows = heightsBySection[key.integerValue];
                 [rows removeObjectsAtIndexes:indexSet];
             }];
@@ -284,10 +284,10 @@
 }
 
 - (void)qmui_reloadRowsAtIndexPaths:(NSArray *)indexPaths withRowAnimation:(UITableViewRowAnimation)animation {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.indexPathHeightCache buildCachesAtIndexPathsIfNeeded:indexPaths];
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
+        [self.qmui_indexPathHeightCache buildCachesAtIndexPathsIfNeeded:indexPaths];
         [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
-            [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+            [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
                 NSMutableArray *rows = heightsBySection[indexPath.section];
                 rows[indexPath.row] = @-1;
             }];
@@ -297,9 +297,9 @@
 }
 
 - (void)qmui_moveRowAtIndexPath:(NSIndexPath *)sourceIndexPath toIndexPath:(NSIndexPath *)destinationIndexPath {
-    if (self.indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.indexPathHeightCache buildCachesAtIndexPathsIfNeeded:@[sourceIndexPath, destinationIndexPath]];
-        [self.indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+    if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
+        [self.qmui_indexPathHeightCache buildCachesAtIndexPathsIfNeeded:@[sourceIndexPath, destinationIndexPath]];
+        [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
             if (heightsBySection.count > 0 && heightsBySection.count > sourceIndexPath.section && heightsBySection.count > destinationIndexPath.section) {
                 NSMutableArray *sourceRows = heightsBySection[sourceIndexPath.section];
                 NSMutableArray *destinationRows = heightsBySection[destinationIndexPath.section];
@@ -343,7 +343,7 @@
     return templateCell;
 }
 
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier configuration:(void (^)(id cell))configuration {
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier configuration:(void (^)(id cell))configuration {
     if (!identifier || CGRectIsEmpty(self.bounds)) {
         return 0;
     }
@@ -365,28 +365,28 @@
 }
 
 // 通过indexPath缓存高度
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(id cell))configuration {
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(id cell))configuration {
     if (!identifier || !indexPath || CGRectIsEmpty(self.bounds)) {
         return 0;
     }
-    if ([self.indexPathHeightCache existsHeightAtIndexPath:indexPath]) {
-        return [self.indexPathHeightCache heightForIndexPath:indexPath];
+    if ([self.qmui_indexPathHeightCache existsHeightAtIndexPath:indexPath]) {
+        return [self.qmui_indexPathHeightCache heightForIndexPath:indexPath];
     }
-    CGFloat height = [self heightForCellWithIdentifier:identifier configuration:configuration];
-    [self.indexPathHeightCache cacheHeight:height byIndexPath:indexPath];
+    CGFloat height = [self qmui_heightForCellWithIdentifier:identifier configuration:configuration];
+    [self.qmui_indexPathHeightCache cacheHeight:height byIndexPath:indexPath];
     return height;
 }
 
 // 通过key缓存高度
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier cacheByKey:(id<NSCopying>)key configuration:(void (^)(id cell))configuration {
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByKey:(id<NSCopying>)key configuration:(void (^)(id cell))configuration {
     if (!identifier || !key || CGRectIsEmpty(self.bounds)) {
         return 0;
     }
-    if ([self.keyedHeightCache existsHeightForKey:key]) {
-        return [self.keyedHeightCache heightForKey:key];
+    if ([self.qmui_keyedHeightCache existsHeightForKey:key]) {
+        return [self.qmui_keyedHeightCache heightForKey:key];
     }
-    CGFloat height = [self heightForCellWithIdentifier:identifier configuration:configuration];
-    [self.keyedHeightCache cacheHeight:height byKey:key];
+    CGFloat height = [self qmui_heightForCellWithIdentifier:identifier configuration:configuration];
+    [self.qmui_keyedHeightCache cacheHeight:height byKey:key];
     return height;
 }
 

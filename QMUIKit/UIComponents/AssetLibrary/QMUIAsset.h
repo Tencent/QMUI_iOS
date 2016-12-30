@@ -110,4 +110,9 @@ typedef enum {
 /// 更新下载资源的结果
 - (void)updateDownloadStatusWithDownloadResult:(BOOL)succeed;
 
+/**
+ * 获取 Asset 的体积（数据大小）
+ */
+- (long long)assetSize;
+
 @end

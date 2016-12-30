@@ -60,7 +60,7 @@
 @property(nonatomic, assign) NSUInteger maximumTextLength;
 
 /**
- *  在使用 maximumTextLength 功能的时候，是否应该把文字长度按照 [NSString (QMUI) lengthWhenCountingNonASCIICharacterAsTwo] 的方法来计算。
+ *  在使用 maximumTextLength 功能的时候，是否应该把文字长度按照 [NSString (QMUI) qmui_lengthWhenCountingNonASCIICharacterAsTwo] 的方法来计算。
  *  默认为 NO。
  */
 @property(nonatomic, assign) BOOL shouldCountingNonASCIICharacterAsTwo;
@@ -93,11 +93,11 @@
 /**
  *  设置 text 会让 selectedTextRange 跳到最后一个字符，导致在中间修改文字后光标会跳到末尾，所以设置前要保存一下，设置后恢复过来
  */
-- (void)setTextKeepingSelectedRange:(NSString *)text;
+- (void)qmui_setTextKeepingSelectedRange:(NSString *)text;
 
 /**
  *  设置 attributedText 会让 selectedTextRange 跳到最后一个字符，导致在中间修改文字后光标会跳到末尾，所以设置前要保存一下，设置后恢复过来
  */
-- (void)setAttributedTextKeepingSelectedRange:(NSAttributedString *)attributedText;
+- (void)qmui_setAttributedTextKeepingSelectedRange:(NSAttributedString *)attributedText;
 
 @end

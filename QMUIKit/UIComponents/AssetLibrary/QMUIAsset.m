@@ -28,6 +28,7 @@
     ALAsset *_alAsset;
     ALAssetRepresentation *_alAssetRepresentation;
     NSDictionary *_phAssetInfo;
+    float imageSize;
     
     UIImage *_thumbnailImage;
     UIImage *_originImage;
@@ -275,7 +276,7 @@
         identity = [[_alAssetRepresentation url] absoluteString];
     }
     // 系统输出的 identity 可能包含特殊字符，为了避免引起问题，统一使用 md5 转换
-    _assetIdentityHash = [identity md5];
+    _assetIdentityHash = [identity qmui_md5];
     return _assetIdentityHash;
 }
 
@@ -295,6 +296,7 @@
                 [tempInfo setObject:dataUTI forKey:@"dataUTI"];
             }
             [tempInfo setObject:@(orientation) forKey:@"orientation"];
+            [tempInfo setObject:@(imageData.length) forKey:@"imageSize"];
             _phAssetInfo = tempInfo;
         }
     }];
@@ -307,6 +309,21 @@
 
 - (void)updateDownloadStatusWithDownloadResult:(BOOL)succeed {
     _downloadStatus = succeed ? QMUIAssetDownloadStatusSucceed : QMUIAssetDownloadStatusFailed;
+}
+
+- (long long)assetSize {
+    long long size;
+    if (_usePhotoKit) {
+        if (!_phAssetInfo) {
+            // PHAsset 的 UIImageOrientation 需要调用过 requestImageDataForAsset 才能获取
+            [self requestPhAssetInfo];
+        }
+        // 从 PhAssetInfo 中获取 UIImageOrientation 对应的字段
+        size = [_phAssetInfo[@"imageSize"] longLongValue];
+    } else {
+        size = [_alAsset defaultRepresentation].size;
+    }
+    return size;
 }
 
 @end

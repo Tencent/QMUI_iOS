@@ -327,7 +327,7 @@
     if (self.highlightedBackgroundColor) {
         if (!self.highlightedBackgroundLayer) {
             self.highlightedBackgroundLayer = [CALayer layer];
-            [self.highlightedBackgroundLayer removeDefaultAnimations];
+            [self.highlightedBackgroundLayer qmui_removeDefaultAnimations];
             [self.layer insertSublayer:self.highlightedBackgroundLayer atIndex:0];
         }
         self.highlightedBackgroundLayer.frame = self.bounds;
@@ -500,17 +500,17 @@
             break;
         case QMUINavigationButtonTypeBack: {
             UIImage *backIndicatorImage = NavBarBackIndicatorImage;
-            [self setImage:[backIndicatorImage imageWithTintColor:NavBarTintColor] forState:UIControlStateNormal];
-            [self setImage:[backIndicatorImage imageWithTintColor:NavBarTintColorHighlighted] forState:UIControlStateHighlighted];
-            [self setImage:[backIndicatorImage imageWithTintColor:NavBarTintColorDisabled] forState:UIControlStateDisabled];
+            [self setImage:[backIndicatorImage qmui_imageWithTintColor:NavBarTintColor] forState:UIControlStateNormal];
+            [self setImage:[backIndicatorImage qmui_imageWithTintColor:NavBarTintColorHighlighted] forState:UIControlStateHighlighted];
+            [self setImage:[backIndicatorImage qmui_imageWithTintColor:NavBarTintColorDisabled] forState:UIControlStateDisabled];
             self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
         }
             break;
         case QMUINavigationButtonTypeClose: {
             UIImage *closeImage = NavBarCloseButtonImage;
-            [self setImage:[closeImage imageWithTintColor:NavBarTintColor] forState:UIControlStateNormal];
-            [self setImage:[closeImage imageWithTintColor:NavBarTintColorHighlighted] forState:UIControlStateHighlighted];
-            [self setImage:[closeImage imageWithTintColor:NavBarTintColorDisabled] forState:UIControlStateDisabled];
+            [self setImage:[closeImage qmui_imageWithTintColor:NavBarTintColor] forState:UIControlStateNormal];
+            [self setImage:[closeImage qmui_imageWithTintColor:NavBarTintColorHighlighted] forState:UIControlStateHighlighted];
+            [self setImage:[closeImage qmui_imageWithTintColor:NavBarTintColorDisabled] forState:UIControlStateDisabled];
         }
             break;
             
@@ -565,7 +565,7 @@
         CGSize customBackIndicatorImageSize = customBackIndicatorImage.size;
         if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
             CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
-            customBackIndicatorImage = [customBackIndicatorImage imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
+            customBackIndicatorImage = [customBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
                                                                                                                   0,
                                                                                                                   imageExtensionVerticalFloat,
                                                                                                                   systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)];
@@ -587,7 +587,7 @@
         
         if ([target isKindOfClass:[UIViewController class]]) {
             UIViewController *viewController = (UIViewController *)target;
-            UIViewController *previousViewController = viewController.previousViewController;
+            UIViewController *previousViewController = viewController.qmui_previousViewController;
             if (previousViewController.navigationItem.backBarButtonItem) {
                 // 如果前一个界面有
                 backTitle = previousViewController.navigationItem.backBarButtonItem.title;
@@ -638,7 +638,7 @@
 + (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image tintColor:(UIColor *)tintColor position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector {
     UIBarButtonItem *barButtonItem;
     if (tintColor) {
-        barButtonItem = [[UIBarButtonItem alloc] initWithImage:[image imageWithTintColor:tintColor] style:UIBarButtonItemStylePlain target:target action:selector];
+        barButtonItem = [[UIBarButtonItem alloc] initWithImage:[image qmui_imageWithTintColor:tintColor] style:UIBarButtonItemStylePlain target:target action:selector];
     } else {
         barButtonItem = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:selector];
     }
@@ -661,9 +661,9 @@
             UIColor *finalTintColor = tintColor ? tintColor : NavBarTintColor;
             UIImage *image = [button imageForState:UIControlStateNormal];
             
-            [button setImage:[image imageWithTintColor:finalTintColor] forState:UIControlStateNormal];
-            [button setImage:[image imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarHighlightedAlpha]] forState:UIControlStateHighlighted];
-            [button setImage:[image imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarDisabledAlpha]] forState:UIControlStateDisabled];
+            [button setImage:[image qmui_imageWithTintColor:finalTintColor] forState:UIControlStateNormal];
+            [button setImage:[image qmui_imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarHighlightedAlpha]] forState:UIControlStateHighlighted];
+            [button setImage:[image qmui_imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarDisabledAlpha]] forState:UIControlStateDisabled];
             
             UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:selector];
             return barButtonItem;
@@ -680,9 +680,9 @@
             UIColor *finalTintColor = tintColor ? tintColor : NavBarTintColor;
             UIImage *image = [button imageForState:UIControlStateNormal];
             
-            [button setImage:[image imageWithTintColor:finalTintColor] forState:UIControlStateNormal];
-            [button setImage:[image imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarHighlightedAlpha]] forState:UIControlStateHighlighted];
-            [button setImage:[image imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarDisabledAlpha]] forState:UIControlStateDisabled];
+            [button setImage:[image qmui_imageWithTintColor:finalTintColor] forState:UIControlStateNormal];
+            [button setImage:[image qmui_imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarHighlightedAlpha]] forState:UIControlStateHighlighted];
+            [button setImage:[image qmui_imageWithTintColor:[finalTintColor colorWithAlphaComponent:NavBarDisabledAlpha]] forState:UIControlStateDisabled];
             [button setTitleColor:finalTintColor forState:UIControlStateNormal];
             [button setTitleColor:[finalTintColor colorWithAlphaComponent:NavBarHighlightedAlpha] forState:UIControlStateHighlighted];
             [button setTitleColor:[finalTintColor colorWithAlphaComponent:NavBarDisabledAlpha] forState:UIControlStateDisabled];
@@ -739,8 +739,8 @@
 - (instancetype)initWithImage:(UIImage *)image {
     if (self = [self initWithType:QMUIToolbarButtonTypeImage]) {
         [self setImage:image forState:UIControlStateNormal];
-        [self setImage:[image imageWithAlpha:ToolBarHighlightedAlpha] forState:UIControlStateHighlighted];
-        [self setImage:[image imageWithAlpha:ToolBarDisabledAlpha] forState:UIControlStateDisabled];
+        [self setImage:[image qmui_imageWithAlpha:ToolBarHighlightedAlpha] forState:UIControlStateHighlighted];
+        [self setImage:[image qmui_imageWithAlpha:ToolBarDisabledAlpha] forState:UIControlStateDisabled];
         [self sizeToFit];
     }
     return self;
@@ -809,7 +809,7 @@
         [self setTitleColor:ButtonTintColor forState:UIControlStateNormal];
         
         self.underlineLayer = [CALayer layer];
-        [self.underlineLayer removeDefaultAnimations];
+        [self.underlineLayer qmui_removeDefaultAnimations];
         [self.layer addSublayer:self.underlineLayer];
         
         self.underlineHidden = NO;

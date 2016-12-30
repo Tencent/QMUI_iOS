@@ -22,22 +22,22 @@
 }
 
 static char isPushingViewControllerKey;
-- (void)setIsPushingViewController:(BOOL)isPushingViewController {
-    objc_setAssociatedObject(self, &isPushingViewControllerKey, [NSNumber numberWithBool:isPushingViewController], OBJC_ASSOCIATION_ASSIGN);
+- (void)setQmui_isPushingViewController:(BOOL)qmui_isPushingViewController {
+    objc_setAssociatedObject(self, &isPushingViewControllerKey, [NSNumber numberWithBool:qmui_isPushingViewController], OBJC_ASSOCIATION_ASSIGN);
 }
-- (BOOL)isPushingViewController {
+- (BOOL)qmui_isPushingViewController {
     return (BOOL)[objc_getAssociatedObject(self, &isPushingViewControllerKey) boolValue];
 }
 
 static char isPopingViewControllerKey;
-- (void)setIsPoppingViewController:(BOOL)isPoppingViewController {
-    objc_setAssociatedObject(self, &isPopingViewControllerKey, [NSNumber numberWithBool:isPoppingViewController], OBJC_ASSOCIATION_ASSIGN);
+- (void)setQmui_isPoppingViewController:(BOOL)qmui_isPoppingViewController {
+    objc_setAssociatedObject(self, &isPopingViewControllerKey, [NSNumber numberWithBool:qmui_isPoppingViewController], OBJC_ASSOCIATION_ASSIGN);
 }
-- (BOOL)isPoppingViewController {
+- (BOOL)qmui_isPoppingViewController {
     return (BOOL)[objc_getAssociatedObject(self, &isPopingViewControllerKey) boolValue];;
 }
 
-- (nullable UIViewController *)rootViewController {
+- (nullable UIViewController *)qmui_rootViewController {
     return self.viewControllers.firstObject;
 }
 

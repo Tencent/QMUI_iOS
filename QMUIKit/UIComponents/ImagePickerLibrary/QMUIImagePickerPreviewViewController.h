@@ -64,8 +64,8 @@
  *  @param currentImageIndex       当前展示的图片在 imageAssetArray 的索引
  *  @param singleCheckMode         是否为单选模式，如果是单选模式，则不显示 checkbox
  */
-- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSArray *)imageAssetArray
-                                 selectedImageAssetArray:(NSArray *)selectedImageAssetArray
+- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSArray<QMUIAsset *> *)imageAssetArray
+                                 selectedImageAssetArray:(NSArray<QMUIAsset *> *)selectedImageAssetArray
                                        currentImageIndex:(NSInteger)currentImageIndex
                                          singleCheckMode:(BOOL)singleCheckMode;
 

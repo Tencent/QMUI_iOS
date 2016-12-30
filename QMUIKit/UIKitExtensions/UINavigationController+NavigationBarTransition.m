@@ -95,7 +95,7 @@
         BOOL shouldCustomPopNavigationBarTransition = NO;
         
         if (!self.transitionNavigationBar) {
-            if (self.navigationController.isPushingViewController) {
+            if (self.navigationController.qmui_isPushingViewController) {
                 if ([toViewController canCustomNavigationBarTransitionWhenPushAppearing]) {
                     shouldCustomPushNavigationBarTransition = YES;
                 }
@@ -107,7 +107,7 @@
                     toViewController.navigationController.navigationBar.transitionNavigationBar = toViewController.transitionNavigationBar;
                     self.prefersNavigationBarBackgroundViewHidden = YES;
                 }
-            } else if (self.navigationController.isPoppingViewController) {
+            } else if (self.navigationController.qmui_isPoppingViewController) {
                 if ([toViewController canCustomNavigationBarTransitionWhenPopAppearing]) {
                     shouldCustomPopNavigationBarTransition = YES;
                 }
@@ -150,7 +150,7 @@
     if (CGSizeEqualToSize(backgroundImage.size, CGSizeZero)) {
         // 保护一下那种没有图片的 UIImage 例如：[UIImage new]，如果没有保护则会出现系统默认的navBar样式，很奇怪。
         // navController 设置自己的 navBar 为 [UIImage new] 却没事
-        backgroundImage = [UIImage imageWithColor:UIColorClear];
+        backgroundImage = [UIImage qmui_imageWithColor:UIColorClear];
     }
     [customBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
     [customBar setShadowImage:originBar.shadowImage];
@@ -182,7 +182,7 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPushAppearing {
     BOOL respondPushAppearing = NO;
-    if ([self respondQMUINavigationControllerDelegate]) {
+    if ([self qmui_respondQMUINavigationControllerDelegate]) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPushAppearing)]) {
             respondPushAppearing = YES;
@@ -193,7 +193,7 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPushDisappearing {
     BOOL respondPushDisappearing = NO;
-    if ([self respondQMUINavigationControllerDelegate]) {
+    if ([self qmui_respondQMUINavigationControllerDelegate]) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPushDisappearing)]) {
             respondPushDisappearing = YES;
@@ -204,7 +204,7 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPopAppearing {
     BOOL respondPopAppearing = NO;
-    if ([self respondQMUINavigationControllerDelegate]) {
+    if ([self qmui_respondQMUINavigationControllerDelegate]) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPopAppearing)]) {
             respondPopAppearing = YES;
@@ -215,7 +215,7 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPopDisappearing {
     BOOL respondPopDisappearing = NO;
-    if ([self respondQMUINavigationControllerDelegate]) {
+    if ([self qmui_respondQMUINavigationControllerDelegate]) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPopDisappearing)]) {
             respondPopDisappearing = YES;

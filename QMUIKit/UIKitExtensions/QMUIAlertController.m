@@ -81,7 +81,7 @@ static NSUInteger alertControllerCount = 0;
     self = [super init];
     if (self) {
         self.buttonWrapView = [[QMUIAlertButtonWrapView alloc] init];
-        self.button.needsTakeOverTouchEvent = YES;
+        self.button.qmui_needsTakeOverTouchEvent = YES;
         [self.button addTarget:self action:@selector(handleAlertActionEvent:) forControlEvents:UIControlEventTouchUpInside];
     }
     return self;
@@ -136,8 +136,8 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.alertContentMargin = UIEdgeInsetsMake(0, 0, 0, 0);
         alertControllerAppearance.alertContentMaximumWidth = 270;
         alertControllerAppearance.alertSeperatorColor = UIColorMake(211, 211, 219);
-        alertControllerAppearance.alertTitleAttributeds = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
-        alertControllerAppearance.alertMessageAttributeds = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
+        alertControllerAppearance.alertTitleAttributeds = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
+        alertControllerAppearance.alertMessageAttributeds = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
         alertControllerAppearance.alertContentCornerRadius = (IOS_VERSION >= 9.0 ? 13 : 6);
         alertControllerAppearance.alertButtonAttributeds = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
         alertControllerAppearance.alertButtonDisabledAttributeds = @{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
@@ -154,8 +154,8 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.sheetContentMargin = UIEdgeInsetsMake(10, 10, 10, 10);
         alertControllerAppearance.sheetContentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(alertControllerAppearance.sheetContentMargin);
         alertControllerAppearance.sheetSeperatorColor = UIColorMake(211, 211, 219);
-        alertControllerAppearance.sheetTitleAttributeds = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontBoldMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
-        alertControllerAppearance.sheetMessageAttributeds = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
+        alertControllerAppearance.sheetTitleAttributeds = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontBoldMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
+        alertControllerAppearance.sheetMessageAttributeds = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
         alertControllerAppearance.sheetButtonAttributeds = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetButtonDisabledAttributeds = @{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetCancelButtonAttributeds = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(20),NSKernAttributeName:@(0)};
@@ -475,8 +475,8 @@ static QMUIAlertController *alertControllerAppearance;
         
         CGFloat contentPaddingTop = (hasTitle || hasMessage || hasTextField || hasCustomView) ? self.alertHeaderInsets.top : 0;
         CGFloat contentPaddingBottom = (hasTitle || hasMessage || hasTextField || hasCustomView) ? self.alertHeaderInsets.bottom : 0;
-        [self.containerView setWidth:fmin(self.alertContentMaximumWidth, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.alertContentMargin))];
-        [self.scrollWrapView setWidth:CGRectGetWidth(self.containerView.bounds)];
+        [self.containerView qmui_setWidth:fmin(self.alertContentMaximumWidth, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.alertContentMargin))];
+        [self.scrollWrapView qmui_setWidth:CGRectGetWidth(self.containerView.bounds)];
         self.headerScrollView.frame = CGRectMake(0, 0, CGRectGetWidth(self.scrollWrapView.bounds), 0);
         contentOriginY = contentPaddingTop;
         // 标题和副标题布局
@@ -571,8 +571,8 @@ static QMUIAlertController *alertControllerAppearance;
         
         CGFloat contentPaddingTop = (hasTitle || hasMessage || hasTextField) ? self.sheetHeaderInsets.top : 0;
         CGFloat contentPaddingBottom = (hasTitle || hasMessage || hasTextField) ? self.sheetHeaderInsets.bottom : 0;
-        [self.containerView setWidth:fmin(self.sheetContentMaximumWidth, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.sheetContentMargin))];
-        [self.scrollWrapView setWidth:CGRectGetWidth(self.containerView.bounds)];
+        [self.containerView qmui_setWidth:fmin(self.sheetContentMaximumWidth, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.sheetContentMargin))];
+        [self.scrollWrapView qmui_setWidth:CGRectGetWidth(self.containerView.bounds)];
         self.headerScrollView.frame = CGRectMake(0, 0, CGRectGetWidth(self.containerView.bounds), 0);
         contentOriginY = contentPaddingTop;
         // 标题和副标题布局
@@ -989,7 +989,7 @@ static QMUIAlertController *alertControllerAppearance;
         if ([alertAction.button imageForState:UIControlStateNormal]) {
             NSRange range = NSMakeRange(0, attributeString.length);
             UIColor *disabledColor = [attributeString attribute:NSForegroundColorAttributeName atIndex:0 effectiveRange:&range];
-            [alertAction.button setImage:[[alertAction.button imageForState:UIControlStateNormal] imageWithTintColor:disabledColor] forState:UIControlStateDisabled];
+            [alertAction.button setImage:[[alertAction.button imageForState:UIControlStateNormal] qmui_imageWithTintColor:disabledColor] forState:UIControlStateDisabled];
         }
     }
 }

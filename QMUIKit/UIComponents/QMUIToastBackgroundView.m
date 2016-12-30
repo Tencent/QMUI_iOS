@@ -90,7 +90,6 @@
 
 + (void)setDefaultAppearance {
     QMUIToastBackgroundView *appearance = [QMUIToastBackgroundView appearance];
-    appearance.shouldBlurBackgroundView = NO;
     appearance.styleColor = UIColorMakeWithRGBA(0, 0, 0, 0.8);
     appearance.cornerRadius = 10.0;
 }

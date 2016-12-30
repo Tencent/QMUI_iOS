@@ -58,7 +58,7 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins
     [self.contentView addSubview:_contentImageView];
     
     self.checkboxButton = [[UIButton alloc] init];
-    self.checkboxButton.outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
+    self.checkboxButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     self.checkboxButton.hidden = YES;
     [self.contentView addSubview:self.checkboxButton];
     
@@ -67,7 +67,7 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins
     [self.contentView addSubview:self.progressView];
     
     _downloadRetryButton = [[UIButton alloc] init];
-    self.downloadRetryButton.outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
+    self.downloadRetryButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     self.downloadRetryButton.hidden = YES;
     [self.contentView addSubview:self.downloadRetryButton];
 }

@@ -19,7 +19,7 @@ result[12], result[13], result[14], result[15]]                         \
 
 @implementation NSString (QMUI)
 
-- (BOOL)includesString:(NSString *)string {
+- (BOOL)qmui_includesString:(NSString *)string {
     if (!string || string.length <= 0) {
         return NO;
     }
@@ -31,19 +31,19 @@ result[12], result[13], result[14], result[15]]                         \
     return [self rangeOfString:string].location != NSNotFound;
 }
 
-- (NSString *)trim {
+- (NSString *)qmui_trim {
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 }
 
-- (NSString *)trimAllWhiteSpace {
+- (NSString *)qmui_trimAllWhiteSpace {
     return [self stringByReplacingOccurrencesOfString:@"\\s" withString:@"" options:NSRegularExpressionSearch range:NSMakeRange(0, self.length)];
 }
 
-- (NSString *)trimLineBreakCharacter {
+- (NSString *)qmui_trimLineBreakCharacter {
     return [self stringByReplacingOccurrencesOfString:@"[\r\n]" withString:@" " options:NSRegularExpressionSearch range:NSMakeRange(0, self.length)];
 }
 
-- (NSString *)md5 {
+- (NSString *)qmui_md5 {
     const char *cStr = [self UTF8String];
     unsigned char result[CC_MD5_DIGEST_LENGTH];
     CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
@@ -80,7 +80,7 @@ result[12], result[13], result[14], result[15]]                         \
     return letter;
 }
 
-- (NSString *)removeMagicalChar {
+- (NSString *)qmui_removeMagicalChar {
     if (self.length == 0) {
         return self;
     }
@@ -91,7 +91,7 @@ result[12], result[13], result[14], result[15]]                         \
     return modifiedString;
 }
 
-- (NSUInteger)lengthWhenCountingNonASCIICharacterAsTwo {
+- (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
     NSUInteger characterLength = 0;
     char *p = (char *)[self cStringUsingEncoding:NSUnicodeStringEncoding];
     for (NSInteger i = 0, l = [self lengthOfBytesUsingEncoding:NSUnicodeStringEncoding]; i < l; i++) {
@@ -143,35 +143,35 @@ result[12], result[13], result[14], result[15]]                         \
     return resultRange;
 }
 
-- (NSString *)substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+- (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;
     NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index];
     return [self substringFromIndex:lessValue ? NSMaxRange(range) : range.location];
 }
 
-- (NSString *)substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index {
-    return [self substringAvoidBreakingUpCharacterSequencesFromIndex:index lessValue:YES countingNonASCIICharacterAsTwo:NO];
+- (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index {
+    return [self qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:index lessValue:YES countingNonASCIICharacterAsTwo:NO];
 }
 
-- (NSString *)substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+- (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;
     NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index];
     return [self substringToIndex:lessValue ? range.location : NSMaxRange(range)];
 }
 
-- (NSString *)substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index {
-    return [self substringAvoidBreakingUpCharacterSequencesToIndex:index lessValue:YES countingNonASCIICharacterAsTwo:NO];
+- (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index {
+    return [self qmui_substringAvoidBreakingUpCharacterSequencesToIndex:index lessValue:YES countingNonASCIICharacterAsTwo:NO];
 }
 
-- (NSString *)substringAvoidBreakingUpCharacterSequencesWithRange:(NSRange)range lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+- (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesWithRange:(NSRange)range lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
     range = countingNonASCIICharacterAsTwo ? [self transformRangeToDefaultModeWithRange:range] : range;
     NSRange characterSequencesRange = lessValue ? [self downRoundRangeOfComposedCharacterSequencesForRange:range] : [self rangeOfComposedCharacterSequencesForRange:range];
     NSString *resultString = [self substringWithRange:characterSequencesRange];
     return resultString;
 }
 
-- (NSString *)substringAvoidBreakingUpCharacterSequencesWithRange:(NSRange)range {
-    return [self substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:YES countingNonASCIICharacterAsTwo:NO];
+- (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesWithRange:(NSRange)range {
+    return [self qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:YES countingNonASCIICharacterAsTwo:NO];
 }
 
 - (NSRange)downRoundRangeOfComposedCharacterSequencesForRange:(NSRange)range {
@@ -186,17 +186,17 @@ result[12], result[13], result[14], result[15]]                         \
     return resultRange;
 }
 
-- (NSString *)stringByRemoveCharacterAtIndex:(NSUInteger)index {
+- (NSString *)qmui_stringByRemoveCharacterAtIndex:(NSUInteger)index {
     NSRange rangeForRemove = [self rangeOfComposedCharacterSequenceAtIndex:index];
     NSString *resultString = [self stringByReplacingCharactersInRange:rangeForRemove withString:@""];
     return resultString;
 }
 
-- (NSString *)stringByRemoveLastCharacter {
-    return [self stringByRemoveCharacterAtIndex:self.length - 1];
+- (NSString *)qmui_stringByRemoveLastCharacter {
+    return [self qmui_stringByRemoveCharacterAtIndex:self.length - 1];
 }
 
-+ (NSString *)hexStringWithInteger:(NSInteger)integer {
++ (NSString *)qmui_hexStringWithInteger:(NSInteger)integer {
     NSString *hexString = @"";
     NSInteger remainder = 0;
     for (NSInteger i = 0; i < 9; i++) {
@@ -216,15 +216,15 @@ result[12], result[13], result[14], result[15]]                         \
 
 @implementation NSString (QMUI_StringFormat)
 
-+ (instancetype)stringWithNSInteger:(NSInteger)integerValue {
++ (instancetype)qmui_stringWithNSInteger:(NSInteger)integerValue {
     return [NSString stringWithFormat:@"%@", @(integerValue)];
 }
 
-+ (instancetype)stringWithCGFloat:(CGFloat)floatValue {
-    return [NSString stringWithCGFloat:floatValue decimal:2];
++ (instancetype)qmui_stringWithCGFloat:(CGFloat)floatValue {
+    return [NSString qmui_stringWithCGFloat:floatValue decimal:2];
 }
 
-+ (instancetype)stringWithCGFloat:(CGFloat)floatValue decimal:(NSUInteger)decimal {
++ (instancetype)qmui_stringWithCGFloat:(CGFloat)floatValue decimal:(NSUInteger)decimal {
     NSString *formatString = [NSString stringWithFormat:@"%%.%@f", @(decimal)];
     return [NSString stringWithFormat:formatString, floatValue];
 }
