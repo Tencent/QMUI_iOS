@@ -16,5 +16,5 @@
  *
  *  建议在设置完x/y之后调用
  */
-- (void)sizeToFitKeepingImageAspectRatioInSize:(CGSize)limitSize;
+- (void)qmui_sizeToFitKeepingImageAspectRatioInSize:(CGSize)limitSize;
 @end

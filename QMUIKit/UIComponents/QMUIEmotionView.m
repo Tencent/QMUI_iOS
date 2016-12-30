@@ -105,7 +105,7 @@
         
         self.deleteButton = [[QMUIButton alloc] init];
         self.deleteButton.adjustsButtonWhenHighlighted = NO;// 去掉QMUIButton默认的高亮动画，从而加快连续快速点击的响应速度
-        self.deleteButton.needsTakeOverTouchEvent = YES;
+        self.deleteButton.qmui_needsTakeOverTouchEvent = YES;
         [self.deleteButton addTarget:self action:@selector(handleDeleteButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:self.deleteButton];
         
@@ -284,7 +284,7 @@
     }
     
     [self.collectionView reloadData];
-    [self.collectionView scrollToTop];
+    [self.collectionView qmui_scrollToTop];
 }
 
 - (void)handlePageControlEvent:(UIPageControl *)pageControl {
@@ -324,7 +324,7 @@
     pageView.emotionSelectedBackgroundExtension = self.emotionSelectedBackgroundExtension;
     pageView.minimumEmotionHorizontalSpacing = self.minimumEmotionHorizontalSpacing;
     [pageView.deleteButton setImage:self.deleteButtonImage forState:UIControlStateNormal];
-    [pageView.deleteButton setImage:[self.deleteButtonImage imageWithAlpha:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
+    [pageView.deleteButton setImage:[self.deleteButtonImage qmui_imageWithAlpha:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
     pageView.debug = self.debug;
     [pageView setNeedsDisplay];
     return pageView;

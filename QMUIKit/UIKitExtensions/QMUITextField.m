@@ -95,7 +95,7 @@
 }
 
 - (NSUInteger)lengthWithString:(NSString *)string {
-    return self.shouldCountingNonASCIICharacterAsTwo ? string.lengthWhenCountingNonASCIICharacterAsTwo : string.length;
+    return self.shouldCountingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
 }
 
 #pragma mark - <QMUITextFieldDelegate>
@@ -114,12 +114,12 @@
             return YES;
         }
         
-        NSUInteger rangeLength = self.shouldCountingNonASCIICharacterAsTwo ? [textField.text substringWithRange:range].lengthWhenCountingNonASCIICharacterAsTwo : range.length;
+        NSUInteger rangeLength = self.shouldCountingNonASCIICharacterAsTwo ? [textField.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
         if ([self lengthWithString:textField.text] - rangeLength + [self lengthWithString:string] > textField.maximumTextLength) {
             // 将要插入的文字裁剪成这么长，就可以让它插入了
             NSInteger substringLength = textField.maximumTextLength - [self lengthWithString:textField.text] + rangeLength;
             if (substringLength > 0 && [self lengthWithString:string] > substringLength) {
-                NSString *allowedText = [string substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
+                NSString *allowedText = [string qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
                 if ([self lengthWithString:allowedText] <= substringLength) {
                     textField.text = [textField.text stringByReplacingCharactersInRange:range withString:allowedText];
                     
@@ -176,7 +176,7 @@
     
     if (!textField.markedTextRange) {
         if ([self lengthWithString:textField.text] > textField.maximumTextLength) {
-            textField.text = [textField.text substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textField.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
+            textField.text = [textField.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textField.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
             
             if ([self.originalDelegate respondsToSelector:@selector(textField:didPreventTextChangeInRange:replacementString:)]) {
                 [self.originalDelegate textField:textField didPreventTextChangeInRange:textField.selectedRange replacementString:nil];

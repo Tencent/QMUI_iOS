@@ -69,7 +69,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 @property(nonatomic,strong,readwrite) QMUIButton *sendButton;
 @property(nonatomic,strong,readwrite) UILabel *imageCountLabel;
 
-@property(nonatomic,strong,readwrite) NSMutableArray *imagesAssetArray;
+@property(nonatomic,strong,readwrite) NSMutableArray<QMUIAsset *> *imagesAssetArray;
 @property(nonatomic,strong,readwrite) QMUIAssetsGroup *assetsGroup;
 
 @end
@@ -213,7 +213,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     }
 }
 
-- (void)refreshWithImagesArray:(NSMutableArray *)imagesArray {
+- (void)refreshWithImagesArray:(NSMutableArray<QMUIAsset *> *)imagesArray {
     self.imagesAssetArray = imagesArray;
     [self.collectionView reloadData];
 }
@@ -297,7 +297,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         if (!info || [[info objectForKey:PHImageResultIsDegradedKey] boolValue]) {
             // 模糊，此时为同步调用
             cell.contentImageView.image = result;
-        } else if ([collectionView itemVisibleAtIndexPath:indexPath]) {
+        } else if ([collectionView qmui_itemVisibleAtIndexPath:indexPath]) {
             // 清晰，此时为异步调用
             QMUIImagePickerCollectionViewCell *anotherCell = (QMUIImagePickerCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
             anotherCell.contentImageView.image = result;
@@ -370,7 +370,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)handleCheckBoxButtonClick:(id)sender {
     UIButton *checkBoxButton = sender;
-    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtView:checkBoxButton];
+    NSIndexPath *indexPath = [self.collectionView qmui_indexPathForItemAtView:checkBoxButton];
     
     QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
@@ -398,7 +398,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)handleProgressViewClick:(id)sender {
     UIControl *progressView = sender;
-    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtView:progressView];
+    NSIndexPath *indexPath = [self.collectionView qmui_indexPathForItemAtView:progressView];
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
     if (imageAsset.downloadStatus == QMUIAssetDownloadStatusDownloading) {
         // 下载过程中点击，取消下载，理论上能点击 progressView 就肯定是下载中，这里只是做个保护
@@ -412,7 +412,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)handleDownloadRetryButtonClick:(id)sender {
     UIButton *downloadRetryButton = sender;
-    NSIndexPath *indexPath = [self.collectionView indexPathForItemAtView:downloadRetryButton];
+    NSIndexPath *indexPath = [self.collectionView qmui_indexPathForItemAtView:downloadRetryButton];
     [self requestImageWithIndexPath:indexPath];
 }
 
@@ -482,7 +482,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     } withProgressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
         imageAsset.downloadProgress = progress;
         
-        if ([self.collectionView itemVisibleAtIndexPath:indexPath]) {
+        if ([self.collectionView qmui_itemVisibleAtIndexPath:indexPath]) {
             /**
              *  withProgressHandler 不在主线程执行，若用户在该 block 中操作 UI 时会产生一些问题，
              *  为了避免这种情况，这里该 block 主动放到主线程执行。

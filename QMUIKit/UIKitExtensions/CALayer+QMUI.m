@@ -10,21 +10,21 @@
 
 @implementation CALayer (QMUI)
 
-- (void)sendSublayerToBack:(CALayer *)sublayer {
+- (void)qmui_sendSublayerToBack:(CALayer *)sublayer {
     if (sublayer.superlayer == self) {
         [sublayer removeFromSuperlayer];
         [self insertSublayer:sublayer atIndex:0];
     }
 }
 
-- (void)bringSublayerToFront:(CALayer *)sublayer {
+- (void)qmui_bringSublayerToFront:(CALayer *)sublayer {
     if (sublayer.superlayer == self) {
         [sublayer removeFromSuperlayer];
         [self insertSublayer:sublayer atIndex:(unsigned)self.sublayers.count];
     }
 }
 
-- (void)removeDefaultAnimations {
+- (void)qmui_removeDefaultAnimations {
     self.actions = @{@"sublayers": [NSNull null],
                      @"contents": [NSNull null],
                      @"bounds": [NSNull null],

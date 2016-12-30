@@ -11,12 +11,12 @@
 
 @implementation UITabBarItem (QMUI)
 
-- (UIControl *)barButton {
+- (UIControl *)qmui_barButton {
     return [self valueForKey:@"view"];
 }
 
-- (UIImageView *)imageView {
-    UIControl *barButton = [self barButton];
+- (UIImageView *)qmui_imageView {
+    UIControl *barButton = [self qmui_barButton];
     
     if (!barButton) {
         return nil;

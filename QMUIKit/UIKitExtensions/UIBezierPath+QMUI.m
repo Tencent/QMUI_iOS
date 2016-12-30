@@ -10,7 +10,7 @@
 
 @implementation UIBezierPath (QMUI)
 
-+ (UIBezierPath *)bezierPathWithRoundedRect:(CGRect)rect cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius lineWidth:(CGFloat)lineWidth {
++ (UIBezierPath *)qmui_bezierPathWithRoundedRect:(CGRect)rect cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius lineWidth:(CGFloat)lineWidth {
     CGFloat topLeftCornerRadius = cornerRadius[0].floatValue;
     CGFloat bottomLeftCornerRadius = cornerRadius[1].floatValue;
     CGFloat bottomRightCornerRadius = cornerRadius[2].floatValue;

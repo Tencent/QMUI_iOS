@@ -23,8 +23,8 @@
     return [NSString stringWithFormat:@"%@, contentInset = %@", [self qmui_description], NSStringFromUIEdgeInsets(self.contentInset)];
 }
 
-- (BOOL)alreadyAtTop {
-    if (!self.canScroll) {
+- (BOOL)qmui_alreadyAtTop {
+    if (!self.qmui_canScroll) {
         return YES;
     }
     
@@ -35,8 +35,8 @@
     return NO;
 }
 
-- (BOOL)alreadyAtBottom {
-    if (!self.canScroll) {
+- (BOOL)qmui_alreadyAtBottom {
+    if (!self.qmui_canScroll) {
         return YES;
     }
     
@@ -47,7 +47,7 @@
     return NO;
 }
 
-- (BOOL)canScroll {
+- (BOOL)qmui_canScroll {
     // 没有高度就不用算了，肯定不可滚动，这里只是做个保护
     if (CGSizeIsEmpty(self.bounds.size)) {
         return NO;
@@ -57,31 +57,31 @@
     return canVerticalScroll || canHorizontalScoll;
 }
 
-- (void)scrollToTopForce:(BOOL)force animated:(BOOL)animated {
-    if (force || (!force && [self canScroll])) {
+- (void)qmui_scrollToTopForce:(BOOL)force animated:(BOOL)animated {
+    if (force || (!force && [self qmui_canScroll])) {
         [self setContentOffset:CGPointMake(-self.contentInset.left, -self.contentInset.top) animated:animated];
     }
 }
 
-- (void)scrollToTopAnimated:(BOOL)animated {
-    [self scrollToTopForce:NO animated:animated];
+- (void)qmui_scrollToTopAnimated:(BOOL)animated {
+    [self qmui_scrollToTopForce:NO animated:animated];
 }
 
-- (void)scrollToTop {
-    [self scrollToTopAnimated:NO];
+- (void)qmui_scrollToTop {
+    [self qmui_scrollToTopAnimated:NO];
 }
 
-- (void)scrollToBottomAnimated:(BOOL)animated {
-    if ([self canScroll]) {
+- (void)qmui_scrollToBottomAnimated:(BOOL)animated {
+    if ([self qmui_canScroll]) {
         [self setContentOffset:CGPointMake(self.contentOffset.x, self.contentSize.height + self.contentInset.bottom - CGRectGetHeight(self.bounds)) animated:animated];
     }
 }
 
-- (void)scrollToBottom {
-    [self scrollToBottomAnimated:NO];
+- (void)qmui_scrollToBottom {
+    [self qmui_scrollToBottomAnimated:NO];
 }
 
-- (void)stopDeceleratingIfNeeded {
+- (void)qmui_stopDeceleratingIfNeeded {
     if (self.decelerating) {
         [self setContentOffset:self.contentOffset animated:NO];
     }

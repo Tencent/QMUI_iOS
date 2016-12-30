@@ -31,7 +31,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return [NSString stringWithFormat:@"%@, scale = %@", [self qmui_description], @(self.scale)];
 }
 
-- (UIColor *)averageColor {
+- (UIColor *)qmui_averageColor {
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
     unsigned char rgba[4];
     CGContextRef context = CGBitmapContextCreate(rgba, 1, 1, 8, 4, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
@@ -54,7 +54,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     }
 }
 
-- (UIImage *)grayImage {
+- (UIImage *)qmui_grayImage {
     // CGBitmapContextCreate 是无倍数的，所以要自己换算成1倍
     NSInteger width = self.size.width * self.scale;
     NSInteger height = self.size.height * self.scale;
@@ -67,13 +67,13 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     }
     CGContextDrawImage(context,CGRectMake(0, 0, width, height), self.CGImage);
     CGImageRef imageRef = CGBitmapContextCreateImage(context);
-    UIImage *grayImage = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
+    UIImage *qmui_grayImage = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
     CGImageRelease(imageRef);
     CGContextRelease(context);
-    return grayImage;
+    return qmui_grayImage;
 }
 
-- (UIImage *)imageWithAlpha:(CGFloat)alpha {
+- (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha {
     UIGraphicsBeginImageContextWithOptions(self.size, NO, self.scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
@@ -88,7 +88,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
-- (UIImage *)imageWithTintColor:(UIColor *)tintColor {
+- (UIImage *)qmui_imageWithTintColor:(UIColor *)tintColor {
     UIImage *imageIn = self;
     CGRect rect = CGRectMake(0, 0, imageIn.size.width, imageIn.size.height);
     UIGraphicsBeginImageContextWithOptions(imageIn.size, NO, imageIn.scale);
@@ -105,7 +105,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
-- (UIImage *)imageWithImageAbove:(UIImage *)image atPoint:(CGPoint)point {
+- (UIImage *)qmui_imageWithImageAbove:(UIImage *)image atPoint:(CGPoint)point {
     UIImage *imageIn = self;
     UIImage *imageOut = nil;
     UIGraphicsBeginImageContextWithOptions(imageIn.size, NO, imageIn.scale);
@@ -116,7 +116,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
-- (UIImage *)imageWithSpacingExtensionInsets:(UIEdgeInsets)extension {
+- (UIImage *)qmui_imageWithSpacingExtensionInsets:(UIEdgeInsets)extension {
     CGSize contextSize = CGSizeMake(self.size.width + UIEdgeInsetsGetHorizontalValue(extension), self.size.height + UIEdgeInsetsGetVerticalValue(extension));
     UIGraphicsBeginImageContextWithOptions(contextSize, NO, self.scale);
     [self drawAtPoint:CGPointMake(extension.left, extension.top)];
@@ -125,7 +125,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return finalImage;
 }
 
-- (UIImage *)imageWithClippedRect:(CGRect)rect {
+- (UIImage *)qmui_imageWithClippedRect:(CGRect)rect {
     CGContextInspectSize(rect.size);
     // 由于CGImage是以pixel为单位来计算的，而UIImage是以point为单位，所以这里需要将传进来的point转换为pixel
     CGRect scaledRect = CGRectApplyScale(rect, self.scale);
@@ -135,11 +135,11 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
-- (UIImage *)imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode {
-    return [self imageWithScaleToSize:size contentMode:contentMode scale:self.scale];
+- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode {
+    return [self qmui_imageWithScaleToSize:size contentMode:contentMode scale:self.scale];
 }
 
-- (UIImage *)imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
+- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
     size = CGSizeFlatSpecificScale(size, scale);
     CGContextInspectSize(size);
     UIGraphicsBeginImageContextWithOptions(size, NO, scale);
@@ -175,7 +175,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
-- (UIImage *)imageWithOrientation:(UIImageOrientation)orientation {
+- (UIImage *)qmui_imageWithOrientation:(UIImageOrientation)orientation {
     if (orientation == UIImageOrientationUp) {
         return self;
     }
@@ -233,7 +233,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor path:(UIBezierPath *)path {
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor path:(UIBezierPath *)path {
     if (!borderColor) {
         return self;
     }
@@ -252,11 +252,11 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return resultImage;
 }
 
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius {
-    return [self imageWithBorderColor:borderColor borderWidth:borderWidth cornerRadius:cornerRadius dashedLengths:0];
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius {
+    return [self qmui_imageWithBorderColor:borderColor borderWidth:borderWidth cornerRadius:cornerRadius dashedLengths:0];
 }
 
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius dashedLengths:(const CGFloat *)dashedLengths {
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius dashedLengths:(const CGFloat *)dashedLengths {
     if (!borderColor || !borderWidth) {
         return self;
     }
@@ -273,12 +273,12 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     if (dashedLengths) {
         [path setLineDash:dashedLengths count:2 phase:0];
     }
-    return [self imageWithBorderColor:borderColor path:path];
+    return [self qmui_imageWithBorderColor:borderColor path:path];
 }
 
-- (UIImage *)imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth borderPosition:(QMUIImageBorderPosition)borderPosition {
+- (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth borderPosition:(QMUIImageBorderPosition)borderPosition {
     if (borderPosition == QMUIImageBorderPositionAll) {
-        return [self imageWithBorderColor:borderColor borderWidth:borderWidth cornerRadius:0];
+        return [self qmui_imageWithBorderColor:borderColor borderWidth:borderWidth cornerRadius:0];
     } else {
         // TODO 使用bezierPathWithRoundedRect:byRoundingCorners:cornerRadii:这个系统接口
         UIBezierPath* path = [UIBezierPath bezierPath];
@@ -300,7 +300,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         }
         [path setLineWidth:borderWidth];
         [path closePath];
-        return [self imageWithBorderColor:borderColor path:path];
+        return [self qmui_imageWithBorderColor:borderColor path:path];
     }
     return self;
 }
@@ -309,7 +309,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     free((void *)data);
 }
 
-- (UIImage *)imageWithMaskImage:(UIImage *)maskImage usingMaskImageMode:(BOOL)usingMaskImageMode {
+- (UIImage *)qmui_imageWithMaskImage:(UIImage *)maskImage usingMaskImageMode:(BOOL)usingMaskImageMode {
     CGImageRef maskRef = [maskImage CGImage];
     CGImageRef mask;
     if (usingMaskImageMode) {
@@ -335,7 +335,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     return returnImage;
 }
 
-+ (UIImage *)imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size path:(UIBezierPath *)path addClip:(BOOL)addClip {
++ (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size path:(UIBezierPath *)path addClip:(BOOL)addClip {
     size = CGSizeFlatted(size);
     CGContextInspectSize(size);
     UIImage *resultImage = nil;
@@ -350,7 +350,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     return resultImage;
 }
 
-+ (UIImage *)imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth cornerRadius:(CGFloat)cornerRadius {
++ (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth cornerRadius:(CGFloat)cornerRadius {
     CGContextInspectSize(size);
     // 往里面缩一半的lineWidth，应为stroke绘制线的时候是往两边绘制的
     // 如果cornerRadius为0的时候使用bezierPathWithRoundedRect:cornerRadius:会有问题，左上角老是会多出一点，所以区分开
@@ -362,13 +362,13 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
         path = [UIBezierPath bezierPathWithRect:rect];
     }
     [path setLineWidth:lineWidth];
-    return [UIImage imageWithStrokeColor:strokeColor size:size path:path addClip:NO];
+    return [UIImage qmui_imageWithStrokeColor:strokeColor size:size path:path addClip:NO];
 }
 
-+ (UIImage *)imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth borderPosition:(QMUIImageBorderPosition)borderPosition {
++ (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth borderPosition:(QMUIImageBorderPosition)borderPosition {
     CGContextInspectSize(size);
     if (borderPosition == QMUIImageBorderPositionAll) {
-        return [UIImage imageWithStrokeColor:strokeColor size:size lineWidth:lineWidth cornerRadius:0];
+        return [UIImage qmui_imageWithStrokeColor:strokeColor size:size lineWidth:lineWidth cornerRadius:0];
     } else {
         // TODO 使用bezierPathWithRoundedRect:byRoundingCorners:cornerRadii:这个系统接口
         UIBezierPath* path = [UIBezierPath bezierPath];
@@ -390,15 +390,15 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
         }
         [path setLineWidth:lineWidth];
         [path closePath];
-        return [UIImage imageWithStrokeColor:strokeColor size:size path:path addClip:NO];
+        return [UIImage qmui_imageWithStrokeColor:strokeColor size:size path:path addClip:NO];
     }
 }
 
-+ (UIImage *)imageWithColor:(UIColor *)color {
-    return [UIImage imageWithColor:color size:CGSizeMake(4, 4) cornerRadius:0];
++ (UIImage *)qmui_imageWithColor:(UIColor *)color {
+    return [UIImage qmui_imageWithColor:color size:CGSizeMake(4, 4) cornerRadius:0];
 }
 
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size cornerRadius:(CGFloat)cornerRadius {
++ (UIImage *)qmui_imageWithColor:(UIColor *)color size:(CGSize)size cornerRadius:(CGFloat)cornerRadius {
     size = CGSizeFlatted(size);
     CGContextInspectSize(size);
     
@@ -422,7 +422,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     return resultImage;
 }
 
-+ (UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius {
++ (UIImage *)qmui_imageWithColor:(UIColor *)color size:(CGSize)size cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius {
     size = CGSizeFlatted(size);
     CGContextInspectSize(size);
     
@@ -433,7 +433,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     color = color ? color : UIColorWhite;
     CGContextSetFillColorWithColor(context, color.CGColor);
     
-    UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMakeWithSize(size) cornerRadiusArray:cornerRadius lineWidth:0];
+    UIBezierPath *path = [UIBezierPath qmui_bezierPathWithRoundedRect:CGRectMakeWithSize(size) cornerRadiusArray:cornerRadius lineWidth:0];
     [path addClip];
     [path fill];
     
@@ -442,7 +442,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     return resultImage;
 }
 
-+ (UIImage *)imageWithShape:(QMUIImageShape)shape size:(CGSize)size lineWidth:(CGFloat)lineWidth tintColor:(UIColor *)tintColor {
++ (UIImage *)qmui_imageWithShape:(QMUIImageShape)shape size:(CGSize)size lineWidth:(CGFloat)lineWidth tintColor:(UIColor *)tintColor {
     size = CGSizeFlatted(size);
     CGContextInspectSize(size);
     
@@ -530,7 +530,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     return resultImage;
 }
 
-+ (UIImage *)imageWithShape:(QMUIImageShape)shape size:(CGSize)size tintColor:(UIColor *)tintColor {
++ (UIImage *)qmui_imageWithShape:(QMUIImageShape)shape size:(CGSize)size tintColor:(UIColor *)tintColor {
     CGFloat lineWidth = 0;
     switch (shape) {
         case QMUIImageShapeNavBack:
@@ -548,10 +548,10 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
         default:
             break;
     }
-    return [UIImage imageWithShape:shape size:size lineWidth:lineWidth tintColor:tintColor];
+    return [UIImage qmui_imageWithShape:shape size:size lineWidth:lineWidth tintColor:tintColor];
 }
 
-+ (UIImage *)imageWithAttributedString:(NSAttributedString *)attributedString {
++ (UIImage *)qmui_imageWithAttributedString:(NSAttributedString *)attributedString {
     CGSize stringSize = [attributedString boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
     stringSize = CGSizeCeil(stringSize);
     UIGraphicsBeginImageContextWithOptions(stringSize, NO, 0);
@@ -563,7 +563,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     return resultImage;
 }
 
-+ (UIImage *)imageWithView:(UIView *)view {
++ (UIImage *)qmui_imageWithView:(UIView *)view {
     CGContextInspectSize(view.frame.size);
     // 老方式，因为drawViewHierarchyInRect:afterScreenUpdates:有一定的使用条件，有些情况下不一定截得到图，所有这种情况下可以使用老方式。
     // 如果可以用新方式，则建议使用新方式，性能上好很多
@@ -579,7 +579,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     return resultImage;
 }
 
-+ (UIImage *)imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates {
++ (UIImage *)qmui_imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates {
     // iOS7截图新方式，性能好会好一点，不过不一定适用，因为这个方法的使用条件是：界面要已经render完，否则截到得图将会是empty。
     // 如果是iOS6调用这个接口，将会使用老的方式。
     if ([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)]) {
@@ -590,7 +590,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
         UIGraphicsEndImageContext();
         return resultImage;
     } else {
-        return [self imageWithView:view];
+        return [self qmui_imageWithView:view];
     }
 }
 

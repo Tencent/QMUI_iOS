@@ -111,13 +111,13 @@ static NSArray<QMUIEmotion *> *QQEmotionArray;
                 self.selectedRangeForBoundTextInput = NSMakeRange(selectedRange.location, 0);
             } else if (selectedRange.location > 0) {
                 // 如果并没有选中一段文字，则删掉光标前一个字符
-                NSString *textAfterDelete = [text stringByRemoveCharacterAtIndex:selectedRange.location - 1];
+                NSString *textAfterDelete = [text qmui_stringByRemoveCharacterAtIndex:selectedRange.location - 1];
                 self.boundInputView.text = textAfterDelete;
                 self.selectedRangeForBoundTextInput = NSMakeRange(selectedRange.location - (text.length - textAfterDelete.length), 0);
             }
         } else {
             // 选中区域超过文字长度了，非法数据，则直接删掉最后一个字符
-            self.boundInputView.text = [text stringByRemoveLastCharacter];
+            self.boundInputView.text = [text qmui_stringByRemoveLastCharacter];
             self.selectedRangeForBoundTextInput = NSMakeRange(self.boundInputView.text.length, 0);
         }
         

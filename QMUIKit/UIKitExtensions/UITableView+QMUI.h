@@ -21,7 +21,7 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
 @interface UITableView (QMUI)
 
 /// 将当前tableView按照QMUI统一定义的宏来渲染外观
-- (void)styledAsQMUITableView;
+- (void)qmui_styledAsQMUITableView;
 
 /**
  *  获取某个 view 在 tableView 里的 indexPath
@@ -31,27 +31,27 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
  *  @param view 要计算的 UIView
  *  @return view 所在的 indexPath，若不存在则返回 nil
  */
-- (NSIndexPath *)indexPathForRowAtView:(UIView *)view;
+- (NSIndexPath *)qmui_indexPathForRowAtView:(UIView *)view;
 
 /**
  *  计算某个 view 处于当前 tableView 里的哪个 sectionHeaderView 内
  *  @param view 要计算的 UIView
  *  @return view 所在的 sectionHeaderView 的 section，若不存在则返回 -1
  */
-- (NSInteger)indexForSectionHeaderAtView:(UIView *)view;
+- (NSInteger)qmui_indexForSectionHeaderAtView:(UIView *)view;
 
 /**
  * 根据给定的indexPath，配合dataSource得到对应的cell在当前section中所处的位置
  * @param indexPath cell所在的indexPath
  * @return 给定indexPath对应的cell在当前section中所处的位置
  */
-- (QMUITableViewCellPosition)positionForRowAtIndexPath:(NSIndexPath *)indexPath;
+- (QMUITableViewCellPosition)qmui_positionForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 /// 判断当前 indexPath 的 item 是否为可视的 item
-- (BOOL)cellVisibleAtIndexPath:(NSIndexPath *)indexPath;
+- (BOOL)qmui_cellVisibleAtIndexPath:(NSIndexPath *)indexPath;
 
 // 取消选择状态
-- (void)clearsSelection;
+- (void)qmui_clearsSelection;
 
 /**
  * 将指定的row滚到指定的位置（row的顶边缘和指定位置重叠），并对一些特殊情况做保护（例如列表内容不够一屏、要滚动的row是最后一条等）
@@ -59,19 +59,19 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
  * @param indexPath 要滚动的目标indexPath，请自行保证indexPath是合法的
  * @param animated 是否需要动画
  */
-- (void)scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated;
+- (void)qmui_scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated;
 
 /**
- *  当tableHeaderView为UISearchBar时，tableView为了实现searchbar滚到顶部自动吸附的效果，会强制让self.contentSize.height至少为frame.size.height那么高（这样才能滚动，否则不满一屏就无法滚动了），所以此时如果通过self.contentSize获取tableView的内容大小是不准确的，此时可以使用`realContentSize`替代。
+ *  当tableHeaderView为UISearchBar时，tableView为了实现searchbar滚到顶部自动吸附的效果，会强制让self.contentSize.height至少为frame.size.height那么高（这样才能滚动，否则不满一屏就无法滚动了），所以此时如果通过self.contentSize获取tableView的内容大小是不准确的，此时可以使用`qmui_realContentSize`替代。
  *
- *  `realContentSize`是实时通过计算最后一个section的frame，与footerView的frame比较得到实际的内容高度，这个过程不会导致额外的cellForRow调用，请放心使用。
+ *  `qmui_realContentSize`是实时通过计算最后一个section的frame，与footerView的frame比较得到实际的内容高度，这个过程不会导致额外的cellForRow调用，请放心使用。
  */
-@property(nonatomic, assign, readonly) CGSize realContentSize;
+@property(nonatomic, assign, readonly) CGSize qmui_realContentSize;
 
 /**
- *  UITableView的tableHeaderView如果是UISearchBar的话，tableView.contentSize会强制设置为至少比bounds高（从而实现headerView的吸附效果），从而导致canScroll的判断不准确。所以为UITableView重写了canScroll方法
+ *  UITableView的tableHeaderView如果是UISearchBar的话，tableView.contentSize会强制设置为至少比bounds高（从而实现headerView的吸附效果），从而导致qmui_canScroll的判断不准确。所以为UITableView重写了qmui_canScroll方法
  */
-- (BOOL)canScroll;
+- (BOOL)qmui_canScroll;
 
 @end
 
@@ -101,7 +101,7 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
  *  @param  identifier cell 的 identifier
  *  @param  configuration 用于渲染 cell 的block，一般与 tableView:cellForRowAtIndexPath: 里渲染 cell 的代码一样
  */
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier configuration:(void (^)(id cell))configuration;
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier configuration:(void (^)(id cell))configuration;
 
 /**
  *  通过 qmui_tableView:cellWithIdentifier: 得到 identifier 对应的 cell 实例，并在 configuration 里对 cell 进行渲染后，得到 cell 的高度。
@@ -111,7 +111,7 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
  *  @param  identifier cell 的 identifier
  *  @param  configuration 用于渲染 cell 的block，一般与 tableView:cellForRowAtIndexPath: 里渲染 cell 的代码一样
  */
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(id cell))configuration;
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(id cell))configuration;
 
 /**
  *  通过 qmui_tableView:cellWithIdentifier: 得到 identifier 对应的 cell 实例，并在 configuration 里对 cell 进行渲染后，得到 cell 的高度。
@@ -121,25 +121,25 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
  *  @param  identifier cell 的 identifier
  *  @param  configuration 用于渲染 cell 的block，一般与 tableView:cellForRowAtIndexPath: 里渲染 cell 的代码一样
  */
-- (CGFloat)heightForCellWithIdentifier:(NSString *)identifier cacheByKey:(id<NSCopying>)key configuration:(void (^)(id cell))configuration;
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByKey:(id<NSCopying>)key configuration:(void (^)(id cell))configuration;
 
 @end
 
 @interface UITableView (QMUIKeyedHeightCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightKeyCache *keyedHeightCache;
+@property (nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
 
 @end
 
 @interface UITableView (QMUICellHeightIndexPathCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightIndexPathCache *indexPathHeightCache;
+@property (nonatomic, strong, readonly) QMUICellHeightIndexPathCache *qmui_indexPathHeightCache;
 
 @end
 
 @interface UITableView (QMUIIndexPathHeightCacheInvalidation)
 
 /// 当需要reloadData的时候，又不想使布局失效，可以调用下面这个方法。例如在底部加载更多。
-- (void)reloadDataWithoutInvalidateIndexPathHeightCache;
+- (void)qmui_reloadDataWithoutInvalidateIndexPathHeightCache;
 
 @end

@@ -75,7 +75,7 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.isPoppingViewController = YES;
+    self.qmui_isPoppingViewController = YES;
     UIViewController *viewController = [self topViewController];
     self.viewControllerPopping = viewController;
     if ([viewController respondsToSelector:@selector(willPopViewController)]) {
@@ -99,7 +99,7 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.isPoppingViewController = YES;
+    self.qmui_isPoppingViewController = YES;
     UIViewController *viewControllerPopping = [self topViewController];
     self.viewControllerPopping = viewControllerPopping;
     if ([viewControllerPopping respondsToSelector:@selector(willPopViewController)]) {
@@ -120,7 +120,7 @@
 //    }
     
     // 在配合 tabBarItem 使用的情况下，快速重复点击相同 item 可能会重复调用 popToRootViewControllerAnimated:，而此时其实已经处于 rootViewController 了，就没必要继续走后续的流程，否则一些变量会得不到重置。
-    if (self.topViewController == self.rootViewController) {
+    if (self.topViewController == self.qmui_rootViewController) {
         return nil;
     }
     
@@ -128,7 +128,7 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.isPoppingViewController = YES;
+    self.qmui_isPoppingViewController = YES;
     UIViewController *viewController = [self topViewController];
     self.viewControllerPopping = viewController;
     if ([viewController respondsToSelector:@selector(willPopViewController)]) {
@@ -151,7 +151,7 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.isPushingViewController = YES;
+    self.qmui_isPushingViewController = YES;
     UIViewController *currentViewController = self.topViewController;
     if (currentViewController) {
         if (!NeedsBackBarButtonItemTitle) {
@@ -234,7 +234,7 @@
         if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
             // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
             [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];
-            self.isPoppingViewController = NO;
+            self.qmui_isPoppingViewController = NO;
             self.viewControllerPopping = nil;
             self.isViewControllerTransiting = NO;
             QMUILog(@"手势返回放弃了");
@@ -256,8 +256,8 @@
 }
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    self.isPushingViewController = NO;
-    self.isPoppingViewController = NO;
+    self.qmui_isPushingViewController = NO;
+    self.qmui_isPoppingViewController = NO;
     self.viewControllerPopping = nil;
     self.isViewControllerTransiting = NO;
     if ([self.delegateProxy respondsToSelector:_cmd]) {

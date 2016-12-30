@@ -13,44 +13,44 @@
 /**
  * 设置view的width和height
  */
-- (void)setWidth:(CGFloat)width height:(CGFloat)height;
+- (void)qmui_setWidth:(CGFloat)width height:(CGFloat)height;
 
 /**
  * 设置view的width
  */
-- (void)setWidth:(CGFloat)width;
+- (void)qmui_setWidth:(CGFloat)width;
 
 /**
  * 设置view的height
  */
-- (void)setHeight:(CGFloat)height;
+- (void)qmui_setHeight:(CGFloat)height;
 
 /**
  * 设置view的x和y
  */
-- (void)setOriginX:(CGFloat)x y:(CGFloat)y;
+- (void)qmui_setOriginX:(CGFloat)x y:(CGFloat)y;
 
 /**
  * 设置view的x
  */
-- (void)setOriginX:(CGFloat)x;
+- (void)qmui_setOriginX:(CGFloat)x;
 
 /**
  * 设置view的y
  */
-- (void)setOriginY:(CGFloat)y;
+- (void)qmui_setOriginY:(CGFloat)y;
 
 /**
  * 获取当前view在superview内的水平居中时的minX
  */
-- (CGFloat)minXWhenCenterInSuperview;
+- (CGFloat)qmui_minXWhenCenterInSuperview;
 
 /**
  * 获取当前view在superview内的垂直居中时的minX
  */
-- (CGFloat)minYWhenCenterInSuperview;
+- (CGFloat)qmui_minYWhenCenterInSuperview;
 
-- (void)removeAllSubviews;
+- (void)qmui_removeAllSubviews;
 
 @end
 
@@ -61,11 +61,11 @@
 @interface UIView (QMUI_Debug)
 
 /// 是否需要添加debug背景色，默认NO
-@property(nonatomic, assign) BOOL shouldShowDebugColor;
+@property(nonatomic, assign) BOOL qmui_shouldShowDebugColor;
 /// 是否每个view的背景色随机，如果不随机则统一使用半透明红色，默认NO
-@property(nonatomic, assign) BOOL needsDifferentDebugColor;
+@property(nonatomic, assign) BOOL qmui_needsDifferentDebugColor;
 /// 标记一个view是否已经被添加了debug背景色，外部一般不使用
-@property(nonatomic, assign, readonly) BOOL hasDebugColor;
+@property(nonatomic, assign, readonly) BOOL qmui_hasDebugColor;
 
 @end
 
@@ -86,19 +86,19 @@ typedef NS_OPTIONS(NSUInteger, QMUIBorderViewPosition) {
 @interface UIView (QMUI_Border)
 
 /// 设置边框类型，支持组合，例如：`borderType = QMUIBorderViewTypeTop|QMUIBorderViewTypeBottom`
-@property(nonatomic, assign) QMUIBorderViewPosition borderPosition;
+@property(nonatomic, assign) QMUIBorderViewPosition qmui_borderPosition;
 
 /// 边框的大小，默认为PixelOne
-@property(nonatomic, assign) CGFloat borderWidth;
+@property(nonatomic, assign) CGFloat qmui_borderWidth;
 
 /// 边框的颜色，默认为UIColorSeparator
-@property(nonatomic, strong) UIColor *borderColor;
+@property(nonatomic, strong) UIColor *qmui_borderColor;
 
 /// 虚线 : dashPhase默认是0，且当dashPattern设置了才有效
-@property(nonatomic, assign) CGFloat dashPhase;
-@property(nonatomic, copy) NSArray <NSNumber *> *dashPattern;
+@property(nonatomic, assign) CGFloat qmui_dashPhase;
+@property(nonatomic, copy) NSArray <NSNumber *> *qmui_dashPattern;
 
 /// border的layer
-@property(nonatomic, strong, readonly) CAShapeLayer *borderLayer;
+@property(nonatomic, strong, readonly) CAShapeLayer *qmui_borderLayer;
 
 @end

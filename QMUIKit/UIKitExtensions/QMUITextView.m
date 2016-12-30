@@ -178,7 +178,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
 - (void)updateAttributedTextForTextView:(QMUITextView *)textView {
     if (textView.textAttributes && !textView.markedTextRange) {
-        [textView setAttributedTextKeepingSelectedRange:[[NSAttributedString alloc] initWithString:textView.text attributes:textView.textAttributes]];
+        [textView qmui_setAttributedTextKeepingSelectedRange:[[NSAttributedString alloc] initWithString:textView.text attributes:textView.textAttributes]];
     }
 }
 
@@ -339,13 +339,13 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 }
 
 - (NSUInteger)lengthWithString:(NSString *)string {
-    return self.shouldCountingNonASCIICharacterAsTwo ? string.lengthWhenCountingNonASCIICharacterAsTwo : string.length;
+    return self.shouldCountingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
 }
 
 #pragma mark - <QMUITextViewDelegate>
 
 - (BOOL)textView:(QMUITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-    if (self.debug) NSLog(@"textView.text(%@ | %@) = %@\nmarkedTextRange = %@\nrange = %@\ntext = %@", @(textView.text.length), @(textView.text.lengthWhenCountingNonASCIICharacterAsTwo), textView.text, textView.markedTextRange, NSStringFromRange(range), text);
+    if (self.debug) NSLog(@"textView.text(%@ | %@) = %@\nmarkedTextRange = %@\nrange = %@\ntext = %@", @(textView.text.length), @(textView.text.qmui_lengthWhenCountingNonASCIICharacterAsTwo), textView.text, textView.markedTextRange, NSStringFromRange(range), text);
     
     if (textView.maximumTextLength < NSUIntegerMax) {
         
@@ -360,14 +360,14 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             return YES;
         }
         
-        NSUInteger rangeLength = self.shouldCountingNonASCIICharacterAsTwo ? [textView.text substringWithRange:range].lengthWhenCountingNonASCIICharacterAsTwo : range.length;
+        NSUInteger rangeLength = self.shouldCountingNonASCIICharacterAsTwo ? [textView.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
         BOOL textWillOutofMaximumTextLength = [self lengthWithString:textView.text] - rangeLength + [self lengthWithString:text] > textView.maximumTextLength;
         if (textWillOutofMaximumTextLength) {
             // 将要插入的文字裁剪成多长，就可以让它插入了
             NSInteger substringLength = textView.maximumTextLength - [self lengthWithString:textView.text] + rangeLength;
             
             if (substringLength > 0 && [self lengthWithString:text] > substringLength) {
-                NSString *allowedText = [text substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
+                NSString *allowedText = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
                 if ([self lengthWithString:allowedText] <= substringLength) {
                     textView.text = [textView.text stringByReplacingCharactersInRange:range withString:allowedText];
                     textView.selectedRange = NSMakeRange(range.location + substringLength, 0);
@@ -398,7 +398,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     if (!textView.markedTextRange) {
         if ([self lengthWithString:textView.text] > textView.maximumTextLength) {
             
-            textView.text = [textView.text substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
+            textView.text = [textView.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
             
             if ([self.originalDelegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
                 // 如果是在这里被截断，是无法得知截断前光标所处的位置及要输入的文本的，所以只能将当前的 selectedRange 传过去，而 replacementText 为 nil
@@ -461,13 +461,13 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
 @implementation UITextView (QMUI)
 
-- (void)setTextKeepingSelectedRange:(NSString *)text {
+- (void)qmui_setTextKeepingSelectedRange:(NSString *)text {
     UITextRange *selectedTextRange = self.selectedTextRange;
     self.text = text;
     self.selectedTextRange = selectedTextRange;
 }
 
-- (void)setAttributedTextKeepingSelectedRange:(NSAttributedString *)attributedText {
+- (void)qmui_setAttributedTextKeepingSelectedRange:(NSAttributedString *)attributedText {
     UITextRange *selectedTextRange = self.selectedTextRange;
     self.attributedText = attributedText;
     self.selectedTextRange = selectedTextRange;

@@ -17,7 +17,7 @@
  *
  * @return 变细的系统字体的UIFont对象
  */
-+ (UIFont *)lightSystemFontOfSize:(CGFloat)fontSize;
++ (UIFont *)qmui_lightSystemFontOfSize:(CGFloat)fontSize;
 
 /**
  * 返回支持动态字体的UIFont
@@ -27,7 +27,7 @@
  *
  * @return 支持动态字体的UIFont对象
  */
-+ (UIFont *)dynamicFontWithSize:(CGFloat)pointSize bold:(BOOL)bold;
++ (UIFont *)qmui_dynamicFontWithSize:(CGFloat)pointSize bold:(BOOL)bold;
 
 /**
  * 返回支持动态字体的UIFont，支持定义最小和最大字号
@@ -39,6 +39,6 @@
  *
  * @return 支持动态字体的UIFont对象
  */
-+ (UIFont *)dynamicFontWithSize:(CGFloat)pointSize upperLimitSize:(CGFloat)upperLimitSize lowerLimitSize:(CGFloat)lowerLimitSize bold:(BOOL)bold;
++ (UIFont *)qmui_dynamicFontWithSize:(CGFloat)pointSize upperLimitSize:(CGFloat)upperLimitSize lowerLimitSize:(CGFloat)lowerLimitSize bold:(BOOL)bold;
 
 @end

@@ -256,8 +256,8 @@
     appearance.customViewMarginBottom = 8;
     appearance.textLabelMarginBottom = 4;
     appearance.detailTextLabelMarginBottom = 0;
-    appearance.textLabelAttributes = @{NSFontAttributeName: DefaultTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle paragraphStyleWithLineHeight: 22]};
-    appearance.detailTextLabelAttributes = @{NSFontAttributeName: DefaultDetailTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle paragraphStyleWithLineHeight: 18]};
+    appearance.textLabelAttributes = @{NSFontAttributeName: DefaultTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight: 22]};
+    appearance.detailTextLabelAttributes = @{NSFontAttributeName: DefaultDetailTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight: 18]};
 }
 
 @end

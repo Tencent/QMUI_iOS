@@ -263,7 +263,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     self.scrollViewDividingLayer = [CALayer layer];
     self.scrollViewDividingLayer.hidden = YES;
     self.scrollViewDividingLayer.backgroundColor = self.contentSeparatorColor.CGColor;
-    [self.scrollViewDividingLayer removeDefaultAnimations];
+    [self.scrollViewDividingLayer qmui_removeDefaultAnimations];
     
     self.importantItemsScrollView = [[UIScrollView alloc] init];
     self.importantItemsScrollView.showsHorizontalScrollIndicator = NO;
@@ -285,7 +285,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     
     self.cancelButtonDividingLayer = [CALayer layer];
     self.cancelButtonDividingLayer.backgroundColor = self.cancelButtonSeparatorColor.CGColor;
-    [self.cancelButtonDividingLayer removeDefaultAnimations];
+    [self.cancelButtonDividingLayer qmui_removeDefaultAnimations];
 }
 
 - (void)viewDidLoad {

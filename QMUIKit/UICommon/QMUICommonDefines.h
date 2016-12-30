@@ -168,17 +168,17 @@ EndIgnoreAvailabilityWarning
 #define UIFontMake(size) [UIFont systemFontOfSize:size]
 #define UIFontBoldMake(size) [UIFont boldSystemFontOfSize:size]
 #define UIFontBoldWithFont(_font) [UIFont boldSystemFontOfSize:_font.pointSize]
-#define UIFontLightMake(size) [UIFont lightSystemFontOfSize:size] // 系统字体只对数字和字母有效，中文无效
-#define UIFontLightWithFont(_font) [UIFont lightSystemFontOfSize:_font.pointSize]
-#define UIDynamicFontMake(size) [UIFont dynamicFontWithSize:size bold:NO]
-#define UIDynamicFontMakeWithLimit(size, upperLimit, lowerLimit) [UIFont dynamicFontWithSize:size upperLimitSize:upperLimit lowerLimitSize:lowerLimit bold:NO]
-#define UIDynamicFontBoldMake(size) [UIFont dynamicFontWithSize:size bold:YES]
-#define UIDynamicFontBoldMakeWithLimit(size, upperLimit, lowerLimit) [UIFont dynamicFontWithSize:size upperLimitSize:upperLimit lowerLimitSize:lowerLimit bold:YES]
+#define UIFontLightMake(size) [UIFont qmui_lightSystemFontOfSize:size] // 系统字体只对数字和字母有效，中文无效
+#define UIFontLightWithFont(_font) [UIFont qmui_lightSystemFontOfSize:_font.pointSize]
+#define UIDynamicFontMake(size) [UIFont qmui_dynamicFontWithSize:size bold:NO]
+#define UIDynamicFontMakeWithLimit(size, upperLimit, lowerLimit) [UIFont qmui_dynamicFontWithSize:size upperLimitSize:upperLimit lowerLimitSize:lowerLimit bold:NO]
+#define UIDynamicFontBoldMake(size) [UIFont qmui_dynamicFontWithSize:size bold:YES]
+#define UIDynamicFontBoldMakeWithLimit(size, upperLimit, lowerLimit) [UIFont qmui_dynamicFontWithSize:size upperLimitSize:upperLimit lowerLimitSize:lowerLimit bold:YES]
 
 // UIColor相关创建器
 #define UIColorMake(r, g, b) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1]
 #define UIColorMakeWithRGBA(r, g, b, a) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/1.0]
-#define UIColorMakeWithHex(hex) [UIColor colorWithHexString:hex]
+#define UIColorMakeWithHex(hex) [UIColor qmui_colorWithHexString:hex]
 
 
 #pragma mark - 数学计算

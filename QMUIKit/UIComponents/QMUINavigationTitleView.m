@@ -368,7 +368,7 @@
     
     UIImage *accessoryImage;
     if (accessoryType == QMUINavigationTitleViewAccessoryTypeDisclosureIndicator) {
-        accessoryImage = [NavBarAccessoryViewTypeDisclosureIndicatorImage imageWithOrientation:UIImageOrientationUp];
+        accessoryImage = [NavBarAccessoryViewTypeDisclosureIndicatorImage qmui_imageWithOrientation:UIImageOrientationUp];
     }
     
     self.accessoryTypeView.image = accessoryImage;

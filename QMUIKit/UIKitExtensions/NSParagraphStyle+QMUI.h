@@ -12,19 +12,19 @@
 @interface NSMutableParagraphStyle (QMUI)
 
 /**
- *  快速创建一个NSMutableParagraphStyle，等同于`paragraphStyleWithLineHeight:lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentLeft`
+ *  快速创建一个NSMutableParagraphStyle，等同于`qmui_paragraphStyleWithLineHeight:lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentLeft`
  *  @param  lineHeight      行高
  *  @return 一个NSMutableParagraphStyle对象
  */
-+ (instancetype)paragraphStyleWithLineHeight:(CGFloat)lineHeight;
++ (instancetype)qmui_paragraphStyleWithLineHeight:(CGFloat)lineHeight;
 
 /**
- *  快速创建一个NSMutableParagraphStyle，等同于`paragraphStyleWithLineHeight:lineBreakMode:textAlignment:NSTextAlignmentLeft`
+ *  快速创建一个NSMutableParagraphStyle，等同于`qmui_paragraphStyleWithLineHeight:lineBreakMode:textAlignment:NSTextAlignmentLeft`
  *  @param  lineHeight      行高
  *  @param  lineBreakMode   换行模式
  *  @return 一个NSMutableParagraphStyle对象
  */
-+ (instancetype)paragraphStyleWithLineHeight:(CGFloat)lineHeight lineBreakMode:(NSLineBreakMode)lineBreakMode;
++ (instancetype)qmui_paragraphStyleWithLineHeight:(CGFloat)lineHeight lineBreakMode:(NSLineBreakMode)lineBreakMode;
 
 /**
  *  快速创建一个NSMutableParagraphStyle
@@ -33,5 +33,5 @@
  *  @param  textAlignment   文本对齐方式
  *  @return 一个NSMutableParagraphStyle对象
  */
-+ (instancetype)paragraphStyleWithLineHeight:(CGFloat)lineHeight lineBreakMode:(NSLineBreakMode)lineBreakMode textAlignment:(NSTextAlignment)textAlignment;
++ (instancetype)qmui_paragraphStyleWithLineHeight:(CGFloat)lineHeight lineBreakMode:(NSLineBreakMode)lineBreakMode textAlignment:(NSTextAlignment)textAlignment;
 @end

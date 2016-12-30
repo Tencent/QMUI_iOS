@@ -211,7 +211,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     
     // 加上分隔线
     _headerViewSeparatorLayer = [CALayer layer];
-    [self.headerViewSeparatorLayer removeDefaultAnimations];
+    [self.headerViewSeparatorLayer qmui_removeDefaultAnimations];
     self.headerViewSeparatorLayer.backgroundColor = self.headerFooterSeparatorColor.CGColor;
     [self.headerView.layer addSublayer:self.headerViewSeparatorLayer];
     
@@ -275,12 +275,12 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         self.footerView.hidden = YES;
         
         _footerViewSeparatorLayer = [CALayer layer];
-        [self.footerViewSeparatorLayer removeDefaultAnimations];
+        [self.footerViewSeparatorLayer qmui_removeDefaultAnimations];
         self.footerViewSeparatorLayer.backgroundColor = self.headerFooterSeparatorColor.CGColor;
         [self.footerView.layer addSublayer:self.footerViewSeparatorLayer];
         
         _buttonSeparatorLayer = [CALayer layer];
-        [self.buttonSeparatorLayer removeDefaultAnimations];
+        [self.buttonSeparatorLayer qmui_removeDefaultAnimations];
         self.buttonSeparatorLayer.backgroundColor = self.footerViewSeparatorLayer.backgroundColor;
         self.buttonSeparatorLayer.hidden = YES;
         [self.footerView.layer addSublayer:self.buttonSeparatorLayer];
@@ -418,7 +418,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
     // 当前的分组不在可视区域内，则滚动到可视区域（只对单选有效）
-    if (self.selectedItemIndex != QMUIDialogSelectionViewControllerSelectedItemIndexNone && self.selectedItemIndex < self.items.count && ![self.tableView cellVisibleAtIndexPath:[NSIndexPath indexPathForRow:self.selectedItemIndex inSection:0]]) {
+    if (self.selectedItemIndex != QMUIDialogSelectionViewControllerSelectedItemIndexNone && self.selectedItemIndex < self.items.count && ![self.tableView qmui_cellVisibleAtIndexPath:[NSIndexPath indexPathForRow:self.selectedItemIndex inSection:0]]) {
         [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:self.selectedItemIndex inSection:0] atScrollPosition:UITableViewScrollPositionMiddle animated:animated];
     }
 }
@@ -508,7 +508,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
                 self.didSelectItemBlock(self, indexPath.row);
             }
         }
-        if ([tableView cellVisibleAtIndexPath:indexPath]) {
+        if ([tableView qmui_cellVisibleAtIndexPath:indexPath]) {
             [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationFade];
         }
     } else {
@@ -521,7 +521,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
             if (self.didDeselectItemBlock) {
                 self.didDeselectItemBlock(self, selectedIndexPathBefore.row);
             }
-            isSelectedIndexPathBeforeVisible = [tableView cellVisibleAtIndexPath:selectedIndexPathBefore];
+            isSelectedIndexPathBeforeVisible = [tableView qmui_cellVisibleAtIndexPath:selectedIndexPathBefore];
         }
         
         self.selectedItemIndex = indexPath.row;
@@ -614,7 +614,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
     
     if (self.enablesSubmitButtonAutomatically) {
-        NSInteger textLength = self.textField.text.trim.length;
+        NSInteger textLength = self.textField.text.qmui_trim.length;
         return 0 < textLength && textLength <= self.textField.maximumTextLength;
     }
     

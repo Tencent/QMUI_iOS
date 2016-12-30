@@ -11,11 +11,11 @@
 
 @implementation UIFont (QMUI)
 
-+ (UIFont *)lightSystemFontOfSize:(CGFloat)fontSize {
++ (UIFont *)qmui_lightSystemFontOfSize:(CGFloat)fontSize {
     return [UIFont fontWithName:IOS_VERSION >= 9.0 ? @"PingFangSC-Light" : @"HelveticaNeue-Light" size:fontSize];
 }
 
-+ (UIFont *)dynamicFontWithSize:(CGFloat)pointSize upperLimitSize:(CGFloat)upperLimitSize lowerLimitSize:(CGFloat)lowerLimitSize bold:(BOOL)bold {
++ (UIFont *)qmui_dynamicFontWithSize:(CGFloat)pointSize upperLimitSize:(CGFloat)upperLimitSize lowerLimitSize:(CGFloat)lowerLimitSize bold:(BOOL)bold {
     
     UIFont *font;
     UIFontDescriptor *descriptor;
@@ -74,8 +74,8 @@
     return font;
 }
 
-+ (UIFont *)dynamicFontWithSize:(CGFloat)pointSize bold:(BOOL)bold {
-    return [UIFont dynamicFontWithSize:pointSize upperLimitSize:pointSize + 3 lowerLimitSize:0 bold:bold];
++ (UIFont *)qmui_dynamicFontWithSize:(CGFloat)pointSize bold:(BOOL)bold {
+    return [UIFont qmui_dynamicFontWithSize:pointSize upperLimitSize:pointSize + 3 lowerLimitSize:0 bold:bold];
 }
 
 @end

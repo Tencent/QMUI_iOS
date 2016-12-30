@@ -198,7 +198,7 @@
 
 - (void)checkIfDelegateMissing {
 #ifdef DEBUG
-    [NSObject enumerateProtocolMethods:@protocol(QMUIZoomImageViewDelegate) usingBlock:^(SEL selector) {
+    [NSObject qmui_enumerateProtocolMethods:@protocol(QMUIZoomImageViewDelegate) usingBlock:^(SEL selector) {
         if (![self respondsToSelector:selector]) {
             NSAssert(NO, @"%@ 需要响应 %@ 的方法 -%@", NSStringFromClass([self class]), NSStringFromProtocol(@protocol(QMUIZoomImageViewDelegate)), NSStringFromSelector(selector));
         }
