@@ -38,7 +38,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.debug = YES;
+        self.debug = NO;
         self.delegate = self;
         self.scrollsToTop = NO;
         self.tintColor = TextFieldTintColor;
