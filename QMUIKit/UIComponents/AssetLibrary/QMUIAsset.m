@@ -33,6 +33,7 @@
     UIImage *_thumbnailImage;
     UIImage *_originImage;
     UIImage *_previewImage;
+    PHLivePhoto *_livePhoto;
     NSString *_assetIdentityHash;
 }
 
@@ -43,7 +44,11 @@
         
         switch (phAsset.mediaType) {
             case PHAssetMediaTypeImage:
-                self.assetType = QMUIAssetTypeImage;
+                if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
+                    self.assetType = QMUIAssetTypeLivePhoto;
+                } else {
+                    self.assetType = QMUIAssetTypeImage;
+                }
                 break;
             case PHAssetMediaTypeVideo:
                 self.assetType = QMUIAssetTypeVideo;
@@ -246,6 +251,34 @@
         if (completion) {
             completion([self previewImage], nil);
         }
+        return 0;
+    }
+}
+
+- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
+    if (_usePhotoKit && [[PHCachingImageManager class] instancesRespondToSelector:@selector(requestLivePhotoForAsset:targetSize:contentMode:options:resultHandler:)]) {
+        if (_previewImage) {
+            // 如果已经有缓存的 LivePhoto 则直接拿缓存的 LivePhoto
+            if (completion) {
+                completion(_livePhoto, nil);
+            }
+            return 0;
+        } else {
+            PHLivePhotoRequestOptions *livePhotoRequestOptions = [[PHLivePhotoRequestOptions alloc] init];
+            livePhotoRequestOptions.networkAccessAllowed = YES; // 允许访问网络
+            livePhotoRequestOptions.progressHandler = phProgressHandler;
+            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestLivePhotoForAsset:_phAsset targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT) contentMode:PHImageContentModeDefault options:livePhotoRequestOptions resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
+                // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图缓存到 _livePhoto
+                BOOL downloadFinined = ![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue];
+                if (downloadFinined) {
+                    _livePhoto = livePhoto;
+                }
+                if (completion) {
+                    completion(livePhoto, info);
+                }
+            }];
+        }
+    } else {
         return 0;
     }
 }

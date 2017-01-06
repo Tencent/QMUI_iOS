@@ -93,7 +93,13 @@
 
 - (void)setCurrentImageIndex:(NSUInteger)currentImageIndex animated:(BOOL)animated {
     _currentImageIndex = currentImageIndex;
-    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:currentImageIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:animated];
+    [self.collectionView reloadData];
+    if (currentImageIndex < [self.collectionView numberOfItemsInSection:0]) {
+        [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:currentImageIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:animated];
+    } else {
+        // dataSource 里的图片数量和当前 View 层的图片数量不匹配
+        QMUILog(@"%@ %s，collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", NSStringFromClass([self class]), __func__, @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource numberOfSectionsInCollectionView:self.collectionView]), @(_currentImageIndex));
+    }
 }
 
 - (void)setLoadingColor:(UIColor *)loadingColor {

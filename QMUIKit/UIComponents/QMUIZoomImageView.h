@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <PhotosUI/PhotosUI.h>
 
 @class QMUIZoomImageView;
 @class QMUIEmptyView;
@@ -16,11 +17,13 @@
 - (void)singleTouchInZoomingImageView:(QMUIZoomImageView *)zoomImageView location:(CGPoint)location;
 - (void)doubleTouchInZoomingImageView:(QMUIZoomImageView *)zoomImageView location:(CGPoint)location;
 - (void)longPressInZoomingImageView:(QMUIZoomImageView *)zoomImageView;
-- (BOOL)enabledZoomViewInZoomImageView:(QMUIZoomImageView *)zoomImageView; // 是否支持缩放
+
+/// 是否支持缩放，默认为 YES
+- (BOOL)enabledZoomViewInZoomImageView:(QMUIZoomImageView *)zoomImageView;
 @end
 
 /**
- *  支持缩放查看图片的控件，默认显示完整图片，可双击查看原始大小，再次双击查看放大后的大小，第三次双击恢复到初始大小。
+ *  支持缩放查看图片（包括 Live Photo）的控件，默认显示完整图片，可双击查看原始大小，再次双击查看放大后的大小，第三次双击恢复到初始大小。
  *
  *  支持通过修改 contentMode 来控制图片默认的显示模式，目前仅支持 UIViewContentModeCenter、UIViewContentModeScaleAspectFill、UIViewContentModeScaleAspectFit，默认为 UIViewContentModeCenter。
  *
@@ -32,11 +35,17 @@
 
 @property(nonatomic, assign) CGFloat maximumZoomScale;
 
-/// 设置当前要显示的图片，注意不要直接通过 imageView.image 来设置图片。
+/// 设置当前要显示的图片，会把 livePhoto 相关内容清空，因此注意不要直接通过 imageView.image 来设置图片。
 @property(nonatomic, strong) UIImage *image;
 
 /// 用于显示图片的 UIImageView，注意不要通过 imageView.image 来设置图片，请使用 image 属性。
 @property(nonatomic, strong, readonly) UIImageView *imageView;
+
+/// 设置当前要显示的 Live Photo，会把 image 相关内容清空，因此注意不要直接通过 livePhotoView.livePhoto 来设置
+@property(nonatomic, strong) PHLivePhoto *livePhoto NS_AVAILABLE_IOS(9_1);
+
+/// 用于显示 Live Photo 的 view，仅在 iOS 9 以后才有效
+@property(nonatomic, strong, readonly) PHLivePhotoView *livePhotoView NS_AVAILABLE_IOS(9_1);
 
 /**
  *  获取当前正在显示的图片在整个 QMUIZoomImageView 坐标系里的 rect（会按照当前的缩放状态来计算）

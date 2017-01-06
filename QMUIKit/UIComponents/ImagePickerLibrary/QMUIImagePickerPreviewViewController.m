@@ -299,30 +299,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     // 系统相册本质上也是这么处理的，因此无论是系统相册，还是这个系列组件，由始至终都没有显示照片原图，
     // 这也是系统相册能加载这么快的原因。
     // 另外这里采用异步请求获取图片，避免获取图片时 UI 卡顿
-    imageAsset.requestID = [imageAsset requestPreviewImageWithCompletion:^(UIImage *result, NSDictionary *info) {
-        // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
-        // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
-        if (_usePhotoKit && [[info objectForKey:PHImageResultIsDegradedKey] boolValue]) {
-            imageView.contentMode = UIViewContentModeScaleAspectFit;
-        } else {
-            imageView.contentMode = UIViewContentModeCenter;
-        }
-        imageView.image = result;
-        
-        BOOL downlaodSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-        
-        if (downlaodSucceed) {
-            // 资源资源已经在本地或下载成功
-            [imageAsset updateDownloadStatusWithDownloadResult:YES];
-            self.downloadStatus = QMUIAssetDownloadStatusSucceed;
-            
-        } else if ([info objectForKey:PHImageErrorKey] ) {
-            // 下载错误
-            [imageAsset updateDownloadStatusWithDownloadResult:NO];
-            self.downloadStatus = QMUIAssetDownloadStatusFailed;
-        }
-        
-    } withProgressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+    PHAssetImageProgressHandler phProgressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
         imageAsset.downloadProgress = progress;
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -348,7 +325,61 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
                 }
             }
         });
-    }];
+    };
+    
+    if (imageAsset.assetType == QMUIAssetTypeLivePhoto) {
+        imageAsset.requestID = [imageAsset requestLivePhotoWithCompletion:^void(PHLivePhoto *result, NSDictionary *info) {
+            // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
+            // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
+            if (_usePhotoKit && [info[PHLivePhotoInfoIsDegradedKey] boolValue]) {
+                imageView.contentMode = UIViewContentModeScaleAspectFit;
+            } else {
+                imageView.contentMode = UIViewContentModeCenter;
+            }
+            
+            imageView.livePhoto = result;
+            
+            BOOL downlaodSucceed = (result && !info) || (![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue]);
+            
+            if (downlaodSucceed) {
+                // 资源资源已经在本地或下载成功
+                [imageAsset updateDownloadStatusWithDownloadResult:YES];
+                self.downloadStatus = QMUIAssetDownloadStatusSucceed;
+                
+            } else if ([info objectForKey:PHLivePhotoInfoErrorKey] ) {
+                // 下载错误
+                [imageAsset updateDownloadStatusWithDownloadResult:NO];
+                self.downloadStatus = QMUIAssetDownloadStatusFailed;
+            }
+            
+        } withProgressHandler:phProgressHandler];
+    } else {
+        imageAsset.requestID = [imageAsset requestPreviewImageWithCompletion:^void(UIImage *result, NSDictionary *info) {
+            // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
+            // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
+            if (_usePhotoKit && [info[PHImageResultIsDegradedKey] boolValue]) {
+                imageView.contentMode = UIViewContentModeScaleAspectFit;
+            } else {
+                imageView.contentMode = UIViewContentModeCenter;
+            }
+
+            imageView.image = result;
+            
+            BOOL downlaodSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            
+            if (downlaodSucceed) {
+                // 资源资源已经在本地或下载成功
+                [imageAsset updateDownloadStatusWithDownloadResult:YES];
+                self.downloadStatus = QMUIAssetDownloadStatusSucceed;
+                
+            } else if ([info objectForKey:PHImageErrorKey] ) {
+                // 下载错误
+                [imageAsset updateDownloadStatusWithDownloadResult:NO];
+                self.downloadStatus = QMUIAssetDownloadStatusFailed;
+            }
+            
+        } withProgressHandler:phProgressHandler];
+    }
 }
 
 @end

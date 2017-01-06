@@ -9,10 +9,11 @@
 #import <Photos/PHImageManager.h>
 
 typedef enum {
-    QMUIAssetTypeUnknow,                           // 未知类型的 Asset
-    QMUIAssetTypeImage,                            // 图片类型的 Asset
-    QMUIAssetTypeVideo,                            // 视频类型的 Asset
-    QMUIAssetTypeAudio  NS_ENUM_AVAILABLE_IOS(8_0) // 音频类型的 Asset，仅被 PhotoKit 支持，因此只适用于 IOS 8.0
+    QMUIAssetTypeUnknow,                              // 未知类型的 Asset
+    QMUIAssetTypeImage,                               // 图片类型的 Asset
+    QMUIAssetTypeVideo,                               // 视频类型的 Asset
+    QMUIAssetTypeAudio NS_ENUM_AVAILABLE_IOS(8_0),    // 音频类型的 Asset，仅被 PhotoKit 支持，因此只适用于 iOS 8.0
+    QMUIAssetTypeLivePhoto NS_ENUM_AVAILABLE_IOS(9_1) // Live Photo 类型的 Asset，仅被 PhotoKit 支持，因此只适用于 iOS 9.1
 } QMUIAssetType; // Asset 的类型
 
 typedef enum {
@@ -77,8 +78,7 @@ typedef enum {
  *
  *  @param size       指定返回的缩略图的大小，仅在 iOS 8.0 及以上的版本有效，其他版本则调用 ALAsset 的接口由系统返回一个合适当前平台的图片
  *  @param completion 完成请求后调用的 block，参数中包含了请求的缩略图以及图片信息，在 iOS 8.0 或以上版本中，这个 block 会被多次调用，
- *                    其中第一次调用获取到的尺寸很小的低清图，然后不断调用，直接获取到高清图，获取到高清图后 QMUIAsset 会缓存起这张高清图，
- *                    这时 block 中的第二个参数（图片信息）返回的为 nil。
+ *                    其中第一次调用获取到的尺寸很小的低清图，然后不断调用，直到获取到高清图，这时 block 中的第二个参数（图片信息）返回的为 nil。
  *
  *  @return 返回请求图片的请求 id
  */
@@ -97,6 +97,18 @@ typedef enum {
  *  @return 返回请求图片的请求 id
  */
 - (NSInteger)requestPreviewImageWithCompletion:(void (^)(UIImage *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
+
+/**
+ *  异步请求 Live Photo，可能会有网络请求，仅当 assetType 为 QMUIAssetTypeLivePhoto 时有返回值，否则返回 nil
+ *
+ *  @param completion        完成请求后调用的 block，参数中包含了请求的 Live Photo 以及相关信息
+ *  @param phProgressHandler 处理请求进度的 handler，不在主线程上执行，在 block 中修改 UI 时注意需要手工放到主线程处理。
+ *
+ *  @wraning iOS 9.1 以下中并没有 Live Photo，因此返回 nil。
+ *
+ *  @return 返回请求图片的请求 id
+ */
+- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler NS_AVAILABLE_IOS(9_1);
 
 - (UIImageOrientation)imageOrientation;
 

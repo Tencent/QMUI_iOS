@@ -80,18 +80,69 @@
     }
 }
 
-#pragma mark - Image Scale
+#pragma mark - Normal Image
 
 - (void)setImage:(UIImage *)image {
     self.imageView.image = image;
     // 更新 imageView 的大小时，imageView 可能已经被缩放过，所以要应用当前的缩放
     self.imageView.frame = CGRectApplyAffineTransform(CGRectMakeWithSize(image.size), self.imageView.transform);
+    
+    [self cleanContentForShowingLivePhoto:NO];
+    
     [self revertZooming];
 }
 
 - (UIImage *)image {
     return self.imageView.image;
 }
+
+#pragma mark - Live Photo
+
+- (void)setLivePhoto:(PHLivePhoto *)livePhoto {
+    self.livePhotoView.livePhoto = livePhoto;
+    
+    if (livePhoto) [self initLivePhotoViewIfNeeded];
+    
+    // 更新 livePhotoView 的大小时，livePhotoView 可能已经被缩放过，所以要应用当前的缩放
+    self.livePhotoView.frame = CGRectApplyAffineTransform(CGRectMakeWithSize(livePhoto.size), self.livePhotoView.transform);
+    
+    [self cleanContentForShowingLivePhoto:YES];
+    
+    [self revertZooming];
+}
+
+- (PHLivePhoto *)livePhoto {
+    return self.livePhotoView.livePhoto;
+}
+
+- (void)initLivePhotoViewIfNeeded {
+    if (!self.livePhotoView) {
+        _livePhotoView = [[PHLivePhotoView alloc] init];
+        [self.scrollView addSubview:self.livePhotoView];
+    }
+}
+
+- (BOOL)isShowingLivePhotoView {
+    return self.livePhotoView && !self.livePhotoView.hidden;
+}
+
+- (UIView *)currentContentImageView {
+    return [self isShowingLivePhotoView] ? self.livePhotoView : self.imageView;
+}
+
+- (void)cleanContentForShowingLivePhoto:(BOOL)showingLivePhoto {
+    if (showingLivePhoto) {
+        self.imageView.image = nil;
+        self.imageView.hidden = YES;
+        self.livePhotoView.hidden = NO;
+    } else {
+        self.livePhotoView.livePhoto = nil;
+        self.livePhotoView.hidden = YES;
+        self.imageView.hidden = NO;
+    }
+}
+
+#pragma mark - Image Scale
 
 - (void)setContentMode:(UIViewContentMode)contentMode {
     BOOL isContentModeChanged = self.contentMode != contentMode;
@@ -108,11 +159,11 @@
 
 - (CGFloat)minimumZoomScale {
     CGRect viewport = self.bounds;
-    if (!self.image || CGRectIsEmpty(viewport)) {
+    if (CGRectIsEmpty(viewport) || (!self.image && !self.livePhoto)) {
         return 1;
     }
     
-    CGSize imageSize = self.image.size;
+    CGSize imageSize = self.image ? self.image.size : self.livePhoto.size;
     
     CGFloat minScale = 1;
     CGFloat scaleX = CGRectGetWidth(viewport) / imageSize.width;
@@ -175,11 +226,13 @@
 }
 
 - (CGRect)imageViewRectInZoomImageView {
-    return [self convertRect:self.imageView.frame fromView:self.imageView.superview];
+    UIView *imageView = [self currentContentImageView];
+    return [self convertRect:imageView.frame fromView:imageView.superview];
 }
 
 - (void)handleDidEndZooming {
-    CGRect imageViewFrame = self.image ? [self convertRect:self.imageView.frame fromView:self.imageView.superview] : CGRectZero;
+    UIView *imageView = [self currentContentImageView];
+    CGRect imageViewFrame = (!self.image && !self.livePhoto) ? CGRectZero : [self convertRect:imageView.frame fromView:imageView.superview];
     CGSize viewportSize = self.bounds.size;
     UIEdgeInsets contentInset = UIEdgeInsetsZero;
     if (!CGRectIsEmpty(imageViewFrame) && !CGSizeIsEmpty(viewportSize)) {
@@ -193,7 +246,7 @@
         }
     }
     self.scrollView.contentInset = contentInset;
-    self.scrollView.contentSize = self.imageView.frame.size;
+    self.scrollView.contentSize = imageView.frame.size;
     
     if (self.scrollView.contentInset.top > 0) {
         self.scrollView.contentOffset = CGPointMake(self.scrollView.contentOffset.x, -self.scrollView.contentInset.top);
@@ -208,7 +261,7 @@
     BOOL enabledZoom = YES;
     if ([self.delegate respondsToSelector:@selector(enabledZoomViewInZoomImageView:)]) {
         enabledZoom = [self.delegate enabledZoomViewInZoomImageView:self];
-    } else if (!self.image) {
+    } else if (!self.image && !self.livePhoto) {
         enabledZoom = NO;
     }
     return enabledZoom;
@@ -244,7 +297,7 @@
             }
             
             CGRect zoomRect = CGRectZero;
-            CGPoint tapPoint = [self.imageView convertPoint:gesturePoint fromView:gestureRecognizer.view];
+            CGPoint tapPoint = [[self currentContentImageView] convertPoint:gesturePoint fromView:gestureRecognizer.view];
             zoomRect.size.width = CGRectGetWidth(self.bounds) / newZoomScale;
             zoomRect.size.height = CGRectGetHeight(self.bounds) / newZoomScale;
             zoomRect.origin.x = tapPoint.x - CGRectGetWidth(zoomRect) / 2;
@@ -287,7 +340,7 @@
 #pragma mark - <UIScrollViewDelegate>
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return self.imageView;
+    return [self currentContentImageView];
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
