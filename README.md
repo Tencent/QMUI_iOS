@@ -69,7 +69,9 @@ github "QMUI/QMUI_iOS" ~>1.1.4
 QMUI iOS 支持 iOS 7+
 
 ## 注意事项
-目前QMUI提供的控件，大部分都是还没有支持AutoLayout布局，考虑到AutoLayout的普遍性，我们会尽快让所有的控件都支持AutoLayout。另外，因为QMUI还没有检查在Swift下的使用情况，所以如果在Swift下使用QMUI遇到问题，可以反馈给我们，我们会加快速度兼容适配。
+- 关于 AutoLayout：目前暂未支持，考虑到 AutoLayout 的普及型，我们将会尽快支持。
+- 关于 xib / storyboard：正在支持中，请关注版本更新。
+- 关于 Swift：暂未检查过在 Swift 下使用 QMUI 的问题，如遇到问题可以反馈给我们，我们会尽快兼容。
 
 ## 其他
 建议搭配 QMUI 专用的 Code Snippets 使用： [https://github.com/QMUI/qmui-ios-codesnippets](https://github.com/QMUI/qmui-ios-codesnippets)
