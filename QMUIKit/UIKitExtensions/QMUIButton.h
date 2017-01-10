@@ -68,39 +68,39 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  * 让按钮的文字颜色自动跟随tintColor调整（系统默认titleColor是不跟随的）<br/>
  * 默认为NO
  */
-@property(nonatomic, assign) BOOL adjustsTitleTintColorAutomatically;
+@property(nonatomic, assign) IBInspectable BOOL adjustsTitleTintColorAutomatically;
 
 /**
  * 让按钮的图片颜色自动跟随tintColor调整（系统默认image是需要更改renderingMode才可以达到这种效果）<br/>
  * 默认为NO
  */
-@property(nonatomic, assign) BOOL adjustsImageTintColorAutomatically;
+@property(nonatomic, assign) IBInspectable BOOL adjustsImageTintColorAutomatically;
 
 /**
  * 是否自动调整highlighted时的按钮样式，默认为YES。<br/>
  * 当值为YES时，按钮highlighted时会改变自身的alpha属性为<b>ButtonHighlightedAlpha</b>
  */
-@property(nonatomic, assign) BOOL adjustsButtonWhenHighlighted;
+@property(nonatomic, assign) IBInspectable BOOL adjustsButtonWhenHighlighted;
 
 /**
  * 是否自动调整disabled时的按钮样式，默认为YES。<br/>
  * 当值为YES时，按钮disabled时会改变自身的alpha属性为<b>ButtonDisabledAlpha</b>
  */
-@property(nonatomic, assign) BOOL adjustsButtonWhenDisabled;
+@property(nonatomic, assign) IBInspectable BOOL adjustsButtonWhenDisabled;
 
 /**
  * 设置按钮点击时的背景色，默认为nil。
  * @warning 不支持带透明度的背景颜色。当设置<i>highlightedBackgroundColor</i>时，会强制把<i>adjustsButtonWhenHighlighted</i>设为NO，避免两者效果冲突。
  * @see adjustsButtonWhenHighlighted
  */
-@property(nonatomic, strong) UIColor *highlightedBackgroundColor;
+@property(nonatomic, strong) IBInspectable UIColor *highlightedBackgroundColor;
 
 /**
  * 设置按钮点击时的边框颜色，默认为nil。
  * @warning 当设置<i>highlightedBorderColor</i>时，会强制把<i>adjustsButtonWhenHighlighted</i>设为NO，避免两者效果冲突。
  * @see adjustsButtonWhenHighlighted
  */
-@property(nonatomic, strong) UIColor *highlightedBorderColor;
+@property(nonatomic, strong) IBInspectable UIColor *highlightedBorderColor;
 
 /**
  * 设置按钮里图标和文字的相对位置，默认为QMUIButtonImagePositionLeft<br/>
@@ -232,13 +232,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 @interface QMUILinkButton : QMUIButton
 
 /// 控制下划线隐藏或显示，默认为NO，也即显示下划线
-@property(nonatomic, assign) BOOL underlineHidden;
+@property(nonatomic, assign) IBInspectable BOOL underlineHidden;
 
 /// 设置下划线的宽度，默认为 1
-@property(nonatomic, assign) CGFloat underlineWidth;
+@property(nonatomic, assign) IBInspectable CGFloat underlineWidth;
 
 /// 控制下划线颜色，若设置为nil，则使用当前按钮的titleColor的颜色作为下划线的颜色。默认为 nil。
-@property(nonatomic, strong) UIColor *underlineColor;
+@property(nonatomic, strong) IBInspectable UIColor *underlineColor;
 
 /// 下划线的位置是基于 titleLabel 的位置来计算的，默认x、width均和titleLabel一致，而可以通过这个属性来调整下划线的偏移值。默认为UIEdgeInsetsZero。
 @property(nonatomic, assign) UIEdgeInsets underlineInsets;
@@ -259,7 +259,7 @@ extern const CGFloat QMUIGhostButtonCornerRadiusAdjustsBounds;
  */
 @interface QMUIGhostButton : QMUIButton
 
-@property(nonatomic, strong) UIColor *ghostColor;    // 默认为 UIColorBlue
+@property(nonatomic, strong) IBInspectable UIColor *ghostColor;    // 默认为 GhostButtonColorBlue
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;    // 默认为 1pt
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;   // 默认为 QMUIGhostButtonCornerRadiusAdjustsBounds，也即固定保持按钮高度的一半。
 
@@ -285,8 +285,8 @@ extern const CGFloat QMUIFillButtonCornerRadiusAdjustsBounds;
  */
 @interface QMUIFillButton : QMUIButton
 
-@property(nonatomic, strong) UIColor *fillColor; // 默认为 UIColorBlue
-@property(nonatomic, strong) UIColor *titleTextColor; // 默认为 UIColorWhite
+@property(nonatomic, strong) IBInspectable UIColor *fillColor; // 默认为 FillButtonColorBlue
+@property(nonatomic, strong) IBInspectable UIColor *titleTextColor; // 默认为 UIColorWhite
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;// 默认为 QMUIFillButtonCornerRadiusAdjustsBounds，也即固定保持按钮高度的一半。
 
 /**

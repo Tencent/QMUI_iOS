@@ -16,9 +16,20 @@
 
 - (instancetype)initWithFrame:(CGRect)frame style:(UITableViewStyle)style {
     if (self = [super initWithFrame:frame style:style]) {
-        [self qmui_styledAsQMUITableView];
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    [self qmui_styledAsQMUITableView];
 }
 
 - (void)dealloc {

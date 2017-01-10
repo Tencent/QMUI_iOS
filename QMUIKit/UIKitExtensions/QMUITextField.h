@@ -40,7 +40,7 @@
 /**
  *  修改 placeholder 的颜色，默认是 UIColorPlaceholder。
  */
-@property(nonatomic, strong) UIColor *placeholderColor;
+@property(nonatomic, strong) IBInspectable UIColor *placeholderColor;
 
 /**
  *  文字在输入框内的 padding。如果出现 clearButton，则 textInsets.right 会控制 clearButton 的右边距
@@ -54,18 +54,18 @@
  *
  *  默认为YES（注意系统的 UITextField 对这种行为默认是 NO）
  */
-@property(nonatomic, assign) BOOL shouldResponseToProgrammaticallyTextChanges;
+@property(nonatomic, assign) IBInspectable BOOL shouldResponseToProgrammaticallyTextChanges;
 
 /**
  *  显示允许输入的最大文字长度，默认为 NSUIntegerMax，也即不限制长度。
  */
-@property(nonatomic, assign) NSUInteger maximumTextLength;
+@property(nonatomic, assign) IBInspectable NSUInteger maximumTextLength;
 
 /**
  *  在使用 maximumTextLength 功能的时候，是否应该把文字长度按照 [NSString (QMUI) qmui_lengthWhenCountingNonASCIICharacterAsTwo] 的方法来计算。
  *  默认为 NO。
  */
-@property(nonatomic, assign) BOOL shouldCountingNonASCIICharacterAsTwo;
+@property(nonatomic, assign) IBInspectable BOOL shouldCountingNonASCIICharacterAsTwo;
 
 @end
 

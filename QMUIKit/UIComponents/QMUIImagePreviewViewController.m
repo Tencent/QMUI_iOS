@@ -46,15 +46,13 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 
 @synthesize imagePreviewView = _imagePreviewView;
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-        
-        if (imagePreviewViewControllerAppearance) {
-            self.backgroundColor = [QMUIImagePreviewViewController appearance].backgroundColor;
-        }
+- (void)didInitialized {
+    [super didInitialized];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    
+    if (imagePreviewViewControllerAppearance) {
+        self.backgroundColor = [QMUIImagePreviewViewController appearance].backgroundColor;
     }
-    return self;
 }
 
 - (QMUIImagePreviewView *)imagePreviewView {

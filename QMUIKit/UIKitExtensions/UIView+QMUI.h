@@ -89,10 +89,10 @@ typedef NS_OPTIONS(NSUInteger, QMUIBorderViewPosition) {
 @property(nonatomic, assign) QMUIBorderViewPosition qmui_borderPosition;
 
 /// 边框的大小，默认为PixelOne
-@property(nonatomic, assign) CGFloat qmui_borderWidth;
+@property(nonatomic, assign) IBInspectable CGFloat qmui_borderWidth;
 
 /// 边框的颜色，默认为UIColorSeparator
-@property(nonatomic, strong) UIColor *qmui_borderColor;
+@property(nonatomic, strong) IBInspectable UIColor *qmui_borderColor;
 
 /// 虚线 : dashPhase默认是0，且当dashPattern设置了才有效
 @property(nonatomic, assign) CGFloat qmui_dashPhase;

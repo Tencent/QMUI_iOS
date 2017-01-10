@@ -20,14 +20,9 @@
 
 - (instancetype)initWithFrame:(CGRect)frame column:(NSInteger)column rowHeight:(CGFloat)rowHeight {
     if (self = [super initWithFrame:frame]) {
+        [self didInitialized];
         self.columnCount = column;
         self.rowHeight = rowHeight;
-        self.separatorColor = UIColorSeparator;
-        
-        self.separatorLayer = [CAShapeLayer layer];
-        [self.separatorLayer qmui_removeDefaultAnimations];
-        self.separatorLayer.hidden = YES;
-        [self.layer addSublayer:self.separatorLayer];
     }
     return self;
 }
@@ -38,6 +33,22 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     return [self initWithFrame:frame column:0 rowHeight:0];
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    self.separatorColor = UIColorSeparator;
+    
+    self.separatorLayer = [CAShapeLayer layer];
+    [self.separatorLayer qmui_removeDefaultAnimations];
+    self.separatorLayer.hidden = YES;
+    [self.layer addSublayer:self.separatorLayer];
 }
 
 - (void)setSeparatorWidth:(CGFloat)separatorWidth {

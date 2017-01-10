@@ -18,10 +18,11 @@
 /// 控制label内容的padding，默认为UIEdgeInsetsZero
 @property(nonatomic,assign) UIEdgeInsets contentEdgeInsets;
 
-/// 是否需要长按复制的功能，长按时的背景色通过`highlightedBackgroundColor`设置
-@property(nonatomic,assign) BOOL canPerformCopyAction;
+/// 是否需要长按复制的功能，默认为 NO。
+/// 长按时的背景色通过`highlightedBackgroundColor`设置。
+@property(nonatomic,assign) IBInspectable BOOL canPerformCopyAction;
 
 /// 如果打开了`canPerformCopyAction`，则长按时背景色将会被改为`highlightedBackgroundColor`
-@property(nonatomic,strong) UIColor *highlightedBackgroundColor;
+@property(nonatomic,strong) IBInspectable UIColor *highlightedBackgroundColor;
 
 @end

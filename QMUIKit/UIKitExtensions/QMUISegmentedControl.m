@@ -22,6 +22,13 @@
     return self;
 }
 
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        _items = [[NSMutableArray alloc] init];
+    }
+    return self;
+}
+
 - (void)updateSegmentedUIWithTintColor:(UIColor *)tintColor selectedTextColor:(UIColor *)selectedTextColor fontSize:(UIFont *)fontSize {
     [self setTintColor:tintColor];
     [self setTitleTextAttributesWithTextColor:tintColor selectedTextColor:selectedTextColor fontSize:fontSize];

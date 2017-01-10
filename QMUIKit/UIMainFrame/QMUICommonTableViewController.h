@@ -34,6 +34,7 @@ extern const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet
 @interface QMUICommonTableViewController : QMUICommonViewController<QMUITableViewDelegate, QMUITableViewDataSource>
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
 
 /// 获取当前的 `UITableViewStyle`
 @property(nonatomic, assign, readonly) UITableViewStyle style;

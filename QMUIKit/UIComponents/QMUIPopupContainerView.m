@@ -18,19 +18,28 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        
-        _backgroundLayer = [CAShapeLayer layer];
-        _backgroundLayer.shadowOffset = CGSizeMake(0, 2);
-        _backgroundLayer.shadowOpacity = 1;
-        _backgroundLayer.shadowRadius = 10;
-        [self.layer addSublayer:_backgroundLayer];
-        
-        _contentView = [[UIView alloc] init];
-        self.contentView.clipsToBounds = YES;
-        [self addSubview:self.contentView];
-        
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    _backgroundLayer = [CAShapeLayer layer];
+    _backgroundLayer.shadowOffset = CGSizeMake(0, 2);
+    _backgroundLayer.shadowOpacity = 1;
+    _backgroundLayer.shadowRadius = 10;
+    [self.layer addSublayer:_backgroundLayer];
+    
+    _contentView = [[UIView alloc] init];
+    self.contentView.clipsToBounds = YES;
+    [self addSubview:self.contentView];
 }
 
 - (UIImageView *)imageView {

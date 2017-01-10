@@ -18,19 +18,19 @@
 @interface QMUIGridView : UIView
 
 /// 指定要显示的列数，默认为 0
-@property(nonatomic, assign) NSInteger columnCount;
+@property(nonatomic, assign) IBInspectable NSInteger columnCount;
 
 /// 指定每一行的高度，默认为 0
-@property(nonatomic, assign) CGFloat rowHeight;
+@property(nonatomic, assign) IBInspectable CGFloat rowHeight;
 
 /// 指定 item 之间的分隔线宽度，默认为 0
-@property(nonatomic, assign) CGFloat separatorWidth;
+@property(nonatomic, assign) IBInspectable CGFloat separatorWidth;
 
 /// 指定 item 之间的分隔线颜色，默认为 UIColorSeparator
-@property(nonatomic, strong) UIColor *separatorColor;
+@property(nonatomic, strong) IBInspectable UIColor *separatorColor;
 
 /// item 之间的分隔线是否要用虚线显示，默认为 NO
-@property(nonatomic, assign) BOOL separatorDashed;
+@property(nonatomic, assign) IBInspectable BOOL separatorDashed;
 
 /// 候选的初始化方法，亦可通过 initWithFrame:、init 来初始化。
 - (instancetype)initWithColumn:(NSInteger)column rowHeight:(CGFloat)rowHeight;

@@ -23,15 +23,26 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.delegate = self;
-        self.tintColor = TextFieldTintColor;
-        self.placeholderColor = UIColorPlaceholder;
-        self.textInsets = TextFieldTextInsets;
-        self.shouldResponseToProgrammaticallyTextChanges = YES;
-        self.maximumTextLength = NSUIntegerMax;
-        [self addTarget:self action:@selector(handleTextChangeEvent:) forControlEvents:UIControlEventEditingChanged];
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    self.delegate = self;
+    self.tintColor = TextFieldTintColor;
+    self.placeholderColor = UIColorPlaceholder;
+    self.textInsets = TextFieldTextInsets;
+    self.shouldResponseToProgrammaticallyTextChanges = YES;
+    self.maximumTextLength = NSUIntegerMax;
+    [self addTarget:self action:@selector(handleTextChangeEvent:) forControlEvents:UIControlEventEditingChanged];
 }
 
 - (void)dealloc {

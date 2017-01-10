@@ -24,21 +24,32 @@
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        self.titleView = [[QMUINavigationTitleView alloc] init];
-        
-        self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
-        
-        // 不管navigationBar的backgroundImage如何设置，都让布局撑到屏幕顶部，方便布局的统一
-        self.extendedLayoutIncludesOpaqueBars = YES;
-        
-        self.supportedOrientationMask = SupportedOrientationMask;
-        
-        // 动态字体notification
-        if (IS_RESPOND_DYNAMICTYPE) {
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentSizeCategoryDidChanged:) name:UIContentSizeCategoryDidChangeNotification object:nil];
-        }
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    self.titleView = [[QMUINavigationTitleView alloc] init];
+    
+    self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
+    
+    // 不管navigationBar的backgroundImage如何设置，都让布局撑到屏幕顶部，方便布局的统一
+    self.extendedLayoutIncludesOpaqueBars = YES;
+    
+    self.supportedOrientationMask = SupportedOrientationMask;
+    
+    // 动态字体notification
+    if (IS_RESPOND_DYNAMICTYPE) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentSizeCategoryDidChanged:) name:UIContentSizeCategoryDidChangeNotification object:nil];
+    }
 }
 
 - (void)setTitle:(NSString *)title {

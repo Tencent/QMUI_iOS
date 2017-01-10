@@ -35,12 +35,13 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style {
     if (self = [super initWithNibName:nil bundle:nil]) {
-        _style = style;
-        self.hasHideTableHeaderViewInitial = NO;
-        self.tableViewInitialContentInset = QMUICommonTableViewControllerInitialContentInsetNotSet;
-        self.tableViewInitialScrollIndicatorInsets = QMUICommonTableViewControllerInitialContentInsetNotSet;
+        [self didInitializedWithStyle:style];
     }
     return self;
+}
+
+- (instancetype)init {
+    return [self initWithStyle:UITableViewStylePlain];
 }
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -48,11 +49,17 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    return [self init];
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitializedWithStyle:UITableViewStylePlain];
+    }
+    return self;
 }
 
-- (instancetype)init {
-    return [self initWithStyle:UITableViewStylePlain];
+- (void)didInitializedWithStyle:(UITableViewStyle)style {
+    _style = style;
+    self.hasHideTableHeaderViewInitial = NO;
+    self.tableViewInitialContentInset = QMUICommonTableViewControllerInitialContentInsetNotSet;
+    self.tableViewInitialScrollIndicatorInsets = QMUICommonTableViewControllerInitialContentInsetNotSet;
 }
 
 - (void)dealloc {

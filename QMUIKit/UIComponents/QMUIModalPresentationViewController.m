@@ -66,18 +66,29 @@ static QMUIModalPresentationViewController *appearance;
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        if (appearance) {
-            self.animationStyle = appearance.animationStyle;
-            self.contentViewMargins = appearance.contentViewMargins;
-            self.maximumContentViewWidth = appearance.maximumContentViewWidth;
-            self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-            self.modalPresentationStyle = UIModalPresentationCustom;
-            self.supportedOrientationMask = SupportedOrientationMask;
-        }
-        
-        [self initDefaultDimmingViewWithoutAddToView];
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    if (appearance) {
+        self.animationStyle = appearance.animationStyle;
+        self.contentViewMargins = appearance.contentViewMargins;
+        self.maximumContentViewWidth = appearance.maximumContentViewWidth;
+        self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+        self.modalPresentationStyle = UIModalPresentationCustom;
+        self.supportedOrientationMask = SupportedOrientationMask;
+    }
+    
+    [self initDefaultDimmingViewWithoutAddToView];
 }
 
 - (void)dealloc {

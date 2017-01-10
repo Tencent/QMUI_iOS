@@ -21,12 +21,12 @@
 /**
  *  item 的最小宽高，默认为 CGSizeZero，也即不限制。
  */
-@property(nonatomic, assign) CGSize minimumItemSize;
+@property(nonatomic, assign) IBInspectable CGSize minimumItemSize;
 
 /**
  *  item 的最大宽高，默认为 CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)，也即不限制
  */
-@property(nonatomic, assign) CGSize maximumItemSize;
+@property(nonatomic, assign) IBInspectable CGSize maximumItemSize;
 
 /**
  *  item 之间的间距，默认为 UIEdgeInsetsZero。

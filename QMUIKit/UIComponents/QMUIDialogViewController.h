@@ -41,19 +41,19 @@
 @property(nonatomic, strong) NSDictionary<NSString *, id> *buttonTitleAttributeds UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *buttonHighlightedBackgroundColor UI_APPEARANCE_SELECTOR;
 
-@property(nonatomic, strong ,readonly) UIView *headerView;
-@property(nonatomic, strong ,readonly) CALayer *headerViewSeparatorLayer;
+@property(nonatomic, strong, readonly) UIView *headerView;
+@property(nonatomic, strong, readonly) CALayer *headerViewSeparatorLayer;
 
 /// dialog的主体内容部分，默认是一个空的白色UIView，建议设置为自己的UIView
 /// dialog会通过询问contentView的sizeThatFits得到当前内容的大小
 @property(nonatomic, strong) UIView *contentView;
 
-@property(nonatomic, strong ,readonly) UIView *footerView;
-@property(nonatomic, strong ,readonly) CALayer *footerViewSeparatorLayer;
+@property(nonatomic, strong, readonly) UIView *footerView;
+@property(nonatomic, strong, readonly) CALayer *footerViewSeparatorLayer;
 
-@property(nonatomic, strong ,readonly) QMUIButton *cancelButton;
-@property(nonatomic, strong ,readonly) QMUIButton *submitButton;
-@property(nonatomic, strong ,readonly) CALayer *buttonSeparatorLayer;
+@property(nonatomic, strong, readonly) QMUIButton *cancelButton;
+@property(nonatomic, strong, readonly) QMUIButton *submitButton;
+@property(nonatomic, strong, readonly) CALayer *buttonSeparatorLayer;
 
 - (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block;
 - (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block;
@@ -79,7 +79,7 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
  */
 @interface QMUIDialogSelectionViewController : QMUIDialogViewController<QMUITableViewDelegate, QMUITableViewDataSource>
 
-@property(nonatomic, strong ,readonly) QMUITableView *tableView;
+@property(nonatomic, strong, readonly) QMUITableView *tableView;
 
 @property(nonatomic, copy) NSArray<NSString *> *items;
 
@@ -105,7 +105,7 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
  */
 @interface QMUIDialogTextFieldViewController : QMUIDialogViewController
 
-@property(nonatomic, strong ,readonly) QMUITextField *textField;
+@property(nonatomic, strong, readonly) QMUITextField *textField;
 
 /// 是否自动控制提交按钮的enabled状态，默认为YES，则当输入框内容为空时禁用提交按钮
 @property(nonatomic, assign) BOOL enablesSubmitButtonAutomatically;

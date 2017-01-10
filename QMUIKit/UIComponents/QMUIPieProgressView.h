@@ -22,12 +22,12 @@
 /**
  进度动画的时长，默认为 0.5
  */
-@property(nonatomic, assign) CFTimeInterval progressAnimationDuration;
+@property(nonatomic, assign) IBInspectable CFTimeInterval progressAnimationDuration;
 
 /**
  当前进度值，默认为 0.0。调用 `setProgress:` 相当于调用 `setProgress:animated:NO`
  */
-@property(nonatomic, assign) float progress;
+@property(nonatomic, assign) IBInspectable float progress;
 
 /**
  修改当前的进度，会触发 UIControlEventValueChanged 事件

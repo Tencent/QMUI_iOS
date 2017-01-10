@@ -66,26 +66,24 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 @implementation QMUIDialogViewController
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        if (dialogViewControllerAppearance) {
-            self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
-            self.contentViewMargins = [QMUIDialogViewController appearance].contentViewMargins;
-            self.titleTintColor = [QMUIDialogViewController appearance].titleTintColor;
-            self.titleLabelFont = [QMUIDialogViewController appearance].titleLabelFont;
-            self.titleLabelTextColor = [QMUIDialogViewController appearance].titleLabelTextColor;
-            self.subTitleLabelFont = [QMUIDialogViewController appearance].subTitleLabelFont;
-            self.subTitleLabelTextColor = [QMUIDialogViewController appearance].subTitleLabelTextColor;
-            self.headerFooterSeparatorColor = [QMUIDialogViewController appearance].headerFooterSeparatorColor;
-            self.headerViewHeight = [QMUIDialogViewController appearance].headerViewHeight;
-            self.headerViewBackgroundColor = [QMUIDialogViewController appearance].headerViewBackgroundColor;
-            self.footerViewHeight = [QMUIDialogViewController appearance].footerViewHeight;
-            self.footerViewBackgroundColor = [QMUIDialogViewController appearance].footerViewBackgroundColor;
-            self.buttonTitleAttributeds = [QMUIDialogViewController appearance].buttonTitleAttributeds;
-            self.buttonHighlightedBackgroundColor = [QMUIDialogViewController appearance].buttonHighlightedBackgroundColor;
-        }
+- (void)didInitialized {
+    [super didInitialized];
+    if (dialogViewControllerAppearance) {
+        self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
+        self.contentViewMargins = [QMUIDialogViewController appearance].contentViewMargins;
+        self.titleTintColor = [QMUIDialogViewController appearance].titleTintColor;
+        self.titleLabelFont = [QMUIDialogViewController appearance].titleLabelFont;
+        self.titleLabelTextColor = [QMUIDialogViewController appearance].titleLabelTextColor;
+        self.subTitleLabelFont = [QMUIDialogViewController appearance].subTitleLabelFont;
+        self.subTitleLabelTextColor = [QMUIDialogViewController appearance].subTitleLabelTextColor;
+        self.headerFooterSeparatorColor = [QMUIDialogViewController appearance].headerFooterSeparatorColor;
+        self.headerViewHeight = [QMUIDialogViewController appearance].headerViewHeight;
+        self.headerViewBackgroundColor = [QMUIDialogViewController appearance].headerViewBackgroundColor;
+        self.footerViewHeight = [QMUIDialogViewController appearance].footerViewHeight;
+        self.footerViewBackgroundColor = [QMUIDialogViewController appearance].footerViewBackgroundColor;
+        self.buttonTitleAttributeds = [QMUIDialogViewController appearance].buttonTitleAttributeds;
+        self.buttonHighlightedBackgroundColor = [QMUIDialogViewController appearance].buttonHighlightedBackgroundColor;
     }
-    return self;
 }
 
 - (void)setCornerRadius:(CGFloat)cornerRadius {
@@ -173,10 +171,12 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     }
 }
 
+BeginIgnoreClangWarning(-Wobjc-missing-super-calls)
 - (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {
-    // 不使用父类继承，从而避免把 self.titleView 放到 navigationItem 上
+    // 不继承父类的实现，从而避免把 self.titleView 放到 navigationItem 上
 //    [super setNavigationItemsIsInEditMode:isInEditMode animated:animated];
 }
+EndIgnoreClangWarning
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -388,15 +388,13 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 @implementation QMUIDialogSelectionViewController
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
-        self.selectedItemIndexes = [[NSMutableSet alloc] init];
-        BeginIgnoreAvailabilityWarning
-        [self loadViewIfNeeded];
-        EndIgnoreAvailabilityWarning
-    }
-    return self;
+- (void)didInitialized {
+    [super didInitialized];
+    self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
+    self.selectedItemIndexes = [[NSMutableSet alloc] init];
+    BeginIgnoreAvailabilityWarning
+    [self loadViewIfNeeded];
+    EndIgnoreAvailabilityWarning
 }
 
 - (void)initSubviews {
@@ -558,14 +556,12 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 @implementation QMUIDialogTextFieldViewController
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        self.enablesSubmitButtonAutomatically = YES;
-        BeginIgnoreAvailabilityWarning
-        [self loadViewIfNeeded];
-        EndIgnoreAvailabilityWarning
-    }
-    return self;
+- (void)didInitialized {
+    [super didInitialized];
+    self.enablesSubmitButtonAutomatically = YES;
+    BeginIgnoreAvailabilityWarning
+    [self loadViewIfNeeded];
+    EndIgnoreAvailabilityWarning
 }
 
 - (void)initSubviews {

@@ -59,14 +59,23 @@
 #define IOS10_SDK_ALLOWED YES
 #endif
 
-#define BeginIgnorePerformSelectorLeaksWarning _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Warc-performSelector-leaks\"")
-#define EndIgnorePerformSelectorLeaksWarning _Pragma("clang diagnostic pop")
+#pragma mark - Clang
 
-#define BeginIgnoreAvailabilityWarning _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wpartial-availability\"")
-#define EndIgnoreAvailabilityWarning _Pragma("clang diagnostic pop")
+#define ArgumentToString(macro) #macro
+#define ClangWarningConcat(warning_name) ArgumentToString(clang diagnostic ignored warning_name)
 
-#define BeginIgnoreDeprecatedWarning _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
-#define EndIgnoreDeprecatedWarning _Pragma("clang diagnostic pop")
+// 参数可直接传入 clang 的 warning 名，warning 列表参考：http://fuckingclangwarnings.com/
+#define BeginIgnoreClangWarning(warningName) _Pragma("clang diagnostic push") _Pragma(ClangWarningConcat(#warningName))
+#define EndIgnoreClangWarning _Pragma("clang diagnostic pop")
+
+#define BeginIgnorePerformSelectorLeaksWarning BeginIgnoreClangWarning(-Warc-performSelector-leaks)
+#define EndIgnorePerformSelectorLeaksWarning EndIgnoreClangWarning
+
+#define BeginIgnoreAvailabilityWarning BeginIgnoreClangWarning(-Wpartial-availability)
+#define EndIgnoreAvailabilityWarning EndIgnoreClangWarning
+
+#define BeginIgnoreDeprecatedWarning BeginIgnoreClangWarning(-Wdeprecated-declarations)
+#define EndIgnoreDeprecatedWarning EndIgnoreClangWarning
 
 
 #pragma mark - 变量-设备相关

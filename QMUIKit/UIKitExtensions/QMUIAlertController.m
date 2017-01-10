@@ -213,49 +213,55 @@ static QMUIAlertController *alertControllerAppearance;
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        
-        if (alertControllerAppearance) {
-            self.alertContentMargin = [QMUIAlertController appearance].alertContentMargin;
-            self.alertContentMaximumWidth = [QMUIAlertController appearance].alertContentMaximumWidth;
-            self.alertSeperatorColor = [QMUIAlertController appearance].alertSeperatorColor;
-            self.alertContentCornerRadius = [QMUIAlertController appearance].alertContentCornerRadius;
-            self.alertTitleAttributeds = [QMUIAlertController appearance].alertTitleAttributeds;
-            self.alertMessageAttributeds = [QMUIAlertController appearance].alertMessageAttributeds;
-            self.alertButtonAttributeds = [QMUIAlertController appearance].alertButtonAttributeds;
-            self.alertButtonDisabledAttributeds = [QMUIAlertController appearance].alertButtonDisabledAttributeds;
-            self.alertCancelButtonAttributeds = [QMUIAlertController appearance].alertCancelButtonAttributeds;
-            self.alertDestructiveButtonAttributeds = [QMUIAlertController appearance].alertDestructiveButtonAttributeds;
-            self.alertButtonHeight = [QMUIAlertController appearance].alertButtonHeight;
-            self.alertHeaderBackgroundColor = [QMUIAlertController appearance].alertHeaderBackgroundColor;
-            self.alertButtonBackgroundColor = [QMUIAlertController appearance].alertButtonBackgroundColor;
-            self.alertButtonHighlightBackgroundColor = [QMUIAlertController appearance].alertButtonHighlightBackgroundColor;
-            self.alertHeaderInsets = [QMUIAlertController appearance].alertHeaderInsets;
-            self.alertTitleMessageSpacing = [QMUIAlertController appearance].alertTitleMessageSpacing;
-            
-            self.sheetContentMargin = [QMUIAlertController appearance].sheetContentMargin;
-            self.sheetContentMaximumWidth = [QMUIAlertController appearance].sheetContentMaximumWidth;
-            self.sheetSeperatorColor = [QMUIAlertController appearance].sheetSeperatorColor;
-            self.sheetTitleAttributeds = [QMUIAlertController appearance].sheetTitleAttributeds;
-            self.sheetMessageAttributeds = [QMUIAlertController appearance].sheetMessageAttributeds;
-            self.sheetButtonAttributeds = [QMUIAlertController appearance].sheetButtonAttributeds;
-            self.sheetButtonDisabledAttributeds = [QMUIAlertController appearance].sheetButtonDisabledAttributeds;
-            self.sheetCancelButtonAttributeds = [QMUIAlertController appearance].sheetCancelButtonAttributeds;
-            self.sheetDestructiveButtonAttributeds = [QMUIAlertController appearance].sheetDestructiveButtonAttributeds;
-            self.sheetCancelButtonMarginTop = [QMUIAlertController appearance].sheetCancelButtonMarginTop;
-            self.sheetContentCornerRadius = [QMUIAlertController appearance].sheetContentCornerRadius;
-            self.sheetButtonHeight = [QMUIAlertController appearance].sheetButtonHeight;
-            self.sheetHeaderBackgroundColor = [QMUIAlertController appearance].sheetHeaderBackgroundColor;
-            self.sheetButtonBackgroundColor = [QMUIAlertController appearance].sheetButtonBackgroundColor;
-            self.sheetButtonHighlightBackgroundColor = [QMUIAlertController appearance].sheetButtonHighlightBackgroundColor;
-            self.sheetHeaderInsets = [QMUIAlertController appearance].sheetHeaderInsets;
-            self.sheetTitleMessageSpacing = [QMUIAlertController appearance].sheetTitleMessageSpacing;
-        }
+        [self didInitialized];
     }
     return self;
 }
 
-- (void)dealloc {
-    
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    if (alertControllerAppearance) {
+        self.alertContentMargin = [QMUIAlertController appearance].alertContentMargin;
+        self.alertContentMaximumWidth = [QMUIAlertController appearance].alertContentMaximumWidth;
+        self.alertSeperatorColor = [QMUIAlertController appearance].alertSeperatorColor;
+        self.alertContentCornerRadius = [QMUIAlertController appearance].alertContentCornerRadius;
+        self.alertTitleAttributeds = [QMUIAlertController appearance].alertTitleAttributeds;
+        self.alertMessageAttributeds = [QMUIAlertController appearance].alertMessageAttributeds;
+        self.alertButtonAttributeds = [QMUIAlertController appearance].alertButtonAttributeds;
+        self.alertButtonDisabledAttributeds = [QMUIAlertController appearance].alertButtonDisabledAttributeds;
+        self.alertCancelButtonAttributeds = [QMUIAlertController appearance].alertCancelButtonAttributeds;
+        self.alertDestructiveButtonAttributeds = [QMUIAlertController appearance].alertDestructiveButtonAttributeds;
+        self.alertButtonHeight = [QMUIAlertController appearance].alertButtonHeight;
+        self.alertHeaderBackgroundColor = [QMUIAlertController appearance].alertHeaderBackgroundColor;
+        self.alertButtonBackgroundColor = [QMUIAlertController appearance].alertButtonBackgroundColor;
+        self.alertButtonHighlightBackgroundColor = [QMUIAlertController appearance].alertButtonHighlightBackgroundColor;
+        self.alertHeaderInsets = [QMUIAlertController appearance].alertHeaderInsets;
+        self.alertTitleMessageSpacing = [QMUIAlertController appearance].alertTitleMessageSpacing;
+        
+        self.sheetContentMargin = [QMUIAlertController appearance].sheetContentMargin;
+        self.sheetContentMaximumWidth = [QMUIAlertController appearance].sheetContentMaximumWidth;
+        self.sheetSeperatorColor = [QMUIAlertController appearance].sheetSeperatorColor;
+        self.sheetTitleAttributeds = [QMUIAlertController appearance].sheetTitleAttributeds;
+        self.sheetMessageAttributeds = [QMUIAlertController appearance].sheetMessageAttributeds;
+        self.sheetButtonAttributeds = [QMUIAlertController appearance].sheetButtonAttributeds;
+        self.sheetButtonDisabledAttributeds = [QMUIAlertController appearance].sheetButtonDisabledAttributeds;
+        self.sheetCancelButtonAttributeds = [QMUIAlertController appearance].sheetCancelButtonAttributeds;
+        self.sheetDestructiveButtonAttributeds = [QMUIAlertController appearance].sheetDestructiveButtonAttributeds;
+        self.sheetCancelButtonMarginTop = [QMUIAlertController appearance].sheetCancelButtonMarginTop;
+        self.sheetContentCornerRadius = [QMUIAlertController appearance].sheetContentCornerRadius;
+        self.sheetButtonHeight = [QMUIAlertController appearance].sheetButtonHeight;
+        self.sheetHeaderBackgroundColor = [QMUIAlertController appearance].sheetHeaderBackgroundColor;
+        self.sheetButtonBackgroundColor = [QMUIAlertController appearance].sheetButtonBackgroundColor;
+        self.sheetButtonHighlightBackgroundColor = [QMUIAlertController appearance].sheetButtonHighlightBackgroundColor;
+        self.sheetHeaderInsets = [QMUIAlertController appearance].sheetHeaderInsets;
+        self.sheetTitleMessageSpacing = [QMUIAlertController appearance].sheetTitleMessageSpacing;
+    }
 }
 
 - (void)setAlertButtonAttributeds:(NSDictionary<NSString *,id> *)alertButtonAttributeds {

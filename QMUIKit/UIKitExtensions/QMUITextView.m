@@ -38,28 +38,39 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.debug = NO;
-        self.delegate = self;
-        self.scrollsToTop = NO;
-        self.tintColor = TextFieldTintColor;
-        self.placeholderColor = UIColorPlaceholder;
-        self.placeholderMargins = UIEdgeInsetsZero;
-        self.autoResizable = NO;
-        self.maximumTextLength = NSUIntegerMax;
-        self.shouldResponseToProgrammaticallyTextChanges = YES;
-        
-        self.placeholderLabel = [[UILabel alloc] init];
-        self.placeholderLabel.font = UIFontMake(kSystemTextViewDefaultFontPointSize);
-        self.placeholderLabel.textColor = self.placeholderColor;
-        self.placeholderLabel.numberOfLines = 0;
-        self.placeholderLabel.alpha = 0;
-        [self addSubview:self.placeholderLabel];
-        
-        self.placeholderAttributes = [[NSMutableDictionary alloc] init];
-        
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTextChanged:) name:UITextViewTextDidChangeNotification object:nil];
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    self.debug = NO;
+    self.delegate = self;
+    self.scrollsToTop = NO;
+    self.tintColor = TextFieldTintColor;
+    self.placeholderColor = UIColorPlaceholder;
+    self.placeholderMargins = UIEdgeInsetsZero;
+    self.autoResizable = NO;
+    self.maximumTextLength = NSUIntegerMax;
+    self.shouldResponseToProgrammaticallyTextChanges = YES;
+    
+    self.placeholderLabel = [[UILabel alloc] init];
+    self.placeholderLabel.font = UIFontMake(kSystemTextViewDefaultFontPointSize);
+    self.placeholderLabel.textColor = self.placeholderColor;
+    self.placeholderLabel.numberOfLines = 0;
+    self.placeholderLabel.alpha = 0;
+    [self addSubview:self.placeholderLabel];
+    
+    self.placeholderAttributes = [[NSMutableDictionary alloc] init];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTextChanged:) name:UITextViewTextDidChangeNotification object:nil];
 }
 
 - (void)dealloc {
@@ -104,6 +115,44 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         
     } else {
         [super setText:text];
+        
+        // 如果不需要主动接管事件，则只要触发内部的监听即可，不用调用 delegate 系列方法
+        [self handleTextChanged:self];
+    }
+}
+
+- (void)setAttributedText:(NSAttributedString *)attributedText {
+    NSString *textBeforeChange = self.attributedText.string;
+    BOOL textDifferent = ![textBeforeChange isEqualToString:attributedText.string];
+    
+    // 如果前后文字没变化，则什么都不做
+    if (!textDifferent) {
+        [super setAttributedText:attributedText];
+        return;
+    }
+    
+    // 前后文字发生变化，则要根据是否主动接管 delegate 来决定是否要询问 delegate
+    if (self.shouldResponseToProgrammaticallyTextChanges) {
+        BOOL shouldChangeText = YES;
+        if ([self.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:)]) {
+            shouldChangeText = [self.delegate textView:self shouldChangeTextInRange:NSMakeRange(0, textBeforeChange.length) replacementText:attributedText.string];
+        }
+        
+        if (!shouldChangeText) {
+            // 不应该改变文字，所以连 super 都不调用，直接结束方法
+            return;
+        }
+        
+        // 应该改变文字，则调用 super 来改变文字，然后主动调用 textViewDidChange:
+        [super setAttributedText:attributedText];
+        if ([self.delegate respondsToSelector:@selector(textViewDidChange:)]) {
+            [self.delegate textViewDidChange:self];
+        }
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:UITextViewTextDidChangeNotification object:self];
+        
+    } else {
+        [super setAttributedText:attributedText];
         
         // 如果不需要主动接管事件，则只要触发内部的监听即可，不用调用 delegate 系列方法
         [self handleTextChanged:self];

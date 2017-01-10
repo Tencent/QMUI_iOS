@@ -53,23 +53,33 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        
-        _collectionViewLayout = [[QMUICollectionViewPagingLayout alloc] initWithStyle:QMUICollectionViewPagingLayoutStyleDefault];
-        self.collectionViewLayout.allowsMultipleItemScroll = NO;
-        
-        _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMakeWithSize(frame.size) collectionViewLayout:self.collectionViewLayout];
-        self.collectionView.delegate = self;
-        self.collectionView.dataSource = self;
-        self.collectionView.backgroundColor = UIColorClear;
-        self.collectionView.showsHorizontalScrollIndicator = NO;
-        self.collectionView.showsVerticalScrollIndicator = NO;
-        self.collectionView.scrollsToTop = NO;
-        [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:@"cell"];
-        [self addSubview:self.collectionView];
-        
-        self.loadingColor = UIColorWhite;
+        [self didInitializedWithFrame:frame];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitializedWithFrame:self.frame];
+    }
+    return self;
+}
+
+- (void)didInitializedWithFrame:(CGRect)frame {
+    _collectionViewLayout = [[QMUICollectionViewPagingLayout alloc] initWithStyle:QMUICollectionViewPagingLayoutStyleDefault];
+    self.collectionViewLayout.allowsMultipleItemScroll = NO;
+    
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMakeWithSize(frame.size) collectionViewLayout:self.collectionViewLayout];
+    self.collectionView.delegate = self;
+    self.collectionView.dataSource = self;
+    self.collectionView.backgroundColor = UIColorClear;
+    self.collectionView.showsHorizontalScrollIndicator = NO;
+    self.collectionView.showsVerticalScrollIndicator = NO;
+    self.collectionView.scrollsToTop = NO;
+    [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:@"cell"];
+    [self addSubview:self.collectionView];
+    
+    self.loadingColor = UIColorWhite;
 }
 
 - (void)layoutSubviews {

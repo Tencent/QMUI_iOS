@@ -78,19 +78,29 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        
-        self.progress = 0.0;
-        self.progressAnimationDuration = 0.5;
-        
-        self.backgroundColor = UIColorClear;
-        self.tintColor = UIColorBlue;
-        self.layer.contentsScale = ScreenScale;// 要显示指定一个倍数
-        self.layer.backgroundColor = UIColorClear.CGColor;
-        self.layer.borderWidth = 1.0;
-        
-        [self.layer setNeedsDisplay];
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    self.progress = 0.0;
+    self.progressAnimationDuration = 0.5;
+    
+    self.backgroundColor = UIColorClear;
+    self.tintColor = UIColorBlue;
+    self.layer.contentsScale = ScreenScale;// 要显示指定一个倍数
+    self.layer.backgroundColor = UIColorClear.CGColor;
+    self.layer.borderWidth = 1.0;
+    
+    [self.layer setNeedsDisplay];
 }
 
 - (void)setProgress:(float)progress {

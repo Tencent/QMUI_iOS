@@ -41,7 +41,7 @@
 @property(nonatomic, weak) id<QMUITextViewDelegate> delegate;
 
 /**
- *  输入框的文本样式，默认为nil。
+ *  输入框的文本样式，默认为nil。注意当使用了这个属性后，不要再使用 `setAttributedText:` 方法。
  */
 @property(nonatomic, copy) NSDictionary<NSString *, id> *textAttributes;
 
@@ -52,28 +52,28 @@
  *
  *  @see textAttributes
  */
-@property(nonatomic, assign) BOOL shouldResponseToProgrammaticallyTextChanges;
+@property(nonatomic, assign) IBInspectable BOOL shouldResponseToProgrammaticallyTextChanges;
 
 /**
  *  显示允许输入的最大文字长度，默认为 NSUIntegerMax，也即不限制长度。
  */
-@property(nonatomic, assign) NSUInteger maximumTextLength;
+@property(nonatomic, assign) IBInspectable NSUInteger maximumTextLength;
 
 /**
  *  在使用 maximumTextLength 功能的时候，是否应该把文字长度按照 [NSString (QMUI) qmui_lengthWhenCountingNonASCIICharacterAsTwo] 的方法来计算。
  *  默认为 NO。
  */
-@property(nonatomic, assign) BOOL shouldCountingNonASCIICharacterAsTwo;
+@property(nonatomic, assign) IBInspectable BOOL shouldCountingNonASCIICharacterAsTwo;
 
 /**
  *   placeholder 的文字
  */
-@property(nonatomic, copy) NSString *placeholder;
+@property(nonatomic, copy) IBInspectable NSString *placeholder;
 
 /**
  *  placeholder 文字的颜色
  */
-@property(nonatomic, strong) UIColor *placeholderColor;
+@property(nonatomic, strong) IBInspectable UIColor *placeholderColor;
 
 /**
  *  placeholder 在默认位置上的偏移（默认位置会自动根据 textContainerInset、contentInset 来调整）

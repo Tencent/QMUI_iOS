@@ -26,12 +26,18 @@
  *
  *  5. 配合 `QMUINavigationController` 使用时，可以得到 `willPopViewController`、`didPopViewController` 这两个时机
  *
- *  @warning 指定的 init 方法是 `initWithNibName:bundle:`，子类继承请重写这个方法
- *
  *  @see QMUINavigationTitleView
  *  @see QMUIEmptyView
  */
 @interface QMUICommonViewController : UIViewController
+
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
+
+/**
+ *  初始化时调用的方法，会在两个 NS_DESIGNATED_INITIALIZER 方法中被调用，所以子类如果需要同时支持两个 NS_DESIGNATED_INITIALIZER 方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个 NS_DESIGNATED_INITIALIZER 方法即可。
+ */
+- (void)didInitialized NS_REQUIRES_SUPER;
 
 /**
  *  QMUICommonViewController默认都会增加一个QMUINavigationTitleView的titleView，然后重写了setTitle来间接设置titleView的值。所以设置title的时候就跟系统的接口一样：self.title = xxx。
@@ -110,7 +116,7 @@
  *
  *  @warning initSubviews只负责subviews的init，不负责布局。布局相关的代码应该写在 <b>viewDidLayoutSubviews</b>
  */
-- (void)initSubviews;
+- (void)initSubviews NS_REQUIRES_SUPER;
 
 /**
  *  负责设置和更新navigationItem，包括title、leftBarButtonItem、rightBarButtonItem。viewDidLoad里面会自动调用，允许手动调用更新。目的在于分类代码，所有与navigationItem相关的代码都写在这里。在需要修改navigationItem的时候都只调用这个接口。
@@ -118,7 +124,7 @@
  *  @param isInEditMode 是否用于编辑模式下
  *  @param animated     是否使用动画呈现
  */
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated;
+- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated NS_REQUIRES_SUPER;
 
 /**
  *  负责设置和更新toolbarItem。在viewWillAppear里面自动调用（因为toolbar是navigationController的，是每个界面公用的，所以必须在每个界面的viewWillAppear时更新，不能放在viewDidLoad里），允许手动调用。目的在于分类代码，所有与toolbarItem相关的代码都写在这里。在需要修改toolbarItem的时候都只调用这个接口。
@@ -126,7 +132,7 @@
  *  @param isInEditMode 是否用于编辑模式下
  *  @param animated     是否使用动画呈现
  */
-- (void)setToolbarItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated;
+- (void)setToolbarItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated NS_REQUIRES_SUPER;
 
 /**
  *  动态字体的回调函数。

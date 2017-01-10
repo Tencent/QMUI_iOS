@@ -207,38 +207,48 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        
-        self.pagedEmotions = [[NSMutableArray alloc] init];
-        
-        _collectionViewLayout = [[UICollectionViewFlowLayout alloc] init];
-        self.collectionViewLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-        self.collectionViewLayout.minimumLineSpacing = 0;
-        self.collectionViewLayout.minimumInteritemSpacing = 0;
-        self.collectionViewLayout.sectionInset = UIEdgeInsetsZero;
-        
-        _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMakeWithSize(frame.size) collectionViewLayout:self.collectionViewLayout];
-        self.collectionView.backgroundColor = UIColorClear;
-        self.collectionView.scrollsToTop = NO;
-        self.collectionView.pagingEnabled = YES;
-        self.collectionView.showsHorizontalScrollIndicator = NO;
-        self.collectionView.dataSource = self;
-        self.collectionView.delegate = self;
-        [self.collectionView registerClass:[QMUIEmotionPageView class] forCellWithReuseIdentifier:@"page"];
-        [self addSubview:self.collectionView];
-        
-        _pageControl = [[UIPageControl alloc] init];
-        [self.pageControl addTarget:self action:@selector(handlePageControlEvent:) forControlEvents:UIControlEventValueChanged];
-        [self addSubview:self.pageControl];
-        
-        _sendButton = [[QMUIButton alloc] init];
-        [self.sendButton setTitle:@"发送" forState:UIControlStateNormal];
-        self.sendButton.contentEdgeInsets = UIEdgeInsetsMake(5, 17, 5, 17);
-        [self.sendButton sizeToFit];
-        [self addSubview:self.sendButton];
-        
-        self.debug = NO;
+        [self didInitializedWithFrame:frame];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitializedWithFrame:CGRectZero];
+    }
+    return self;
+}
+
+- (void)didInitializedWithFrame:(CGRect)frame {
+    self.debug = NO;
+    
+    self.pagedEmotions = [[NSMutableArray alloc] init];
+    
+    _collectionViewLayout = [[UICollectionViewFlowLayout alloc] init];
+    self.collectionViewLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    self.collectionViewLayout.minimumLineSpacing = 0;
+    self.collectionViewLayout.minimumInteritemSpacing = 0;
+    self.collectionViewLayout.sectionInset = UIEdgeInsetsZero;
+    
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMakeWithSize(frame.size) collectionViewLayout:self.collectionViewLayout];
+    self.collectionView.backgroundColor = UIColorClear;
+    self.collectionView.scrollsToTop = NO;
+    self.collectionView.pagingEnabled = YES;
+    self.collectionView.showsHorizontalScrollIndicator = NO;
+    self.collectionView.dataSource = self;
+    self.collectionView.delegate = self;
+    [self.collectionView registerClass:[QMUIEmotionPageView class] forCellWithReuseIdentifier:@"page"];
+    [self addSubview:self.collectionView];
+    
+    _pageControl = [[UIPageControl alloc] init];
+    [self.pageControl addTarget:self action:@selector(handlePageControlEvent:) forControlEvents:UIControlEventValueChanged];
+    [self addSubview:self.pageControl];
+    
+    _sendButton = [[QMUIButton alloc] init];
+    [self.sendButton setTitle:@"发送" forState:UIControlStateNormal];
+    self.sendButton.contentEdgeInsets = UIEdgeInsetsMake(5, 17, 5, 17);
+    [self.sendButton sizeToFit];
+    [self addSubview:self.sendButton];
 }
 
 - (void)setEmotions:(NSArray<QMUIEmotion *> *)emotions {

@@ -26,37 +26,7 @@
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        
-        // 如果不指定初始值<0，那在setCellUIByPosition:时就会因为默认值是0而被识别为“无需更新”，从而导致背景图错误
-        _cellPosition = QMUITableViewCellPositionNone;
-        
-        _style = style;
-        _enabled = YES;
-        _imageEdgeInsets = UIEdgeInsetsZero;
-        _textLabelEdgeInsets = UIEdgeInsetsZero;
-        _detailTextLabelEdgeInsets = UIEdgeInsetsZero;
-        _accessoryHitTestEdgeInsets = UIEdgeInsetsMake(-12, -12, -12, -12);
-        
-        self.textLabel.font = UIFontMake(16);
-        self.textLabel.textColor = TableViewCellTitleLabelColor;
-        self.textLabel.backgroundColor = UIColorClear;
-        
-        self.detailTextLabel.font = UIFontMake(15);
-        self.detailTextLabel.textColor = TableViewCellDetailLabelColor;
-        self.detailTextLabel.backgroundColor = UIColorClear;
-        
-        // iOS7下背景色默认白色，之前的版本背景色继承tableView，这里统一设置为白色
-        // iOS6其实下面这几句是没用的，会被自己绘制的覆盖了
-        self.backgroundColor = TableViewCellBackgroundColor;
-        UIView *selectedBackgroundView = [[UIView alloc] init];
-        selectedBackgroundView.backgroundColor = TableViewCellSelectedBackgroundColor;
-        self.selectedBackgroundView = selectedBackgroundView;
-        
-        // 因为在hitTest里扩大了accessoryView的响应范围，因此提高了系统一个与此相关的bug的出现几率，所以又在scrollView.delegate里做一些补丁性质的东西来修复
-        if ([[self.subviews objectAtIndex:0] isKindOfClass:[UIScrollView class]]) {
-            UIScrollView *scrollView = (UIScrollView *)[self.subviews objectAtIndex:0];
-            scrollView.delegate = self;
-        }
+        [self didInitializedWithStyle:style];
     }
     return self;
 }
@@ -70,6 +40,45 @@
 
 - (instancetype)initForTableView:(QMUITableView *)tableView withReuseIdentifier:(NSString *)reuseIdentifier {
     return [self initForTableView:tableView withStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitializedWithStyle:UITableViewCellStyleDefault];
+    }
+    return self;
+}
+
+- (void)didInitializedWithStyle:(UITableViewCellStyle)style {
+    _cellPosition = QMUITableViewCellPositionNone;
+    
+    _style = style;
+    _enabled = YES;
+    _imageEdgeInsets = UIEdgeInsetsZero;
+    _textLabelEdgeInsets = UIEdgeInsetsZero;
+    _detailTextLabelEdgeInsets = UIEdgeInsetsZero;
+    _accessoryHitTestEdgeInsets = UIEdgeInsetsMake(-12, -12, -12, -12);
+    
+    self.textLabel.font = UIFontMake(16);
+    self.textLabel.textColor = TableViewCellTitleLabelColor;
+    self.textLabel.backgroundColor = UIColorClear;
+    
+    self.detailTextLabel.font = UIFontMake(15);
+    self.detailTextLabel.textColor = TableViewCellDetailLabelColor;
+    self.detailTextLabel.backgroundColor = UIColorClear;
+    
+    // iOS7下背景色默认白色，之前的版本背景色继承tableView，这里统一设置为白色
+    // iOS6其实下面这几句是没用的，会被自己绘制的覆盖了
+    self.backgroundColor = TableViewCellBackgroundColor;
+    UIView *selectedBackgroundView = [[UIView alloc] init];
+    selectedBackgroundView.backgroundColor = TableViewCellSelectedBackgroundColor;
+    self.selectedBackgroundView = selectedBackgroundView;
+    
+    // 因为在hitTest里扩大了accessoryView的响应范围，因此提高了系统一个与此相关的bug的出现几率，所以又在scrollView.delegate里做一些补丁性质的东西来修复
+    if ([self.subviews.firstObject isKindOfClass:[UIScrollView class]]) {
+        UIScrollView *scrollView = (UIScrollView *)[self.subviews objectAtIndex:0];
+        scrollView.delegate = self;
+    }
 }
 
 // 解决iOS8的cell中得separatorInset受layoutMargins影响的bug

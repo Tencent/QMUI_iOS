@@ -171,7 +171,7 @@ static char kAssociatedObjectKey_borderPosition;
 }
 
 - (QMUIBorderViewPosition)qmui_borderPosition {
-    return (QMUIBorderViewPosition)[objc_getAssociatedObject(self, &kAssociatedObjectKey_borderPosition) integerValue];
+    return (QMUIBorderViewPosition)[objc_getAssociatedObject(self, &kAssociatedObjectKey_borderPosition) unsignedIntegerValue];
 }
 
 static char kAssociatedObjectKey_borderWidth;

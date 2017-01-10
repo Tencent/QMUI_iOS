@@ -14,10 +14,21 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        self.minimumItemSize = CGSizeZero;
-        self.maximumItemSize = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    self.minimumItemSize = CGSizeZero;
+    self.maximumItemSize = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {

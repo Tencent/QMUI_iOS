@@ -12,19 +12,12 @@
 
 @interface QMUILabel ()
 
-@property(nonatomic,strong) UIColor *tempBackgroundColor;
-@property(nonatomic,strong) UILongPressGestureRecognizer *longGestureRecognizer;
+@property(nonatomic, strong) UIColor *tempBackgroundColor;
+@property(nonatomic, strong) UILongPressGestureRecognizer *longGestureRecognizer;
 @end
 
 
 @implementation QMUILabel
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    if (self = [super initWithFrame:frame]) {
-        self.canPerformCopyAction = NO;
-    }
-    return self;
-}
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
