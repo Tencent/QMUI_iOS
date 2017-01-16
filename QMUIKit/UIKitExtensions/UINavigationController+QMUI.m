@@ -54,7 +54,10 @@ static char originGestureDelegateKey;
     UIViewController *viewController = [self topViewController];
     
     BOOL canPopViewController = YES;
-    if ([viewController respondsToSelector:@selector(shouldHoldBackButtonEvent)] && [viewController shouldHoldBackButtonEvent] &&
+    //item == viewController.navigationItem to fix: 如果前后2个controller都需要hold时的BUG.
+    if ((item == viewController.navigationItem) &&
+        [viewController respondsToSelector:@selector(shouldHoldBackButtonEvent)] &&
+        [viewController shouldHoldBackButtonEvent] &&
         [viewController respondsToSelector:@selector(canPopViewController)]) {
         canPopViewController = [viewController canPopViewController];
     }
