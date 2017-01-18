@@ -31,7 +31,7 @@
 }
 
 + (BOOL)needsDisplayForKey:(NSString *)key {
-    return [key isEqualToString:@"progress"] || [super needsDisplayForKey:key];;
+    return [key isEqualToString:@"progress"] || [super needsDisplayForKey:key];
 }
 
 - (id<CAAction>)actionForKey:(NSString *)event {

@@ -522,7 +522,18 @@ static QMUIAlertController *alertControllerAppearance;
         contentOriginY = 0;
         NSArray *newOrderActions = [self orderedAlertActions:self.alertActions];
         if (self.alertActions.count > 0) {
+            BOOL verticalLayout = YES;
             if (self.alertActions.count == 2) {
+                CGFloat halfWidth = CGRectGetWidth(self.buttonScrollView.bounds) / 2;
+                QMUIAlertAction *action1 = newOrderActions[0];
+                QMUIAlertAction *action2 = newOrderActions[1];
+                CGSize actionSize1 = [action1.button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+                CGSize actionSize2 = [action2.button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+                if (actionSize1.width < halfWidth && actionSize2.width < halfWidth) {
+                    verticalLayout = NO;
+                }
+            }
+            if (!verticalLayout) {
                 QMUIAlertAction *action1 = newOrderActions[1];
                 action1.buttonWrapView.frame = CGRectMake(0, contentOriginY + PixelOne, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
                 QMUIAlertAction *action2 = newOrderActions[0];
