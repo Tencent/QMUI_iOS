@@ -59,6 +59,9 @@ github "QMUI/QMUI_iOS" ~>1.2
 ### 作为子项目
 具体请查看我们的[开始使用](http://qmuiteam.com/ios/page/start.html#qw_downloadForUse)文档。
 
+### iOS 7 中的额外处理
+
+QMUI 中的选图/储存图片系列控件使用了 PhotoKit，因此在 iOS 7 中必须引入 `Photos.framework`，如何引入请参考[这里](http://qmuiteam.com/ios/page/start.html#qw_photoFramework)。
 ## 相关文档
 
 接口文档：[http://qmuiteam.com/ios/page/document.html](http://qmuiteam.com/ios/page/document.html)
