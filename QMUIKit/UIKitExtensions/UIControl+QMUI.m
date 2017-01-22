@@ -26,7 +26,7 @@ static char kAssociatedObjectKey_outsideEdge;
 @implementation UIControl (QMUI)
 
 - (void)setQmui_needsTakeOverTouchEvent:(BOOL)qmui_needsTakeOverTouchEvent {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent, [NSNumber numberWithBool:qmui_needsTakeOverTouchEvent], OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent, [NSNumber numberWithBool:qmui_needsTakeOverTouchEvent], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (BOOL)qmui_needsTakeOverTouchEvent {
@@ -34,7 +34,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)setCanSetHighlighted:(BOOL)canSetHighlighted {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_canSetHighlighted, [NSNumber numberWithBool:canSetHighlighted], OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_canSetHighlighted, [NSNumber numberWithBool:canSetHighlighted], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (BOOL)canSetHighlighted {
@@ -42,7 +42,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)setTouchEndCount:(NSInteger)touchEndCount {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_touchEndCount, @(touchEndCount), OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_touchEndCount, @(touchEndCount), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (NSInteger)touchEndCount {

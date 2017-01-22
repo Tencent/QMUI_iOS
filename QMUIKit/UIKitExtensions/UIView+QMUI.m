@@ -233,7 +233,10 @@ static char kAssociatedObjectKey_borderLayer;
     
     if (!self.qmui_borderLayer) {
         self.qmui_borderLayer = [CAShapeLayer layer];
+        // 移除属于CALayer部分的属性的隐性动画
         [self.qmui_borderLayer qmui_removeDefaultAnimations];
+        // 移除属于CAShapeLayer部分的属性的隐性动画
+        [self removeDefautShapeLayerAnimations];
         [self.layer addSublayer:self.qmui_borderLayer];
         
         // 设置默认值
@@ -274,6 +277,19 @@ static char kAssociatedObjectKey_borderLayer;
     }
     
     self.qmui_borderLayer.path = path.CGPath;
+}
+
+// 移除qmui_borderLayer属于CAShapeLayer部分的属性的隐性动画
+- (void)removeDefautShapeLayerAnimations {
+    if (!self.qmui_borderLayer) {
+        return;
+    }
+    NSMutableDictionary *dict = [self.qmui_borderLayer.actions mutableCopy];
+    dict[@"strokeColor"] = [NSNull null];
+    dict[@"lineWidth"] = [NSNull null];
+    dict[@"lineDashPhase"] = [NSNull null];
+    dict[@"path"] = [NSNull null];
+    self.qmui_borderLayer.actions = [NSDictionary dictionaryWithDictionary:dict];
 }
 
 @end

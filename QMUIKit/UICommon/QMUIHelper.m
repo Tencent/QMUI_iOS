@@ -130,7 +130,7 @@ NSString *const QMUIResourcesQQEmotionBundleName = @"QMUI_QQEmotion.bundle";
 
 static char kAssociatedObjectKey_KeyboardVisible;
 - (void)setKeyboardVisible:(BOOL)argv {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_KeyboardVisible, @(argv), OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_KeyboardVisible, @(argv), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (BOOL)isKeyboardVisible {

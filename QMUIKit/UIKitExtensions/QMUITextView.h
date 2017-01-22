@@ -13,7 +13,17 @@
 @protocol QMUITextViewDelegate <UITextViewDelegate>
 
 @optional
+/**
+ *  输入框高度发生变化时的回调，仅当 `autoResizable` 属性为 YES 时才有效
+ */
 - (void)textView:(QMUITextView *)textView contentHeightAfterTextChanged:(CGFloat)height;
+
+/**
+ *  用户点击键盘的 return 按钮时的回调（return 按钮本质上是输入换行符“\n”）
+ *  @return 返回 YES 表示程序认为当前的点击是为了进行类似“发送”之类的操作，所以最终“\n”并不会被输入到文本框里。返回 NO 表示程序认为当前的点击只是普通的输入，所以会继续询问 textView:shouldChangeTextInRange:replacementText: 方法，根据该方法的返回结果来决定是否要输入这个“\n”。
+ *  @see maximumTextLength
+ */
+- (BOOL)textViewShouldReturn:(QMUITextView *)textView;
 
 /**
  *  配合 `maximumTextLength` 属性使用，在输入文字超过限制时被调用。例如如果你的输入框在按下键盘“Done”按键时做一些发送操作，就可以在这个方法里判断 [replacementText isEqualToString:@"\n"]。

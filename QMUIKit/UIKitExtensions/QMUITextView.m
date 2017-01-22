@@ -396,6 +396,15 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (BOOL)textView:(QMUITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
     if (self.debug) NSLog(@"textView.text(%@ | %@) = %@\nmarkedTextRange = %@\nrange = %@\ntext = %@", @(textView.text.length), @(textView.text.qmui_lengthWhenCountingNonASCIICharacterAsTwo), textView.text, textView.markedTextRange, NSStringFromRange(range), text);
     
+    if ([text isEqualToString:@"\n"]) {
+        if ([self.delegate respondsToSelector:@selector(textViewShouldReturn:)]) {
+            BOOL shouldReturn = [self.delegate textViewShouldReturn:self];
+            if (shouldReturn) {
+                return NO;
+            }
+        }
+    }
+    
     if (textView.maximumTextLength < NSUIntegerMax) {
         
         // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 这里不会限制，而是放在 didChange 那里限制。
@@ -412,6 +421,14 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         NSUInteger rangeLength = self.shouldCountingNonASCIICharacterAsTwo ? [textView.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
         BOOL textWillOutofMaximumTextLength = [self lengthWithString:textView.text] - rangeLength + [self lengthWithString:text] > textView.maximumTextLength;
         if (textWillOutofMaximumTextLength) {
+            // 当输入的文本达到最大长度限制后，此时继续点击 return 按钮（相当于尝试插入“\n”），就会认为总文字长度已经超过最大长度限制，所以此次 return 按钮的点击被拦截，外界无法感知到有这个 return 事件发生，所以这里为这种情况做了特殊保护
+            if ([self lengthWithString:textView.text] - rangeLength == textView.maximumTextLength && [text isEqualToString:@"\n"]) {
+                if ([textView.originalDelegate respondsToSelector:_cmd]) {
+                    // 不管外面 return YES 或 NO，都不允许输入了，否则会超出 maximumTextLength。
+                    [textView.originalDelegate textView:textView shouldChangeTextInRange:range replacementText:text];
+                    return NO;
+                }
+            }
             // 将要插入的文字裁剪成多长，就可以让它插入了
             NSInteger substringLength = textView.maximumTextLength - [self lengthWithString:textView.text] + rangeLength;
             
