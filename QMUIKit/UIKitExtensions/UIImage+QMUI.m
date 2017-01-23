@@ -77,12 +77,8 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     UIGraphicsBeginImageContextWithOptions(self.size, NO, self.scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
-    CGRect area = CGRectMake(0, 0, self.size.width, self.size.height);
-    CGContextScaleCTM(context, 1, -1);
-    CGContextTranslateCTM(context, 0, -area.size.height);
-    CGContextSetBlendMode(context, kCGBlendModeMultiply);
-    CGContextSetAlpha(context, alpha);
-    CGContextDrawImage(context, area, self.CGImage);
+    CGRect drawingRect = CGRectMake(0, 0, self.size.width, self.size.height);
+    [self drawInRect:drawingRect blendMode:kCGBlendModeNormal alpha:alpha];
     UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return imageOut;
@@ -145,10 +141,6 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     UIGraphicsBeginImageContextWithOptions(size, NO, scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
-    // 翻转坐标系，因为UIKit和Quartz的坐标系不一样
-    CGContextTranslateCTM(context, 0.0, size.height);
-    CGContextScaleCTM(context, 1.0, -1.0);
-    CGContextSetBlendMode(context, kCGBlendModeCopy);
     CGSize imageSize = self.size;
     CGRect drawingRect = CGRectZero;
     
@@ -169,7 +161,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         drawingRect = CGRectSetXY(drawingRect, flatfSpecificScale((size.width - CGRectGetWidth(drawingRect)) / 2.0, scale), flatfSpecificScale((size.height - CGRectGetHeight(drawingRect)) / 2, scale));
     }
     
-    CGContextDrawImage(context, drawingRect, self.CGImage);
+    [self drawInRect:drawingRect];
     UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return imageOut;
