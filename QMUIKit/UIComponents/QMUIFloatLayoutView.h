@@ -9,7 +9,9 @@
 #import <UIKit/UIKit.h>
 
 /**
- *  做类似 css 里的 float:left 的布局，自行使用 addSubview: 将子 View 添加进来即可。
+ *  做类似 CSS 里的 float:left 的布局，自行使用 addSubview: 将子 View 添加进来即可。
+ *
+ *  支持通过 `contentMode` 属性修改子 View 的对齐方式，目前仅支持 `UIViewContentModeLeft` 和 `UIViewContentModeRight`，默认为 `UIViewContentModeLeft`。
  */
 @interface QMUIFloatLayoutView : UIView
 

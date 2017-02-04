@@ -9,6 +9,8 @@
 #import "QMUIFloatLayoutView.h"
 #import "QMUICommonDefines.h"
 
+#define ValueSwitchAlignLeftOrRight(valueLeft, valueRight) ([self shouldAlignRight] ? valueRight : valueLeft)
+
 @implementation QMUIFloatLayoutView
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -27,6 +29,7 @@
 }
 
 - (void)didInitialized {
+    self.contentMode = UIViewContentModeLeft;
     self.minimumItemSize = CGSizeZero;
     self.maximumItemSize = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
 }
@@ -47,7 +50,8 @@
         return CGSizeMake(UIEdgeInsetsGetHorizontalValue(self.padding), UIEdgeInsetsGetVerticalValue(self.padding));
     }
     
-    CGPoint itemViewOrigin = CGPointMake(self.padding.left, self.padding.top);
+    // 如果是左对齐，则代表 item 左上角的坐标，如果是右对齐，则代表 item 右上角的坐标
+    CGPoint itemViewOrigin = CGPointMake(ValueSwitchAlignLeftOrRight(self.padding.left, size.width - self.padding.right), self.padding.top);
     CGFloat currentRowMaxY = itemViewOrigin.y;
     
     for (NSInteger i = 0, l = visibleItemViews.count; i < l; i ++) {
@@ -57,21 +61,24 @@
         itemViewSize.width = fmaxf(self.minimumItemSize.width, itemViewSize.width);
         itemViewSize.height = fmaxf(self.minimumItemSize.height, itemViewSize.height);
         
-        if (itemViewOrigin.x + self.itemMargins.left + itemViewSize.width > size.width - self.padding.right) {
-            // 换行，左边第一个 item 是不考虑 itemMargins.left 的
+        BOOL shouldBreakline = i == 0 ? YES : ValueSwitchAlignLeftOrRight(itemViewOrigin.x + self.itemMargins.left + itemViewSize.width + self.padding.right > size.width,
+                                                           itemViewOrigin.x - self.itemMargins.right - itemViewSize.width - self.padding.left < 0);
+        if (shouldBreakline) {
+            // 换行，每一行第一个 item 是不考虑 itemMargins 的
             if (shouldLayout) {
-                itemView.frame = CGRectMake(self.padding.left, currentRowMaxY + self.itemMargins.top, itemViewSize.width, itemViewSize.height);
+                itemView.frame = CGRectMake(ValueSwitchAlignLeftOrRight(self.padding.left, size.width - self.padding.right - itemViewSize.width), currentRowMaxY + self.itemMargins.top, itemViewSize.width, itemViewSize.height);
             }
             
-            itemViewOrigin.x = self.padding.left + itemViewSize.width + self.itemMargins.right;
+            itemViewOrigin.x = ValueSwitchAlignLeftOrRight(self.padding.left + itemViewSize.width + self.itemMargins.right, size.width - self.padding.right - itemViewSize.width - self.itemMargins.left);
             itemViewOrigin.y = currentRowMaxY;
         } else {
             // 当前行放得下
             if (shouldLayout) {
-                itemView.frame = CGRectMake(itemViewOrigin.x + self.itemMargins.left, itemViewOrigin.y + self.itemMargins.top, itemViewSize.width, itemViewSize.height);
+                itemView.frame = CGRectMake(ValueSwitchAlignLeftOrRight(itemViewOrigin.x + self.itemMargins.left, itemViewOrigin.x - self.itemMargins.right - itemViewSize.width), itemViewOrigin.y + self.itemMargins.top, itemViewSize.width, itemViewSize.height);
             }
             
-            itemViewOrigin.x += UIEdgeInsetsGetHorizontalValue(self.itemMargins) + itemViewSize.width;
+            itemViewOrigin.x = ValueSwitchAlignLeftOrRight(itemViewOrigin.x + UIEdgeInsetsGetHorizontalValue(self.itemMargins) + itemViewSize.width,
+                                                           itemViewOrigin.x - itemViewSize.width - UIEdgeInsetsGetHorizontalValue(self.itemMargins));
         }
         
         currentRowMaxY = fmaxf(currentRowMaxY, itemViewOrigin.y + UIEdgeInsetsGetVerticalValue(self.itemMargins) + itemViewSize.height);
@@ -95,6 +102,10 @@
     }
     
     return visibleItemViews;
+}
+
+- (BOOL)shouldAlignRight {
+    return self.contentMode == UIViewContentModeRight;
 }
 
 @end
