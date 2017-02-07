@@ -37,3 +37,13 @@
 - (BOOL)qmui_isViewLoadedAndVisible;
 
 @end
+
+@interface UIViewController (Runtime)
+
+/**
+ *  判断当前类是否有重写某个指定的 UIViewController 的方法
+ *  @param selector 要判断的方法
+ *  @return YES 表示当前类重写了指定的方法，NO 表示没有重写，使用的是 UIViewController 默认的实现
+ */
+- (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector;
+@end

@@ -54,6 +54,16 @@
 
 @end
 
+@interface UIView (Runtime)
+
+/**
+ *  判断当前类是否有重写某个指定的 UIView 的方法
+ *  @param selector 要判断的方法
+ *  @return YES 表示当前类重写了指定的方法，NO 表示没有重写，使用的是 UIView 默认的实现
+ */
+- (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector;
+@end
+
 
 /**
  *  Debug UIView 的时候用，对某个 view 的 subviews 都添加一个半透明的背景色，方面查看 view 的布局情况

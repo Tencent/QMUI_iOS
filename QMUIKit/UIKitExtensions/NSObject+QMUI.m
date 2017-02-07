@@ -11,6 +11,25 @@
 
 @implementation NSObject (QMUI)
 
+- (BOOL)qmui_hasOverrideMethod:(SEL)selector ofSuperclass:(Class)superclass {
+    if (![[self class] isSubclassOfClass:superclass]) {
+        NSLog(@"%s, %@ 并非 %@ 的父类", __func__, NSStringFromClass(superclass), NSStringFromClass([self class]));
+        return NO;
+    }
+    
+    if (![superclass instancesRespondToSelector:selector]) {
+        NSLog(@"%s, 父类 %@ 自己本来就无法响应 %@ 方法", __func__, NSStringFromClass(superclass), NSStringFromSelector(selector));
+        return NO;
+    }
+    
+    Method superclassMethod = class_getInstanceMethod(superclass, selector);
+    Method instanceMethod = class_getInstanceMethod([self class], selector);
+    if (!instanceMethod || instanceMethod == superclassMethod) {
+        return NO;
+    }
+    return YES;
+}
+
 - (id)qmui_performSelectorToSuperclass:(SEL)aSelector {
     struct objc_super mySuper;
     mySuper.receiver = self;

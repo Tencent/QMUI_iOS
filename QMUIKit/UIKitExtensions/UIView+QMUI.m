@@ -12,6 +12,7 @@
 #import "QMUIHelper.h"
 #import "CALayer+QMUI.h"
 #import "UIColor+QMUI.h"
+#import "NSObject+QMUI.h"
 
 @interface UIView ()
 
@@ -73,6 +74,60 @@
 
 - (void)qmui_removeAllSubviews {
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+}
+
+@end
+
+
+@implementation UIView (Runtime)
+
+- (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector {
+    // 排序依照 Xcode Interface Builder 里的控件排序，但保证子类在父类前面
+    NSMutableArray<Class> *viewSuperclasses = [[NSMutableArray alloc] initWithObjects:
+                                               [UILabel class],
+                                               [UIButton class],
+                                               [UISegmentedControl class],
+                                               [UITextField class],
+                                               [UISlider class],
+                                               [UISwitch class],
+                                               [UIActivityIndicatorView class],
+                                               [UIProgressView class],
+                                               [UIPageControl class],
+                                               [UIStepper class],
+                                               [UITableView class],
+                                               [UITableViewCell class],
+                                               [UIImageView class],
+                                               [UICollectionView class],
+                                               [UICollectionViewCell class],
+                                               [UICollectionReusableView class],
+                                               [UITextView class],
+                                               [UIScrollView class],
+                                               [UIDatePicker class],
+                                               [UIPickerView class],
+                                               [UIWebView class],
+                                               [UIWindow class],
+                                               [UINavigationBar class],
+                                               [UIToolbar class],
+                                               [UITabBar class],
+                                               [UISearchBar class],
+                                               [UIControl class],
+                                               [UIView class],
+                                               nil];
+    
+    if (NSClassFromString(@"UIStackView")) {
+        [viewSuperclasses addObject:[UIStackView class]];
+    }
+    if (NSClassFromString(@"UIVisualEffectView")) {
+        [viewSuperclasses addObject:[UIVisualEffectView class]];
+    }
+    
+    for (NSInteger i = 0, l = viewSuperclasses.count; i < l; i++) {
+        Class superclass = viewSuperclasses[i];
+        if ([self qmui_hasOverrideMethod:selector ofSuperclass:superclass]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 @end

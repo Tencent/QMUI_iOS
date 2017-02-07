@@ -10,6 +10,7 @@
 #import "QMUINavigationController.h"
 #import <objc/runtime.h>
 #import "QMUICommonDefines.h"
+#import "NSObject+QMUI.h"
 
 @implementation UIViewController (QMUI)
 
@@ -86,6 +87,38 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
 
 - (BOOL)qmui_isViewLoadedAndVisible {
     return self.isViewLoaded && self.view.window;
+}
+
+@end
+
+@implementation UIViewController (Runtime)
+
+- (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector {
+    // 排序依照 Xcode Interface Builder 里的控件排序，但保证子类在父类前面
+    NSMutableArray<Class> *viewControllerSuperclasses = [[NSMutableArray alloc] initWithObjects:
+                                               [UIImagePickerController class],
+                                               [UINavigationController class],
+                                               [UITableViewController class],
+                                               [UICollectionViewController class],
+                                               [UITabBarController class],
+                                               [UISplitViewController class],
+                                               [UIPageViewController class],
+                                               [UIViewController class],
+                                               nil];
+    
+    if (NSClassFromString(@"UIAlertController")) {
+        [viewControllerSuperclasses addObject:[UIAlertController class]];
+    }
+    if (NSClassFromString(@"UISearchController")) {
+        [viewControllerSuperclasses addObject:[UISearchController class]];
+    }
+    for (NSInteger i = 0, l = viewControllerSuperclasses.count; i < l; i++) {
+        Class superclass = viewControllerSuperclasses[i];
+        if ([self qmui_hasOverrideMethod:selector ofSuperclass:superclass]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 @end

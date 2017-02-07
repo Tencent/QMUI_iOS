@@ -11,6 +11,15 @@
 @interface NSObject (QMUI)
 
 /**
+ 判断当前类是否有重写某个父类的指定方法
+
+ @param selector 要判断的方法
+ @param superclass 要比较的父类，必须是当前类的某个 superclass
+ @return YES 表示子类有重写了父类方法，NO 表示没有重写（异常情况也返回 NO，例如当前类与指定的类并非父子关系、父类本身也无法响应指定的方法）
+ */
+- (BOOL)qmui_hasOverrideMethod:(SEL)selector ofSuperclass:(Class)superclass;
+
+/**
  对 super 发送消息
 
  @param aSelector 要发送的消息

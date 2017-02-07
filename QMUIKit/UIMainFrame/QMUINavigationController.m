@@ -13,6 +13,7 @@
 #import "QMUICommonViewController.h"
 #import "QMUIButton.h"
 #import "QMUIHelper.h"
+#import "UIViewController+QMUI.h"
 #import "UINavigationController+QMUI.h"
 
 @interface QMUINavigationController () <UIGestureRecognizerDelegate>
@@ -298,11 +299,11 @@
 #pragma mark - 屏幕旋转
 
 - (BOOL)shouldAutorotate {
-    return [self.topViewController respondsToSelector:@selector(shouldAutorotate)] ? [self.topViewController shouldAutorotate] : YES;
+    return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController shouldAutorotate] : YES;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return [self.topViewController respondsToSelector:@selector(supportedInterfaceOrientations)] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
+    return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 
 @end
