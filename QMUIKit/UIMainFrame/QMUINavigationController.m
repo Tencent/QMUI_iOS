@@ -297,16 +297,12 @@
 
 #pragma mark - 屏幕旋转
 
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
-    return [self.topViewController respondsToSelector:@selector(shouldAutorotateToInterfaceOrientation:)] ? [self.topViewController shouldAutorotateToInterfaceOrientation:toInterfaceOrientation] : toInterfaceOrientation == UIInterfaceOrientationPortrait;
-}
-
 - (BOOL)shouldAutorotate {
-    return [self.topViewController respondsToSelector:@selector(shouldAutorotate)] ? [self.topViewController shouldAutorotate] : NO;
+    return [self.topViewController respondsToSelector:@selector(shouldAutorotate)] ? [self.topViewController shouldAutorotate] : YES;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return [self.topViewController respondsToSelector:@selector(supportedInterfaceOrientations)] ? [self.topViewController supportedInterfaceOrientations] : UIInterfaceOrientationMaskPortrait;
+    return [self.topViewController respondsToSelector:@selector(supportedInterfaceOrientations)] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 
 @end
