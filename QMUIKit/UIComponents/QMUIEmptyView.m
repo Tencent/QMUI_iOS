@@ -36,6 +36,21 @@
 }
 
 - (void)didInitialized {
+    // 系统默认会在view即将被add到window上时才设置这些值，这个时机有点晚了，因为我们可能在add到window之前就进行sizeThatFits计算或对view进行截图等操作，因此这里提前到init时就去做
+    QMUIEmptyView *appearance = [QMUIEmptyView appearance];
+    _imageViewInsets = appearance.imageViewInsets;
+    _loadingViewInsets = appearance.loadingViewInsets;
+    _textLabelInsets = appearance.textLabelInsets;
+    _detailTextLabelInsets = appearance.detailTextLabelInsets;
+    _actionButtonInsets = appearance.actionButtonInsets;
+    _verticalOffset = appearance.verticalOffset;
+    _textLabelFont = appearance.textLabelFont;
+    _detailTextLabelFont = appearance.detailTextLabelFont;
+    _actionButtonFont = appearance.actionButtonFont;
+    _textLabelTextColor = appearance.textLabelTextColor;
+    _detailTextLabelTextColor = appearance.detailTextLabelTextColor;
+    _actionButtonTitleColor = appearance.actionButtonTitleColor;
+    
     self.scrollView = [[UIScrollView alloc] init];
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
