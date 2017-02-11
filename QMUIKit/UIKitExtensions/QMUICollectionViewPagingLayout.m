@@ -167,7 +167,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
 }
 
 - (CGPoint)targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset withScrollingVelocity:(CGPoint)velocity {
-    CGFloat itemSpacing = _finalItemSize.width + self.minimumLineSpacing;
+    CGFloat itemSpacing = _finalItemSize.width + self.minimumInteritemSpacing;
     
     if (!self.allowsMultipleItemScroll || fabs(velocity.x) <= fabs(self.mutipleItemScrollVelocityLimit)) {
         // 只滚动一页
