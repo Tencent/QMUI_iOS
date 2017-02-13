@@ -13,6 +13,31 @@
 
 @implementation UILabel (QMUI)
 
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ReplaceMethod([self class], @selector(setText:), @selector(qmui_setText:));
+    });
+}
+
+- (void)qmui_setText:(NSString *)text {
+    [self qmui_setText:text];
+    if (self.qmui_textAttributes && text) {
+        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:self.qmui_textAttributes];
+        self.attributedText = attributedString;
+    }
+}
+
+static char kAssociatedObjectKey_textAttributes;
+- (void)setQmui_textAttributes:(NSDictionary<NSString *, id> *)qmui_textAttributes {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_textAttributes, qmui_textAttributes, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    [self setText:self.text];
+}
+
+- (NSDictionary *)qmui_textAttributes {
+    return (NSDictionary *)objc_getAssociatedObject(self, &kAssociatedObjectKey_textAttributes);
+}
+
 - (instancetype)initWithFont:(UIFont *)font textColor:(UIColor *)textColor {
     if (self = [super init]) {
         self.font = font;

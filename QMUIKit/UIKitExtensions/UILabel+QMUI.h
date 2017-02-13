@@ -13,6 +13,13 @@
 - (instancetype)initWithFont:(UIFont *)font textColor:(UIColor *)textColor;
 
 /**
+ * 当设置了这个属性后，setText: 方法会自动把文字转成 NSAttributedString 然后再添加上去，无需每次都自己构造 attributedString
+ * 如果先调用 setText: 然后再设置这个 textAttributes，则已经设置过的 text 仍然会被转换成 NSAttributedString
+ * 默认为nil
+ */
+@property(nonatomic, copy) NSDictionary<NSString *, id> *qmui_textAttributes;
+
+/**
  * 将目标UILabel的样式属性设置到当前UILabel上
  *
  * 将会复制的样式属性包括：font、textColor、backgroundColor
