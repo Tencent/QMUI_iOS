@@ -996,6 +996,11 @@ const CGFloat QMUIGhostButtonCornerRadiusAdjustsBounds = -1;
     }
 }
 
+- (void)setCornerRadius:(CGFloat)cornerRadius {
+    _cornerRadius = cornerRadius;
+    [self setNeedsLayout];
+}
+
 @end
 
 @interface QMUIGhostButton (UIAppearance)
@@ -1139,6 +1144,11 @@ const CGFloat QMUIFillButtonCornerRadiusAdjustsBounds = -1;
     } else {
         self.layer.cornerRadius = flatf(CGRectGetHeight(self.bounds) / 2);
     }
+}
+
+- (void)setCornerRadius:(CGFloat)cornerRadius {
+    _cornerRadius = cornerRadius;
+    [self setNeedsLayout];
 }
 
 @end
