@@ -13,7 +13,7 @@
 @protocol qmui_UITableViewDataSource
 
 @optional
-- (UITableViewCell *)qmui_tableView:(UITableView *)tableView cellWithIdentifier:(NSString *)identifier;
+- (__kindof UITableViewCell *)qmui_tableView:(UITableView *)tableView cellWithIdentifier:(NSString *)identifier;
 
 @end
 
