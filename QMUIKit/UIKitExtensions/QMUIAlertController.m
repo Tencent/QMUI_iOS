@@ -176,7 +176,7 @@ static QMUIAlertController *alertControllerAppearance;
 
 #pragma mark - QMUIAlertController
 
-@interface QMUIAlertController () <QMUIAlertActionDelegate, QMUIModalPresentationContentViewProtocol, QMUIModalPresentationViewControllerDelegate>
+@interface QMUIAlertController () <QMUIAlertActionDelegate, QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate>
 
 @property(nonatomic, assign, readwrite) QMUIAlertControllerStyle preferredStyle;
 @property(nonatomic, strong, readwrite) QMUIModalPresentationViewController *modalPresentationViewController;

@@ -602,7 +602,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     }
 }
 
-#pragma mark - <QMUIModalPresentationContentViewProtocol>
+#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     return controller.view.bounds.size;

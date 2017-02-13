@@ -189,6 +189,11 @@ static QMUIModalPresentationViewController *appearance;
     if (self.containerWindow) {
         animated = self.disappearAnimated;
     }
+    
+    if ([self.delegate respondsToSelector:@selector(willHideModalPresentationViewController:)]) {
+        [self.delegate willHideModalPresentationViewController:self];
+    }
+    
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
         
         if (self.containerWindow) {
@@ -331,7 +336,7 @@ static QMUIModalPresentationViewController *appearance;
 
 #pragma mark - ContentView
 
-- (void)setContentViewController:(UIViewController<QMUIModalPresentationContentViewProtocol> *)contentViewController {
+- (void)setContentViewController:(UIViewController<QMUIModalPresentationContentViewControllerProtocol> *)contentViewController {
     _contentViewController = contentViewController;
     self.contentView = contentViewController.view;
 }

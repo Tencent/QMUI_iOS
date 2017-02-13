@@ -17,15 +17,15 @@ typedef enum : NSUInteger {
     QMUIModalPresentationAnimationStyleSlide    // 从下往上升起
 } QMUIModalPresentationAnimationStyle;
 
-@protocol QMUIModalPresentationContentViewProtocol <NSObject>
+@protocol QMUIModalPresentationContentViewControllerProtocol <NSObject>
 
 @optional
 
 /**
- *  当浮层使用modalController提供的默认布局时，则可通过这个方法告诉modalController当前浮层期望的大小
+ *  当浮层以 UIViewController 的形式展示（而非 UIView），并且使用 modalController 提供的默认布局时，则可通过这个方法告诉 modalController 当前浮层期望的大小
  *  @param  controller  当前的modalController
- *  @param  limitSize   浮层最大的宽高，由当前modalController的大小及`contentViewMargins`、`maximumContentViewWidth`决定
- *  @return 返回浮层在`limitSize`限定内的大小，如果业务自身不需要限制宽度/高度，则为width/height返回CGFLOAT_MAX即可
+ *  @param  limitSize   浮层最大的宽高，由当前 modalController 的大小及 `contentViewMargins`、`maximumContentViewWidth` 决定
+ *  @return 返回浮层在 `limitSize` 限定内的大小，如果业务自身不需要限制宽度/高度，则为 width/height 返回 `CGFLOAT_MAX` 即可
  */
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize;
 
@@ -43,7 +43,13 @@ typedef enum : NSUInteger {
 - (BOOL)shouldHideModalPresentationViewController:(QMUIModalPresentationViewController *)controller;
 
 /**
- *  modalController隐藏后的回调函数，不管是直接调用`hideWithAnimated:completion:`，还是通过点击遮罩触发的隐藏，都会调用这个方法。
+ *  modalController 即将隐藏时的回调方法，在调用完这个方法后才开始做一些隐藏前的准备工作，例如恢复 window 的 dimmed 状态等。
+ *  @param  controller  当前的modalController
+ */
+- (void)willHideModalPresentationViewController:(QMUIModalPresentationViewController *)controller;
+
+/**
+ *  modalController隐藏后的回调方法，不管是直接调用`hideWithAnimated:completion:`，还是通过点击遮罩触发的隐藏，都会调用这个方法。
  *  如果你想区分这两种方式的隐藏回调，请直接使用hideWithAnimated方法的completion参数，以及`didHideByDimmingViewTappedBlock`属性。
  *  @param  controller  当前的modalController
  */
@@ -77,6 +83,7 @@ typedef enum : NSUInteger {
  *  默认的布局会将浮层居中显示，浮层的大小可通过接口控制：
  *  1. 如果是用 `contentViewController`，则可通过 `preferredContentSizeInModalPresentationViewController:limitSize:` 来设置
  *  2. 如果使用 `contentView`，或者使用 `contentViewController` 但没实现 `preferredContentSizeInModalPresentationViewController:limitSize:`，则调用`contentView`的`sizeThatFits:`方法获取大小。
+ *  3. 浮层大小会受 `maximumContentViewWidth` 属性的限制，以及 `contentViewMargins` 属性的影响。
  *
  *  通过`layoutBlock`、`showingAnimation`、`hidingAnimation`可设置自定义的布局、打开及隐藏的动画，并允许你适配键盘升起时的场景。
  *
@@ -108,7 +115,7 @@ typedef enum : NSUInteger {
  *  @warning 当设置了`contentViewController`时，`contentViewController.view`会被当成`contentView`使用，因此不要再自行设置`contentView`
  *  @warning 注意`contentViewController`是强引用，容易导致循环引用，使用时请注意
  */
-@property(nonatomic, strong) UIViewController<QMUIModalPresentationContentViewProtocol> *contentViewController;
+@property(nonatomic, strong) UIViewController<QMUIModalPresentationContentViewControllerProtocol> *contentViewController;
 
 /**
  *  设置`contentView`布局时与外容器的间距，默认为(20, 20, 20, 20)

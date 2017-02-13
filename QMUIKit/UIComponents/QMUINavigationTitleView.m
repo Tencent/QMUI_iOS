@@ -162,23 +162,34 @@
     return CGSizeMake([self accessorySpacingSize].width * (self.needsAccessoryPlaceholderSpace ? 2 : 1), [self accessorySpacingSize].height);
 }
 
+- (UIEdgeInsets)titleEdgeInsetsIfShowingTitleLabel {
+    return CGSizeIsEmpty(self.titleLabelSize) ? UIEdgeInsetsZero : self.titleEdgeInsets;
+}
+
+- (UIEdgeInsets)subtitleEdgeInsetsIfShowingSubtitleLabel {
+    return CGSizeIsEmpty(self.subtitleLabelSize) ? UIEdgeInsetsZero : self.subtitleEdgeInsets;
+}
+
 - (CGSize)contentSize {
     
     if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
         CGSize size = CGSizeZero;
         // 垂直排列的情况下，loading和accessory与titleLabel同一行
-        CGFloat firstLineWidth = self.titleLabelSize.width;
+        CGFloat firstLineWidth = self.titleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsetsIfShowingTitleLabel);
         firstLineWidth += [self loadingViewSpacingSizeIfNeedsPlaceholder].width;
         firstLineWidth += [self accessorySpacingSizeIfNeedesPlaceholder].width;
         
-        size.width = fmaxf(firstLineWidth, self.subtitleLabelSize.width);
-        size.height = self.titleLabelSize.height + self.subtitleLabelSize.height;
+        CGFloat secondLineWidth = self.subtitleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
+        
+        size.width = fmaxf(firstLineWidth, secondLineWidth);
+        
+        size.height = self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsetsIfShowingTitleLabel) + self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
         return CGSizeFlatted(size);
     } else {
         CGSize size = CGSizeZero;
-        size.width = self.titleLabelSize.width + self.subtitleLabelSize.width;
+        size.width = self.titleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsetsIfShowingTitleLabel) + self.subtitleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
         size.width += [self loadingViewSpacingSizeIfNeedsPlaceholder].width + [self accessorySpacingSizeIfNeedesPlaceholder].width;
-        size.height = fmaxf(self.titleLabelSize.height, self.subtitleLabelSize.height);
+        size.height = fmaxf(self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsetsIfShowingTitleLabel), self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel));
         size.height = fmaxf(size.height, [self loadingViewSpacingSizeIfNeedsPlaceholder].height);
         size.height = fmaxf(size.height, [self accessorySpacingSizeIfNeedesPlaceholder].height);
         return CGSizeFlatted(size);
@@ -223,26 +234,33 @@
     // 计算accessoryView占的单边宽度
     CGFloat accessoryViewSpace = [self accessorySpacingSize].width;
     
+    BOOL isTitleLabelShowing = self.titleLabel.text.length > 0;
+    BOOL isSubtitleLabelShowing = self.subtitleLabel.text.length > 0;
+    UIEdgeInsets titleEdgeInsets = self.titleEdgeInsetsIfShowingTitleLabel;
+    UIEdgeInsets subtitleEdgeInsets = self.subtitleEdgeInsetsIfShowingSubtitleLabel;
+    
     CGFloat minX = offsetX + (self.needsAccessoryPlaceholderSpace ? accessoryViewSpace : 0);
     CGFloat maxX = maxSize.width - offsetX - (self.needsLoadingPlaceholderSpace ? loadingViewSpace : 0);
     
     if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
         
         if (self.loadingView) {
-            self.loadingView.frame = CGRectSetXY(self.loadingView.frame, minX, CGFloatGetCenter(self.titleLabelSize.height, self.loadingViewSize.height));
+            self.loadingView.frame = CGRectSetXY(self.loadingView.frame, minX, CGFloatGetCenter(self.titleLabelSize.height, self.loadingViewSize.height) + titleEdgeInsets.top);
             minX = CGRectGetMaxX(self.loadingView.frame) + self.loadingViewMarginRight;
         }
         if (accessoryView) {
-            accessoryView.frame = CGRectSetXY(accessoryView.frame, maxX - CGRectGetWidth(accessoryView.bounds), CGFloatGetCenter(self.titleLabelSize.height, CGRectGetHeight(accessoryView.bounds)) + self.accessoryViewOffset.y);
+            accessoryView.frame = CGRectSetXY(accessoryView.frame, maxX - CGRectGetWidth(accessoryView.bounds), CGFloatGetCenter(self.titleLabelSize.height, CGRectGetHeight(accessoryView.bounds)) + titleEdgeInsets.top + self.accessoryViewOffset.y);
             maxX = CGRectGetMinX(accessoryView.frame) - self.accessoryViewOffset.x;
         }
-        if (self.titleLabel.text.length > 0) {
-            self.titleLabel.frame = CGRectFlatMake(minX, 0, maxX - minX, self.titleLabelSize.height);
+        if (isTitleLabelShowing) {
+            minX += titleEdgeInsets.left;
+            maxX -= titleEdgeInsets.right;
+            self.titleLabel.frame = CGRectFlatMake(minX, titleEdgeInsets.top, maxX - minX, self.titleLabelSize.height);
         } else {
             self.titleLabel.frame = CGRectZero;
         }
-        if (self.subtitleLabel.text.length > 0) {
-            self.subtitleLabel.frame = CGRectFlatMake(0, CGRectGetMaxY(self.titleLabel.frame), maxSize.width, self.subtitleLabelSize.height);
+        if (isSubtitleLabelShowing) {
+            self.subtitleLabel.frame = CGRectFlatMake(subtitleEdgeInsets.left, (isTitleLabelShowing ? CGRectGetMaxY(self.titleLabel.frame) + titleEdgeInsets.bottom : 0) + subtitleEdgeInsets.top, maxSize.width - UIEdgeInsetsGetHorizontalValue(subtitleEdgeInsets), self.subtitleLabelSize.height);
         } else {
             self.subtitleLabel.frame = CGRectZero;
         }
@@ -257,14 +275,23 @@
             accessoryView.frame = CGRectSetXY(accessoryView.frame, maxX - CGRectGetWidth(accessoryView.bounds), CGFloatGetCenter(maxSize.height, CGRectGetHeight(accessoryView.bounds)) + self.accessoryViewOffset.y);
             maxX = CGRectGetMinX(accessoryView.frame) - self.accessoryViewOffset.x;
         }
-        if (self.subtitleLabel.text.length > 0) {
-            self.subtitleLabel.frame = CGRectFlatMake(maxX - self.subtitleLabelSize.width, CGFloatGetCenter(maxSize.height, self.subtitleLabelSize.height), self.subtitleLabelSize.width, self.subtitleLabelSize.height);
-            maxX = CGRectGetMinX(self.subtitleLabel.frame);
+        if (isSubtitleLabelShowing) {
+            maxX -= subtitleEdgeInsets.right;
+            // 如果当前的 contentSize 就是以这个 label 的最大占位计算出来的，那么就不应该先计算 center 再计算偏移
+            CGFloat shouldSubtitleLabelCenterVertically = self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(subtitleEdgeInsets) < contentSize.height;
+            CGFloat subtitleMinY = shouldSubtitleLabelCenterVertically ? CGFloatGetCenter(maxSize.height, self.subtitleLabelSize.height) + subtitleEdgeInsets.top - subtitleEdgeInsets.bottom : subtitleEdgeInsets.top;
+            self.subtitleLabel.frame = CGRectFlatMake(maxX - self.subtitleLabelSize.width, subtitleMinY, self.subtitleLabelSize.width, self.subtitleLabelSize.height);
+            maxX = CGRectGetMinX(self.subtitleLabel.frame) - subtitleEdgeInsets.left;
         } else {
             self.subtitleLabel.frame = CGRectZero;
         }
-        if (self.titleLabel.text.length > 0) {
-            self.titleLabel.frame = CGRectFlatMake(minX, CGFloatGetCenter(maxSize.height, self.titleLabelSize.height), maxX - minX, self.titleLabelSize.height);
+        if (isTitleLabelShowing) {
+            minX += titleEdgeInsets.left;
+            maxX -= titleEdgeInsets.right;
+            // 如果当前的 contentSize 就是以这个 label 的最大占位计算出来的，那么就不应该先计算 center 再计算偏移
+            CGFloat shouldTitleLabelCenterVertically = self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(titleEdgeInsets) < contentSize.height;
+            CGFloat titleLabelMinY = shouldTitleLabelCenterVertically ? CGFloatGetCenter(maxSize.height, self.titleLabelSize.height) + titleEdgeInsets.top - titleEdgeInsets.bottom : titleEdgeInsets.top;
+            self.titleLabel.frame = CGRectFlatMake(minX, titleLabelMinY, maxX - minX, self.titleLabelSize.height);
         } else {
             self.titleLabel.frame = CGRectZero;
         }
@@ -328,6 +355,16 @@
         [self updateSubtitleLabelSize];
         [self refreshLayout];
     }
+}
+
+- (void)setTitleEdgeInsets:(UIEdgeInsets)titleEdgeInsets {
+    _titleEdgeInsets = titleEdgeInsets;
+    [self refreshLayout];
+}
+
+- (void)setSubtitleEdgeInsets:(UIEdgeInsets)subtitleEdgeInsets {
+    _subtitleEdgeInsets = subtitleEdgeInsets;
+    [self refreshLayout];
 }
 
 - (void)setTitle:(NSString *)title {
@@ -509,6 +546,8 @@
     appearance.verticalTitleFont = UIFontMake(15);
     appearance.verticalSubtitleFont = UIFontLightMake(12);
     appearance.accessoryViewOffset = CGPointMake(3, 0);
+    appearance.titleEdgeInsets = UIEdgeInsetsZero;
+    appearance.subtitleEdgeInsets = UIEdgeInsetsZero;
 }
 
 @end

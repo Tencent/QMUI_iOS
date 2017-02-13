@@ -343,7 +343,7 @@
     return templateCell;
 }
 
-- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier configuration:(void (^)(id cell))configuration {
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier configuration:(void (^)(__kindof UITableViewCell *))configuration {
     if (!identifier || CGRectIsEmpty(self.bounds)) {
         return 0;
     }
@@ -365,7 +365,7 @@
 }
 
 // 通过indexPath缓存高度
-- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(id cell))configuration {
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(__kindof UITableViewCell *))configuration {
     if (!identifier || !indexPath || CGRectIsEmpty(self.bounds)) {
         return 0;
     }
@@ -378,7 +378,7 @@
 }
 
 // 通过key缓存高度
-- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByKey:(id<NSCopying>)key configuration:(void (^)(id cell))configuration {
+- (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByKey:(id<NSCopying>)key configuration:(void (^)(__kindof UITableViewCell *))configuration {
     if (!identifier || !key || CGRectIsEmpty(self.bounds)) {
         return 0;
     }

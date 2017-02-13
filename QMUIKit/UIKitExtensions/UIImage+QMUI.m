@@ -395,7 +395,7 @@ void dataProviderReleaseCallback (void *info, const void *data, size_t size) {
     CGContextInspectSize(size);
     
     UIImage *resultImage = nil;
-    color = color ? color : UIColorWhite;
+    color = color ? color : UIColorClear;
     
     UIGraphicsBeginImageContextWithOptions(size, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();

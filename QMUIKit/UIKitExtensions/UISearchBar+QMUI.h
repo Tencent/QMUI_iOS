@@ -14,6 +14,9 @@
 @property(nonatomic, strong) UIColor *qmui_placeholderColor;
 @property(nonatomic, strong) UIColor *qmui_textColor;
 
+/// 获取 searchBar 内的输入框
+- (UITextField *)textField;
+
 - (void)qmui_styledAsQMUISearchBar;
 
 @end
