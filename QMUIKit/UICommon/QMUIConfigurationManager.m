@@ -225,9 +225,10 @@
     
     // UINavigationBar
     UINavigationBar *navigationBarAppearance = [UINavigationBar appearance];
-    [navigationBarAppearance setBarTintColor:NavBarBarTintColor];
+    navigationBarAppearance.barTintColor = NavBarBarTintColor;
+    navigationBarAppearance.shadowImage = NavBarShadowImage;
+    navigationBarAppearance.titleTextAttributes = @{NSFontAttributeName: NavBarTitleFont, NSForegroundColorAttributeName: NavBarTitleColor};
     [navigationBarAppearance setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-    [navigationBarAppearance setShadowImage:NavBarShadowImage];
     
     // UIToolBar
     UIToolbar *toolBarAppearance = [UIToolbar appearance];
