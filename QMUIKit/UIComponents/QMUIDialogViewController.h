@@ -24,7 +24,7 @@
  * @see QMUIDialogSelectionViewController
  * @see QMUIDialogTextFieldViewController
  */
-@interface QMUIDialogViewController : QMUICommonViewController<QMUIModalPresentationContentViewProtocol>
+@interface QMUIDialogViewController : QMUICommonViewController<QMUIModalPresentationContentViewControllerProtocol>
 
 @property(nonatomic, assign) CGFloat        cornerRadius UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) UIEdgeInsets   contentViewMargins UI_APPEARANCE_SELECTOR;

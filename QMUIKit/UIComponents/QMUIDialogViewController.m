@@ -360,7 +360,7 @@ EndIgnoreClangWarning
     }];
 }
 
-#pragma mark - <QMUIModalPresentationContentViewProtocol>
+#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     if (!self.hasCustomContentView) {
@@ -537,7 +537,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
 }
 
-#pragma mark - <QMUIModalPresentationContentViewProtocol>
+#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     CGFloat footerViewHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0;
@@ -628,7 +628,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     [self updateSubmitButtonEnables];
 }
 
-#pragma mark - <QMUIModalPresentationContentViewProtocol>
+#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     CGFloat textFieldHeight = 56;
