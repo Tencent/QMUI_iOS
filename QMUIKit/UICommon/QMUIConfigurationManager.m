@@ -232,19 +232,19 @@
     
     // UIToolBar
     UIToolbar *toolBarAppearance = [UIToolbar appearance];
-    [toolBarAppearance setBarTintColor:ToolBarBarTintColor];
+    toolBarAppearance.barTintColor = ToolBarBarTintColor;
     [toolBarAppearance setBackgroundImage:ToolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
     [toolBarAppearance setShadowImage:[UIImage qmui_imageWithColor:ToolBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
     
     // UITabBar
     UITabBar *tabBarAppearance = [UITabBar appearance];
-    [tabBarAppearance setBarTintColor:TabBarBarTintColor];
-    [tabBarAppearance setBackgroundImage:TabBarBackgroundImage];
+    tabBarAppearance.barTintColor = TabBarBarTintColor;
+    tabBarAppearance.backgroundImage = TabBarBackgroundImage;
     [tabBarAppearance setShadowImage:[UIImage qmui_imageWithColor:TabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
     
     
     // UITabBarItem
-    UITabBarItem *tabBarItemAppearance = [UITabBarItem appearanceWhenContainedIn:[QMUITabBarViewController class], nil];
+    UITabBarItem *tabBarItemAppearance = [UITabBarItem appearance];
     [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:TabBarItemTitleColor} forState:UIControlStateNormal];
     [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:TabBarItemTitleColorSelected} forState:UIControlStateSelected];
 }
