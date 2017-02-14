@@ -33,10 +33,6 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
     [self qmui_setItems:items animated:animated];
     
     for (UITabBarItem *item in items) {
-        if (!item.qmui_doubleTapBlock) {
-            continue;
-        }
-        
         UIControl *itemView = item.qmui_barButton;
         [itemView addTarget:self action:@selector(handleTabBarItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
     }
@@ -53,6 +49,10 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 - (void)handleTabBarItemViewEvent:(UIControl *)itemView {
     
     if (!self.canItemRespondDoubleTouch) {
+        return;
+    }
+    
+    if (!self.selectedItem.qmui_doubleTapBlock) {
         return;
     }
     
