@@ -175,9 +175,10 @@ EndIgnoreAvailabilityWarning
 
 // 字体相关创建器，包括动态字体的支持
 #define UIFontMake(size) [UIFont systemFontOfSize:size]
+#define UIFontItalicMake(size) [UIFont italicSystemFontOfSize:size] // 斜体只对数字和字母有效，中文无效
 #define UIFontBoldMake(size) [UIFont boldSystemFontOfSize:size]
 #define UIFontBoldWithFont(_font) [UIFont boldSystemFontOfSize:_font.pointSize]
-#define UIFontLightMake(size) [UIFont qmui_lightSystemFontOfSize:size] // 系统字体只对数字和字母有效，中文无效
+#define UIFontLightMake(size) [UIFont qmui_lightSystemFontOfSize:size]
 #define UIFontLightWithFont(_font) [UIFont qmui_lightSystemFontOfSize:_font.pointSize]
 #define UIDynamicFontMake(size) [UIFont qmui_dynamicFontWithSize:size bold:NO]
 #define UIDynamicFontMakeWithLimit(size, upperLimit, lowerLimit) [UIFont qmui_dynamicFontWithSize:size upperLimitSize:upperLimit lowerLimitSize:lowerLimit bold:NO]
