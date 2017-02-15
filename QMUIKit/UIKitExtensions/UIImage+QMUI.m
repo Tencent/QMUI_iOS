@@ -136,12 +136,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 - (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
     size = CGSizeFlatSpecificScale(size, scale);
     CGContextInspectSize(size);
-    UIGraphicsBeginImageContextWithOptions(size, NO, scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
     CGSize imageSize = self.size;
     CGRect drawingRect = CGRectZero;
-    
+	
     if (contentMode == UIViewContentModeScaleToFill) {
         drawingRect = CGRectMakeWithSize(size);
     } else {
@@ -158,7 +155,16 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         drawingRect.size.height = flatfSpecificScale(imageSize.height * ratio, scale);
         drawingRect = CGRectSetXY(drawingRect, flatfSpecificScale((size.width - CGRectGetWidth(drawingRect)) / 2.0, scale), flatfSpecificScale((size.height - CGRectGetHeight(drawingRect)) / 2, scale));
     }
-    
+
+	CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(self.CGImage);
+	BOOL opaque = (alphaInfo == kCGImageAlphaNoneSkipLast) ||
+	(alphaInfo == kCGImageAlphaNoneSkipFirst) ||
+	(alphaInfo == kCGImageAlphaNone);
+	opaque = (opaque && CGRectContainsRect(drawingRect, CGRectMakeWithSize(size)));
+
+	UIGraphicsBeginImageContextWithOptions(size, opaque, scale);
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	CGContextInspectContext(context);
     [self drawInRect:drawingRect];
     UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
