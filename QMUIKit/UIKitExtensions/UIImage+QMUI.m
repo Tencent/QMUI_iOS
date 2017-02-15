@@ -63,12 +63,34 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     if (context == NULL) {
         return nil;
     }
+
     CGContextDrawImage(context,CGRectMake(0, 0, width, height), self.CGImage);
-    CGImageRef imageRef = CGBitmapContextCreateImage(context);
-    UIImage *qmui_grayImage = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
-    CGImageRelease(imageRef);
-    CGContextRelease(context);
-    return qmui_grayImage;
+    CGImageRef grayImageRef = CGBitmapContextCreateImage(context);
+	CGContextRelease(context);
+
+	CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(self.CGImage);
+	BOOL opaque = (alphaInfo == kCGImageAlphaNoneSkipLast) ||
+	(alphaInfo == kCGImageAlphaNoneSkipFirst) ||
+	(alphaInfo == kCGImageAlphaNone);
+
+	if (opaque) {
+		UIImage *qmui_grayImage = [UIImage imageWithCGImage:grayImageRef scale:self.scale orientation:self.imageOrientation];
+		CGImageRelease(grayImageRef);
+		return qmui_grayImage;
+	}
+
+	context = CGBitmapContextCreate(NULL, width, height, 8, 0, NULL, kCGImageAlphaOnly);
+	CGContextDrawImage(context, CGRectMake(0, 0, width, height), self.CGImage);
+	CGImageRef maskImageRef = CGBitmapContextCreateImage(context);
+	CGImageRef maskedGrayImageRef = CGImageCreateWithMask(grayImageRef, maskImageRef);
+
+	CGContextRelease(context);
+	CGImageRelease(grayImageRef);
+	CGImageRelease(maskImageRef);
+
+	UIImage *maskedGrayImage = [UIImage imageWithCGImage:maskedGrayImageRef scale:self.scale orientation:self.imageOrientation];
+	CGImageRelease(maskedGrayImageRef);
+	return maskedGrayImage;
 }
 
 - (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha {
