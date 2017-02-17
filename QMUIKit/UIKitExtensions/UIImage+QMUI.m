@@ -32,26 +32,24 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 - (UIColor *)qmui_averageColor {
-    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    unsigned char rgba[4];
-    CGContextRef context = CGBitmapContextCreate(rgba, 1, 1, 8, 4, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
-    CGContextInspectContext(context);
-    CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), self.CGImage);
-    CGColorSpaceRelease(colorSpace);
-    CGContextRelease(context);
-    if(rgba[3] > 0) {
-        CGFloat alpha = ((CGFloat)rgba[3]) / 255.0;
-        CGFloat multiplier = alpha / 255.0;
-        return [UIColor colorWithRed:((CGFloat)rgba[0]) * multiplier
-                               green:((CGFloat)rgba[1]) * multiplier
-                                blue:((CGFloat)rgba[2]) * multiplier
-                               alpha:alpha];
-    } else {
-        return [UIColor colorWithRed:((CGFloat)rgba[0])/255.0
-                               green:((CGFloat)rgba[1])/255.0
-                                blue:((CGFloat)rgba[2])/255.0
-                               alpha:((CGFloat)rgba[3])/255.0];
-    }
+	unsigned char rgba[4] = {};
+	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+	CGContextRef context = CGBitmapContextCreate(rgba, 1, 1, 8, 4, colorSpace, kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+	CGContextInspectContext(context);
+	CGContextDrawImage(context, CGRectMake(0, 0, 1, 1), self.CGImage);
+	CGColorSpaceRelease(colorSpace);
+	CGContextRelease(context);
+	if(rgba[3] > 0) {
+		return [UIColor colorWithRed:((CGFloat)rgba[0] / rgba[3])
+			                   green:((CGFloat)rgba[1] / rgba[3])
+			                    blue:((CGFloat)rgba[2] / rgba[3])
+			                   alpha:((CGFloat)rgba[3] / 255.0)];
+	} else {
+		return [UIColor colorWithRed:((CGFloat)rgba[0]) / 255.0
+                               green:((CGFloat)rgba[1]) / 255.0
+								blue:((CGFloat)rgba[2]) / 255.0
+							   alpha:((CGFloat)rgba[3]) / 255.0];
+	}
 }
 
 - (UIImage *)qmui_grayImage {
@@ -65,12 +63,34 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     if (context == NULL) {
         return nil;
     }
+
     CGContextDrawImage(context,CGRectMake(0, 0, width, height), self.CGImage);
-    CGImageRef imageRef = CGBitmapContextCreateImage(context);
-    UIImage *qmui_grayImage = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
-    CGImageRelease(imageRef);
-    CGContextRelease(context);
-    return qmui_grayImage;
+    CGImageRef grayImageRef = CGBitmapContextCreateImage(context);
+	CGContextRelease(context);
+
+	CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(self.CGImage);
+	BOOL opaque = (alphaInfo == kCGImageAlphaNoneSkipLast) ||
+	(alphaInfo == kCGImageAlphaNoneSkipFirst) ||
+	(alphaInfo == kCGImageAlphaNone);
+
+	if (opaque) {
+		UIImage *qmui_grayImage = [UIImage imageWithCGImage:grayImageRef scale:self.scale orientation:self.imageOrientation];
+		CGImageRelease(grayImageRef);
+		return qmui_grayImage;
+	}
+
+	context = CGBitmapContextCreate(NULL, width, height, 8, 0, NULL, kCGImageAlphaOnly);
+	CGContextDrawImage(context, CGRectMake(0, 0, width, height), self.CGImage);
+	CGImageRef maskImageRef = CGBitmapContextCreateImage(context);
+	CGImageRef maskedGrayImageRef = CGImageCreateWithMask(grayImageRef, maskImageRef);
+
+	CGContextRelease(context);
+	CGImageRelease(grayImageRef);
+	CGImageRelease(maskImageRef);
+
+	UIImage *maskedGrayImage = [UIImage imageWithCGImage:maskedGrayImageRef scale:self.scale orientation:self.imageOrientation];
+	CGImageRelease(maskedGrayImageRef);
+	return maskedGrayImage;
 }
 
 - (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha {
@@ -138,12 +158,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 - (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
     size = CGSizeFlatSpecificScale(size, scale);
     CGContextInspectSize(size);
-    UIGraphicsBeginImageContextWithOptions(size, NO, scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
     CGSize imageSize = self.size;
     CGRect drawingRect = CGRectZero;
-    
+	
     if (contentMode == UIViewContentModeScaleToFill) {
         drawingRect = CGRectMakeWithSize(size);
     } else {
@@ -160,7 +177,16 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         drawingRect.size.height = flatfSpecificScale(imageSize.height * ratio, scale);
         drawingRect = CGRectSetXY(drawingRect, flatfSpecificScale((size.width - CGRectGetWidth(drawingRect)) / 2.0, scale), flatfSpecificScale((size.height - CGRectGetHeight(drawingRect)) / 2, scale));
     }
-    
+
+	CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(self.CGImage);
+	BOOL opaque = (alphaInfo == kCGImageAlphaNoneSkipLast) ||
+	(alphaInfo == kCGImageAlphaNoneSkipFirst) ||
+	(alphaInfo == kCGImageAlphaNone);
+	opaque = (opaque && CGRectContainsRect(drawingRect, CGRectMakeWithSize(size)));
+
+	UIGraphicsBeginImageContextWithOptions(size, opaque, scale);
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	CGContextInspectContext(context);
     [self drawInRect:drawingRect];
     UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
