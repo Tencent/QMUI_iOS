@@ -41,14 +41,14 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 	CGContextRelease(context);
 	if(rgba[3] > 0) {
 		return [UIColor colorWithRed:((CGFloat)rgba[0] / rgba[3])
-							   green:((CGFloat)rgba[1] / rgba[3])
-								blue:((CGFloat)rgba[2] / rgba[3])
-							   alpha:((CGFloat)rgba[3] / 255.0)];
+			                   green:((CGFloat)rgba[1] / rgba[3])
+			                    blue:((CGFloat)rgba[2] / rgba[3])
+			                   alpha:((CGFloat)rgba[3] / 255.0)];
 	} else {
-		return [UIColor colorWithRed:((CGFloat)rgba[0])/255.0
-							   green:((CGFloat)rgba[1])/255.0
-								blue:((CGFloat)rgba[2])/255.0
-							   alpha:((CGFloat)rgba[3])/255.0];
+		return [UIColor colorWithRed:((CGFloat)rgba[0]) / 255.0
+                               green:((CGFloat)rgba[1]) / 255.0
+								blue:((CGFloat)rgba[2]) / 255.0
+							   alpha:((CGFloat)rgba[3]) / 255.0];
 	}
 }
 
