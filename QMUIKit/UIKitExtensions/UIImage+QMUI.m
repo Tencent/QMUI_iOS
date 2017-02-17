@@ -424,8 +424,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     UIImage *resultImage = nil;
     color = color ? color : UIColorClear;
     
-    BOOL opaque = [color qmui_alpha] == 1.0;// 颜色本身不带透明，就不用创建带透明通道的 image 了
-    UIGraphicsBeginImageContextWithOptions(size, opaque, 0);
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, color.CGColor);
     
