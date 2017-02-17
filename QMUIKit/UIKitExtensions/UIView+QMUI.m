@@ -155,6 +155,9 @@ static char kAssociatedObjectKey_needsDifferentDebugColor;
 static char kAssociatedObjectKey_shouldShowDebugColor;
 - (void)setQmui_shouldShowDebugColor:(BOOL)qmui_shouldShowDebugColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor, @(qmui_shouldShowDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (qmui_shouldShowDebugColor) {
+        [self setNeedsLayout];
+    }
 }
 - (BOOL)qmui_shouldShowDebugColor {
     BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor) boolValue];

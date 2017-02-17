@@ -91,6 +91,7 @@
         [self addSubview:self.subtitleLabel];
         
         self.userInteractionEnabled = NO;
+        self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
         self.style = style;
         self.needsLoadingView = NO;
         self.loadingViewHidden = YES;
@@ -214,6 +215,9 @@
     
     [super layoutSubviews];
     
+    BOOL alignLeft = self.contentHorizontalAlignment == UIControlContentHorizontalAlignmentLeft;
+    BOOL alignRight = self.contentHorizontalAlignment == UIControlContentHorizontalAlignmentRight;
+    
     // 通过sizeThatFit计算出来的size，如果大于可使用的最大宽度，则会被系统改为最大限制的最大宽度
     CGSize maxSize = self.bounds.size;
     
@@ -223,7 +227,17 @@
     contentSize.height = fminf(maxSize.height, contentSize.height);
     
     // 计算左右两边的偏移值
-    CGFloat offsetX = floorfInPixel((maxSize.width - contentSize.width) / 2.0);
+    CGFloat offsetLeft = 0;
+    CGFloat offsetRight = 0;
+    if (alignLeft) {
+        offsetLeft = 0;
+        offsetRight = maxSize.width - contentSize.width;
+    } else if (alignRight) {
+        offsetLeft = maxSize.width - contentSize.width;
+        offsetRight = 0;
+    } else {
+        offsetLeft = offsetRight = floorfInPixel((maxSize.width - contentSize.width) / 2.0);
+    }
     
     // 计算loading占的单边宽度
     CGFloat loadingViewSpace = [self loadingViewSpacingSize].width;
@@ -239,8 +253,8 @@
     UIEdgeInsets titleEdgeInsets = self.titleEdgeInsetsIfShowingTitleLabel;
     UIEdgeInsets subtitleEdgeInsets = self.subtitleEdgeInsetsIfShowingSubtitleLabel;
     
-    CGFloat minX = offsetX + (self.needsAccessoryPlaceholderSpace ? accessoryViewSpace : 0);
-    CGFloat maxX = maxSize.width - offsetX - (self.needsLoadingPlaceholderSpace ? loadingViewSpace : 0);
+    CGFloat minX = offsetLeft + (self.needsAccessoryPlaceholderSpace ? accessoryViewSpace : 0);
+    CGFloat maxX = maxSize.width - offsetRight - (self.needsLoadingPlaceholderSpace ? loadingViewSpace : 0);
     
     if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
         
@@ -300,6 +314,11 @@
 
 
 #pragma mark - setter / getter
+
+- (void)setContentHorizontalAlignment:(UIControlContentHorizontalAlignment)contentHorizontalAlignment {
+    [super setContentHorizontalAlignment:contentHorizontalAlignment];
+    [self refreshLayout];
+}
 
 - (void)setNeedsLoadingPlaceholderSpace:(BOOL)needsLoadingPlaceholderSpace {
     _needsLoadingPlaceholderSpace = needsLoadingPlaceholderSpace;
