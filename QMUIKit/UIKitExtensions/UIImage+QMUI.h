@@ -61,6 +61,11 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 - (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha;
 
 /**
+ *  判断一张图是否不存在 alpha 通道，注意 “不存在 alpha 通道” 不等价于 “不透明”。一张不透明的图有可能是存在 alpha 通道但 alpha 值为 1。
+ */
+- (BOOL)qmui_opaque;
+
+/**
  *  保持当前图片的形状不变，使用指定的颜色去重新渲染它，生成一张新图片并返回
  *
  *  @param tintColor 要用于渲染的新颜色
