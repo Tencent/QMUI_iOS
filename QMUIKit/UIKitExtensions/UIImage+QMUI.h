@@ -103,13 +103,32 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 - (UIImage *)qmui_imageWithClippedRect:(CGRect)rect;
 
 /**
- *  将原图按指定的UIViewContentMode缩放到指定的大小，返回处理完的图片
- *  @param size 最终希望的图片大小，以pt为单位
- *  @param contentMode 希望使用的缩放模式，默认是UIViewContentModeScaleAspectFit，也即保持宽高比例不变，不够的地方填充空白
+ *  将原图按 UIViewContentModeScaleAspectFit 的方式进行缩放，并返回缩放后的图片，处理完的图片的 scale 保持与原图一致。
+ *  @param size 缩放后的图片尺寸不超过这个尺寸
  *
- *  @return 处理完的图片，scale和原图一致
+ *  @return 处理完的图片
+ *  @see qmui_imageWithScaleToSize:contentMode:scale:
+ */
+- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size;
+
+/**
+ *  将原图按指定的 UIViewContentMode 缩放到指定的大小，返回处理完的图片，处理完的图片的 scale 保持与原图一致
+ *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 contentMode 不同而不同
+ *  @param contentMode 希望使用的缩放模式，目前仅支持 UIViewContentModeScaleToFill、UIViewContentModeScaleAspectFill、UIViewContentModeScaleAspectFit（默认）
+ *
+ *  @return 处理完的图片
+ *  @see qmui_imageWithScaleToSize:contentMode:scale:
  */
 - (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode;
+
+/**
+ *  将原图按指定的 UIViewContentMode 缩放到指定的大小，返回处理完的图片
+ *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 contentMode 不同而不同
+ *  @param contentMode 希望使用的缩放模式，目前仅支持 UIViewContentModeScaleToFill、UIViewContentModeScaleAspectFill、UIViewContentModeScaleAspectFit（默认）
+ *  @param scale 处理后返回的图片的 scale
+ *
+ *  @return 处理完的图片
+ */
 - (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale;
 
 /**

@@ -162,6 +162,10 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
+- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size {
+    return [self qmui_imageWithScaleToSize:size contentMode:UIViewContentModeScaleAspectFit];
+}
+
 - (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode {
     return [self qmui_imageWithScaleToSize:size contentMode:contentMode scale:self.scale];
 }
@@ -169,9 +173,6 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 - (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
     size = CGSizeFlatSpecificScale(size, scale);
     CGContextInspectSize(size);
-    UIGraphicsBeginImageContextWithOptions(size, self.qmui_opaque, scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
     CGSize imageSize = self.size;
     CGRect drawingRect = CGRectZero;
     
@@ -184,14 +185,16 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         if (contentMode == UIViewContentModeScaleAspectFill) {
             ratio = fmaxf(horizontalRatio, verticalRatio);
         } else {
-            // 默认按UIViewContentModeScaleAspectFit
+            // 默认按 UIViewContentModeScaleAspectFit
             ratio = fminf(horizontalRatio, verticalRatio);
         }
         drawingRect.size.width = flatfSpecificScale(imageSize.width * ratio, scale);
         drawingRect.size.height = flatfSpecificScale(imageSize.height * ratio, scale);
-        drawingRect = CGRectSetXY(drawingRect, flatfSpecificScale((size.width - CGRectGetWidth(drawingRect)) / 2.0, scale), flatfSpecificScale((size.height - CGRectGetHeight(drawingRect)) / 2, scale));
     }
     
+    UIGraphicsBeginImageContextWithOptions(drawingRect.size, self.qmui_opaque, scale);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextInspectContext(context);
     [self drawInRect:drawingRect];
     UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
