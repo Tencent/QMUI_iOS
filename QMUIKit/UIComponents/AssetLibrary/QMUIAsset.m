@@ -257,7 +257,7 @@
 
 - (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if (_usePhotoKit && [[PHCachingImageManager class] instancesRespondToSelector:@selector(requestLivePhotoForAsset:targetSize:contentMode:options:resultHandler:)]) {
-        if (_previewImage) {
+        if (_livePhoto) {
             // 如果已经有缓存的 LivePhoto 则直接拿缓存的 LivePhoto
             if (completion) {
                 completion(_livePhoto, nil);
