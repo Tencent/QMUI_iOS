@@ -40,7 +40,7 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 #### Podfile
 ```
 platform :ios, '7.0'
-pod 'QMUIKit', '~>1.2'
+pod 'QMUIKit', '~>1.3.0'
 ```
 如果你的项目支持 iOS 8+，建议使用QMUI的动态库：
 
@@ -54,7 +54,7 @@ use_frameworks!
 
 #### Cartfile
 ```
-github "QMUI/QMUI_iOS" ~>1.2
+github "QMUI/QMUI_iOS" ~>1.3.0
 ```
 ### 作为子项目
 具体请查看我们的[开始使用](http://qmuiteam.com/ios/page/start.html#qw_downloadForUse)文档。
