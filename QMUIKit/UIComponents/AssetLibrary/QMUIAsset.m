@@ -30,10 +30,6 @@
     NSDictionary *_phAssetInfo;
     float imageSize;
     
-    UIImage *_thumbnailImage;
-    UIImage *_originImage;
-    UIImage *_previewImage;
-    PHLivePhoto *_livePhoto;
     NSString *_assetIdentityHash;
 }
 
@@ -83,10 +79,7 @@
 }
 
 - (UIImage *)originImage {
-    if (_originImage) {
-        return _originImage;
-    }
-    __block UIImage *resultImage;
+    __block UIImage *resultImage = nil;
     if (_usePhotoKit) {
         PHImageRequestOptions *phImageRequestOptions = [[PHImageRequestOptions alloc] init];
         phImageRequestOptions.synchronous = YES;
@@ -122,14 +115,10 @@
         // 生成最终返回的 UIImage，同时把图片的 orientation 也补充上去
         resultImage = [UIImage imageWithCGImage:fullResolutionImageRef scale:[_alAssetRepresentation scale] orientation:(UIImageOrientation)[_alAssetRepresentation orientation]];
     }
-    _originImage = resultImage;
     return resultImage;
 }
 
 - (UIImage *)thumbnailWithSize:(CGSize)size {
-    if (_thumbnailImage) {
-        return _thumbnailImage;
-    }
     __block UIImage *resultImage;
     if (_usePhotoKit) {
         PHImageRequestOptions *phImageRequestOptions = [[PHImageRequestOptions alloc] init];
@@ -147,15 +136,11 @@
             resultImage = [UIImage imageWithCGImage:thumbnailImageRef];
         }
     }
-    _thumbnailImage = resultImage;
     return resultImage;
 }
 
 - (UIImage *)previewImage {
-    if (_previewImage) {
-        return _previewImage;
-    }
-    __block UIImage *resultImage;
+    __block UIImage *resultImage = nil;
     if (_usePhotoKit) {
         PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
         imageRequestOptions.synchronous = YES;
@@ -170,33 +155,19 @@
         CGImageRef fullScreenImageRef = [_alAssetRepresentation fullScreenImage];
         resultImage = [UIImage imageWithCGImage:fullScreenImageRef];
     }
-    _previewImage = resultImage;
     return resultImage;
 }
 
 - (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if (_usePhotoKit) {
-        if (_originImage) {
-            // 如果已经有缓存的图片则直接拿缓存的图片
+        PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
+        imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
+        imageRequestOptions.progressHandler = phProgressHandler;
+        return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
             if (completion) {
-                completion(_originImage, nil);
+                completion(result, info);
             }
-            return 0;
-        } else {
-            PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
-            imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
-            imageRequestOptions.progressHandler = phProgressHandler;
-            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
-                // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图缓存到 _originImage 中
-                BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue];
-                if (downloadFinined) {
-                    _originImage = result;
-                }
-                if (completion) {
-                    completion(result, info);
-                }
-            }];
-        }
+        }];
     } else {
         if (completion) {
             completion([self originImage], nil);
@@ -226,27 +197,14 @@
 
 - (NSInteger)requestPreviewImageWithCompletion:(void (^)(UIImage *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if (_usePhotoKit) {
-        if (_previewImage) {
-            // 如果已经有缓存的图片则直接拿缓存的图片
+        PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
+        imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
+        imageRequestOptions.progressHandler = phProgressHandler;
+        return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
             if (completion) {
-                completion(_previewImage, nil);
+                completion(result, info);
             }
-            return 0;
-        } else {
-            PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
-            imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
-            imageRequestOptions.progressHandler = phProgressHandler;
-            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
-                // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图缓存到 _previewImage 中
-                BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue];
-                if (downloadFinined) {
-                    _previewImage = result;
-                }
-                if (completion) {
-                    completion(result, info);
-                }
-            }];
-        }
+        }];
     } else {
         if (completion) {
             completion([self previewImage], nil);
@@ -257,27 +215,14 @@
 
 - (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if (_usePhotoKit && [[PHCachingImageManager class] instancesRespondToSelector:@selector(requestLivePhotoForAsset:targetSize:contentMode:options:resultHandler:)]) {
-        if (_livePhoto) {
-            // 如果已经有缓存的 LivePhoto 则直接拿缓存的 LivePhoto
+        PHLivePhotoRequestOptions *livePhotoRequestOptions = [[PHLivePhotoRequestOptions alloc] init];
+        livePhotoRequestOptions.networkAccessAllowed = YES; // 允许访问网络
+        livePhotoRequestOptions.progressHandler = phProgressHandler;
+        return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestLivePhotoForAsset:_phAsset targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT) contentMode:PHImageContentModeDefault options:livePhotoRequestOptions resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
             if (completion) {
-                completion(_livePhoto, nil);
+                completion(livePhoto, info);
             }
-            return 0;
-        } else {
-            PHLivePhotoRequestOptions *livePhotoRequestOptions = [[PHLivePhotoRequestOptions alloc] init];
-            livePhotoRequestOptions.networkAccessAllowed = YES; // 允许访问网络
-            livePhotoRequestOptions.progressHandler = phProgressHandler;
-            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestLivePhotoForAsset:_phAsset targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT) contentMode:PHImageContentModeDefault options:livePhotoRequestOptions resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
-                // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图缓存到 _livePhoto
-                BOOL downloadFinined = ![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue];
-                if (downloadFinined) {
-                    _livePhoto = livePhoto;
-                }
-                if (completion) {
-                    completion(livePhoto, info);
-                }
-            }];
-        }
+        }];
     } else {
         return 0;
     }
