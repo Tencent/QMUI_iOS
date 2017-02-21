@@ -75,8 +75,10 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         CGContextRef alphaContext = CGBitmapContextCreate(NULL, width, height, 8, 0, nil, kCGImageAlphaOnly);
         CGContextDrawImage(alphaContext, imageRect, self.CGImage);
         CGImageRef mask = CGBitmapContextCreateImage(alphaContext);
-        grayImage = [UIImage imageWithCGImage:CGImageCreateWithMask(imageRef, mask) scale:self.scale orientation:self.imageOrientation];
+		CGImageRef maskedGrayImageRef = CGImageCreateWithMask(imageRef, mask);
+        grayImage = [UIImage imageWithCGImage:maskedGrayImageRef scale:self.scale orientation:self.imageOrientation];
         CGImageRelease(mask);
+		CGImageRelease(maskedGrayImageRef);
         CGContextRelease(alphaContext);
         
         // 用 CGBitmapContextCreateImage 方式创建出来的图片，CGImageAlphaInfo 总是为 CGImageAlphaInfoNone，导致 qmui_opaque 与原图不一致，所以这里再做多一步
@@ -92,7 +94,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 - (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha {
-    UIGraphicsBeginImageContextWithOptions(self.size, self.qmui_opaque, self.scale);
+    UIGraphicsBeginImageContextWithOptions(self.size, NO, self.scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
     CGRect drawingRect = CGRectMake(0, 0, self.size.width, self.size.height);
@@ -426,8 +428,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     
     UIImage *resultImage = nil;
     color = color ? color : UIColorClear;
-    
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
+
+	BOOL opaque = (cornerRadius == 0.0 && [color qmui_alpha] == 1.0);
+    UIGraphicsBeginImageContextWithOptions(size, opaque, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextSetFillColorWithColor(context, color.CGColor);
     
