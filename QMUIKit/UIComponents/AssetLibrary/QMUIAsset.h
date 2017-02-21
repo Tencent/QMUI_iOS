@@ -73,6 +73,18 @@ typedef enum {
  */
 - (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
 
+
+/**
+ 异步请求 Asset 的原图数据
+
+ @param completion 完成请求后调用的 block，参数中包含了请求的原图以及图片信息，在 iOS 8.0 或以上版本中才能使用，
+ *                 获取到数据后 QMUIAsset 会缓存起来。
+                   使用第二个参数（图片信息），[info[@"dataUTI"] isEqualToString:(__bridge NSString *)kUTTypeGIF]
+                   判断是否为 GIF 图片, 需要 #import <MobileCoreServices/UTCoreTypes.h>
+ @return 返回请求图片的请求 id
+ */
+- (NSInteger)requestOriginImageDataWithCompletion:(void (^)(NSData *, NSDictionary *))completion NS_AVAILABLE_IOS(8_0);
+
 /**
  *  异步请求 Asset 的缩略图，不会产生网络请求
  *
