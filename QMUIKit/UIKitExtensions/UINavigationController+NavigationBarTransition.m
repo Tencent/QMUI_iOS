@@ -27,6 +27,10 @@
 /// 是否要把真的navBar隐藏
 @property (nonatomic, assign) BOOL prefersNavigationBarBackgroundViewHidden;
 
+/// 用于插入到fromVC和toVC的block
+typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *viewController, BOOL animated);
+@property (nonatomic, copy) navigationBarTransitionWillAppearInjectBlock willAppearInjectBlock;
+
 /// 添加假的navBar
 - (void)addTransitionNavigationBarIfNeeded;
 
@@ -37,11 +41,15 @@
 - (BOOL)respondCustomNavigationBarTransitionWhenPushDisappearing;
 - (BOOL)respondCustomNavigationBarTransitionWhenPopAppearing;
 - (BOOL)respondCustomNavigationBarTransitionWhenPopDisappearing;
+- (BOOL)respondCustomNavigationBarTransitionIfBarHiddenable;
+- (BOOL)respondCustomNavigationBarTransitionWithBarHiddenState;
 
 - (BOOL)canCustomNavigationBarTransitionWhenPushAppearing;
 - (BOOL)canCustomNavigationBarTransitionWhenPushDisappearing;
 - (BOOL)canCustomNavigationBarTransitionWhenPopAppearing;
 - (BOOL)canCustomNavigationBarTransitionWhenPopDisappearing;
+- (BOOL)canCustomNavigationBarTransitionIfBarHiddenable;
+- (BOOL)canCustomNavigationBarTransitionWithBarHiddenState;
 
 @end
 
@@ -53,9 +61,26 @@
     dispatch_once(&onceToken, ^{
         Class cls = [self class];
         ReplaceMethod(cls, @selector(viewWillLayoutSubviews), @selector(NavigationBarTransition_viewWillLayoutSubviews));
+        ReplaceMethod(cls, @selector(viewWillAppear:), @selector(NavigationBarTransition_viewWillAppear:));
         ReplaceMethod(cls, @selector(viewDidAppear:), @selector(NavigationBarTransition_viewDidAppear:));
         ReplaceMethod(cls, @selector(viewDidDisappear:), @selector(NavigationBarTransition_viewDidDisappear:));
     });
+}
+
+- (navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setWillAppearInjectBlock:(navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
+    objc_setAssociatedObject(self, @selector(willAppearInjectBlock), willAppearInjectBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void)NavigationBarTransition_viewWillAppear:(BOOL)animated {
+    [self NavigationBarTransition_viewWillAppear:animated];
+    
+    if (self.willAppearInjectBlock) {
+        self.willAppearInjectBlock(self, animated);
+    }
 }
 
 - (void)NavigationBarTransition_viewDidAppear:(BOOL)animated {
@@ -224,6 +249,28 @@
     return respondPopDisappearing;
 }
 
+- (BOOL)respondCustomNavigationBarTransitionIfBarHiddenable {
+    BOOL respondIfBarHiddenable = NO;
+    if ([self qmui_respondQMUINavigationControllerDelegate]) {
+        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionIfBarHiddenable)]) {
+            respondIfBarHiddenable = YES;
+        }
+    }
+    return respondIfBarHiddenable;
+}
+
+- (BOOL)respondCustomNavigationBarTransitionWithBarHiddenState {
+    BOOL respondWithBarHiddenState = NO;
+    if ([self qmui_respondQMUINavigationControllerDelegate]) {
+        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWithBarHiddenState)]) {
+            respondWithBarHiddenState = YES;
+        }
+    }
+    return respondWithBarHiddenState;
+}
+
 // 该 viewController 实现自定义 navBar 动画的协议的返回值
 
 - (BOOL)canCustomNavigationBarTransitionWhenPushAppearing {
@@ -254,6 +301,22 @@
     if ([self respondCustomNavigationBarTransitionWhenPopDisappearing]) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
         return  [vc shouldCustomNavigationBarTransitionWhenPopDisappearing];
+    }
+    return NO;
+}
+
+- (BOOL)canCustomNavigationBarTransitionIfBarHiddenable {
+    if ([self respondCustomNavigationBarTransitionIfBarHiddenable]) {
+        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        return  [vc shouldCustomNavigationBarTransitionIfBarHiddenable];
+    }
+    return NO;
+}
+
+-(BOOL)canCustomNavigationBarTransitionWithBarHiddenState {
+    if ([self respondCustomNavigationBarTransitionWithBarHiddenState]) {
+        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        return  [vc shouldCustomNavigationBarTransitionWithBarHiddenState];
     }
     return NO;
 }
@@ -310,6 +373,7 @@ static char prefersNavigationBarBackgroundViewHiddenKey;
     if (!disappearingViewController) {
         return [self NavigationBarTransition_pushViewController:viewController animated:animated];
     }
+    
     BOOL shouldCustomNavigationBarTransition = NO;
     if ([disappearingViewController canCustomNavigationBarTransitionWhenPushDisappearing]) {
         shouldCustomNavigationBarTransition = YES;
@@ -321,7 +385,39 @@ static char prefersNavigationBarBackgroundViewHiddenKey;
         [disappearingViewController addTransitionNavigationBarIfNeeded];
         disappearingViewController.prefersNavigationBarBackgroundViewHidden = YES;
     }
+    
+    // tq：这是为了兼容全屏状态下的效果，如果原来的"页面A"是 disappearingViewController ，将显示的"页面B"是 appearingViewController ，则：
+    // 当A或B是允许全屏的vc，那么A和B都需要插入 Block 来等下次 viewWillAppear 改变 NavBar 的状态，以防回退旧的页面 bar 为空。
+    if ([viewController canCustomNavigationBarTransitionIfBarHiddenable] || [disappearingViewController canCustomNavigationBarTransitionIfBarHiddenable]) {
+        [self setupNavigationBarAppearanceWithViewController:viewController];
+    }
+
     return [self NavigationBarTransition_pushViewController:viewController animated:animated];
+}
+
+- (void)setupNavigationBarAppearanceWithViewController:(UIViewController *)viewController{
+    __weak typeof(self) weakSelf = self;
+    navigationBarTransitionWillAppearInjectBlock block = ^(UIViewController *viewController, BOOL animated) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        
+        if (strongSelf) {
+            if ([viewController canCustomNavigationBarTransitionWithBarHiddenState]) {
+                [strongSelf setNavigationBarHidden:YES animated:animated];
+            } else {
+                [strongSelf setNavigationBarHidden:NO animated:animated];
+            }
+        }
+    };
+    
+    if (!viewController.willAppearInjectBlock) {
+        viewController.willAppearInjectBlock = block;
+    }
+    
+    // 如果是进入新的vc，需要把旧的 vc 也加上该 block。
+    UIViewController *disappearingViewController = self.viewControllers.lastObject;
+    if (!disappearingViewController.willAppearInjectBlock) {
+        disappearingViewController.willAppearInjectBlock = block;
+    }
 }
 
 - (UIViewController *)NavigationBarTransition_popViewControllerAnimated:(BOOL)animated {
@@ -331,6 +427,7 @@ static char prefersNavigationBarBackgroundViewHiddenKey;
         return [self NavigationBarTransition_popViewControllerAnimated:animated];
     }
     [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
+    
     return [self NavigationBarTransition_popViewControllerAnimated:animated];
 }
 

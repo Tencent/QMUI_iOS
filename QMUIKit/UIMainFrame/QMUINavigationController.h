@@ -61,6 +61,20 @@
  */
 - (BOOL)shouldCustomNavigationBarTransitionWhenPopDisappearing;
 
+/**
+ *  当前导航栏是否具备全屏（隐藏navBar）的能力，默认返回NO。<br/>
+ *  因为默认的全屏状态（隐藏navigationBar）下，手势返回时 toViewController 的 navigationBar 会缺失，需要设置此值用自定义的 pushViewController:animate: 来解决。
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (BOOL)shouldCustomNavigationBarTransitionIfBarHiddenable;
+
+/**
+ *  当前导航栏是否处于全屏状态，如果是则返回YES，默认返回NO。<br/>
+ *  该属性用于判断如果在 popViewController 的时候如果 toViewController 是处于全屏的则不改变它的状态。
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (BOOL)shouldCustomNavigationBarTransitionWithBarHiddenState;
+
 @end
 
 
