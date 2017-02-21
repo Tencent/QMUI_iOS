@@ -16,7 +16,7 @@
 
 CG_INLINE CGSize
 CGSizeFlatSpecificScale(CGSize size, float scale) {
-    return CGSizeMake(flatfSpecificScale(size.width, scale), flatfSpecificScale(size.height, scale));
+    return CGSizeMake(flatSpecificScale(size.width, scale), flatSpecificScale(size.height, scale));
 }
 
 @implementation UIImage (QMUI)
@@ -190,8 +190,8 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             // 默认按 UIViewContentModeScaleAspectFit
             ratio = fminf(horizontalRatio, verticalRatio);
         }
-        drawingRect.size.width = flatfSpecificScale(imageSize.width * ratio, scale);
-        drawingRect.size.height = flatfSpecificScale(imageSize.height * ratio, scale);
+        drawingRect.size.width = flatSpecificScale(imageSize.width * ratio, scale);
+        drawingRect.size.height = flatSpecificScale(imageSize.height * ratio, scale);
     }
     
     UIGraphicsBeginImageContextWithOptions(drawingRect.size, self.qmui_opaque, scale);

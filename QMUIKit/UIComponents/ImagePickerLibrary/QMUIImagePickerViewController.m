@@ -257,7 +257,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 - (CGSize)referenceImageSize {
     CGFloat collectionViewWidth = CGRectGetWidth(self.collectionView.bounds);
     CGFloat collectionViewContentSpacing = collectionViewWidth - UIEdgeInsetsGetHorizontalValue(self.collectionView.contentInset);
-    NSInteger columnCount = floorf(collectionViewContentSpacing / self.minimumImageWidth);
+    NSInteger columnCount = floor(collectionViewContentSpacing / self.minimumImageWidth);
     CGFloat referenceImageWidth = self.minimumImageWidth;
     BOOL isSpacingEnoughWhenDisplayInMinImageSize = UIEdgeInsetsGetHorizontalValue(self.collectionViewLayout.sectionInset) + (self.minimumImageWidth + self.collectionViewLayout.minimumInteritemSpacing) * columnCount - self.collectionViewLayout.minimumInteritemSpacing <= collectionViewContentSpacing;
     if (!isSpacingEnoughWhenDisplayInMinImageSize) {

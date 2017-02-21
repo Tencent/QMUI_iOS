@@ -178,10 +178,10 @@
     
     // 在滑动过临界点的那一次才去调用 delegate，避免过于频繁的调用
     BOOL isFirstDidScroll = self.previousIndexWhenScrolling == 0;
-    BOOL turnPageToRight = betweenOrEqualf(self.previousIndexWhenScrolling, floorf(index) + 0.5, index);
-    BOOL turnPageToLeft = betweenOrEqualf(index, floorf(index) + 0.5, self.previousIndexWhenScrolling);
+    BOOL turnPageToRight = betweenOrEqual(self.previousIndexWhenScrolling, floor(index) + 0.5, index);
+    BOOL turnPageToLeft = betweenOrEqual(index, floor(index) + 0.5, self.previousIndexWhenScrolling);
     if (!isFirstDidScroll && (turnPageToRight || turnPageToLeft)) {
-        index = roundf(index);
+        index = round(index);
         if (0 <= index && index < [self.collectionView numberOfItemsInSection:0]) {
             
             // 不调用 setter，避免又走一次 scrollToItem

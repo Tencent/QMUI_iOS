@@ -65,7 +65,7 @@
 
 - (void)setFrame:(CGRect)frame {
     [super setFrame:frame];
-    self.cornerRadius = flatf(CGRectGetHeight(frame) / 2);
+    self.cornerRadius = flat(CGRectGetHeight(frame) / 2);
 }
 
 @end

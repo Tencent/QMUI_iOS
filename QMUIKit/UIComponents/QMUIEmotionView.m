@@ -120,7 +120,7 @@
     [super layoutSubviews];
     // 删除按钮必定布局到最后一个表情的位置，且与表情上下左右居中
     [self.deleteButton sizeToFit];
-    self.deleteButton.frame = CGRectSetXY(self.deleteButton.frame, flatf(CGRectGetWidth(self.bounds) - self.padding.right - CGRectGetWidth(self.deleteButton.frame) - (self.emotionSize.width - CGRectGetWidth(self.deleteButton.frame)) / 2.0), flatf(CGRectGetHeight(self.bounds) - self.padding.bottom - CGRectGetHeight(self.deleteButton.frame) - (self.emotionSize.height - CGRectGetHeight(self.deleteButton.frame)) / 2.0));
+    self.deleteButton.frame = CGRectSetXY(self.deleteButton.frame, flat(CGRectGetWidth(self.bounds) - self.padding.right - CGRectGetWidth(self.deleteButton.frame) - (self.emotionSize.width - CGRectGetWidth(self.deleteButton.frame)) / 2.0), flat(CGRectGetHeight(self.bounds) - self.padding.bottom - CGRectGetHeight(self.deleteButton.frame) - (self.emotionSize.height - CGRectGetHeight(self.deleteButton.frame)) / 2.0));
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -128,8 +128,8 @@
     
     CGSize contentSize = CGRectInsetEdges(self.bounds, self.padding).size;
     NSInteger emotionCountPerRow = (contentSize.width + self.minimumEmotionHorizontalSpacing) / (self.emotionSize.width + self.minimumEmotionHorizontalSpacing);
-    CGFloat emotionHorizontalSpacing = flatf((contentSize.width - emotionCountPerRow * self.emotionSize.width) / (emotionCountPerRow - 1));
-    CGFloat emotionVerticalSpacing = flatf((contentSize.height - self.numberOfRows * self.emotionSize.height) / (self.numberOfRows - 1));
+    CGFloat emotionHorizontalSpacing = flat((contentSize.width - emotionCountPerRow * self.emotionSize.width) / (emotionCountPerRow - 1));
+    CGFloat emotionVerticalSpacing = flat((contentSize.height - self.numberOfRows * self.emotionSize.height) / (self.numberOfRows - 1));
     
     CGPoint emotionOrigin = CGPointZero;
     for (NSInteger i = 0, l = self.emotions.count; i < l; i++) {
@@ -280,7 +280,7 @@
         CGFloat contentWidthInPage = CGRectGetWidth(self.collectionView.bounds) - UIEdgeInsetsGetHorizontalValue(self.paddingInPage);
         NSInteger maximumEmotionCountPerRowInPage = (contentWidthInPage + self.minimumEmotionHorizontalSpacing) / (self.emotionSize.width + self.minimumEmotionHorizontalSpacing);
         NSInteger maximumEmotionCountPerPage = maximumEmotionCountPerRowInPage * self.numberOfRowsPerPage - 1;// 删除按钮占一个表情位置
-        NSInteger pageCount = ceilf((CGFloat)self.emotions.count / (CGFloat)maximumEmotionCountPerPage);
+        NSInteger pageCount = ceil((CGFloat)self.emotions.count / (CGFloat)maximumEmotionCountPerPage);
         for (NSInteger i = 0; i < pageCount; i ++) {
             NSRange emotionRangeForPage = NSMakeRange(maximumEmotionCountPerPage * i, maximumEmotionCountPerPage);
             if (NSMaxRange(emotionRangeForPage) > self.emotions.count) {
@@ -342,7 +342,7 @@
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
     if (scrollView == self.collectionView) {
-        NSInteger currentPage = roundf(scrollView.contentOffset.x / CGRectGetWidth(scrollView.bounds));
+        NSInteger currentPage = round(scrollView.contentOffset.x / CGRectGetWidth(scrollView.bounds));
         self.pageControl.currentPage = currentPage;
     }
 }

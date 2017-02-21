@@ -361,7 +361,7 @@
         }
         fitSize = [cell sizeThatFits:CGSizeMake(contentWidth, CGFLOAT_MAX)];
     }
-    return ceilf(fitSize.height);
+    return ceil(fitSize.height);
 }
 
 // 通过indexPath缓存高度

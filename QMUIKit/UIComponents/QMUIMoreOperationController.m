@@ -356,7 +356,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     NSInteger maxItemCountInScrollView = MAX(self.importantShowingItems.count, self.normalShowingItems.count);
     NSInteger itemCountForTotallyVisibleItem = isLargeSreen ? 4 : 3;
     
-    CGFloat itemWidth = flatf((contentWidth - fmaxf(UIEdgeInsetsGetHorizontalValue(importantScrollViewInsets), UIEdgeInsetsGetHorizontalValue(normaltScrollViewInsets))) / itemCountForTotallyVisibleItem) - (maxItemCountInScrollView > itemCountForTotallyVisibleItem ? (isLargeSreen ? 8 : 12) : 0);
+    CGFloat itemWidth = flat((contentWidth - fmaxf(UIEdgeInsetsGetHorizontalValue(importantScrollViewInsets), UIEdgeInsetsGetHorizontalValue(normaltScrollViewInsets))) / itemCountForTotallyVisibleItem) - (maxItemCountInScrollView > itemCountForTotallyVisibleItem ? (isLargeSreen ? 8 : 12) : 0);
     
     CGFloat itemMaxHeight = 0;
     CGFloat itemMaxX = 0;
@@ -371,7 +371,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
                 itemMaxHeight = CGRectGetHeight(itemView.bounds);
             }
         }
-        self.importantItemsScrollView.contentSize = CGSizeMake(flatf(itemMaxX), flatf(itemMaxHeight));
+        self.importantItemsScrollView.contentSize = CGSizeMake(flat(itemMaxX), flat(itemMaxHeight));
         self.importantItemsScrollView.contentInset = importantScrollViewInsets;
         self.importantItemsScrollView.contentOffset = CGPointMake(-self.importantItemsScrollView.contentInset.left, -self.importantItemsScrollView.contentInset.top);
         self.importantItemsScrollView.frame = CGRectFlatted(CGRectMake(0, 0, contentWidth, UIEdgeInsetsGetVerticalValue(self.importantItemsScrollView.contentInset) + self.importantItemsScrollView.contentSize.height));
@@ -396,7 +396,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
                 itemMaxHeight = CGRectGetHeight(itemView.bounds);
             }
         }
-        self.normalItemsScrollView.contentSize = CGSizeMake(flatf(itemMaxX), flatf(itemMaxHeight));
+        self.normalItemsScrollView.contentSize = CGSizeMake(flat(itemMaxX), flat(itemMaxHeight));
         self.normalItemsScrollView.contentInset = normaltScrollViewInsets;
         self.normalItemsScrollView.frame = CGRectFlatted(CGRectMake(0, layoutOriginY, contentWidth, UIEdgeInsetsGetVerticalValue(self.normalItemsScrollView.contentInset) + self.normalItemsScrollView.contentSize.height));
         self.normalItemsScrollView.contentOffset = CGPointMake(-self.normalItemsScrollView.contentInset.left, -self.normalItemsScrollView.contentInset.top);

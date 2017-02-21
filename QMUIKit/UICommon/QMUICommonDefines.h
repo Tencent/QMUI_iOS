@@ -215,39 +215,39 @@ EndIgnoreAvailabilityWarning
  *
  *  例如传进来 “2.1”，在 2x 倍数下会返回 2.5（0.5pt 对应 1px），在 3x 倍数下会返回 2.333（0.333pt 对应 1px）。
  */
-CG_INLINE float
-flatfSpecificScale(float floatValue, float scale) {
+CG_INLINE CGFloat
+flatSpecificScale(CGFloat floatValue, CGFloat scale) {
     scale = scale == 0 ? ScreenScale : scale;
-    CGFloat flattedValue = ceilf(floatValue * scale) / scale;
+    CGFloat flattedValue = ceil(floatValue * scale) / scale;
     return flattedValue;
 }
 
 /**
  *  基于当前设备的屏幕倍数，对传进来的 floatValue 进行像素取整。
  *
- *  注意如果在 Core Graphic 绘图里使用时，要注意当前画布的倍数是否和设备屏幕倍数一致，若不一致，不可使用 flatf() 函数。
+ *  注意如果在 Core Graphic 绘图里使用时，要注意当前画布的倍数是否和设备屏幕倍数一致，若不一致，不可使用 flat() 函数，而应该用 flatSpecificScale
  */
-CG_INLINE float
-flatf(float floatValue) {
-    return flatfSpecificScale(floatValue, 0);
+CG_INLINE CGFloat
+flat(CGFloat floatValue) {
+    return flatSpecificScale(floatValue, 0);
 }
 
 /**
- *  类似flatf()，只不过 flatf 是向上取整，而 floorfInPixel 是向下取整
+ *  类似flat()，只不过 flat 是向上取整，而 floorInPixel 是向下取整
  */
-CG_INLINE float
-floorfInPixel(float floatValue) {
-    CGFloat resultValue = floorf(floatValue * ScreenScale) / ScreenScale;
+CG_INLINE CGFloat
+floorInPixel(CGFloat floatValue) {
+    CGFloat resultValue = floor(floatValue * ScreenScale) / ScreenScale;
     return resultValue;
 }
 
 CG_INLINE BOOL
-betweenf(float minimumValue, float value, float maximumValue) {
+between(CGFloat minimumValue, CGFloat value, CGFloat maximumValue) {
     return minimumValue < value && value < maximumValue;
 }
 
 CG_INLINE BOOL
-betweenOrEqualf(float minimumValue, float value, float maximumValue) {
+betweenOrEqual(CGFloat minimumValue, CGFloat value, CGFloat maximumValue) {
     return minimumValue <= value && value <= maximumValue;
 }
 
@@ -268,7 +268,7 @@ ReplaceMethod(Class _class, SEL _originSelector, SEL _newSelector) {
 /// 用于居中运算
 CG_INLINE CGFloat
 CGFloatGetCenter(CGFloat parent, CGFloat child) {
-    return flatf((parent - child) / 2.0);
+    return flat((parent - child) / 2.0);
 }
 
 #pragma mark - CGPoint
@@ -276,18 +276,18 @@ CGFloatGetCenter(CGFloat parent, CGFloat child) {
 /// 两个point相加
 CG_INLINE CGPoint
 CGPointUnion(CGPoint point1, CGPoint point2) {
-    return CGPointMake(flatf(point1.x + point2.x), flatf(point1.y + point2.y));
+    return CGPointMake(flat(point1.x + point2.x), flat(point1.y + point2.y));
 }
 
 /// 获取rect的center，包括rect本身的x/y偏移
 CG_INLINE CGPoint
 CGPointGetCenterWithRect(CGRect rect) {
-    return CGPointMake(flatf(CGRectGetMidX(rect)), flatf(CGRectGetMidY(rect)));
+    return CGPointMake(flat(CGRectGetMidX(rect)), flat(CGRectGetMidY(rect)));
 }
 
 CG_INLINE CGPoint
 CGPointGetCenterWithSize(CGSize size) {
-    return CGPointMake(flatf(size.width / 2.0), flatf(size.height / 2.0));
+    return CGPointMake(flat(size.width / 2.0), flat(size.height / 2.0));
 }
 
 #pragma mark - UIEdgeInsets
@@ -316,24 +316,24 @@ UIEdgeInsetsConcat(UIEdgeInsets insets1, UIEdgeInsets insets2) {
 
 CG_INLINE UIEdgeInsets
 UIEdgeInsetsSetTop(UIEdgeInsets insets, CGFloat top) {
-    insets.top = flatf(top);
+    insets.top = flat(top);
     return insets;
 }
 
 CG_INLINE UIEdgeInsets
 UIEdgeInsetsSetLeft(UIEdgeInsets insets, CGFloat left) {
-    insets.left = flatf(left);
+    insets.left = flat(left);
     return insets;
 }
 CG_INLINE UIEdgeInsets
 UIEdgeInsetsSetBottom(UIEdgeInsets insets, CGFloat bottom) {
-    insets.bottom = flatf(bottom);
+    insets.bottom = flat(bottom);
     return insets;
 }
 
 CG_INLINE UIEdgeInsets
 UIEdgeInsetsSetRight(UIEdgeInsets insets, CGFloat right) {
-    insets.right = flatf(right);
+    insets.right = flat(right);
     return insets;
 }
 
@@ -348,19 +348,19 @@ CGSizeIsEmpty(CGSize size) {
 /// 将一个CGSize像素对齐
 CG_INLINE CGSize
 CGSizeFlatted(CGSize size) {
-    return CGSizeMake(flatf(size.width), flatf(size.height));
+    return CGSizeMake(flat(size.width), flat(size.height));
 }
 
 /// 将一个 CGSize 以 pt 为单位向上取整
 CG_INLINE CGSize
 CGSizeCeil(CGSize size) {
-    return CGSizeMake(ceilf(size.width), ceilf(size.height));
+    return CGSizeMake(ceil(size.width), ceil(size.height));
 }
 
 /// 将一个 CGSize 以 pt 为单位向下取整
 CG_INLINE CGSize
 CGSizeFloor(CGSize size) {
-    return CGSizeMake(floorf(size.width), floorf(size.height));
+    return CGSizeMake(floor(size.width), floor(size.height));
 }
 
 #pragma mark - CGRect
@@ -374,13 +374,13 @@ CGRectIsNaN(CGRect rect) {
 /// 创建一个像素对齐的CGRect
 CG_INLINE CGRect
 CGRectFlatMake(CGFloat x, CGFloat y, CGFloat width, CGFloat height) {
-    return CGRectMake(flatf(x), flatf(y), flatf(width), flatf(height));
+    return CGRectMake(flat(x), flat(y), flat(width), flat(height));
 }
 
-/// 对CGRect的x/y、width/height都调用一次flatf，以保证像素对齐
+/// 对CGRect的x/y、width/height都调用一次flat，以保证像素对齐
 CG_INLINE CGRect
 CGRectFlatted(CGRect rect) {
-    return CGRectMake(flatf(rect.origin.x), flatf(rect.origin.y), flatf(rect.size.width), flatf(rect.size.height));
+    return CGRectMake(flat(rect.origin.x), flat(rect.origin.y), flat(rect.size.width), flat(rect.size.height));
 }
 
 /// 为一个CGRect叠加scale计算
@@ -392,13 +392,13 @@ CGRectApplyScale(CGRect rect, CGFloat scale) {
 /// 计算view的水平居中，传入父view和子view的frame，返回子view在水平居中时的x值
 CG_INLINE CGFloat
 CGRectGetMinXHorizontallyCenterInParentRect(CGRect parentRect, CGRect childRect) {
-    return flatf((CGRectGetWidth(parentRect) - CGRectGetWidth(childRect)) / 2.0);
+    return flat((CGRectGetWidth(parentRect) - CGRectGetWidth(childRect)) / 2.0);
 }
 
 /// 计算view的垂直居中，传入父view和子view的frame，返回子view在垂直居中时的y值
 CG_INLINE CGFloat
 CGRectGetMinYVerticallyCenterInParentRect(CGRect parentRect, CGRect childRect) {
-    return flatf((CGRectGetHeight(parentRect) - CGRectGetHeight(childRect)) / 2.0);
+    return flat((CGRectGetHeight(parentRect) - CGRectGetHeight(childRect)) / 2.0);
 }
 
 /// 返回值：同一个坐标系内，想要layoutingRect和已布局完成的referenceRect保持垂直居中时，layoutingRect的originY
@@ -481,32 +481,32 @@ CGRectLimitMaxWidth(CGRect rect, CGFloat maxWidth) {
 
 CG_INLINE CGRect
 CGRectSetX(CGRect rect, CGFloat x) {
-    rect.origin.x = flatf(x);
+    rect.origin.x = flat(x);
     return rect;
 }
 
 CG_INLINE CGRect
 CGRectSetY(CGRect rect, CGFloat y) {
-    rect.origin.y = flatf(y);
+    rect.origin.y = flat(y);
     return rect;
 }
 
 CG_INLINE CGRect
 CGRectSetXY(CGRect rect, CGFloat x, CGFloat y) {
-    rect.origin.x = flatf(x);
-    rect.origin.y = flatf(y);
+    rect.origin.x = flat(x);
+    rect.origin.y = flat(y);
     return rect;
 }
 
 CG_INLINE CGRect
 CGRectSetWidth(CGRect rect, CGFloat width) {
-    rect.size.width = flatf(width);
+    rect.size.width = flat(width);
     return rect;
 }
 
 CG_INLINE CGRect
 CGRectSetHeight(CGRect rect, CGFloat height) {
-    rect.size.height = flatf(height);
+    rect.size.height = flat(height);
     return rect;
 }
 

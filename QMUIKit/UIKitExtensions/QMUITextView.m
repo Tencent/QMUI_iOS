@@ -315,7 +315,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         if (self.debug) NSLog(@"调整前，caretRect.maxY = %f, contentOffset.y = %f, bounds.height = %f", CGRectGetMaxY(caretRect), textView.contentOffset.y, CGRectGetHeight(textView.bounds));
         
         CGFloat caretMarginBottom = self.textContainerInset.bottom;
-        if (ceilf(CGRectGetMaxY(caretRect) + caretMarginBottom) >= textView.contentOffset.y + CGRectGetHeight(textView.bounds)) {
+        if (ceil(CGRectGetMaxY(caretRect) + caretMarginBottom) >= textView.contentOffset.y + CGRectGetHeight(textView.bounds)) {
             CGFloat contentOffsetY = MAX(0, CGRectGetMaxY(caretRect) + caretMarginBottom - CGRectGetHeight(textView.bounds));
             if (self.debug) NSLog(@"调整后，contentOffset.y = %f", contentOffsetY);
             
@@ -352,7 +352,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         NSAttributedString *testingStringWithoutLineHeight = [[NSAttributedString alloc] initWithString:testingStringWithLineHeight.string attributes:attributesWithoutLineHeight];
         CGSize stringSizeWithoutLineHeight = [testingStringWithoutLineHeight boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
         
-        resultSize.height += (flatf(stringSizeWithLineHeight.height) - flatf(stringSizeWithoutLineHeight.height));
+        resultSize.height += (flat(stringSizeWithLineHeight.height) - flat(stringSizeWithoutLineHeight.height));
     }
     return resultSize;
 }

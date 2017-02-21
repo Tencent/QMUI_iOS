@@ -237,12 +237,12 @@
     UIEdgeInsets contentInset = UIEdgeInsetsZero;
     if (!CGRectIsEmpty(imageViewFrame) && !CGSizeIsEmpty(viewportSize)) {
         if (CGRectGetWidth(imageViewFrame) < viewportSize.width) {
-            // 用 floorf 而不是 flatf，是因为 flatf 本质上是向上取整，会导致 left + right 比实际的大，然后 scrollView 就认为可滚动了
-            contentInset.left = contentInset.right = floorf((viewportSize.width - CGRectGetWidth(imageViewFrame)) / 2.0);
+            // 用 floor 而不是 flat，是因为 flat 本质上是向上取整，会导致 left + right 比实际的大，然后 scrollView 就认为可滚动了
+            contentInset.left = contentInset.right = floor((viewportSize.width - CGRectGetWidth(imageViewFrame)) / 2.0);
         }
         if (CGRectGetHeight(imageViewFrame) < viewportSize.height) {
-            // 用 floorf 而不是 flatf，是因为 flatf 本质上是向上取整，会导致 top + bottom 比实际的大，然后 scrollView 就认为可滚动了
-            contentInset.top = contentInset.bottom = floorf((viewportSize.height - CGRectGetHeight(imageViewFrame)) / 2.0);
+            // 用 floor 而不是 flat，是因为 flat 本质上是向上取整，会导致 top + bottom 比实际的大，然后 scrollView 就认为可滚动了
+            contentInset.top = contentInset.bottom = floor((viewportSize.height - CGRectGetHeight(imageViewFrame)) / 2.0);
         }
     }
     self.scrollView.contentInset = contentInset;

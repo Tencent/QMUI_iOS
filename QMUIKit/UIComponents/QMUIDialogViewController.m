@@ -255,7 +255,7 @@ EndIgnoreClangWarning
             button.frame = self.footerView.bounds;
             self.buttonSeparatorLayer.hidden = YES;
         } else {
-            CGFloat buttonWidth = flatf(CGRectGetWidth(self.footerView.bounds) / buttonCount);
+            CGFloat buttonWidth = flat(CGRectGetWidth(self.footerView.bounds) / buttonCount);
             self.cancelButton.frame = CGRectMake(0, 0, buttonWidth, CGRectGetHeight(self.footerView.bounds));
             self.submitButton.frame = CGRectMake(CGRectGetMaxX(self.cancelButton.frame), 0, CGRectGetWidth(self.footerView.bounds) - CGRectGetMaxX(self.cancelButton.frame), CGRectGetHeight(self.footerView.bounds));
             self.buttonSeparatorLayer.hidden = NO;

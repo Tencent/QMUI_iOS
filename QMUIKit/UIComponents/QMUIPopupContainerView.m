@@ -114,16 +114,16 @@
     BOOL isImageViewShowing = [self isSubviewShowing:_imageView];
     if (isImageViewShowing) {
         CGSize imageViewSize = [_imageView sizeThatFits:size];
-        resultSize.width += ceilf(imageViewSize.width) + self.imageEdgeInsets.left;
-        resultSize.height += ceilf(imageViewSize.height) + self.imageEdgeInsets.top;
+        resultSize.width += ceil(imageViewSize.width) + self.imageEdgeInsets.left;
+        resultSize.height += ceil(imageViewSize.height) + self.imageEdgeInsets.top;
     }
     
     BOOL isTextLabelShowing = [self isSubviewShowing:_textLabel];
     if (isTextLabelShowing) {
         CGSize textLabelLimitSize = CGSizeMake(size.width - resultSize.width - self.imageEdgeInsets.right, size.height);
         CGSize textLabelSize = [_textLabel sizeThatFits:textLabelLimitSize];
-        resultSize.width += (isImageViewShowing ? self.imageEdgeInsets.right : 0) + ceilf(textLabelSize.width) + self.textEdgeInsets.left;
-        resultSize.height = fmaxf(resultSize.height, ceilf(textLabelSize.height) + self.textEdgeInsets.top);
+        resultSize.width += (isImageViewShowing ? self.imageEdgeInsets.right : 0) + ceil(textLabelSize.width) + self.textEdgeInsets.left;
+        resultSize.height = fmaxf(resultSize.height, ceil(textLabelSize.height) + self.textEdgeInsets.top);
     }
     resultSize.width = fminf(size.width, resultSize.width);
     resultSize.height = fminf(size.height, resultSize.height);
@@ -195,14 +195,14 @@
     BOOL isTextLabelShowing = [self isSubviewShowing:_textLabel];
     if (isImageViewShowing) {
         [_imageView sizeToFit];
-        _imageView.frame = CGRectSetXY(_imageView.frame, self.imageEdgeInsets.left, flatf(CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), CGRectGetHeight(_imageView.frame)) + self.imageEdgeInsets.top));
+        _imageView.frame = CGRectSetXY(_imageView.frame, self.imageEdgeInsets.left, flat(CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), CGRectGetHeight(_imageView.frame)) + self.imageEdgeInsets.top));
     }
     if (isTextLabelShowing) {
-        CGFloat textLabelMinX = (isImageViewShowing ? ceilf(CGRectGetMaxX(_imageView.frame) + self.imageEdgeInsets.right) : 0) + self.textEdgeInsets.left;
-        CGSize textLabelLimitSize = CGSizeMake(ceilf(CGRectGetWidth(self.contentView.bounds) - textLabelMinX), ceilf(CGRectGetHeight(self.contentView.bounds) - self.textEdgeInsets.top - self.textEdgeInsets.bottom));
+        CGFloat textLabelMinX = (isImageViewShowing ? ceil(CGRectGetMaxX(_imageView.frame) + self.imageEdgeInsets.right) : 0) + self.textEdgeInsets.left;
+        CGSize textLabelLimitSize = CGSizeMake(ceil(CGRectGetWidth(self.contentView.bounds) - textLabelMinX), ceil(CGRectGetHeight(self.contentView.bounds) - self.textEdgeInsets.top - self.textEdgeInsets.bottom));
         CGSize textLabelSize = [_textLabel sizeThatFits:textLabelLimitSize];
-        CGPoint textLabelOrigin = CGPointMake(textLabelMinX, flatf(CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), ceilf(textLabelSize.height)) + self.textEdgeInsets.top));
-        _textLabel.frame = CGRectMake(textLabelOrigin.x, textLabelOrigin.y, textLabelLimitSize.width, ceilf(textLabelSize.height));
+        CGPoint textLabelOrigin = CGPointMake(textLabelMinX, flat(CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), ceil(textLabelSize.height)) + self.textEdgeInsets.top));
+        _textLabel.frame = CGRectMake(textLabelOrigin.x, textLabelOrigin.y, textLabelLimitSize.width, ceil(textLabelSize.height));
     }
 }
 
@@ -380,12 +380,12 @@
     CGFloat resultWidth = contentSize.width + UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets) + self.borderWidth * 2;
     resultWidth = fminf(resultWidth, sizeThatFits.width);// 宽度不能超过传进来的size.width
     resultWidth = fmaxf(fminf(resultWidth, self.maximumWidth), self.minimumWidth);// 宽度必须在最小值和最大值之间
-    resultWidth = ceilf(resultWidth);
+    resultWidth = ceil(resultWidth);
     
     CGFloat resultHeight = contentSize.height + UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets) + self.arrowSize.height + self.borderWidth * 2;
     resultHeight = fminf(resultHeight, sizeThatFits.height);
     resultHeight = fmaxf(fminf(resultHeight, self.maximumHeight), self.minimumHeight);
-    resultHeight = ceilf(resultHeight);
+    resultHeight = ceil(resultHeight);
     
     return CGSizeMake(resultWidth, resultHeight);
 }

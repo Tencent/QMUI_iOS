@@ -33,12 +33,12 @@
     if ([titleView isKindOfClass:[QMUINavigationTitleView class]]) {
         CGFloat titleViewMaximumWidth = CGRectGetWidth(titleView.bounds);// 初始状态下titleView会被设置为UINavigationBar允许的最大宽度
         CGSize titleViewSize = [titleView sizeThatFits:CGSizeMake(titleViewMaximumWidth, CGFLOAT_MAX)];
-        titleViewSize.height = ceilf(titleViewSize.height);// titleView的高度如果非pt整数，会导致计算出来的y值时多时少，所以干脆做一下pt取整，这个策略不要改，改了要重新测试push过程中titleView是否会跳动
+        titleViewSize.height = ceil(titleViewSize.height);// titleView的高度如果非pt整数，会导致计算出来的y值时多时少，所以干脆做一下pt取整，这个策略不要改，改了要重新测试push过程中titleView是否会跳动
         
         // 当在UINavigationBar里使用自定义的titleView时，就算titleView的sizeThatFits:返回正确的高度，navigationBar也不会帮你设置高度（但会帮你设置宽度），所以我们需要自己更新高度并且修正y值
         if (CGRectGetHeight(titleView.bounds) != titleViewSize.height) {
 //            NSLog(@"【%@】修正布局前\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
-            CGFloat titleViewMinY = flatf(CGRectGetMinY(titleView.frame) - ((titleViewSize.height - CGRectGetHeight(titleView.bounds)) / 2.0));// 系统对titleView的y值布局是flatf，注意，不能改，改了要测试
+            CGFloat titleViewMinY = flat(CGRectGetMinY(titleView.frame) - ((titleViewSize.height - CGRectGetHeight(titleView.bounds)) / 2.0));// 系统对titleView的y值布局是flat，注意，不能改，改了要测试
             titleView.frame = CGRectMake(CGRectGetMinX(titleView.frame), titleViewMinY, fminf(titleViewMaximumWidth, titleViewSize.width), titleViewSize.height);
 //            NSLog(@"【%@】修正布局后\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
         }
@@ -236,7 +236,7 @@
         offsetLeft = maxSize.width - contentSize.width;
         offsetRight = 0;
     } else {
-        offsetLeft = offsetRight = floorfInPixel((maxSize.width - contentSize.width) / 2.0);
+        offsetLeft = offsetRight = floorInPixel((maxSize.width - contentSize.width) / 2.0);
     }
     
     // 计算loading占的单边宽度
