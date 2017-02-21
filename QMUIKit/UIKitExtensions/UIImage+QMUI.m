@@ -176,11 +176,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     size = CGSizeFlatSpecificScale(size, scale);
     CGContextInspectSize(size);
     CGSize imageSize = self.size;
-	CGSize contextSize = CGSizeZero;
     CGRect drawingRect = CGRectZero;
     
     if (contentMode == UIViewContentModeScaleToFill) {
-		contextSize = size;
         drawingRect = CGRectMakeWithSize(size);
     } else {
         CGFloat horizontalRatio = size.width / imageSize.width;
@@ -194,15 +192,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         }
         drawingRect.size.width = flatfSpecificScale(imageSize.width * ratio, scale);
         drawingRect.size.height = flatfSpecificScale(imageSize.height * ratio, scale);
-		if (contentMode == UIViewContentModeScaleAspectFill) {
-			contextSize = size;
-			drawingRect = CGRectSetXY(drawingRect, flatfSpecificScale((size.width - CGRectGetWidth(drawingRect)) / 2.0, scale), flatfSpecificScale((size.height - CGRectGetHeight(drawingRect)) / 2, scale));
-		} else {
-			contextSize = drawingRect.size;
-		}
     }
     
-    UIGraphicsBeginImageContextWithOptions(contextSize, self.qmui_opaque, scale);
+    UIGraphicsBeginImageContextWithOptions(drawingRect.size, self.qmui_opaque, scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
     [self drawInRect:drawingRect];
