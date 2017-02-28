@@ -177,6 +177,7 @@
     } else if (accessoryType == UITableViewCellAccessoryCheckmark) {
         [self initDefaultAccessoryImageViewIfNeeded];
         self.defaultAccessoryImageView.image = TableViewCellCheckmarkImage;
+        [self.defaultAccessoryImageView sizeToFit];
         self.accessoryView = self.defaultAccessoryImageView;
     } else {
         self.accessoryView = nil;
