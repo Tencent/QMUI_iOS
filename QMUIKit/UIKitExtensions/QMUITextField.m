@@ -11,7 +11,7 @@
 #import "QMUIConfiguration.h"
 #import "NSString+QMUI.h"
 
-@interface QMUITextField ()<QMUITextFieldDelegate>
+@interface QMUITextField ()<QMUITextFieldDelegate, UIScrollViewDelegate>
 
 @property(nonatomic, weak) id<QMUITextFieldDelegate> originalDelegate;
 @end
@@ -81,6 +81,46 @@
 - (CGRect)editingRectForBounds:(CGRect)bounds {
     bounds = CGRectInsetEdges(bounds, self.textInsets);
     return [super editingRectForBounds:bounds];
+}
+
+#pragma mark - TextPosition
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    
+    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/QMUI/QMUI_iOS/issues/64
+    if (IOS_VERSION < 10.0) {
+        return;
+    }
+    
+    UIScrollView *scrollView = self.subviews.firstObject;
+    if (![scrollView isKindOfClass:[UIScrollView class]]) {
+        return;
+    }
+    
+    // 默认 delegate 是为 nil 的，所以我们才利用 delegate 修复这 个 bug，如果哪一天 delegate 不为 nil，就先不处理了。
+    if (scrollView.delegate) {
+        return;
+    }
+    
+    scrollView.delegate = self;
+}
+
+#pragma mark - <UIScrollViewDelegate>
+
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    
+    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/QMUI/QMUI_iOS/issues/64
+    
+    if (scrollView != self.subviews.firstObject) {
+        return;
+    }
+    
+    CGFloat lineHeight = ((NSParagraphStyle *)self.defaultTextAttributes[NSParagraphStyleAttributeName]).minimumLineHeight;
+    lineHeight = lineHeight ?: ((UIFont *)self.defaultTextAttributes[NSFontAttributeName]).lineHeight;
+    if (scrollView.contentSize.height > ceil(lineHeight) && scrollView.contentOffset.y < 0) {
+        scrollView.contentOffset = CGPointMake(scrollView.contentOffset.x, 0);
+    }
 }
 
 - (void)setText:(NSString *)text {

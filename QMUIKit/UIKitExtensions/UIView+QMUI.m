@@ -140,6 +140,7 @@
     dispatch_once(&onceToken, ^{
         ReplaceMethod([self class], @selector(layoutSubviews), @selector(qmui_layoutSubviews));
         ReplaceMethod([self class], @selector(addSubview:), @selector(qmui_addSubview:));
+        ReplaceMethod([self class], @selector(becomeFirstResponder), @selector(qmui_becomeFirstResponder));
     });
 }
 
@@ -208,6 +209,13 @@ static char kAssociatedObjectKey_hasDebugColor;
         NSAssert(NO, @"把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]);
     }
     [self qmui_addSubview:view];
+}
+
+- (BOOL)qmui_becomeFirstResponder {
+    if (IS_SIMULATOR && ![self isKindOfClass:[UIWindow class]]) {
+        NSAssert(self.window.keyWindow, @"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder", NSStringFromClass(self.class));
+    }
+    return [self qmui_becomeFirstResponder];
 }
 
 @end

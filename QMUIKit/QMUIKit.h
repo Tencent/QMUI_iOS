@@ -91,6 +91,7 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import <QMUIKit/QMUIQQEmotionManager.h>
 #import <QMUIKit/QMUIPieProgressView.h>
 #import <QMUIKit/QMUIPopupContainerView.h>
+#import <QMUIKit/QMUIPopupMenuView.h>
 #import <QMUIKit/QMUIModalPresentationViewController.h>
 #import <QMUIKit/QMUIAlertController.h>
 #import <QMUIKit/QMUIAlbumViewController.h>
@@ -180,6 +181,7 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import "QMUIQQEmotionManager.h"
 #import "QMUIPieProgressView.h"
 #import "QMUIPopupContainerView.h"
+#import "QMUIPopupMenuView.h"
 #import "QMUIModalPresentationViewController.h"
 #import "QMUIAlertController.h"
 #import "QMUIAlbumViewController.h"

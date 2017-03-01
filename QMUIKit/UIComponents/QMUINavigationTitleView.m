@@ -107,6 +107,7 @@
         self.verticalTitleFont = appearance.verticalTitleFont;
         self.verticalSubtitleFont = appearance.verticalSubtitleFont;
         self.accessoryViewOffset = appearance.accessoryViewOffset;
+        self.tintColor = NavBarTitleColor;
     }
     return self;
 }
@@ -557,7 +558,6 @@
 
 + (void)setDefaultAppearance {
     QMUINavigationTitleView *appearance = [QMUINavigationTitleView appearance];
-    appearance.tintColor = NavBarTitleColor;
     appearance.loadingViewSize = CGSizeMake(18, 18);
     appearance.loadingViewMarginRight = 3;
     appearance.horizontalTitleFont = NavBarTitleFont;

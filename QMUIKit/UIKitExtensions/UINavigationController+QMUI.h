@@ -11,15 +11,6 @@
 
 @interface UINavigationController (QMUI) <UIGestureRecognizerDelegate>
 
-/**
- *  当前是否正在 push controller<br/>
- *  @warning 注意这个属性虽然是在分类里面定义的，但是它却是在QMUINavigationController里面赋值的，所以对于没有使用QMUINavigationController的情况，这个属性是不太安全的。
- */
-@property(nonatomic, assign) BOOL qmui_isPushingViewController;
-
-/// @warning 2016-07-18 这个属性不安全，暂时别用。在快速返回多个界面的时候，系统只会调用一次popViewControllerAnimated:，导致这个标志位错误。建议使用[self.navigationController.viewControllers containsObject:self]来区分是否在popping
-@property(nonatomic, assign) BOOL qmui_isPoppingViewController;
-
 /// 获取<b>rootViewController</b>
 - (nullable UIViewController *)qmui_rootViewController;
 

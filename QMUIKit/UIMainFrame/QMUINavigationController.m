@@ -86,7 +86,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPoppingViewController = YES;
     UIViewController *viewController = [self topViewController];
     self.viewControllerPopping = viewController;
     if ([viewController respondsToSelector:@selector(willPopViewController)]) {
@@ -110,7 +109,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPoppingViewController = YES;
     UIViewController *viewControllerPopping = [self topViewController];
     self.viewControllerPopping = viewControllerPopping;
     if ([viewControllerPopping respondsToSelector:@selector(willPopViewController)]) {
@@ -139,7 +137,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPoppingViewController = YES;
     UIViewController *viewController = [self topViewController];
     self.viewControllerPopping = viewController;
     if ([viewController respondsToSelector:@selector(willPopViewController)]) {
@@ -162,7 +159,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPushingViewController = YES;
     UIViewController *currentViewController = self.topViewController;
     if (currentViewController) {
         if (!NeedsBackBarButtonItemTitle) {
@@ -232,7 +228,7 @@
                 UIColor *tintColor = [qmuiVC titleViewTintColor];
                 qmuiVC.titleView.tintColor = tintColor;
             } else {
-                qmuiVC.titleView.tintColor = [QMUINavigationTitleView appearance].tintColor;
+                qmuiVC.titleView.tintColor = NavBarTitleColor;
             }
         }
     }
@@ -245,7 +241,6 @@
         if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
             // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
             [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];
-            self.qmui_isPoppingViewController = NO;
             self.viewControllerPopping = nil;
             self.isViewControllerTransiting = NO;
             QMUILog(@"手势返回放弃了");
@@ -267,8 +262,6 @@
 }
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    self.qmui_isPushingViewController = NO;
-    self.qmui_isPoppingViewController = NO;
     self.viewControllerPopping = nil;
     self.isViewControllerTransiting = NO;
     if ([self.delegateProxy respondsToSelector:_cmd]) {

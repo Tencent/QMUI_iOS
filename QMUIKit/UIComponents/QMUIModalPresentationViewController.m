@@ -92,7 +92,7 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (void)dealloc {
-    _containerWindow = nil;
+    self.containerWindow = nil;
 }
 
 - (BOOL)shouldAutomaticallyForwardAppearanceMethods {

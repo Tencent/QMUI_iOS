@@ -21,13 +21,16 @@
 @property(nonatomic, assign) UIEdgeInsets imageEdgeInsets;
 
 /**
- *  textLabelEdgeInsets，这个属性和imageEdgeInsets合作使用，用来调整titleLabel的位置。<br/>
+ *  textLabelEdgeInsets，这个属性和imageEdgeInsets合作使用，用来调整titleLabel的位置，默认为 UIEdgeInsetsZero。<br/>
  *  @warning 目前只对UITableViewCellStyleDefault和UITableViewCellStyleSubtitle类型的cell开放。
  */
 @property(nonatomic, assign) UIEdgeInsets textLabelEdgeInsets;
 
-/// 与textLabelEdgeInsets一致，作用目标为detailTextLabel。
+/// 与textLabelEdgeInsets一致，作用目标为detailTextLabel，默认为 UIEdgeInsetsZero。
 @property(nonatomic, assign) UIEdgeInsets detailTextLabelEdgeInsets;
+
+/// 用于调整右边 accessoryView 的布局偏移，默认为 UIEdgeInsetsZero。
+@property(nonatomic, assign) UIEdgeInsets accessoryEdgeInsets;
 
 /// 用于调整accessoryView的点击响应区域，可用负值扩大点击范围，默认为(-12, -12, -12, -12)
 @property(nonatomic, assign) UIEdgeInsets accessoryHitTestEdgeInsets;

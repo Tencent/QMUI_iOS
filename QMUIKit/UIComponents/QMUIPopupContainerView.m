@@ -10,11 +10,37 @@
 #import "QMUICommonDefines.h"
 #import "QMUIConfiguration.h"
 #import "QMUIHelper.h"
+#import "QMUICommonViewController.h"
 
-@implementation QMUIPopupContainerView {
-    UIImageView *_imageView;
-    UILabel     *_textLabel;
+@interface QMUIPopupContainerViewWindow : UIWindow
+
+@end
+
+@interface QMUIPopContainerViewController : QMUICommonViewController
+
+@end
+
+@interface QMUIPopContainerMaskControl : UIControl
+
+@property(nonatomic, weak) QMUIPopupContainerView *popupContainerView;
+@end
+
+@interface QMUIPopupContainerView (UIAppearance)
+
+- (void)updateAppearance;
+@end
+
+@interface QMUIPopupContainerView () {
+    UIImageView                     *_imageView;
+    UILabel                         *_textLabel;
 }
+
+@property(nonatomic, strong) QMUIPopupContainerViewWindow *popupWindow;
+@property(nonatomic, weak) UIWindow *previousKeyWindow;
+@property(nonatomic, assign) BOOL hidesByUserTap;
+@end
+
+@implementation QMUIPopupContainerView
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
@@ -30,16 +56,8 @@
     return self;
 }
 
-- (void)didInitialized {
-    _backgroundLayer = [CAShapeLayer layer];
-    _backgroundLayer.shadowOffset = CGSizeMake(0, 2);
-    _backgroundLayer.shadowOpacity = 1;
-    _backgroundLayer.shadowRadius = 10;
-    [self.layer addSublayer:_backgroundLayer];
-    
-    _contentView = [[UIView alloc] init];
-    self.contentView.clipsToBounds = YES;
-    [self addSubview:self.contentView];
+- (UIView *)superviewIfExist {
+    return self.superview ? : [[[UIApplication sharedApplication] delegate] window];
 }
 
 - (UIImageView *)imageView {
@@ -75,6 +93,13 @@
     _backgroundLayer.fillColor = _backgroundColor.CGColor;
 }
 
+- (void)setMaskViewBackgroundColor:(UIColor *)maskViewBackgroundColor {
+    _maskViewBackgroundColor = maskViewBackgroundColor;
+    if (self.popupWindow) {
+        self.popupWindow.rootViewController.view.backgroundColor = maskViewBackgroundColor;
+    }
+}
+
 - (void)setShadowColor:(UIColor *)shadowColor {
     _shadowColor = shadowColor;
     _backgroundLayer.shadowColor = shadowColor.CGColor;
@@ -102,37 +127,9 @@
     }
 }
 
-- (CGSize)sizeThatFitsInContentView:(CGSize)size {
-    // 如果没内容则返回自身大小
-    if (![self isSubviewShowing:_imageView] && ![self isSubviewShowing:_textLabel]) {
-        CGSize selfSize = [self contentSizeInSize:self.bounds.size];
-        return selfSize;
-    }
-    
-    CGSize resultSize = CGSizeZero;
-    
-    BOOL isImageViewShowing = [self isSubviewShowing:_imageView];
-    if (isImageViewShowing) {
-        CGSize imageViewSize = [_imageView sizeThatFits:size];
-        resultSize.width += ceil(imageViewSize.width) + self.imageEdgeInsets.left;
-        resultSize.height += ceil(imageViewSize.height) + self.imageEdgeInsets.top;
-    }
-    
-    BOOL isTextLabelShowing = [self isSubviewShowing:_textLabel];
-    if (isTextLabelShowing) {
-        CGSize textLabelLimitSize = CGSizeMake(size.width - resultSize.width - self.imageEdgeInsets.right, size.height);
-        CGSize textLabelSize = [_textLabel sizeThatFits:textLabelLimitSize];
-        resultSize.width += (isImageViewShowing ? self.imageEdgeInsets.right : 0) + ceil(textLabelSize.width) + self.textEdgeInsets.left;
-        resultSize.height = fmaxf(resultSize.height, ceil(textLabelSize.height) + self.textEdgeInsets.top);
-    }
-    resultSize.width = fminf(size.width, resultSize.width);
-    resultSize.height = fminf(size.height, resultSize.height);
-    return resultSize;
-}
-
 - (CGSize)sizeThatFits:(CGSize)size {
-    size.width = fminf(size.width, CGRectGetWidth(self.superview.bounds) - UIEdgeInsetsGetHorizontalValue(self.safetyMarginsOfSuperview));
-    size.height = fminf(size.height, CGRectGetHeight(self.superview.bounds) - UIEdgeInsetsGetVerticalValue(self.safetyMarginsOfSuperview));
+    size.width = fminf(size.width, CGRectGetWidth(self.superviewIfExist.bounds) - UIEdgeInsetsGetHorizontalValue(self.safetyMarginsOfSuperview));
+    size.height = fminf(size.height, CGRectGetHeight(self.superviewIfExist.bounds) - UIEdgeInsetsGetVerticalValue(self.safetyMarginsOfSuperview));
     
     CGSize contentLimitSize = [self contentSizeInSize:size];
     CGSize contentSize = [self sizeThatFitsInContentView:contentLimitSize];
@@ -206,28 +203,40 @@
     }
 }
 
-- (void)layoutWithReferenceItemRectInSuperview:(CGRect)itemRect {
-    NSAssert(self.superview, @"必须添加到superview上后才可进行layout");
+- (void)layoutWithTargetView:(UIView *)targetView {
+    CGRect targetViewFrameInMainWindow = CGRectZero;
+    UIWindow *mainWindow = [[[UIApplication sharedApplication] delegate] window];
+    if (targetView.window == mainWindow) {
+        targetViewFrameInMainWindow = [targetView convertRect:targetView.bounds toView:mainWindow];
+    } else {
+        CGRect targetViewFrameInLocalWindow = [targetView convertRect:targetView.bounds toView:targetView.window];
+        targetViewFrameInMainWindow = [mainWindow convertRect:targetViewFrameInLocalWindow fromWindow:targetView.window];
+    }
+    [self layoutWithTargetRectInScreenCoordinate:targetViewFrameInMainWindow];
+}
+
+- (void)layoutWithTargetRectInScreenCoordinate:(CGRect)targetRect {
+    UIView *superview = self.superviewIfExist;
     
     CGSize tipSize = [self sizeThatFits:CGSizeMake(self.maximumWidth, self.maximumHeight)];
     CGFloat preferredTipWidth = tipSize.width;
     
     // 保护tips最往左只能到达self.safetyMarginsOfSuperview.left
-    CGFloat a = CGRectGetMidX(itemRect) - tipSize.width / 2;
+    CGFloat a = CGRectGetMidX(targetRect) - tipSize.width / 2;
     CGFloat tipMinX = fmaxf(self.safetyMarginsOfSuperview.left, a);
     
     CGFloat tipMaxX = tipMinX + tipSize.width;
-    if (tipMaxX + self.safetyMarginsOfSuperview.right > CGRectGetWidth(self.superview.bounds)) {
+    if (tipMaxX + self.safetyMarginsOfSuperview.right > CGRectGetWidth(superview.bounds)) {
         // 右边超出了
         // 先尝试把右边超出的部分往左边挪，看是否会令左边到达临界点
-        CGFloat distanceCanMoveToLeft = tipMaxX - (CGRectGetWidth(self.superview.bounds) - self.safetyMarginsOfSuperview.right);
+        CGFloat distanceCanMoveToLeft = tipMaxX - (CGRectGetWidth(superview.bounds) - self.safetyMarginsOfSuperview.right);
         if (tipMinX - distanceCanMoveToLeft >= self.safetyMarginsOfSuperview.left) {
             // 可以往左边挪
             tipMinX -= distanceCanMoveToLeft;
         } else {
             // 不可以往左边挪，那么让左边靠到临界点，然后再把宽度减小，以让右边处于临界点以内
             tipMinX = self.safetyMarginsOfSuperview.left;
-            tipMaxX = CGRectGetWidth(self.superview.bounds) - self.safetyMarginsOfSuperview.right;
+            tipMaxX = CGRectGetWidth(superview.bounds) - self.safetyMarginsOfSuperview.right;
             tipSize.width = fminf(tipSize.width, tipMaxX - tipMinX);
         }
     }
@@ -241,13 +250,13 @@
     _currentLayoutDirection = self.preferLayoutDirection;
     
     // 检查当前的最大高度是否超过任一方向的剩余空间，如果是，则强制减小最大高度，避免后面计算布局选择方向时死循环
-    BOOL canShowAtAbove = [self canTipShowAtSpecifiedLayoutDirect:QMUIPopupContainerViewLayoutDirectionAbove targetRect:itemRect tipSize:tipSize];
-    BOOL canShowAtBelow = [self canTipShowAtSpecifiedLayoutDirect:QMUIPopupContainerViewLayoutDirectionBelow targetRect:itemRect tipSize:tipSize];
+    BOOL canShowAtAbove = [self canTipShowAtSpecifiedLayoutDirect:QMUIPopupContainerViewLayoutDirectionAbove targetRect:targetRect tipSize:tipSize];
+    BOOL canShowAtBelow = [self canTipShowAtSpecifiedLayoutDirect:QMUIPopupContainerViewLayoutDirectionBelow targetRect:targetRect tipSize:tipSize];
     
     if (!canShowAtAbove && !canShowAtBelow) {
         // 上下都没有足够的空间，所以要调整maximumHeight
-        CGFloat maximumHeightAbove = CGRectGetMinY(itemRect) - self.distanceBetweenTargetRect - self.safetyMarginsOfSuperview.top;
-        CGFloat maximumHeightBelow = CGRectGetHeight(self.superview.bounds) - self.safetyMarginsOfSuperview.bottom - self.distanceBetweenTargetRect - CGRectGetMaxY(itemRect);
+        CGFloat maximumHeightAbove = CGRectGetMinY(targetRect) - self.distanceBetweenTargetRect - self.safetyMarginsOfSuperview.top;
+        CGFloat maximumHeightBelow = CGRectGetHeight(superview.bounds) - self.safetyMarginsOfSuperview.bottom - self.distanceBetweenTargetRect - CGRectGetMaxY(targetRect);
         self.maximumHeight = fmaxf(self.minimumHeight, fmaxf(maximumHeightAbove, maximumHeightBelow));
         tipSize.height = self.maximumHeight;
         _currentLayoutDirection = maximumHeightAbove > maximumHeightBelow ? QMUIPopupContainerViewLayoutDirectionAbove : QMUIPopupContainerViewLayoutDirectionBelow;
@@ -260,19 +269,19 @@
         _currentLayoutDirection = QMUIPopupContainerViewLayoutDirectionAbove;
     }
     
-    CGFloat tipMinY = [self tipMinYWithTargetRect:itemRect tipSize:tipSize preferLayoutDirection:_currentLayoutDirection];
+    CGFloat tipMinY = [self tipMinYWithTargetRect:targetRect tipSize:tipSize preferLayoutDirection:_currentLayoutDirection];
     
     // 当上下的剩余空间都比最小高度要小的时候，tip会靠在safetyMargins范围内的上（下）边缘
     if (_currentLayoutDirection == QMUIPopupContainerViewLayoutDirectionAbove) {
         CGFloat tipMinYIfAlignSafetyMarginTop = self.safetyMarginsOfSuperview.top;
         tipMinY = fmaxf(tipMinY, tipMinYIfAlignSafetyMarginTop);
     } else if (_currentLayoutDirection == QMUIPopupContainerViewLayoutDirectionBelow) {
-        CGFloat tipMinYIfAlignSafetyMarginBottom = CGRectGetHeight(self.superview.bounds) - self.safetyMarginsOfSuperview.bottom - tipSize.height;
+        CGFloat tipMinYIfAlignSafetyMarginBottom = CGRectGetHeight(superview.bounds) - self.safetyMarginsOfSuperview.bottom - tipSize.height;
         tipMinY = fminf(tipMinY, tipMinYIfAlignSafetyMarginBottom);
     }
     
     self.frame = CGRectFlatMake(tipMinX, tipMinY, tipSize.width, tipSize.height);
-    [self setArrowMinXWithLayoutTargetCenter:CGPointMake(CGRectGetMidX(itemRect), CGRectGetMidY(itemRect))];
+    [self setArrowMinXWithLayoutTargetCenter:CGPointMake(CGRectGetMidX(targetRect), CGRectGetMidY(targetRect))];
     
     if (self.debug) {
         self.contentView.backgroundColor = UIColorTestGreen;
@@ -299,14 +308,14 @@
     if (direction == QMUIPopupContainerViewLayoutDirectionAbove) {
         canShow = tipMinY >= self.safetyMarginsOfSuperview.top;
     } else if (direction == QMUIPopupContainerViewLayoutDirectionBelow) {
-        canShow = tipMinY + tipSize.height + self.safetyMarginsOfSuperview.bottom <= CGRectGetHeight(self.superview.bounds);
+        canShow = tipMinY + tipSize.height + self.safetyMarginsOfSuperview.bottom <= CGRectGetHeight(self.superviewIfExist.bounds);
     }
     return canShow;
 }
 
 // 根据布局时需要对准的中心点去调整箭头的水平坐标x
 - (void)setArrowMinXWithLayoutTargetCenter:(CGPoint)layoutReferenceTargetCenter {
-    CGFloat selfMidX = [self convertPoint:layoutReferenceTargetCenter fromView:self.superview].x;
+    CGFloat selfMidX = layoutReferenceTargetCenter.x - CGRectGetMinX(self.frame);// 将 superview 坐标系里的 layoutReferenceTargetCenter 转换到 self 坐标系里的 point（因为有时候 self.superview 可能为空，无法进行 convertPoint 的计算）
     _arrowMinX = selfMidX - self.arrowSize.width / 2;
     [self setNeedsLayout];
 }
@@ -316,9 +325,28 @@
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    self.hidden = NO;
+    
+    BOOL isShowingByWindowMode = NO;
+    if (!self.superview) {
+        [self initPopupContainerViewWindowIfNeeded];
+        
+        QMUICommonViewController *viewController = (QMUICommonViewController *)self.popupWindow.rootViewController;
+        viewController.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
+        
+        self.previousKeyWindow = [UIApplication sharedApplication].keyWindow;
+        [self.popupWindow makeKeyAndVisible];
+        
+        isShowingByWindowMode = YES;
+    } else {
+        self.hidden = NO;
+    }
     
     if (animated) {
+        if (isShowingByWindowMode) {
+            self.popupWindow.alpha = 0;
+        } else {
+            self.alpha = 0;
+        }
         self.layer.transform = CATransform3DMakeScale(0.98, 0.98, 1);
         [UIView animateWithDuration:0.4 delay:0 usingSpringWithDamping:0.3 initialSpringVelocity:12 options:UIViewAnimationOptionCurveLinear animations:^{
             self.layer.transform = CATransform3DMakeScale(1, 1, 1);
@@ -328,9 +356,18 @@
             }
         }];
         [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
-            self.alpha = 1;
+            if (isShowingByWindowMode) {
+                self.popupWindow.alpha = 1;
+            } else {
+                self.alpha = 1;
+            }
         } completion:nil];
     } else {
+        if (isShowingByWindowMode) {
+            self.popupWindow.alpha = 1;
+        } else {
+            self.alpha = 1;
+        }
         if (completion) {
             completion(YES);
         }
@@ -342,31 +379,77 @@
 }
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    if (self.willHideBlock) {
+        self.willHideBlock(self.hidesByUserTap);
+    }
+    
+    BOOL isShowingByWindowMode = !!self.popupWindow;
+    
     if (animated) {
         [UIView animateWithDuration:0.2 delay:0 options:UIViewAnimationOptionCurveLinear animations:^{
-            self.alpha = 0;
+            if (isShowingByWindowMode) {
+                self.popupWindow.alpha = 0;
+            } else {
+                self.alpha = 0;
+            }
         } completion:^(BOOL finished) {
-            self.hidden = YES;
+            if (isShowingByWindowMode) {
+                [self.previousKeyWindow makeKeyWindow];
+                self.popupWindow.hidden = YES;
+                self.popupWindow = nil;
+            } else {
+                self.hidden = YES;
+            }
             if (completion) {
                 completion(finished);
             }
+            if (self.didHideBlock) {
+                self.didHideBlock(self.hidesByUserTap);
+            }
+            self.hidesByUserTap = NO;
         }];
     } else {
-        self.hidden = YES;
+        if (isShowingByWindowMode) {
+            [self.previousKeyWindow makeKeyWindow];
+            self.popupWindow.hidden = YES;
+            self.popupWindow = nil;
+        } else {
+            self.hidden = YES;
+        }
         if (completion) {
             completion(YES);
         }
+        if (self.didHideBlock) {
+            self.didHideBlock(self.hidesByUserTap);
+        }
+        self.hidesByUserTap = NO;
     }
 }
 
 - (BOOL)isShowing {
-    return self.superview && !self.hidden;
+    BOOL isShowingIfAddedToView = self.superview && !self.hidden && !self.popupWindow;
+    BOOL isShowingIfInWindow = self.superview && self.popupWindow && !self.popupWindow.hidden;
+    return isShowingIfAddedToView || isShowingIfInWindow;
 }
 
 #pragma mark - Private Tools
 
 - (BOOL)isSubviewShowing:(UIView *)subview {
     return subview && !subview.hidden && subview.superview;
+}
+
+- (void)initPopupContainerViewWindowIfNeeded {
+    if (!self.popupWindow) {
+        self.popupWindow = [[QMUIPopupContainerViewWindow alloc] init];
+        self.popupWindow.backgroundColor = UIColorClear;
+        self.popupWindow.windowLevel = UIWindowLevelQMUIAlertView;
+        QMUIPopContainerViewController *viewController = [[QMUIPopContainerViewController alloc] init];
+        ((QMUIPopContainerMaskControl *)viewController.view).popupContainerView = self;
+        viewController.view.backgroundColor = self.maskViewBackgroundColor;
+        viewController.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
+        self.popupWindow.rootViewController = viewController;// 利用 rootViewController 来管理横竖屏
+        [self.popupWindow.rootViewController.view addSubview:self];
+    }
 }
 
 /// 根据一个给定的大小，计算出符合这个大小的内容大小
@@ -392,7 +475,50 @@
 
 @end
 
-@interface QMUIPopupContainerView (UIAppearance)
+@implementation QMUIPopupContainerView (UISubclassingHooks)
+
+- (void)didInitialized {
+    _backgroundLayer = [CAShapeLayer layer];
+    _backgroundLayer.shadowOffset = CGSizeMake(0, 2);
+    _backgroundLayer.shadowOpacity = 1;
+    _backgroundLayer.shadowRadius = 10;
+    [self.layer addSublayer:_backgroundLayer];
+    
+    _contentView = [[UIView alloc] init];
+    self.contentView.clipsToBounds = YES;
+    [self addSubview:self.contentView];
+    
+    // 由于浮层是在调用 showWithAnimated: 时才会被添加到 window 上，所以 appearance 也是在 showWithAnimated: 后才生效，这太晚了，会导致 showWithAnimated: 之前用到那些支持 appearance 的属性值都不准确，所以这里手动提前触发。
+    [self updateAppearance];
+}
+
+- (CGSize)sizeThatFitsInContentView:(CGSize)size {
+    // 如果没内容则返回自身大小
+    if (![self isSubviewShowing:_imageView] && ![self isSubviewShowing:_textLabel]) {
+        CGSize selfSize = [self contentSizeInSize:self.bounds.size];
+        return selfSize;
+    }
+    
+    CGSize resultSize = CGSizeZero;
+    
+    BOOL isImageViewShowing = [self isSubviewShowing:_imageView];
+    if (isImageViewShowing) {
+        CGSize imageViewSize = [_imageView sizeThatFits:size];
+        resultSize.width += ceil(imageViewSize.width) + self.imageEdgeInsets.left;
+        resultSize.height += ceil(imageViewSize.height) + self.imageEdgeInsets.top;
+    }
+    
+    BOOL isTextLabelShowing = [self isSubviewShowing:_textLabel];
+    if (isTextLabelShowing) {
+        CGSize textLabelLimitSize = CGSizeMake(size.width - resultSize.width - self.imageEdgeInsets.right, size.height);
+        CGSize textLabelSize = [_textLabel sizeThatFits:textLabelLimitSize];
+        resultSize.width += (isImageViewShowing ? self.imageEdgeInsets.right : 0) + ceil(textLabelSize.width) + self.textEdgeInsets.left;
+        resultSize.height = fmaxf(resultSize.height, ceil(textLabelSize.height) + self.textEdgeInsets.top);
+    }
+    resultSize.width = fminf(size.width, resultSize.width);
+    resultSize.height = fminf(size.height, resultSize.height);
+    return resultSize;
+}
 
 @end
 
@@ -408,20 +534,95 @@
 + (void)setDefaultAppearance {
     QMUIPopupContainerView *appearance = [QMUIPopupContainerView appearance];
     appearance.contentEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8);
+    appearance.arrowSize = CGSizeMake(18, 9);
     appearance.maximumWidth = CGFLOAT_MAX;
     appearance.minimumWidth = 0;
     appearance.maximumHeight = CGFLOAT_MAX;
     appearance.minimumHeight = 0;
-    appearance.arrowSize = CGSizeMake(18, 9);
+    appearance.preferLayoutDirection = QMUIPopupContainerViewLayoutDirectionAbove;
     appearance.distanceBetweenTargetRect = 5;
+    appearance.safetyMarginsOfSuperview = UIEdgeInsetsMake(10, 10, 10, 10);
     appearance.backgroundColor = UIColorWhite;
+    appearance.maskViewBackgroundColor = UIColorClear;
     appearance.highlightedBackgroundColor = nil;
     appearance.shadowColor = UIColorMakeWithRGBA(0, 0, 0, .1);
     appearance.borderColor = UIColorGrayLighten;
     appearance.borderWidth = PixelOne;
     appearance.cornerRadius = 10;
     appearance.qmui_outsideEdge = UIEdgeInsetsZero;
-    appearance.preferLayoutDirection = QMUIPopupContainerViewLayoutDirectionAbove;
+    
+}
+
+- (void)updateAppearance {
+    QMUIPopupContainerView *appearance = [QMUIPopupContainerView appearance];
+    self.contentEdgeInsets = appearance.contentEdgeInsets;
+    self.arrowSize = appearance.arrowSize;
+    self.maximumWidth = appearance.maximumWidth;
+    self.minimumWidth = appearance.minimumWidth;
+    self.maximumHeight = appearance.maximumHeight;
+    self.minimumHeight = appearance.minimumHeight;
+    self.preferLayoutDirection = appearance.preferLayoutDirection;
+    self.safetyMarginsOfSuperview = appearance.safetyMarginsOfSuperview;
+    self.distanceBetweenTargetRect = appearance.distanceBetweenTargetRect;
+    self.backgroundColor = appearance.backgroundColor;
+    self.maskViewBackgroundColor = appearance.maskViewBackgroundColor;
+    self.shadowColor = appearance.shadowColor;
+    self.borderColor = appearance.borderColor;
+    self.borderWidth = appearance.borderWidth;
+    self.cornerRadius = appearance.cornerRadius;
+    self.qmui_outsideEdge = appearance.qmui_outsideEdge;
+    
+}
+
+@end
+
+@implementation QMUIPopContainerViewController
+
+- (void)loadView {
+    QMUIPopContainerMaskControl *maskControl = [[QMUIPopContainerMaskControl alloc] init];
+    self.view = maskControl;
+}
+
+@end
+
+@implementation QMUIPopContainerMaskControl
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    if (self = [super initWithFrame:frame]) {
+        [self addTarget:self action:@selector(handleMaskEvent:) forControlEvents:UIControlEventTouchDown];
+    }
+    return self;
+}
+
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+    UIView *result = [super hitTest:point withEvent:event];
+    if (result == self) {
+        if (!self.popupContainerView.automaticallyHidesWhenUserTap) {
+            return nil;
+        }
+    }
+    return result;
+}
+
+// 把点击遮罩的事件放在 addTarget: 里而不直接在 hitTest:withEvent: 里处理是因为 hitTest:withEvent: 总是会走两遍
+- (void)handleMaskEvent:(id)sender {
+    if (self.popupContainerView.automaticallyHidesWhenUserTap) {
+        self.popupContainerView.hidesByUserTap = YES;
+        [self.popupContainerView hideWithAnimated:YES];
+    }
+}
+
+@end
+
+@implementation QMUIPopupContainerViewWindow
+
+// 避免 UIWindow 拦截掉事件，保证让事件继续往背后传递
+- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+    UIView *result = [super hitTest:point withEvent:event];
+    if (result == self) {
+        return nil;
+    }
+    return result;
 }
 
 @end

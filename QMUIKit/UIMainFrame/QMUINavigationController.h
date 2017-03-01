@@ -62,6 +62,12 @@
 - (BOOL)shouldCustomNavigationBarTransitionWhenPopDisappearing;
 
 /**
+ *  自定义navBar效果过程中UINavigationController的containerView的背景色
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (nullable UIColor *)containerViewBackgroundColorWhenTransition;
+
+/**
  *  当前导航栏是否具备全屏（隐藏navBar）的能力，默认返回NO。<br/>
  *  因为默认的全屏状态（隐藏navigationBar）下，手势返回时 toViewController 的 navigationBar 会缺失，需要设置此值用自定义的 pushViewController:animate: 来解决。
  *  @see UINavigationController+NavigationBarTransition.h

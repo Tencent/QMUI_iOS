@@ -27,6 +27,12 @@
 /// 是否要把真的navBar隐藏
 @property (nonatomic, assign) BOOL prefersNavigationBarBackgroundViewHidden;
 
+/// 原始的clipsToBounds
+@property(nonatomic, assign) BOOL originClipsToBounds;
+
+/// 原始containerView的背景色
+@property(nonatomic, strong) UIColor *originContainerViewBackgroundColor;
+
 /// 用于插入到fromVC和toVC的block
 typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *viewController, BOOL animated);
 @property (nonatomic, copy) navigationBarTransitionWillAppearInjectBlock willAppearInjectBlock;
@@ -56,6 +62,8 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
 
 @implementation UIViewController (NavigationBarTransition)
 
+#pragma mark - 主流程
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -67,17 +75,8 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
     });
 }
 
-- (navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
-    return objc_getAssociatedObject(self, _cmd);
-}
-
-- (void)setWillAppearInjectBlock:(navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
-    objc_setAssociatedObject(self, @selector(willAppearInjectBlock), willAppearInjectBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
 - (void)NavigationBarTransition_viewWillAppear:(BOOL)animated {
     [self NavigationBarTransition_viewWillAppear:animated];
-    
     if (self.willAppearInjectBlock) {
         self.willAppearInjectBlock(self, animated);
     }
@@ -85,70 +84,70 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
 
 - (void)NavigationBarTransition_viewDidAppear:(BOOL)animated {
     if (self.transitionNavigationBar) {
-        // 回到界面的时候，把假的navBar去掉并且还原老的navBar
-        self.navigationController.navigationBar.barTintColor = self.transitionNavigationBar.barTintColor;
-        [self.navigationController.navigationBar setBackgroundImage:[self.transitionNavigationBar backgroundImageForBarMetrics:UIBarMetricsDefault] forBarMetrics:UIBarMetricsDefault];
-        [self.navigationController.navigationBar setShadowImage:self.transitionNavigationBar.shadowImage];
+        [UIViewController replaceStyleForNavigationBar:self.transitionNavigationBar withNavigationBar:self.navigationController.navigationBar];
         [self removeTransitionNavigationBar];
+        self.lockTransitionNavigationBar = YES;
+        
+        id <UIViewControllerTransitionCoordinator> transitionCoordinator = self.transitionCoordinator;
+        [transitionCoordinator containerView].backgroundColor = self.originContainerViewBackgroundColor;
+        self.view.clipsToBounds = self.originClipsToBounds;
     }
-    // 老的navBar显示出来
     self.prefersNavigationBarBackgroundViewHidden = NO;
-    self.lockTransitionNavigationBar = YES;
     [self NavigationBarTransition_viewDidAppear:animated];
 }
 
 - (void)NavigationBarTransition_viewDidDisappear:(BOOL)animated {
-    self.lockTransitionNavigationBar = NO;
-    [self NavigationBarTransition_viewDidDisappear:animated];
     if (self.transitionNavigationBar) {
-        // 对于被pop导致当前viewController走到viewDidDisappear:的情况，removeTransitionNavigationBar里是无法正确把navigationBar上的observe移除的，因为此时获取不到self.navigationController，所以removeObserve提前到viewWillDisappear里
         [self removeTransitionNavigationBar];
+        self.lockTransitionNavigationBar = NO;
+        
+        self.view.clipsToBounds = self.originClipsToBounds;
     }
+    [self NavigationBarTransition_viewDidDisappear:animated];
 }
 
 - (void)NavigationBarTransition_viewWillLayoutSubviews {
     
-    id<UIViewControllerTransitionCoordinator> transitionCoordinator = self.transitionCoordinator;
+    id <UIViewControllerTransitionCoordinator> transitionCoordinator = self.transitionCoordinator;
     UIViewController *fromViewController = [transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
     UIViewController *toViewController = [transitionCoordinator viewControllerForKey:UITransitionContextToViewControllerKey];
     
     BOOL isCurrentToViewController = (self == self.navigationController.viewControllers.lastObject && self == toViewController);
+    BOOL isPushingViewContrller = [self.navigationController.viewControllers containsObject:fromViewController];
     
     if (isCurrentToViewController && !self.lockTransitionNavigationBar) {
         
-        BOOL shouldCustomPushNavigationBarTransition = NO;
-        BOOL shouldCustomPopNavigationBarTransition = NO;
+        BOOL shouldCustomNavigationBarTransition = NO;
         
         if (!self.transitionNavigationBar) {
-            if (self.navigationController.qmui_isPushingViewController) {
-                if ([toViewController canCustomNavigationBarTransitionWhenPushAppearing]) {
-                    shouldCustomPushNavigationBarTransition = YES;
+            
+            if (isPushingViewContrller) {
+                if ([toViewController canCustomNavigationBarTransitionWhenPushAppearing] ||
+                    [fromViewController canCustomNavigationBarTransitionWhenPushDisappearing]) {
+                    shouldCustomNavigationBarTransition = YES;
                 }
-                if (!shouldCustomPushNavigationBarTransition && [fromViewController canCustomNavigationBarTransitionWhenPushDisappearing]) {
-                    shouldCustomPushNavigationBarTransition = YES;
-                }
-                if (shouldCustomPushNavigationBarTransition) {
-                    [self addTransitionNavigationBarIfNeeded];
-                    toViewController.navigationController.navigationBar.transitionNavigationBar = toViewController.transitionNavigationBar;
-                    self.prefersNavigationBarBackgroundViewHidden = YES;
-                }
-            } else if (self.navigationController.qmui_isPoppingViewController) {
-                if ([toViewController canCustomNavigationBarTransitionWhenPopAppearing]) {
-                    shouldCustomPopNavigationBarTransition = YES;
-                }
-                if (!shouldCustomPopNavigationBarTransition && [fromViewController canCustomNavigationBarTransitionWhenPopDisappearing]) {
-                    shouldCustomPopNavigationBarTransition = YES;
-                }
-                if (shouldCustomPopNavigationBarTransition) {
-                    [self addTransitionNavigationBarIfNeeded];
-                    toViewController.navigationController.navigationBar.transitionNavigationBar = toViewController.transitionNavigationBar;
-                    self.prefersNavigationBarBackgroundViewHidden = YES;
+            } else {
+                if ([toViewController canCustomNavigationBarTransitionWhenPopAppearing] ||
+                    [fromViewController canCustomNavigationBarTransitionWhenPopDisappearing]) {
+                    shouldCustomNavigationBarTransition = YES;
                 }
             }
-        }
-        if (shouldCustomPushNavigationBarTransition || shouldCustomPopNavigationBarTransition) {
-            // 设置假的 navBar 的frame
-            [self resizeTransitionNavigationBarFrame];
+            
+            if (shouldCustomNavigationBarTransition) {
+                if (self.navigationController.navigationBar.translucent) {
+                    // 如果原生bar是半透明的，需要给containerView加个背景色，否则有可能会看到下面的默认黑色背景色
+                    toViewController.originContainerViewBackgroundColor = [transitionCoordinator containerView].backgroundColor;
+                    [transitionCoordinator containerView].backgroundColor = [self containerViewBackgroundColor];
+                }
+                fromViewController.originClipsToBounds = fromViewController.view.clipsToBounds;
+                toViewController.originClipsToBounds = toViewController.view.clipsToBounds;
+                fromViewController.view.clipsToBounds = NO;
+                toViewController.view.clipsToBounds = NO;
+                [self addTransitionNavigationBarIfNeeded];
+                [self resizeTransitionNavigationBarFrame];
+                self.navigationController.navigationBar.transitionNavigationBar = self.transitionNavigationBar;
+                self.prefersNavigationBarBackgroundViewHidden = YES;
+            }
         }
     }
     
@@ -156,12 +155,14 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
 }
 
 - (void)addTransitionNavigationBarIfNeeded {
+    
     if (!self.view.window || !self.navigationController.navigationBar) {
         return;
     }
     
     UINavigationBar *originBar = self.navigationController.navigationBar;
     UINavigationBar *customBar = [[UINavigationBar alloc] init];
+    
     if (customBar.barStyle != originBar.barStyle) {
         customBar.barStyle = originBar.barStyle;
     }
@@ -172,15 +173,16 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
         customBar.barTintColor = originBar.barTintColor;
     }
     UIImage *backgroundImage = [originBar backgroundImageForBarMetrics:UIBarMetricsDefault];
-    if (CGSizeEqualToSize(backgroundImage.size, CGSizeZero)) {
-        // 保护一下那种没有图片的 UIImage 例如：[UIImage new]，如果没有保护则会出现系统默认的navBar样式，很奇怪。
-        // navController 设置自己的 navBar 为 [UIImage new] 却没事
+    if (backgroundImage && CGSizeEqualToSize(backgroundImage.size, CGSizeZero)) {
+        // 假设这里的图片时通过`[UIImage new]`这种形式创建的，那么会navBar会奇怪地显示为系统默认navBar的样式。不知道为什么 navController 设置自己的 navBar 为 [UIImage new] 却没事，所以这里做个保护。
         backgroundImage = [UIImage qmui_imageWithColor:UIColorClear];
     }
     [customBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
     [customBar setShadowImage:originBar.shadowImage];
+    
     self.transitionNavigationBar = customBar;
     [self resizeTransitionNavigationBarFrame];
+    
     if (!self.navigationController.navigationBarHidden) {
         [self.view addSubview:self.transitionNavigationBar];
     }
@@ -201,6 +203,15 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
     UIView *backgroundView = [self.navigationController.navigationBar valueForKey:@"_backgroundView"];
     CGRect rect = [backgroundView.superview convertRect:backgroundView.frame toView:self.view];
     self.transitionNavigationBar.frame = rect;
+}
+
+#pragma mark - 工具方法
+
++ (void)replaceStyleForNavigationBar:(UINavigationBar *)navbarA withNavigationBar:(UINavigationBar *)navbarB {
+    navbarB.barStyle = navbarA.barStyle;
+    navbarB.barTintColor = navbarA.barTintColor;
+    [navbarB setBackgroundImage:[navbarA backgroundImageForBarMetrics:UIBarMetricsDefault] forBarMetrics:UIBarMetricsDefault];
+    [navbarB setShadowImage:navbarA.shadowImage];
 }
 
 // 该 viewController 是否实现自定义 navBar 动画的协议
@@ -305,6 +316,17 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
     return NO;
 }
 
+- (UIColor *)containerViewBackgroundColor {
+    UIColor *backgroundColor = UIColorWhite;
+    if ([self qmui_respondQMUINavigationControllerDelegate]) {
+        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        if ([vc respondsToSelector:@selector(containerViewBackgroundColorWhenTransition)]) {
+            backgroundColor = [vc containerViewBackgroundColorWhenTransition];
+        }
+    }
+    return backgroundColor;
+}
+
 - (BOOL)canCustomNavigationBarTransitionIfBarHiddenable {
     if ([self respondCustomNavigationBarTransitionIfBarHiddenable]) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
@@ -313,7 +335,7 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
     return NO;
 }
 
--(BOOL)canCustomNavigationBarTransitionWithBarHiddenState {
+- (BOOL)canCustomNavigationBarTransitionWithBarHiddenState {
     if ([self respondCustomNavigationBarTransitionWithBarHiddenState]) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
         return  [vc shouldCustomNavigationBarTransitionWithBarHiddenState];
@@ -321,35 +343,55 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
     return NO;
 }
 
-static char lockTransitionNavigationBarKey;
+#pragma mark - Setter / Getter
 
 - (BOOL)lockTransitionNavigationBar {
-    return [objc_getAssociatedObject(self, &lockTransitionNavigationBarKey) boolValue];
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
 }
 
 - (void)setLockTransitionNavigationBar:(BOOL)lockTransitionNavigationBar {
-    objc_setAssociatedObject(self, &lockTransitionNavigationBarKey, [[NSNumber alloc] initWithBool:lockTransitionNavigationBar], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, @selector(lockTransitionNavigationBar), [[NSNumber alloc] initWithBool:lockTransitionNavigationBar], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-static char transitionNavigationBarKey;
-
 - (UINavigationBar *)transitionNavigationBar {
-    return objc_getAssociatedObject(self, &transitionNavigationBarKey);
+    return objc_getAssociatedObject(self, _cmd);
 }
 
 - (void)setTransitionNavigationBar:(UINavigationBar *)transitionNavigationBar {
-    objc_setAssociatedObject(self, &transitionNavigationBarKey, transitionNavigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, @selector(transitionNavigationBar), transitionNavigationBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-static char prefersNavigationBarBackgroundViewHiddenKey;
-
 - (BOOL)prefersNavigationBarBackgroundViewHidden {
-    return [objc_getAssociatedObject(self, &prefersNavigationBarBackgroundViewHiddenKey) boolValue];
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
 }
 
 - (void)setPrefersNavigationBarBackgroundViewHidden:(BOOL)prefersNavigationBarBackgroundViewHidden {
     [[self.navigationController.navigationBar valueForKey:@"_backgroundView"] setHidden:prefersNavigationBarBackgroundViewHidden];
-    objc_setAssociatedObject(self, &prefersNavigationBarBackgroundViewHiddenKey, [[NSNumber alloc] initWithBool:prefersNavigationBarBackgroundViewHidden], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, @selector(prefersNavigationBarBackgroundViewHidden), [[NSNumber alloc] initWithBool:prefersNavigationBarBackgroundViewHidden], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setWillAppearInjectBlock:(navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
+    objc_setAssociatedObject(self, @selector(willAppearInjectBlock), willAppearInjectBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (BOOL)originClipsToBounds {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)setOriginClipsToBounds:(BOOL)originClipsToBounds {
+    objc_setAssociatedObject(self, @selector(originClipsToBounds), [[NSNumber alloc] initWithBool:originClipsToBounds], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (UIColor *)originContainerViewBackgroundColor {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setOriginContainerViewBackgroundColor:(UIColor *)originContainerViewBackgroundColor {
+    objc_setAssociatedObject(self, @selector(originContainerViewBackgroundColor), originContainerViewBackgroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 @end
@@ -465,17 +507,10 @@ static char prefersNavigationBarBackgroundViewHiddenKey;
         [disappearViewController addTransitionNavigationBarIfNeeded];
         if (appearViewController.transitionNavigationBar) {
             // 假设从A→B→C，其中A设置了bar的样式，B跟随A所以B里没有设置bar样式的代码，C又把样式改为另一种，此时从C返回B时，由于B没有设置bar的样式的代码，所以bar的样式依然会保留C的，这就错了，所以每次都要手动改回来才保险
-            [self resetOriginNavigationBarWithCustomNavigationBar:appearViewController.transitionNavigationBar];
+            [UIViewController replaceStyleForNavigationBar:appearViewController.transitionNavigationBar withNavigationBar:self.navigationBar];
         }
         disappearViewController.prefersNavigationBarBackgroundViewHidden = YES;
     }
-}
-
-- (void)resetOriginNavigationBarWithCustomNavigationBar:(UINavigationBar *)navigationBar {
-    ///TODO:for molice 保持和addTransitionBar的修改的样式的数量一致
-    self.navigationBar.barTintColor = navigationBar.barTintColor;
-    [self.navigationBar setBackgroundImage:[navigationBar backgroundImageForBarMetrics:UIBarMetricsDefault] forBarMetrics:UIBarMetricsDefault];
-    [self.navigationBar setShadowImage:navigationBar.shadowImage];
 }
 
 @end
