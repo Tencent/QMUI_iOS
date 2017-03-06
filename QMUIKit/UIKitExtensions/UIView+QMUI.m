@@ -213,9 +213,14 @@ static char kAssociatedObjectKey_hasDebugColor;
 
 - (BOOL)qmui_becomeFirstResponder {
     if (IS_SIMULATOR && ![self isKindOfClass:[UIWindow class]]) {
-        NSAssert(self.window.keyWindow, @"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder", NSStringFromClass(self.class));
+        [self QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
     }
     return [self qmui_becomeFirstResponder];
+}
+
+- (void)QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow {
+    NSLog(@"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类错误", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
+    NSLog(@"%@", [NSThread callStackSymbols]);
 }
 
 @end
