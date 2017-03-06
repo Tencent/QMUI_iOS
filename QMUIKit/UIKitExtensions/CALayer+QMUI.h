@@ -26,7 +26,7 @@
 - (void)qmui_bringSublayerToFront:(CALayer *)sublayer;
 
 /**
- * 移除CALayer一些常见action，方便需要一个不带动画的layer时使用。
+ * 移除 CALayer（包括 CAShapeLayer 和 CAGradientLayer）所有支持动画的属性的默认动画，方便需要一个不带动画的 layer 时使用。
  */
 - (void)qmui_removeDefaultAnimations;
 
