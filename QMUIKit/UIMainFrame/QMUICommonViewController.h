@@ -93,6 +93,16 @@
                   buttonAction:(SEL)action;
 
 /**
+ *  显示带loading、image、text、detailText、button的emptyView
+ */
+- (void)showEmptyViewWithLoading:(BOOL)showLoading
+                           image:(UIImage *)image
+                            text:(NSString *)text
+                      detailText:(NSString *)detailText
+                     buttonTitle:(NSString *)buttonTitle
+                    buttonAction:(SEL)action;
+
+/**
  *  隐藏emptyView
  */
 - (void)hideEmptyView;
