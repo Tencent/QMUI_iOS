@@ -48,6 +48,7 @@ static QMUIModalPresentationViewController *appearance;
 @interface QMUIModalPresentationViewController ()
 
 @property(nonatomic, strong) QMUIModalPresentationWindow *containerWindow;
+@property(nonatomic, weak) UIWindow *previousKeyWindow;
 
 @property(nonatomic, assign) BOOL appearAnimated;
 @property(nonatomic, copy) void (^appearCompletionBlock)(BOOL finished);
@@ -197,8 +198,10 @@ static QMUIModalPresentationViewController *appearance;
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
         
         if (self.containerWindow) {
+            [self.previousKeyWindow makeKeyWindow];
             self.containerWindow.hidden = YES;
             self.containerWindow.rootViewController = nil;
+            self.previousKeyWindow = nil;
             [self endAppearanceTransition];
         }
         
@@ -384,17 +387,17 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    // makeKeyAndVisible导致的viewWillAppear:必定animated是NO的，所以这里用额外的变量保存这个animated的值
+    // makeKeyAndVisible 导致的 viewWillAppear: 必定 animated 是 NO 的，所以这里用额外的变量保存这个 animated 的值
     self.appearAnimated = animated;
     self.appearCompletionBlock = completion;
-    
+    self.previousKeyWindow = [UIApplication sharedApplication].keyWindow;
     if (!self.containerWindow) {
         self.containerWindow = [[QMUIModalPresentationWindow alloc] init];
         self.containerWindow.windowLevel = UIWindowLevelQMUIAlertView;
         self.containerWindow.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
     }
     self.containerWindow.rootViewController = self;
-    self.containerWindow.hidden = NO;
+    [self.containerWindow makeKeyAndVisible];
 }
 
 - (void)hidingAnimationWithCompletion:(void (^)(BOOL))completion {
