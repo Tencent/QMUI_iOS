@@ -212,7 +212,7 @@ static char kAssociatedObjectKey_hasDebugColor;
 }
 
 - (BOOL)qmui_becomeFirstResponder {
-    if (IS_SIMULATOR && ![self isKindOfClass:[UIWindow class]]) {
+    if (IS_SIMULATOR && ![self isKindOfClass:[UIWindow class]] && self.window && !self.window.keyWindow) {
         [self QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
     }
     return [self qmui_becomeFirstResponder];
