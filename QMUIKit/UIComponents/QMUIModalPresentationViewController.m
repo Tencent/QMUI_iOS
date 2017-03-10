@@ -416,6 +416,7 @@ static QMUIModalPresentationViewController *appearance;
             self.contentView.transform = CGAffineTransformMakeScale(0.0, 0.0);
         } completion:^(BOOL finished) {
             if (completion) {
+                self.contentView.transform = CGAffineTransformIdentity;
                 completion(finished);
             }
         }];
@@ -425,6 +426,7 @@ static QMUIModalPresentationViewController *appearance;
             self.contentView.transform = CGAffineTransformMakeTranslation(0, CGRectGetHeight(self.view.bounds) - CGRectGetMinY(self.contentView.frame));
         } completion:^(BOOL finished) {
             if (completion) {
+                self.contentView.transform = CGAffineTransformIdentity;
                 completion(finished);
             }
         }];
