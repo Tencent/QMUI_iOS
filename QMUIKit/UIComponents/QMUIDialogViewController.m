@@ -290,6 +290,10 @@ EndIgnoreClangWarning
 }
 
 - (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *))block {
+    if (_cancelButton) {
+        [_cancelButton removeFromSuperview];
+    }
+    
     _cancelButton = [self generateButtonWithText:buttonText];
     [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -301,6 +305,10 @@ EndIgnoreClangWarning
 }
 
 - (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block {
+    if (_submitButton) {
+        [_submitButton removeFromSuperview];
+    }
+    
     _submitButton = [self generateButtonWithText:buttonText];
     [self.submitButton addTarget:self action:@selector(handleSubmitButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
