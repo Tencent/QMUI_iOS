@@ -14,7 +14,8 @@
 
 /**
  * 当设置了这个属性后，setText: 方法会自动把文字转成 NSAttributedString 然后再添加上去，无需每次都自己构造 attributedString
- * 如果先调用 setText: 然后再设置这个 textAttributes，则已经设置过的 text 仍然会被转换成 NSAttributedString
+ * @note 如果先调用 setText: 然后再设置这个 textAttributes，则已经设置过的 text 仍然会被转换成 NSAttributedString
+ * @note 如果包含了 NSKernAttributeName ，则此方法会自动帮你去掉最后一个字的 kern 效果，否则容易导致文字整体在视觉上不居中
  * 默认为nil
  */
 @property(nonatomic, copy) NSDictionary<NSString *, id> *qmui_textAttributes;

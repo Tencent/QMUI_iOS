@@ -23,11 +23,14 @@
 - (void)qmui_setText:(NSString *)text {
     [self qmui_setText:text];
     if (self.qmui_textAttributes && text) {
-        NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:self.qmui_textAttributes];
-        self.attributedText = attributedString;
+        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:text attributes:self.qmui_textAttributes];
+        // NSKernAttributeName 会给最后一个字的右侧也添加间距，这常常不是想要的效果（因为会导致文字整体在视觉上不居中），因此这里把最后一个字的 kern 效果去掉
+        if (attributedString.length) {
+            [attributedString removeAttribute:NSKernAttributeName range:NSMakeRange(attributedString.length - 1, 1)];
+        }
+        self.attributedText = [[NSAttributedString alloc] initWithAttributedString:attributedString];
     }
 }
-
 static char kAssociatedObjectKey_textAttributes;
 - (void)setQmui_textAttributes:(NSDictionary<NSString *, id> *)qmui_textAttributes {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_textAttributes, qmui_textAttributes, OBJC_ASSOCIATION_COPY_NONATOMIC);
