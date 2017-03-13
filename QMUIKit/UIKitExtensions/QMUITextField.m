@@ -215,6 +215,11 @@
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
+    // 修复 iOS 7 下将 UITextField.delegate 指向自身时会死循环的问题
+    if (IOS_VERSION < 8.0 && [NSStringFromSelector(aSelector) hasPrefix:@"customOverlayC"]) {
+        return NO;
+    }
+    
     BOOL a = [super respondsToSelector:aSelector];
     BOOL c = [self.originalDelegate respondsToSelector:aSelector];
     BOOL result = a || c;
