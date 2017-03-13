@@ -71,8 +71,12 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    // 在这里为什么还需要调用一次，是因为如果把一个界面dismiss后回来这里，此时并不会调用navigationController:willShowViewController，但会调用viewWillAppear
-    [self renderStyleInNavigationController:self currentViewController:self.topViewController];
+    [self willShowViewController:self.topViewController];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self didShowViewController:self.topViewController];
 }
 
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated {
@@ -255,7 +259,7 @@
 // 注意如果实现了某一个navigationController的delegate方法，必须同时检查并且调用delegateProxy相对应的方法
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    [self renderStyleInNavigationController:navigationController currentViewController:viewController];
+    [self willShowViewController:viewController];
     if ([self.delegateProxy respondsToSelector:_cmd]) {
         [self.delegateProxy navigationController:navigationController willShowViewController:viewController animated:animated];
     }
@@ -264,6 +268,7 @@
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     self.viewControllerPopping = nil;
     self.isViewControllerTransiting = NO;
+    [self didShowViewController:viewController];
     if ([self.delegateProxy respondsToSelector:_cmd]) {
         [self.delegateProxy navigationController:navigationController didShowViewController:viewController animated:animated];
     }
@@ -297,6 +302,20 @@
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
+}
+
+@end
+
+
+@implementation QMUINavigationController (UISubclassingHooks)
+
+- (void)willShowViewController:(UIViewController *)viewController {
+    // 子类可以重写
+    [self renderStyleInNavigationController:self currentViewController:viewController];
+}
+
+- (void)didShowViewController:(UIViewController *)viewController {
+    // 子类可以重写
 }
 
 @end
