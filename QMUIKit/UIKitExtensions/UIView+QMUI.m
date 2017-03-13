@@ -231,8 +231,87 @@ static char kAssociatedObjectKey_hasDebugColor;
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        ReplaceMethod([self class], @selector(initWithFrame:), @selector(qmui_initWithFrame:));
+        ReplaceMethod([self class], @selector(initWithCoder:), @selector(qmui_initWithCoder:));
         ReplaceMethod([self class], @selector(layoutSublayersOfLayer:), @selector(qmui_layoutSublayersOfLayer:));
     });
+}
+
+- (instancetype)qmui_initWithFrame:(CGRect)frame {
+    [self qmui_initWithFrame:frame];
+    [self setDefaultStyle];
+    return self;
+}
+
+- (instancetype)qmui_initWithCoder:(NSCoder *)aDecoder {
+    [self qmui_initWithCoder:aDecoder];
+    [self setDefaultStyle];
+    return self;
+}
+
+- (void)qmui_layoutSublayersOfLayer:(CALayer *)layer {
+    
+    [self qmui_layoutSublayersOfLayer:layer];
+    
+    if ((!self.qmui_borderLayer && self.qmui_borderPosition == QMUIBorderViewPositionNone) || (!self.qmui_borderLayer && self.qmui_borderWidth == 0)) {
+        return;
+    }
+    
+    if (self.qmui_borderLayer && self.qmui_borderPosition == QMUIBorderViewPositionNone && !self.qmui_borderLayer.path) {
+        return;
+    }
+    
+    if (self.qmui_borderLayer && self.qmui_borderWidth == 0 && self.qmui_borderLayer.lineWidth == 0) {
+        return;
+    }
+    
+    if (!self.qmui_borderLayer) {
+        self.qmui_borderLayer = [CAShapeLayer layer];
+        [self.qmui_borderLayer qmui_removeDefaultAnimations];
+        [self.layer addSublayer:self.qmui_borderLayer];
+    }
+    self.qmui_borderLayer.frame = self.bounds;
+    
+    CGFloat borderWidth = self.qmui_borderWidth;
+    self.qmui_borderLayer.lineWidth = borderWidth;
+    self.qmui_borderLayer.strokeColor = self.qmui_borderColor.CGColor;
+    self.qmui_borderLayer.lineDashPhase = self.qmui_dashPhase;
+    if (self.qmui_dashPattern) {
+        self.qmui_borderLayer.lineDashPattern = self.qmui_dashPattern;
+    }
+    
+    UIBezierPath *path = nil;
+    
+    if (self.qmui_borderPosition != QMUIBorderViewPositionNone) {
+        path = [UIBezierPath bezierPath];
+    }
+    
+    if (self.qmui_borderPosition & QMUIBorderViewPositionTop) {
+        [path moveToPoint:CGPointMake(0, borderWidth / 2)];
+        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), borderWidth / 2)];
+    }
+    
+    if (self.qmui_borderPosition & QMUIBorderViewPositionLeft) {
+        [path moveToPoint:CGPointMake(borderWidth / 2, 0)];
+        [path addLineToPoint:CGPointMake(borderWidth / 2, CGRectGetHeight(self.bounds) - 0)];
+    }
+    
+    if (self.qmui_borderPosition & QMUIBorderViewPositionBottom) {
+        [path moveToPoint:CGPointMake(0, CGRectGetHeight(self.bounds) - borderWidth / 2)];
+        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) - borderWidth / 2)];
+    }
+    
+    if (self.qmui_borderPosition & QMUIBorderViewPositionRight) {
+        [path moveToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, 0)];
+        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, CGRectGetHeight(self.bounds))];
+    }
+    
+    self.qmui_borderLayer.path = path.CGPath;
+}
+
+- (void)setDefaultStyle {
+    self.qmui_borderWidth = PixelOne;
+    self.qmui_borderColor = UIColorSeparator;
 }
 
 static char kAssociatedObjectKey_borderPosition;
@@ -292,87 +371,6 @@ static char kAssociatedObjectKey_borderLayer;
 
 - (CAShapeLayer *)qmui_borderLayer {
     return (CAShapeLayer *)objc_getAssociatedObject(self, &kAssociatedObjectKey_borderLayer);
-}
-
-- (void)qmui_layoutSublayersOfLayer:(CALayer *)layer {
-    
-    [self qmui_layoutSublayersOfLayer:layer];
-    
-    if ((!self.qmui_borderLayer && self.qmui_borderPosition == QMUIBorderViewPositionNone) || (!self.qmui_borderLayer && self.qmui_borderWidth == 0)) {
-        return;
-    }
-    
-    if (self.qmui_borderLayer && self.qmui_borderPosition == QMUIBorderViewPositionNone && !self.qmui_borderLayer.path) {
-        return;
-    }
-    
-    if (self.qmui_borderLayer && self.qmui_borderWidth == 0 && self.qmui_borderLayer.lineWidth == 0) {
-        return;
-    }
-    
-    if (!self.qmui_borderLayer) {
-        self.qmui_borderLayer = [CAShapeLayer layer];
-        // 移除属于CALayer部分的属性的隐性动画
-        [self.qmui_borderLayer qmui_removeDefaultAnimations];
-        // 移除属于CAShapeLayer部分的属性的隐性动画
-        [self removeDefautShapeLayerAnimations];
-        [self.layer addSublayer:self.qmui_borderLayer];
-        
-        // 设置默认值
-        self.qmui_dashPhase = self.qmui_dashPhase == 0 ? 0 : self.qmui_dashPhase;
-        self.qmui_borderColor = self.qmui_borderColor ? self.qmui_borderColor : UIColorSeparator;
-        self.qmui_borderWidth = self.qmui_borderWidth == 0 ? PixelOne : self.qmui_borderWidth;
-    }
-    self.qmui_borderLayer.frame = self.bounds;
-    
-    CGFloat borderWidth = self.qmui_borderWidth;
-    self.qmui_borderLayer.lineWidth = borderWidth;
-    self.qmui_borderLayer.strokeColor = self.qmui_borderColor.CGColor;
-    self.qmui_borderLayer.lineDashPhase = self.qmui_dashPhase;
-    if (self.qmui_dashPattern) {
-        self.qmui_borderLayer.lineDashPattern = self.qmui_dashPattern;
-    }
-    
-    UIBezierPath *path = nil;
-    
-    if (self.qmui_borderPosition != QMUIBorderViewPositionNone) {
-        path = [UIBezierPath bezierPath];
-    }
-    
-    if (self.qmui_borderPosition & QMUIBorderViewPositionTop) {
-        [path moveToPoint:CGPointMake(0, borderWidth / 2)];
-        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), borderWidth / 2)];
-    }
-    
-    if (self.qmui_borderPosition & QMUIBorderViewPositionLeft) {
-        [path moveToPoint:CGPointMake(borderWidth / 2, 0)];
-        [path addLineToPoint:CGPointMake(borderWidth / 2, CGRectGetHeight(self.bounds) - 0)];
-    }
-    
-    if (self.qmui_borderPosition & QMUIBorderViewPositionBottom) {
-        [path moveToPoint:CGPointMake(0, CGRectGetHeight(self.bounds) - borderWidth / 2)];
-        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) - borderWidth / 2)];
-    }
-    
-    if (self.qmui_borderPosition & QMUIBorderViewPositionRight) {
-        [path moveToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, 0)];
-        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, CGRectGetHeight(self.bounds))];
-    }
-    
-    self.qmui_borderLayer.path = path.CGPath;
-}
-
-// 移除qmui_borderLayer属于CAShapeLayer部分的属性的隐性动画
-- (void)removeDefautShapeLayerAnimations {
-    if (!self.qmui_borderLayer) {
-        return;
-    }
-    NSMutableDictionary *dict = [self.qmui_borderLayer.actions mutableCopy];
-    dict[@"strokeColor"] = [NSNull null];
-    dict[@"lineWidth"] = [NSNull null];
-    dict[@"lineDashPhase"] = [NSNull null];
-    dict[@"path"] = [NSNull null];
-    self.qmui_borderLayer.actions = [NSDictionary dictionaryWithDictionary:dict];
 }
 
 @end
