@@ -275,18 +275,12 @@ static QMUIModalPresentationViewController *appearance;
 - (void)initDefaultDimmingViewWithoutAddToView {
     if (!self.dimmingView) {
         _dimmingView = [[UIView alloc] init];
-        self.dimmingView.alpha = 0.0;
         self.dimmingView.backgroundColor = UIColorMask;
         [self addTapGestureRecognizerToDimmingViewIfNeeded];
         if ([self isViewLoaded]) {
             [self.view addSubview:self.dimmingView];
         }
     }
-}
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    [super touchesBegan:touches withEvent:event];
-    NSLog(@"");
 }
 
 // 要考虑用户可能创建了自己的dimmingView，则tap手势也要重新添加上去
