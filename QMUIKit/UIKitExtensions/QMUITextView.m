@@ -304,8 +304,8 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             
             
             // 通知delegate去更新textView的高度
-            if ([textView.originalDelegate respondsToSelector:@selector(textView:contentHeightAfterTextChanged:)]) {
-                [textView.originalDelegate textView:self contentHeightAfterTextChanged:resultHeight];
+            if ([textView.originalDelegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)] && resultHeight != CGRectGetHeight(self.bounds)) {
+                [textView.originalDelegate textView:self newHeightAfterTextChanged:resultHeight];
             }
         }
         
