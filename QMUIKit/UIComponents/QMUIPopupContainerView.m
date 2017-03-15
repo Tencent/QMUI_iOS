@@ -57,7 +57,14 @@
 }
 
 - (UIView *)superviewIfExist {
-    return self.superview ? : [[[UIApplication sharedApplication] delegate] window];
+    BOOL isAddedToCustomView = self.superview && !self.popupWindow;
+    if (isAddedToCustomView) {
+        return self.superview;
+    }
+    
+    // https://github.com/QMUI/QMUI_iOS/issues/76
+    BOOL shouldLayoutInPopupWindow = self.popupWindow && CGSizeEqualToSize(self.popupWindow.bounds.size, [[[UIApplication sharedApplication] delegate] window].bounds.size);
+    return shouldLayoutInPopupWindow ? self.popupWindow : [[[UIApplication sharedApplication] delegate] window];
 }
 
 - (UIImageView *)imageView {
@@ -403,37 +410,34 @@
                 self.alpha = 0;
             }
         } completion:^(BOOL finished) {
-            if (isShowingByWindowMode) {
-                [self.previousKeyWindow makeKeyWindow];
-                self.popupWindow.hidden = YES;
-                self.popupWindow = nil;
-            } else {
-                self.hidden = YES;
-            }
-            if (completion) {
-                completion(finished);
-            }
-            if (self.didHideBlock) {
-                self.didHideBlock(self.hidesByUserTap);
-            }
-            self.hidesByUserTap = NO;
+            [self hideCompletionWithWindowMode:isShowingByWindowMode completion:completion];
         }];
     } else {
-        if (isShowingByWindowMode) {
-            [self.previousKeyWindow makeKeyWindow];
-            self.popupWindow.hidden = YES;
-            self.popupWindow = nil;
-        } else {
-            self.hidden = YES;
-        }
-        if (completion) {
-            completion(YES);
-        }
-        if (self.didHideBlock) {
-            self.didHideBlock(self.hidesByUserTap);
-        }
-        self.hidesByUserTap = NO;
+        [self hideCompletionWithWindowMode:isShowingByWindowMode completion:completion];
     }
+}
+
+- (void)hideCompletionWithWindowMode:(BOOL)windowMode completion:(void (^)(BOOL))completion {
+    if (windowMode) {
+        [self.previousKeyWindow makeKeyWindow];
+        
+        // iOS 9 下（iOS 8 和 10 都没问题）需要主动移除，才能令 rootViewController 和 popupWindow 立即释放，不影响后续的 layout 判断，如果不加这两句，虽然 popupWindow 指针被置为 nil，但其实对象还存在，View 层级关系也还在
+        // https://github.com/QMUI/QMUI_iOS/issues/75
+        [self removeFromSuperview];
+        self.popupWindow.rootViewController = nil;
+        
+        self.popupWindow.hidden = YES;
+        self.popupWindow = nil;
+    } else {
+        self.hidden = YES;
+    }
+    if (completion) {
+        completion(YES);
+    }
+    if (self.didHideBlock) {
+        self.didHideBlock(self.hidesByUserTap);
+    }
+    self.hidesByUserTap = NO;
 }
 
 - (BOOL)isShowing {
