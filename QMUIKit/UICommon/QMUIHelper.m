@@ -305,7 +305,7 @@ static NSInteger isIPadPro = -1;
 static NSInteger isIPod = -1;
 + (BOOL)isIPod {
     if (isIPod < 0) {
-        isIPod = [[[UIDevice currentDevice] model] isEqualToString:@"iPod touch"] ? 1 : 0;
+        isIPod = [[[UIDevice currentDevice] model] qmui_includesString:@"iPod touch"] ? 1 : 0;
     }
     return isIPod > 0;
 }
@@ -313,7 +313,7 @@ static NSInteger isIPod = -1;
 static NSInteger isIPhone = -1;
 + (BOOL)isIPhone {
     if (isIPhone < 0) {
-        isIPhone = [[[UIDevice currentDevice] model] isEqualToString:@"iPhone"] ? 1 : 0;
+        isIPhone = [[[UIDevice currentDevice] model] qmui_includesString:@"iPhone"] ? 1 : 0;
     }
     return isIPhone > 0;
 }
