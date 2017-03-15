@@ -11,6 +11,7 @@
 #import "QMUIConfiguration.h"
 #import "UIViewController+QMUI.h"
 #import <AVFoundation/AVFoundation.h>
+#import "NSString+QMUI.h"
 
 
 NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
