@@ -28,7 +28,7 @@
 		CD78CBCF1DEE9E3500910DCE /* QMUIImagePreviewView.h in Headers */ = {isa = PBXBuildFile; fileRef = CD78CBCD1DEE9E3500910DCE /* QMUIImagePreviewView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD78CBD01DEE9E3500910DCE /* QMUIImagePreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD78CBCE1DEE9E3500910DCE /* QMUIImagePreviewView.m */; };
 		CD78CBD11DEE9E3500910DCE /* QMUIImagePreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD78CBCE1DEE9E3500910DCE /* QMUIImagePreviewView.m */; };
-		CD84F31D1E52DBEA00546111 /* UITabBar+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD84F31B1E52DBEA00546111 /* UITabBar+QMUI.h */; };
+		CD84F31D1E52DBEA00546111 /* UITabBar+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD84F31B1E52DBEA00546111 /* UITabBar+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD84F31E1E52DBEA00546111 /* UITabBar+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CD84F31C1E52DBEA00546111 /* UITabBar+QMUI.m */; };
 		CD84F31F1E52DBEA00546111 /* UITabBar+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CD84F31C1E52DBEA00546111 /* UITabBar+QMUI.m */; };
 		CD9D18FC1DD462200020F268 /* QMUIFloatLayoutView.h in Headers */ = {isa = PBXBuildFile; fileRef = CD9D18FA1DD462200020F268 /* QMUIFloatLayoutView.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -238,9 +238,8 @@
 		CDB8CBF61DCC870800769DF0 /* QMUI_QQEmotion.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDB8CACA1DCC870700769DF0 /* QMUI_QQEmotion.bundle */; };
 		CDB8CBF81DCC870800769DF0 /* QMUIResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDB8CACB1DCC870700769DF0 /* QMUIResources.bundle */; };
 		CDB8CBFA1DCC870800769DF0 /* readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = CDB8CACC1DCC870700769DF0 /* readme.txt */; };
-		CDBCD5441DFAA6AC009EFEF5 /* QMUITableViewProtocols.h in Sources */ = {isa = PBXBuildFile; fileRef = CDBCD53F1DFAA286009EFEF5 /* QMUITableViewProtocols.h */; };
 		CDBCD5451DFAA6E0009EFEF5 /* QMUITableViewProtocols.h in Headers */ = {isa = PBXBuildFile; fileRef = CDBCD53F1DFAA286009EFEF5 /* QMUITableViewProtocols.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD495151E60151500829B7D /* QMUIPopupMenuView.h */; };
+		CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD495151E60151500829B7D /* QMUIPopupMenuView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDD495181E60151500829B7D /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD495161E60151500829B7D /* QMUIPopupMenuView.m */; };
 		CDD495191E60151500829B7D /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD495161E60151500829B7D /* QMUIPopupMenuView.m */; };
 /* End PBXBuildFile section */
@@ -753,7 +752,6 @@
 				CDB8CB0D1DCC870700769DF0 /* QMUIEmptyView.h in Headers */,
 				CDB8CB591DCC870700769DF0 /* NSObject+QMUI.h in Headers */,
 				CDB8CBA91DCC870700769DF0 /* UIColor+QMUI.h in Headers */,
-				CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */,
 				CDB8CB791DCC870700769DF0 /* QMUISearchBar.h in Headers */,
 				CDB8CB691DCC870700769DF0 /* QMUIButton.h in Headers */,
 				CDB8CBB51DCC870800769DF0 /* UIImage+QMUI.h in Headers */,
@@ -804,7 +802,6 @@
 				CDB8CB811DCC870700769DF0 /* QMUISegmentedControl.h in Headers */,
 				CDB8CB8D1DCC870700769DF0 /* QMUITableViewCell.h in Headers */,
 				CDB8CB511DCC870700769DF0 /* CALayer+QMUI.h in Headers */,
-				CD84F31D1E52DBEA00546111 /* UITabBar+QMUI.h in Headers */,
 				CDB8CBD91DCC870800769DF0 /* UIView+QMUI.h in Headers */,
 				CDB8CB211DCC870700769DF0 /* QMUIOrderedDictionary.h in Headers */,
 				CDB8CB451DCC870700769DF0 /* QMUITips.h in Headers */,
@@ -822,6 +819,8 @@
 				16F6B6531DFEC39F00E58171 /* QMUIToastAnimator.h in Headers */,
 				CDB8CB411DCC870700769DF0 /* QMUITestView.h in Headers */,
 				CDB8CBE11DCC870800769DF0 /* UIWindow+QMUI.h in Headers */,
+				CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */,
+				CD84F31D1E52DBEA00546111 /* UITabBar+QMUI.h in Headers */,
 				CDB8CAF11DCC870700769DF0 /* QMUIAlbumViewController.h in Headers */,
 				CDBCD5451DFAA6E0009EFEF5 /* QMUITableViewProtocols.h in Headers */,
 			);
@@ -922,7 +921,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CDBCD5441DFAA6AC009EFEF5 /* QMUITableViewProtocols.h in Sources */,
 				CDB8CB0F1DCC870700769DF0 /* QMUIEmptyView.m in Sources */,
 				CDB8CB5F1DCC870700769DF0 /* NSParagraphStyle+QMUI.m in Sources */,
 				CD9D18FD1DD462200020F268 /* QMUIFloatLayoutView.m in Sources */,
