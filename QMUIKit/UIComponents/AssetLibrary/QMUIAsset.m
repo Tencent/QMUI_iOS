@@ -34,9 +34,6 @@
     UIImage *_originImage;
     UIImage *_previewImage;
     PHLivePhoto *_livePhoto;
-    
-    NSData *_originImageData;
-    
     NSString *_assetIdentityHash;
 }
 
@@ -203,47 +200,6 @@
     } else {
         if (completion) {
             completion([self originImage], nil);
-        }
-        return 0;
-    }
-}
-
-- (NSInteger)requestOriginImageDataWithCompletion:(void (^)(NSData *, NSDictionary *))completion {
-    if (_usePhotoKit) {
-        if (_originImageData) {
-            if (completion) {
-                completion(_originImageData, _phAssetInfo);
-            }
-            return 0;
-        } else {
-            PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
-            imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
-            
-            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageDataForAsset:_phAsset options:imageRequestOptions resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
-                if (info) {
-                    NSMutableDictionary *tempInfo = [[NSMutableDictionary alloc] init];
-                    if (info) {
-                        [tempInfo addEntriesFromDictionary:info];
-                    }
-                    if (dataUTI) {
-                        [tempInfo setObject:dataUTI forKey:@"dataUTI"];
-                    }
-                    [tempInfo setObject:@(orientation) forKey:@"orientation"];
-                    [tempInfo setObject:@(imageData.length) forKey:@"imageSize"];
-                    _phAssetInfo = tempInfo;
-                }
-                
-                _originImageData = imageData;
-                
-                if (completion) {
-                    completion(_originImageData, _phAssetInfo);
-                }
-                
-            }];
-        }
-    } else {
-        if (completion) {
-            completion(nil, nil);
         }
         return 0;
     }
