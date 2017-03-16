@@ -118,8 +118,6 @@
     self.navBarShadowImageColor = UIColorMake(178, 178, 178);
     self.navBarBarTintColor = nil;
     self.navBarTintColor = self.blackColor;
-    self.navBarTintColorHighlighted = [self.navBarTintColor colorWithAlphaComponent:self.navBarHighlightedAlpha];
-    self.navBarTintColorDisabled = [self.navBarTintColor colorWithAlphaComponent:self.navBarDisabledAlpha];
     self.navBarTitleColor = nil;
     self.navBarTitleFont = UIFontBoldMake(17);
     self.navBarBackButtonTitlePositionAdjustment = UIOffsetZero;
