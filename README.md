@@ -40,7 +40,7 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 #### Podfile
 ```
 platform :ios, '7.0'
-pod 'QMUIKit', '~>1.2'
+pod 'QMUIKit', '~>1.3.4'
 ```
 如果你的项目支持 iOS 8+，建议使用QMUI的动态库：
 
@@ -48,13 +48,20 @@ pod 'QMUIKit', '~>1.2'
 platform :ios, '8.0'
 use_frameworks!
 ```
+如果使用```pod search QMUIKit```找不到QMUI，那么建议更新一下CocoaPods的索引再重新试一下：
+```
+rm ~/Library/Caches/CocoaPods/search_index.json
+或者
+rm -rf ~/.cocoapods
+pod setup （这个步骤比较费时，请耐心等一等）
+```
 ### 使用 Carthage (iOS 8+)
 
 [Carthage](https://github.com/Carthage/Carthage) 是一个比CocoaPods更加轻量的包管理器，如何安装请查考[这里](https://github.com/Carthage/Carthage)。
 
 #### Cartfile
 ```
-github "QMUI/QMUI_iOS" ~>1.2
+github "QMUI/QMUI_iOS" ~>1.3.4
 ```
 ### 作为子项目
 具体请查看我们的[开始使用](http://qmuiteam.com/ios/page/start.html#qw_downloadForUse)文档。
@@ -73,8 +80,8 @@ QMUI iOS 支持 iOS 7+
 
 ## 注意事项
 - 关于 AutoLayout：目前暂未支持，考虑到 AutoLayout 的普及性，我们将会尽快支持。
-- 关于 xib / storyboard：正在支持中，请关注版本更新。
+- 关于 xib / storyboard：现已全面支持。
 - 关于 Swift：暂未检查过在 Swift 下使用 QMUI 的问题，如遇到问题可以反馈给我们，我们会尽快兼容。
 
 ## 其他
-建议搭配 QMUI 专用的 Code Snippets 使用： [https://github.com/QMUI/qmui-ios-codesnippets](https://github.com/QMUI/qmui-ios-codesnippets)
+建议搭配 QMUI 专用的 Code Snippets 使用： [https://github.com/QMUI/qmui-ios-codesnippets](https://github.com/QMUI/QMUI_iOS_CodeSnippets)

@@ -32,6 +32,7 @@
  *  1. 自定义 placeholderColor。
  *  2. 自定义 UITextField 的文字 padding。
  *  3. 支持限制输入的文字的长度。
+ *  4. 修复 iOS 10 之后 UITextField 输入中文超过文本框宽度后再删除，文字往下掉的 bug。
  */
 @interface QMUITextField : UITextField
 

@@ -89,9 +89,10 @@ typedef NS_OPTIONS(NSUInteger, QMUIBorderViewPosition) {
 };
 
 /**
- *  Border 为UIView增加border。系统的border只能通过view.layer来设置，并且无法只单独设置某些边，所以导致很多情况下需要重新初始化一条新的layer加在view上，略麻烦。
+ *  UIView (QMUI_Border) 为 UIView 方便地显示某几个方向上的边框。
  *
- *  QMUI_Border分类支持为UIView设置一条border，可以是任意一条边或者多条边。
+ *  系统的默认实现里，要为 UIView 加边框一般是通过 view.layer 来实现，view.layer 会给四条边都加上边框，如果你只想为其中某几条加上边框就很麻烦，于是 UIView (QMUI_Border) 提供了 qmui_borderPosition 来解决这个问题。
+ *  @warning 注意如果你需要为 UIView 四条边都加上边框，请使用系统默认的 view.layer 来实现，而不要用 UIView (QMUI_Border)，会浪费资源，这也是为什么 QMUIBorderViewPosition 不提供一个 QMUIBorderViewPositionAll 枚举值的原因。
  */
 @interface UIView (QMUI_Border)
 

@@ -18,4 +18,12 @@
  */
 - (void)qmui_calculateHeightAfterSetAppearance;
 
+/**
+ * 通过这个方法设置了 attributes 之后，setTitle:forState: 会自动把文字转成 attributedString 再添加上去，无需每次都自己构造 attributedString
+ * @note 即使先调用 setTitle:forState: 然后再调用这个方法，之前的 title 仍然会被应用上这些 attributes
+ * @note 该方法和 setTitleColor:forState: 均可设置字体颜色，如果二者冲突，则代码顺序较后的方法定义的颜色会最终生效
+ * @note 如果包含了 NSKernAttributeName ，则此方法会自动帮你去掉最后一个字的 kern 效果，否则容易导致文字整体在视觉上不居中
+ */
+- (void)qmui_setTitleAttributes:(NSDictionary<NSString *, id> *)attributes forState:(UIControlState)state;
+
 @end

@@ -72,13 +72,23 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 @property(nonatomic, strong, readonly) UILabel *subtitleLabel;
 @property(nonatomic, copy) NSString *subtitle;
 
-/*
- *  控制title和subTitle的font，可以水平布局和垂直布局都单独指定一个font
- */
+/// 水平布局下的标题字体，默认为 NavBarTitleFont
 @property(nonatomic, strong) UIFont *horizontalTitleFont UI_APPEARANCE_SELECTOR;
+
+/// 水平布局下的副标题的字体，默认为 NavBarTitleFont
 @property(nonatomic, strong) UIFont *horizontalSubtitleFont UI_APPEARANCE_SELECTOR;
+
+/// 垂直布局下的标题字体，默认为 UIFontMake(15)
 @property(nonatomic, strong) UIFont *verticalTitleFont UI_APPEARANCE_SELECTOR;
+
+/// 垂直布局下的副标题字体，默认为 UIFontLightMake(12)
 @property(nonatomic, strong) UIFont *verticalSubtitleFont UI_APPEARANCE_SELECTOR;
+
+/// 标题的上下左右间距，当标题不显示时，计算大小及布局时也不考虑这个间距，默认为 UIEdgeInsetsZero
+@property(nonatomic, assign) UIEdgeInsets titleEdgeInsets UI_APPEARANCE_SELECTOR;
+
+/// 副标题的上下左右间距，当副标题不显示时，计算大小及布局时也不考虑这个间距，默认为 UIEdgeInsetsZero
+@property(nonatomic, assign) UIEdgeInsets subtitleEdgeInsets UI_APPEARANCE_SELECTOR;
 
 #pragma mark - Loading
 

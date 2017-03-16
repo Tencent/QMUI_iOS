@@ -54,8 +54,6 @@
 
 /**
  *  空列表控件，支持显示提示文字、loading、操作按钮
- *
- *  再TableViewController中最好以tableFooterView的形式被添加到界面中（而不是以一个与tableView平级的view），从而可在界面上同时显示searchBar
  */
 @property(nonatomic,strong) QMUIEmptyView *emptyView;
 
@@ -63,10 +61,10 @@
 @property(nonatomic,assign,readonly,getter = isEmptyViewShowing) BOOL emptyViewShowing;
 
 /**
- *  显示emptyView，将其放到tableFooterView。emptyView的系列接口可以按需进行重写
+ *  显示emptyView
+ *  emptyView 的以下系列接口可以按需进行重写
  *
  *  @see QMUIEmptyView
- *  @warning 如果是用在TableViewController的tableFooterView中，确保此时tableView的numberOfRows为空
  */
 - (void)showEmptyView;
 
@@ -91,6 +89,16 @@
                     detailText:(NSString *)detailText
                    buttonTitle:(NSString *)buttonTitle
                   buttonAction:(SEL)action;
+
+/**
+ *  显示带loading、image、text、detailText、button的emptyView
+ */
+- (void)showEmptyViewWithLoading:(BOOL)showLoading
+                           image:(UIImage *)image
+                            text:(NSString *)text
+                      detailText:(NSString *)detailText
+                     buttonTitle:(NSString *)buttonTitle
+                    buttonAction:(SEL)action;
 
 /**
  *  隐藏emptyView

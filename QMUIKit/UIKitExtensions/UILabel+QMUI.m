@@ -13,6 +13,34 @@
 
 @implementation UILabel (QMUI)
 
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ReplaceMethod([self class], @selector(setText:), @selector(qmui_setText:));
+    });
+}
+
+- (void)qmui_setText:(NSString *)text {
+    [self qmui_setText:text];
+    if (self.qmui_textAttributes && text) {
+        NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:text attributes:self.qmui_textAttributes];
+        // NSKernAttributeName 会给最后一个字的右侧也添加间距，这常常不是想要的效果（因为会导致文字整体在视觉上不居中），因此这里把最后一个字的 kern 效果去掉
+        if (attributedString.length) {
+            [attributedString removeAttribute:NSKernAttributeName range:NSMakeRange(attributedString.length - 1, 1)];
+        }
+        self.attributedText = [[NSAttributedString alloc] initWithAttributedString:attributedString];
+    }
+}
+static char kAssociatedObjectKey_textAttributes;
+- (void)setQmui_textAttributes:(NSDictionary<NSString *, id> *)qmui_textAttributes {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_textAttributes, qmui_textAttributes, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    [self setText:self.text];
+}
+
+- (NSDictionary *)qmui_textAttributes {
+    return (NSDictionary *)objc_getAssociatedObject(self, &kAssociatedObjectKey_textAttributes);
+}
+
 - (instancetype)initWithFont:(UIFont *)font textColor:(UIColor *)textColor {
     if (self = [super init]) {
         self.font = font;

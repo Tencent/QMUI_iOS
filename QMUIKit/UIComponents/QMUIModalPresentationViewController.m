@@ -48,6 +48,7 @@ static QMUIModalPresentationViewController *appearance;
 @interface QMUIModalPresentationViewController ()
 
 @property(nonatomic, strong) QMUIModalPresentationWindow *containerWindow;
+@property(nonatomic, weak) UIWindow *previousKeyWindow;
 
 @property(nonatomic, assign) BOOL appearAnimated;
 @property(nonatomic, copy) void (^appearCompletionBlock)(BOOL finished);
@@ -92,7 +93,7 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (void)dealloc {
-    _containerWindow = nil;
+    self.containerWindow = nil;
 }
 
 - (BOOL)shouldAutomaticallyForwardAppearanceMethods {
@@ -189,11 +190,18 @@ static QMUIModalPresentationViewController *appearance;
     if (self.containerWindow) {
         animated = self.disappearAnimated;
     }
+    
+    if ([self.delegate respondsToSelector:@selector(willHideModalPresentationViewController:)]) {
+        [self.delegate willHideModalPresentationViewController:self];
+    }
+    
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
         
         if (self.containerWindow) {
+            [self.previousKeyWindow makeKeyWindow];
             self.containerWindow.hidden = YES;
             self.containerWindow.rootViewController = nil;
+            self.previousKeyWindow = nil;
             [self endAppearanceTransition];
         }
         
@@ -267,18 +275,12 @@ static QMUIModalPresentationViewController *appearance;
 - (void)initDefaultDimmingViewWithoutAddToView {
     if (!self.dimmingView) {
         _dimmingView = [[UIView alloc] init];
-        self.dimmingView.alpha = 0.0;
         self.dimmingView.backgroundColor = UIColorMask;
         [self addTapGestureRecognizerToDimmingViewIfNeeded];
         if ([self isViewLoaded]) {
             [self.view addSubview:self.dimmingView];
         }
     }
-}
-
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    [super touchesBegan:touches withEvent:event];
-    NSLog(@"");
 }
 
 // 要考虑用户可能创建了自己的dimmingView，则tap手势也要重新添加上去
@@ -331,7 +333,7 @@ static QMUIModalPresentationViewController *appearance;
 
 #pragma mark - ContentView
 
-- (void)setContentViewController:(UIViewController<QMUIModalPresentationContentViewProtocol> *)contentViewController {
+- (void)setContentViewController:(UIViewController<QMUIModalPresentationContentViewControllerProtocol> *)contentViewController {
     _contentViewController = contentViewController;
     self.contentView = contentViewController.view;
 }
@@ -379,17 +381,17 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    // makeKeyAndVisible导致的viewWillAppear:必定animated是NO的，所以这里用额外的变量保存这个animated的值
+    // makeKeyAndVisible 导致的 viewWillAppear: 必定 animated 是 NO 的，所以这里用额外的变量保存这个 animated 的值
     self.appearAnimated = animated;
     self.appearCompletionBlock = completion;
-    
+    self.previousKeyWindow = [UIApplication sharedApplication].keyWindow;
     if (!self.containerWindow) {
         self.containerWindow = [[QMUIModalPresentationWindow alloc] init];
         self.containerWindow.windowLevel = UIWindowLevelQMUIAlertView;
         self.containerWindow.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
     }
     self.containerWindow.rootViewController = self;
-    self.containerWindow.hidden = NO;
+    [self.containerWindow makeKeyAndVisible];
 }
 
 - (void)hidingAnimationWithCompletion:(void (^)(BOOL))completion {
@@ -408,6 +410,7 @@ static QMUIModalPresentationViewController *appearance;
             self.contentView.transform = CGAffineTransformMakeScale(0.0, 0.0);
         } completion:^(BOOL finished) {
             if (completion) {
+                self.contentView.transform = CGAffineTransformIdentity;
                 completion(finished);
             }
         }];
@@ -417,6 +420,7 @@ static QMUIModalPresentationViewController *appearance;
             self.contentView.transform = CGAffineTransformMakeTranslation(0, CGRectGetHeight(self.view.bounds) - CGRectGetMinY(self.contentView.frame));
         } completion:^(BOOL finished) {
             if (completion) {
+                self.contentView.transform = CGAffineTransformIdentity;
                 completion(finished);
             }
         }];

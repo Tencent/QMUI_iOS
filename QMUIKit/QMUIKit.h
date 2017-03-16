@@ -60,6 +60,7 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import <QMUIKit/QMUICellHeightCache.h>
 #import <QMUIKit/UITableView+QMUI.h>
 #import <QMUIKit/UICollectionView+QMUI.h>
+#import <QMUIKit/UITabBar+QMUI.h>
 #import <QMUIKit/UITabBarItem+QMUI.h>
 #import <QMUIKit/UIActivityIndicatorView+QMUI.h>
 #import <QMUIKit/UIWindow+QMUI.h>
@@ -90,6 +91,7 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import <QMUIKit/QMUIQQEmotionManager.h>
 #import <QMUIKit/QMUIPieProgressView.h>
 #import <QMUIKit/QMUIPopupContainerView.h>
+#import <QMUIKit/QMUIPopupMenuView.h>
 #import <QMUIKit/QMUIModalPresentationViewController.h>
 #import <QMUIKit/QMUIAlertController.h>
 #import <QMUIKit/QMUIAlbumViewController.h>
@@ -148,6 +150,7 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import "QMUICellHeightCache.h"
 #import "UITableView+QMUI.h"
 #import "UICollectionView+QMUI.h"
+#import "UITabBar+QMUI.h"
 #import "UITabBarItem+QMUI.h"
 #import "UIActivityIndicatorView+QMUI.h"
 #import "UIWindow+QMUI.h"
@@ -178,6 +181,7 @@ FOUNDATION_EXPORT const unsigned char QMUIKitVersionString[];
 #import "QMUIQQEmotionManager.h"
 #import "QMUIPieProgressView.h"
 #import "QMUIPopupContainerView.h"
+#import "QMUIPopupMenuView.h"
 #import "QMUIModalPresentationViewController.h"
 #import "QMUIAlertController.h"
 #import "QMUIAlbumViewController.h"

@@ -98,8 +98,6 @@
 @property(nonatomic, strong) UIColor         *navBarShadowImageColor;
 @property(nonatomic, strong) UIColor         *navBarBarTintColor;
 @property(nonatomic, strong) UIColor         *navBarTintColor;
-@property(nonatomic, strong) UIColor         *navBarTintColorHighlighted;
-@property(nonatomic, strong) UIColor         *navBarTintColorDisabled;
 @property(nonatomic, strong) UIColor         *navBarTitleColor;
 @property(nonatomic, strong) UIFont          *navBarTitleFont;
 @property(nonatomic, assign) UIOffset        navBarBackButtonTitlePositionAdjustment;
@@ -154,13 +152,18 @@
 @property(nonatomic, strong) UIColor         *tableSectionIndexBackgroundColor;
 @property(nonatomic, strong) UIColor         *tableSectionIndexTrackingBackgroundColor;
 @property(nonatomic, strong) UIColor         *tableViewSeparatorColor;
+
+@property(nonatomic, assign) CGFloat         tableViewCellNormalHeight;
+@property(nonatomic, strong) UIColor         *tableViewCellTitleLabelColor;
+@property(nonatomic, strong) UIColor         *tableViewCellDetailLabelColor;
+@property(nonatomic, assign) CGFloat         tableViewCellContentDefaultPaddingLeft;
+@property(nonatomic, assign) CGFloat         tableViewCellContentDefaultPaddingRight;
 @property(nonatomic, strong) UIColor         *tableViewCellBackgroundColor;
 @property(nonatomic, strong) UIColor         *tableViewCellSelectedBackgroundColor;
 @property(nonatomic, strong) UIColor         *tableViewCellWarningBackgroundColor;
-@property(nonatomic, assign) CGFloat         tableViewCellNormalHeight;
-
 @property(nonatomic, strong) UIImage         *tableViewCellDisclosureIndicatorImage;
 @property(nonatomic, strong) UIImage         *tableViewCellCheckmarkImage;
+
 @property(nonatomic, strong) UIColor         *tableViewSectionHeaderBackgroundColor;
 @property(nonatomic, strong) UIColor         *tableViewSectionFooterBackgroundColor;
 @property(nonatomic, strong) UIFont          *tableViewSectionHeaderFont;
@@ -180,11 +183,6 @@
 @property(nonatomic, assign) CGFloat         tableViewGroupedSectionFooterHeight;
 @property(nonatomic, assign) UIEdgeInsets    tableViewGroupedSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets    tableViewGroupedSectionFooterContentInset;
-
-@property(nonatomic, strong) UIColor         *tableViewCellTitleLabelColor;
-@property(nonatomic, strong) UIColor         *tableViewCellDetailLabelColor;
-@property(nonatomic, assign) CGFloat         tableViewCellContentDefaultPaddingLeft;
-@property(nonatomic, assign) CGFloat         tableViewCellContentDefaultPaddingRight;
 
 #pragma mark - Others
 

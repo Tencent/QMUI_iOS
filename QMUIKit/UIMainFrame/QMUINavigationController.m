@@ -71,8 +71,12 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    // 在这里为什么还需要调用一次，是因为如果把一个界面dismiss后回来这里，此时并不会调用navigationController:willShowViewController，但会调用viewWillAppear
-    [self renderStyleInNavigationController:self currentViewController:self.topViewController];
+    [self willShowViewController:self.topViewController];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self didShowViewController:self.topViewController];
 }
 
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated {
@@ -86,7 +90,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPoppingViewController = YES;
     UIViewController *viewController = [self topViewController];
     self.viewControllerPopping = viewController;
     if ([viewController respondsToSelector:@selector(willPopViewController)]) {
@@ -110,7 +113,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPoppingViewController = YES;
     UIViewController *viewControllerPopping = [self topViewController];
     self.viewControllerPopping = viewControllerPopping;
     if ([viewControllerPopping respondsToSelector:@selector(willPopViewController)]) {
@@ -139,7 +141,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPoppingViewController = YES;
     UIViewController *viewController = [self topViewController];
     self.viewControllerPopping = viewController;
     if ([viewController respondsToSelector:@selector(willPopViewController)]) {
@@ -162,7 +163,6 @@
         self.isViewControllerTransiting = YES;
     }
     
-    self.qmui_isPushingViewController = YES;
     UIViewController *currentViewController = self.topViewController;
     if (currentViewController) {
         if (!NeedsBackBarButtonItemTitle) {
@@ -232,7 +232,7 @@
                 UIColor *tintColor = [qmuiVC titleViewTintColor];
                 qmuiVC.titleView.tintColor = tintColor;
             } else {
-                qmuiVC.titleView.tintColor = [QMUINavigationTitleView appearance].tintColor;
+                qmuiVC.titleView.tintColor = NavBarTitleColor;
             }
         }
     }
@@ -245,7 +245,6 @@
         if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
             // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
             [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];
-            self.qmui_isPoppingViewController = NO;
             self.viewControllerPopping = nil;
             self.isViewControllerTransiting = NO;
             QMUILog(@"手势返回放弃了");
@@ -260,17 +259,16 @@
 // 注意如果实现了某一个navigationController的delegate方法，必须同时检查并且调用delegateProxy相对应的方法
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    [self renderStyleInNavigationController:navigationController currentViewController:viewController];
+    [self willShowViewController:viewController];
     if ([self.delegateProxy respondsToSelector:_cmd]) {
         [self.delegateProxy navigationController:navigationController willShowViewController:viewController animated:animated];
     }
 }
 
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    self.qmui_isPushingViewController = NO;
-    self.qmui_isPoppingViewController = NO;
     self.viewControllerPopping = nil;
     self.isViewControllerTransiting = NO;
+    [self didShowViewController:viewController];
     if ([self.delegateProxy respondsToSelector:_cmd]) {
         [self.delegateProxy navigationController:navigationController didShowViewController:viewController animated:animated];
     }
@@ -304,6 +302,20 @@
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
+}
+
+@end
+
+
+@implementation QMUINavigationController (UISubclassingHooks)
+
+- (void)willShowViewController:(UIViewController *)viewController {
+    // 子类可以重写
+    [self renderStyleInNavigationController:self currentViewController:viewController];
+}
+
+- (void)didShowViewController:(UIViewController *)viewController {
+    // 子类可以重写
 }
 
 @end

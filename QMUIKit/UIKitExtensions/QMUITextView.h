@@ -14,9 +14,10 @@
 
 @optional
 /**
- *  输入框高度发生变化时的回调，仅当 `autoResizable` 属性为 YES 时才有效
+ *  输入框高度发生变化时的回调，仅当 `autoResizable` 属性为 YES 时才有效。
+ *  @note 只有当内容高度与当前输入框的高度不一致时才会调用到这里，所以无需在内部做高度是否变化的判断。
  */
-- (void)textView:(QMUITextView *)textView contentHeightAfterTextChanged:(CGFloat)height;
+- (void)textView:(QMUITextView *)textView newHeightAfterTextChanged:(CGFloat)height;
 
 /**
  *  用户点击键盘的 return 按钮时的回调（return 按钮本质上是输入换行符“\n”）
@@ -92,7 +93,7 @@
 
 /**
  *  是否支持自动拓展高度，默认为NO
- *  @see textView:contentHeightAfterTextChanged:
+ *  @see textView:newHeightAfterTextChanged:
  */
 @property(nonatomic, assign) BOOL autoResizable;
 

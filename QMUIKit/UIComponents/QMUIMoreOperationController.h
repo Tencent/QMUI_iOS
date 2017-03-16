@@ -53,7 +53,7 @@ typedef NS_ENUM(NSInteger, QMUIMoreOperationItemType) {
  *  这个控件一般分为上下两行，第一行会显示比较重要的操作入口，第二行是一些次要的操作入口。
  *  QMUIMoreOperationController就是这样的一个控件，可以通过QMUIMoreOperationItemType来设置操作入口要放在第一行还是第二行。
  */
-@interface QMUIMoreOperationController : UIViewController<QMUIModalPresentationContentViewProtocol>
+@interface QMUIMoreOperationController : UIViewController<QMUIModalPresentationContentViewControllerProtocol>
 
 @property(nonatomic, strong) UIColor *contentBackgroundColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor *contentSeparatorColor UI_APPEARANCE_SELECTOR;

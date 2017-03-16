@@ -98,6 +98,7 @@
 
 - (void)showEmptyViewWithLoading {
     [self showEmptyView];
+    [self.emptyView setImage:nil];
     [self.emptyView setLoadingViewHidden:NO];
     [self.emptyView setTextLabelText:nil];
     [self.emptyView setDetailTextLabelText:nil];
@@ -108,7 +109,7 @@
                    detailText:(NSString *)detailText
                   buttonTitle:(NSString *)buttonTitle
                  buttonAction:(SEL)action {
-    [self showEmptyViewWithImage:nil text:text detailText:detailText buttonTitle:buttonTitle buttonAction:action];
+    [self showEmptyViewWithLoading:NO image:nil text:text detailText:detailText buttonTitle:buttonTitle buttonAction:action];
 }
 
 - (void)showEmptyViewWithImage:(UIImage *)image
@@ -116,8 +117,17 @@
                     detailText:(NSString *)detailText
                    buttonTitle:(NSString *)buttonTitle
                   buttonAction:(SEL)action {
+    [self showEmptyViewWithLoading:NO image:image text:text detailText:detailText buttonTitle:buttonTitle buttonAction:action];
+}
+
+- (void)showEmptyViewWithLoading:(BOOL)showLoading
+                           image:(UIImage *)image
+                            text:(NSString *)text
+                      detailText:(NSString *)detailText
+                     buttonTitle:(NSString *)buttonTitle
+                    buttonAction:(SEL)action {
     [self showEmptyView];
-    [self.emptyView setLoadingViewHidden:YES];
+    [self.emptyView setLoadingViewHidden:!showLoading];
     [self.emptyView setImage:image];
     [self.emptyView setTextLabelText:text];
     [self.emptyView setDetailTextLabelText:detailText];

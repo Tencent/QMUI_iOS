@@ -12,7 +12,7 @@
 @interface UIImageView (QMUI)
 
 /**
- *  把UIImageView的宽高调整为能保持image宽高比例不变的同时又不超过给定的`limitSize`大小的最小frame
+ *  把 UIImageView 的宽高调整为能保持 image 宽高比例不变的同时又不超过给定的 `limitSize` 大小的最大frame
  *
  *  建议在设置完x/y之后调用
  */

@@ -61,6 +61,26 @@
  */
 - (BOOL)shouldCustomNavigationBarTransitionWhenPopDisappearing;
 
+/**
+ *  自定义navBar效果过程中UINavigationController的containerView的背景色
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (nullable UIColor *)containerViewBackgroundColorWhenTransition;
+
+/**
+ *  当前导航栏是否具备全屏（隐藏navBar）的能力，默认返回NO。<br/>
+ *  因为默认的全屏状态（隐藏navigationBar）下，手势返回时 toViewController 的 navigationBar 会缺失，需要设置此值用自定义的 pushViewController:animate: 来解决。
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (BOOL)shouldCustomNavigationBarTransitionIfBarHiddenable;
+
+/**
+ *  当前导航栏是否处于全屏状态，如果是则返回YES，默认返回NO。<br/>
+ *  该属性用于判断如果在 popViewController 的时候如果 toViewController 是处于全屏的则不改变它的状态。
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (BOOL)shouldCustomNavigationBarTransitionWithBarHiddenState;
+
 @end
 
 
@@ -70,4 +90,19 @@
  *  初始化时调用的方法，会在 initWithNibName:bundle: 和 initWithCoder: 这两个指定的初始化方法中被调用，所以子类如果需要同时支持两个初始化方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个初始化方法即可。
  */
 - (void)didInitialized NS_REQUIRES_SUPER;
+
+@end
+
+@interface QMUINavigationController (UISubclassingHooks)
+
+/**
+ *  每个界面Controller在即将展示的时候被调用，在`UINavigationController`的方法`navigationController:willShowViewController:animated:`中会自动被调用，同时因为如果把一个界面dismiss后回来此时并不会调用`navigationController:willShowViewController`，所以需要在`viewWillAppear`里面也会调用一次。
+ */
+- (void)willShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
+
+/**
+ *  同上
+ */
+- (void)didShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
+
 @end

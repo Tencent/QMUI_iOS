@@ -33,12 +33,12 @@
     if ([titleView isKindOfClass:[QMUINavigationTitleView class]]) {
         CGFloat titleViewMaximumWidth = CGRectGetWidth(titleView.bounds);// 初始状态下titleView会被设置为UINavigationBar允许的最大宽度
         CGSize titleViewSize = [titleView sizeThatFits:CGSizeMake(titleViewMaximumWidth, CGFLOAT_MAX)];
-        titleViewSize.height = ceilf(titleViewSize.height);// titleView的高度如果非pt整数，会导致计算出来的y值时多时少，所以干脆做一下pt取整，这个策略不要改，改了要重新测试push过程中titleView是否会跳动
+        titleViewSize.height = ceil(titleViewSize.height);// titleView的高度如果非pt整数，会导致计算出来的y值时多时少，所以干脆做一下pt取整，这个策略不要改，改了要重新测试push过程中titleView是否会跳动
         
         // 当在UINavigationBar里使用自定义的titleView时，就算titleView的sizeThatFits:返回正确的高度，navigationBar也不会帮你设置高度（但会帮你设置宽度），所以我们需要自己更新高度并且修正y值
         if (CGRectGetHeight(titleView.bounds) != titleViewSize.height) {
 //            NSLog(@"【%@】修正布局前\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
-            CGFloat titleViewMinY = flatf(CGRectGetMinY(titleView.frame) - ((titleViewSize.height - CGRectGetHeight(titleView.bounds)) / 2.0));// 系统对titleView的y值布局是flatf，注意，不能改，改了要测试
+            CGFloat titleViewMinY = flat(CGRectGetMinY(titleView.frame) - ((titleViewSize.height - CGRectGetHeight(titleView.bounds)) / 2.0));// 系统对titleView的y值布局是flat，注意，不能改，改了要测试
             titleView.frame = CGRectMake(CGRectGetMinX(titleView.frame), titleViewMinY, fminf(titleViewMaximumWidth, titleViewSize.width), titleViewSize.height);
 //            NSLog(@"【%@】修正布局后\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
         }
@@ -91,6 +91,7 @@
         [self addSubview:self.subtitleLabel];
         
         self.userInteractionEnabled = NO;
+        self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
         self.style = style;
         self.needsLoadingView = NO;
         self.loadingViewHidden = YES;
@@ -106,6 +107,7 @@
         self.verticalTitleFont = appearance.verticalTitleFont;
         self.verticalSubtitleFont = appearance.verticalSubtitleFont;
         self.accessoryViewOffset = appearance.accessoryViewOffset;
+        self.tintColor = NavBarTitleColor;
     }
     return self;
 }
@@ -162,23 +164,34 @@
     return CGSizeMake([self accessorySpacingSize].width * (self.needsAccessoryPlaceholderSpace ? 2 : 1), [self accessorySpacingSize].height);
 }
 
+- (UIEdgeInsets)titleEdgeInsetsIfShowingTitleLabel {
+    return CGSizeIsEmpty(self.titleLabelSize) ? UIEdgeInsetsZero : self.titleEdgeInsets;
+}
+
+- (UIEdgeInsets)subtitleEdgeInsetsIfShowingSubtitleLabel {
+    return CGSizeIsEmpty(self.subtitleLabelSize) ? UIEdgeInsetsZero : self.subtitleEdgeInsets;
+}
+
 - (CGSize)contentSize {
     
     if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
         CGSize size = CGSizeZero;
         // 垂直排列的情况下，loading和accessory与titleLabel同一行
-        CGFloat firstLineWidth = self.titleLabelSize.width;
+        CGFloat firstLineWidth = self.titleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsetsIfShowingTitleLabel);
         firstLineWidth += [self loadingViewSpacingSizeIfNeedsPlaceholder].width;
         firstLineWidth += [self accessorySpacingSizeIfNeedesPlaceholder].width;
         
-        size.width = fmaxf(firstLineWidth, self.subtitleLabelSize.width);
-        size.height = self.titleLabelSize.height + self.subtitleLabelSize.height;
+        CGFloat secondLineWidth = self.subtitleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
+        
+        size.width = fmaxf(firstLineWidth, secondLineWidth);
+        
+        size.height = self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsetsIfShowingTitleLabel) + self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
         return CGSizeFlatted(size);
     } else {
         CGSize size = CGSizeZero;
-        size.width = self.titleLabelSize.width + self.subtitleLabelSize.width;
+        size.width = self.titleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsetsIfShowingTitleLabel) + self.subtitleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
         size.width += [self loadingViewSpacingSizeIfNeedsPlaceholder].width + [self accessorySpacingSizeIfNeedesPlaceholder].width;
-        size.height = fmaxf(self.titleLabelSize.height, self.subtitleLabelSize.height);
+        size.height = fmaxf(self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsetsIfShowingTitleLabel), self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel));
         size.height = fmaxf(size.height, [self loadingViewSpacingSizeIfNeedsPlaceholder].height);
         size.height = fmaxf(size.height, [self accessorySpacingSizeIfNeedesPlaceholder].height);
         return CGSizeFlatted(size);
@@ -203,6 +216,9 @@
     
     [super layoutSubviews];
     
+    BOOL alignLeft = self.contentHorizontalAlignment == UIControlContentHorizontalAlignmentLeft;
+    BOOL alignRight = self.contentHorizontalAlignment == UIControlContentHorizontalAlignmentRight;
+    
     // 通过sizeThatFit计算出来的size，如果大于可使用的最大宽度，则会被系统改为最大限制的最大宽度
     CGSize maxSize = self.bounds.size;
     
@@ -212,7 +228,17 @@
     contentSize.height = fminf(maxSize.height, contentSize.height);
     
     // 计算左右两边的偏移值
-    CGFloat offsetX = floorfInPixel((maxSize.width - contentSize.width) / 2.0);
+    CGFloat offsetLeft = 0;
+    CGFloat offsetRight = 0;
+    if (alignLeft) {
+        offsetLeft = 0;
+        offsetRight = maxSize.width - contentSize.width;
+    } else if (alignRight) {
+        offsetLeft = maxSize.width - contentSize.width;
+        offsetRight = 0;
+    } else {
+        offsetLeft = offsetRight = floorInPixel((maxSize.width - contentSize.width) / 2.0);
+    }
     
     // 计算loading占的单边宽度
     CGFloat loadingViewSpace = [self loadingViewSpacingSize].width;
@@ -223,26 +249,33 @@
     // 计算accessoryView占的单边宽度
     CGFloat accessoryViewSpace = [self accessorySpacingSize].width;
     
-    CGFloat minX = offsetX + (self.needsAccessoryPlaceholderSpace ? accessoryViewSpace : 0);
-    CGFloat maxX = maxSize.width - offsetX - (self.needsLoadingPlaceholderSpace ? loadingViewSpace : 0);
+    BOOL isTitleLabelShowing = self.titleLabel.text.length > 0;
+    BOOL isSubtitleLabelShowing = self.subtitleLabel.text.length > 0;
+    UIEdgeInsets titleEdgeInsets = self.titleEdgeInsetsIfShowingTitleLabel;
+    UIEdgeInsets subtitleEdgeInsets = self.subtitleEdgeInsetsIfShowingSubtitleLabel;
+    
+    CGFloat minX = offsetLeft + (self.needsAccessoryPlaceholderSpace ? accessoryViewSpace : 0);
+    CGFloat maxX = maxSize.width - offsetRight - (self.needsLoadingPlaceholderSpace ? loadingViewSpace : 0);
     
     if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
         
         if (self.loadingView) {
-            self.loadingView.frame = CGRectSetXY(self.loadingView.frame, minX, CGFloatGetCenter(self.titleLabelSize.height, self.loadingViewSize.height));
+            self.loadingView.frame = CGRectSetXY(self.loadingView.frame, minX, CGFloatGetCenter(self.titleLabelSize.height, self.loadingViewSize.height) + titleEdgeInsets.top);
             minX = CGRectGetMaxX(self.loadingView.frame) + self.loadingViewMarginRight;
         }
         if (accessoryView) {
-            accessoryView.frame = CGRectSetXY(accessoryView.frame, maxX - CGRectGetWidth(accessoryView.bounds), CGFloatGetCenter(self.titleLabelSize.height, CGRectGetHeight(accessoryView.bounds)) + self.accessoryViewOffset.y);
+            accessoryView.frame = CGRectSetXY(accessoryView.frame, maxX - CGRectGetWidth(accessoryView.bounds), CGFloatGetCenter(self.titleLabelSize.height, CGRectGetHeight(accessoryView.bounds)) + titleEdgeInsets.top + self.accessoryViewOffset.y);
             maxX = CGRectGetMinX(accessoryView.frame) - self.accessoryViewOffset.x;
         }
-        if (self.titleLabel.text.length > 0) {
-            self.titleLabel.frame = CGRectFlatMake(minX, 0, maxX - minX, self.titleLabelSize.height);
+        if (isTitleLabelShowing) {
+            minX += titleEdgeInsets.left;
+            maxX -= titleEdgeInsets.right;
+            self.titleLabel.frame = CGRectFlatMake(minX, titleEdgeInsets.top, maxX - minX, self.titleLabelSize.height);
         } else {
             self.titleLabel.frame = CGRectZero;
         }
-        if (self.subtitleLabel.text.length > 0) {
-            self.subtitleLabel.frame = CGRectFlatMake(0, CGRectGetMaxY(self.titleLabel.frame), maxSize.width, self.subtitleLabelSize.height);
+        if (isSubtitleLabelShowing) {
+            self.subtitleLabel.frame = CGRectFlatMake(subtitleEdgeInsets.left, (isTitleLabelShowing ? CGRectGetMaxY(self.titleLabel.frame) + titleEdgeInsets.bottom : 0) + subtitleEdgeInsets.top, maxSize.width - UIEdgeInsetsGetHorizontalValue(subtitleEdgeInsets), self.subtitleLabelSize.height);
         } else {
             self.subtitleLabel.frame = CGRectZero;
         }
@@ -257,14 +290,23 @@
             accessoryView.frame = CGRectSetXY(accessoryView.frame, maxX - CGRectGetWidth(accessoryView.bounds), CGFloatGetCenter(maxSize.height, CGRectGetHeight(accessoryView.bounds)) + self.accessoryViewOffset.y);
             maxX = CGRectGetMinX(accessoryView.frame) - self.accessoryViewOffset.x;
         }
-        if (self.subtitleLabel.text.length > 0) {
-            self.subtitleLabel.frame = CGRectFlatMake(maxX - self.subtitleLabelSize.width, CGFloatGetCenter(maxSize.height, self.subtitleLabelSize.height), self.subtitleLabelSize.width, self.subtitleLabelSize.height);
-            maxX = CGRectGetMinX(self.subtitleLabel.frame);
+        if (isSubtitleLabelShowing) {
+            maxX -= subtitleEdgeInsets.right;
+            // 如果当前的 contentSize 就是以这个 label 的最大占位计算出来的，那么就不应该先计算 center 再计算偏移
+            CGFloat shouldSubtitleLabelCenterVertically = self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(subtitleEdgeInsets) < contentSize.height;
+            CGFloat subtitleMinY = shouldSubtitleLabelCenterVertically ? CGFloatGetCenter(maxSize.height, self.subtitleLabelSize.height) + subtitleEdgeInsets.top - subtitleEdgeInsets.bottom : subtitleEdgeInsets.top;
+            self.subtitleLabel.frame = CGRectFlatMake(maxX - self.subtitleLabelSize.width, subtitleMinY, self.subtitleLabelSize.width, self.subtitleLabelSize.height);
+            maxX = CGRectGetMinX(self.subtitleLabel.frame) - subtitleEdgeInsets.left;
         } else {
             self.subtitleLabel.frame = CGRectZero;
         }
-        if (self.titleLabel.text.length > 0) {
-            self.titleLabel.frame = CGRectFlatMake(minX, CGFloatGetCenter(maxSize.height, self.titleLabelSize.height), maxX - minX, self.titleLabelSize.height);
+        if (isTitleLabelShowing) {
+            minX += titleEdgeInsets.left;
+            maxX -= titleEdgeInsets.right;
+            // 如果当前的 contentSize 就是以这个 label 的最大占位计算出来的，那么就不应该先计算 center 再计算偏移
+            CGFloat shouldTitleLabelCenterVertically = self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(titleEdgeInsets) < contentSize.height;
+            CGFloat titleLabelMinY = shouldTitleLabelCenterVertically ? CGFloatGetCenter(maxSize.height, self.titleLabelSize.height) + titleEdgeInsets.top - titleEdgeInsets.bottom : titleEdgeInsets.top;
+            self.titleLabel.frame = CGRectFlatMake(minX, titleLabelMinY, maxX - minX, self.titleLabelSize.height);
         } else {
             self.titleLabel.frame = CGRectZero;
         }
@@ -273,6 +315,11 @@
 
 
 #pragma mark - setter / getter
+
+- (void)setContentHorizontalAlignment:(UIControlContentHorizontalAlignment)contentHorizontalAlignment {
+    [super setContentHorizontalAlignment:contentHorizontalAlignment];
+    [self refreshLayout];
+}
 
 - (void)setNeedsLoadingPlaceholderSpace:(BOOL)needsLoadingPlaceholderSpace {
     _needsLoadingPlaceholderSpace = needsLoadingPlaceholderSpace;
@@ -328,6 +375,16 @@
         [self updateSubtitleLabelSize];
         [self refreshLayout];
     }
+}
+
+- (void)setTitleEdgeInsets:(UIEdgeInsets)titleEdgeInsets {
+    _titleEdgeInsets = titleEdgeInsets;
+    [self refreshLayout];
+}
+
+- (void)setSubtitleEdgeInsets:(UIEdgeInsets)subtitleEdgeInsets {
+    _subtitleEdgeInsets = subtitleEdgeInsets;
+    [self refreshLayout];
 }
 
 - (void)setTitle:(NSString *)title {
@@ -501,7 +558,6 @@
 
 + (void)setDefaultAppearance {
     QMUINavigationTitleView *appearance = [QMUINavigationTitleView appearance];
-    appearance.tintColor = NavBarTitleColor;
     appearance.loadingViewSize = CGSizeMake(18, 18);
     appearance.loadingViewMarginRight = 3;
     appearance.horizontalTitleFont = NavBarTitleFont;
@@ -509,6 +565,8 @@
     appearance.verticalTitleFont = UIFontMake(15);
     appearance.verticalSubtitleFont = UIFontLightMake(12);
     appearance.accessoryViewOffset = CGPointMake(3, 0);
+    appearance.titleEdgeInsets = UIEdgeInsetsZero;
+    appearance.subtitleEdgeInsets = UIEdgeInsetsZero;
 }
 
 @end

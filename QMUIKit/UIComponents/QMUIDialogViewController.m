@@ -255,7 +255,7 @@ EndIgnoreClangWarning
             button.frame = self.footerView.bounds;
             self.buttonSeparatorLayer.hidden = YES;
         } else {
-            CGFloat buttonWidth = flatf(CGRectGetWidth(self.footerView.bounds) / buttonCount);
+            CGFloat buttonWidth = flat(CGRectGetWidth(self.footerView.bounds) / buttonCount);
             self.cancelButton.frame = CGRectMake(0, 0, buttonWidth, CGRectGetHeight(self.footerView.bounds));
             self.submitButton.frame = CGRectMake(CGRectGetMaxX(self.cancelButton.frame), 0, CGRectGetWidth(self.footerView.bounds) - CGRectGetMaxX(self.cancelButton.frame), CGRectGetHeight(self.footerView.bounds));
             self.buttonSeparatorLayer.hidden = NO;
@@ -290,6 +290,10 @@ EndIgnoreClangWarning
 }
 
 - (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *))block {
+    if (_cancelButton) {
+        [_cancelButton removeFromSuperview];
+    }
+    
     _cancelButton = [self generateButtonWithText:buttonText];
     [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -301,6 +305,10 @@ EndIgnoreClangWarning
 }
 
 - (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block {
+    if (_submitButton) {
+        [_submitButton removeFromSuperview];
+    }
+    
     _submitButton = [self generateButtonWithText:buttonText];
     [self.submitButton addTarget:self action:@selector(handleSubmitButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -360,7 +368,7 @@ EndIgnoreClangWarning
     }];
 }
 
-#pragma mark - <QMUIModalPresentationContentViewProtocol>
+#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     if (!self.hasCustomContentView) {
@@ -537,7 +545,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
 }
 
-#pragma mark - <QMUIModalPresentationContentViewProtocol>
+#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     CGFloat footerViewHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0;
@@ -628,7 +636,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     [self updateSubmitButtonEnables];
 }
 
-#pragma mark - <QMUIModalPresentationContentViewProtocol>
+#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     CGFloat textFieldHeight = 56;
