@@ -296,17 +296,8 @@
             [toastView hideAnimated:animated];
             returnFlag = YES;
         }
-    return NO;
     }
     return returnFlag;
-+ (BOOL)hideAllToastInView:(UIView *)view animated:(BOOL)animated {
-    QMUIToastView *toast = [self toastInView:view];
-    if (toast != nil) {
-        toast.removeFromSuperViewWhenHide = YES;
-        [toast hideAnimated:animated];
-        return YES;
-    }
-    return NO;
 }
 
 + (instancetype)toastInView:(UIView *)view {
