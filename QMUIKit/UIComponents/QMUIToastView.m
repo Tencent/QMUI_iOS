@@ -287,16 +287,18 @@
 
 @implementation QMUIToastView (ToastTool)
 
-+ (BOOL)hideToastInView:(UIView *)view animated:(BOOL)animated {
-    QMUIToastView *toast = [self toastInView:view];
-    if (toast != nil) {
-        toast.removeFromSuperViewWhenHide = YES;
-        [toast hideAnimated:animated];
-        return YES;
-    }
++ (BOOL)hideAllToastInView:(UIView *)view animated:(BOOL)animated {
+    NSArray *toastViews = [self allToastInView:view];
+    BOOL returnFlag = NO;
+    for (QMUIToastView *toastView in toastViews) {
+        if (toastView) {
+            toastView.removeFromSuperViewWhenHide = YES;
+            [toastView hideAnimated:animated];
+            returnFlag = YES;
+        }
     return NO;
-}
-
+    }
+    return returnFlag;
 + (BOOL)hideAllToastInView:(UIView *)view animated:(BOOL)animated {
     QMUIToastView *toast = [self toastInView:view];
     if (toast != nil) {
