@@ -76,6 +76,42 @@
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
 
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion {
+    if (animated) {
+        [UIView animateWithDuration:duration delay:delay options:options animations:animations completion:completion];
+    } else {
+        if (animations) {
+            animations();
+        }
+        if (completion) {
+            completion(YES);
+        }
+    }
+}
+
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion {
+    if (animated) {
+        [UIView animateWithDuration:duration animations:animations completion:completion];
+    } else {
+        if (animations) {
+            animations();
+        }
+        if (completion) {
+            completion(YES);
+        }
+    }
+}
+
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^)(void))animations {
+    if (animated) {
+        [UIView animateWithDuration:duration animations:animations];
+    } else {
+        if (animations) {
+            animations();
+        }
+    }
+}
+
 @end
 
 
