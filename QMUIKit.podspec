@@ -11,6 +11,8 @@ Pod::Spec.new do |s|
   s.source           = {:git => "https://github.com/QMUI/QMUI_iOS.git", :tag => s.version.to_s}
   s.social_media_url = 'https://github.com/QMUI/QMUI_iOS'
   s.requires_arc     = true
+  s.documentation_url = 'http://qmuiteam.com/ios/page/document.html'
+  s.screenshot        = 'https://raw.githubusercontent.com/QMUI/QMUI_iOS/master/logo_2x.png'
 
   s.platform         = :ios, '7.0'
 
@@ -18,7 +20,6 @@ Pod::Spec.new do |s|
   s.resource         = 'QMUIKit/**/*.bundle'
 
   # s.ios.exclude_files = 'Classes/osx'
-  # s.osx.exclude_files = 'Classes/ios'
   # s.public_header_files = 'Classes/**/*.h'
   s.frameworks       = 'Foundation', 'UIKit', 'CoreGraphics', 'Photos'
 
