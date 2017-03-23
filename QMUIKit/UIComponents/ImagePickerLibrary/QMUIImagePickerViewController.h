@@ -24,6 +24,10 @@
  */
 - (QMUIImagePickerPreviewViewController *)imagePickerPreviewViewControllerForImagePickerViewController:(QMUIImagePickerViewController *)imagePickerViewController;
 
+/**
+ *  控制照片的排序，若不实现，默认为 QMUIAlbumSortTypePositive
+ *  @note 注意返回值会决定第一次进来相片列表时列表默认的滚动位置，如果为 QMUIAlbumSortTypePositive，则列表默认滚动到底部，如果为 QMUIAlbumSortTypeReverse，则列表默认滚动到顶部。
+ */
 - (QMUIAlbumSortType)albumSortTypeForImagePickerViewController:(QMUIImagePickerViewController *)imagePickerViewController;
 
 /**
@@ -59,7 +63,9 @@
 
 @interface QMUIImagePickerViewController : QMUICommonViewController<UICollectionViewDataSource,UICollectionViewDelegate,QMUIImagePickerPreviewViewControllerDelegate>
 
-/// 图片的最小尺寸，布局时如果有剩余空间，会将空间分配给图片大小，所以最终显示出来的大小不一定等于minimumImageWidth。默认是75
+/**
+ *  图片的最小尺寸，布局时如果有剩余空间，会将空间分配给图片大小，所以最终显示出来的大小不一定等于minimumImageWidth。默认是75。
+ */
 @property(nonatomic, assign) CGFloat minimumImageWidth UI_APPEARANCE_SELECTOR;
 
 @property(nonatomic, weak) id<QMUIImagePickerViewControllerDelegate>imagePickerViewControllerDelegate;
