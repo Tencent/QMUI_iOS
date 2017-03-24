@@ -82,6 +82,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.tableView qmui_clearsSelection];
+    [self.searchController.tableView qmui_clearsSelection];
 }
 
 - (void)viewDidLayoutSubviews {
