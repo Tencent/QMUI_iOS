@@ -39,6 +39,18 @@
 - (id)qmui_performSelectorToSuperclass:(SEL)aSelector withObject:(id)object;
 
 /**
+ 使用 block 遍历当前实例的所有方法，父类的方法不包含在内
+ */
+- (void)qmui_enumrateInstanceMethodsUsingBlock:(void (^)(SEL selector))block;
+
+/**
+ 使用 block 遍历指定的某个类的实例方法，该类的父类方法不包含在内
+ *  @param aClass   要遍历的某个类
+ *  @param block    遍历时使用的 block，参数为某一个方法
+ */
++ (void)qmui_enumrateInstanceMethodsOfClass:(Class)aClass usingBlock:(void (^)(SEL selector))block;
+
+/**
  遍历某个 protocol 里的所有方法
 
  @param protocol 要遍历的 protocol，例如 \@protocol(xxx)
