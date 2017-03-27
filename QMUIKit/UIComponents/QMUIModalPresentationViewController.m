@@ -198,7 +198,10 @@ static QMUIModalPresentationViewController *appearance;
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
         
         if (self.containerWindow) {
-            [self.previousKeyWindow makeKeyWindow];
+            // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/QMUI/QMUI_iOS/issues/90
+            if ([[UIApplication sharedApplication] keyWindow] == self.containerWindow) {
+                [self.previousKeyWindow makeKeyWindow];
+            }
             self.containerWindow.hidden = YES;
             self.containerWindow.rootViewController = nil;
             self.previousKeyWindow = nil;
