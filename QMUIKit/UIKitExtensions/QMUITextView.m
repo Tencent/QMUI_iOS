@@ -21,11 +21,10 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 @interface QMUITextView ()
 
 @property(nonatomic, assign) BOOL debug;
-@property(nonatomic, assign) BOOL textChangedBecauseOfPaste; // 标志本次触发对handleTextDidChange:的调用，是否因为粘贴
-@property(nonatomic, assign) BOOL hasTextChangedOnce;// 是否有输入过文字
+@property(nonatomic, assign) BOOL textChangedBecauseOfPaste; // 标志本次触发对handleTextChange:的调用，是否因为粘贴
+@property(nonatomic, assign) BOOL callingSizeThatFitsByAutoResizable; // 标志本次调用 sizeThatFits: 是因为 handleTextChange: 里计算高度导致的
 
 @property(nonatomic, strong) UILabel *placeholderLabel;
-@property(nonatomic, strong) NSMutableDictionary<NSString *,id> *placeholderAttributes;
 
 @property(nonatomic, weak)   id<QMUITextViewDelegate> originalDelegate;
 
@@ -67,8 +66,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     self.placeholderLabel.numberOfLines = 0;
     self.placeholderLabel.alpha = 0;
     [self addSubview:self.placeholderLabel];
-    
-    self.placeholderAttributes = [[NSMutableDictionary alloc] init];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTextChanged:) name:UITextViewTextDidChangeNotification object:nil];
 }
@@ -159,114 +156,23 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     }
 }
 
-- (CGRect)caretRectForPosition:(UITextPosition *)position {
-    CGRect resultRect = [super caretRectForPosition:position];
-    
-    // 对于设置了段落样式的textView，初始状态下没输入过文字时，光标的高度是不带行高时的高度，导致输入文字的一瞬间光标会跳动，所以这里做了个兼容（初始状态光标位置不对的本质是 textView 内部的 textContainerView 的高度不对，但我们又改不了 textContainerView，所以只能在光标布局上打补丁）
-    if (!self.hasTextChangedOnce && self.textAttributes[NSParagraphStyleAttributeName] && ((NSParagraphStyle *)self.textAttributes[NSParagraphStyleAttributeName]).minimumLineHeight > 0) {
-        NSParagraphStyle *paragraphStyle = self.textAttributes[NSParagraphStyleAttributeName];
-        CGFloat lineHeight = paragraphStyle.minimumLineHeight;
-        CGFloat caretHeight = lineHeight + 1 + PixelOne;// 在lineHeight的基础上加 1.5 是实测的结果
-        resultRect = CGRectSetHeight(resultRect, caretHeight);
-    }
-    
-    return resultRect;
-}
-
-- (void)setFont:(UIFont *)font {
-    [super setFont:font];
-    if (self.textAttributes) {
-        if (font) {
-            self.placeholderAttributes[NSFontAttributeName] = font;
-            [self updatePlaceholderAttributedTextForTextView:self];
-        }
-    } else {
-        self.placeholderLabel.font = font;
-    }
-}
-
-- (void)setTextAlignment:(NSTextAlignment)textAlignment {
-    [super setTextAlignment:textAlignment];
-    if (self.textAttributes) {
-        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-        if (self.textAttributes[NSParagraphStyleAttributeName]) {
-            [paragraphStyle setParagraphStyle:self.textAttributes[NSParagraphStyleAttributeName]];
-        }
-        paragraphStyle.alignment = textAlignment;
-        self.placeholderAttributes[NSParagraphStyleAttributeName] = paragraphStyle;
-        [self updatePlaceholderAttributedTextForTextView:self];
-    } else {
-        self.placeholderLabel.textAlignment = textAlignment;
-    }
-}
-
-- (void)setTextAttributes:(NSDictionary<NSString *,id> *)textAttributes {
-    _textAttributes = textAttributes;
-    
-    if (textAttributes[NSFontAttributeName]) {
-        // 1、让默认情况下QMUITextView的sizeThatFits算出来的高度和有文字时的高度一致（因为使用了textAttributes属性后，实际的font是在textDidChange时才被设置，所以刚初始完textView时，高度会不准确）
-        // 2、顺便触发self.placeholderLabel.font的更新
-        self.font = textAttributes[NSFontAttributeName];
-    }
-    
-    // 如果有设置了文字对齐，则要同步更新 self.textAlignment，否则初始状态下 textView 的光标位置与文字对齐方式不一致
-    if (textAttributes[NSParagraphStyleAttributeName]) {
-        NSParagraphStyle *paragraphStyle = textAttributes[NSParagraphStyleAttributeName];
-        if (paragraphStyle.alignment != self.textAlignment) {
-            self.textAlignment = paragraphStyle.alignment;
-        }
-    }
-    
-    if (self.text.length > 0) {
-        [self updateAttributedTextForTextView:self];
-    }
-    
-    [self updatePlaceholderAttributesForTextView:self];
-    [self updatePlaceholderAttributedTextForTextView:self];
-}
-
-- (void)updateAttributedTextForTextView:(QMUITextView *)textView {
-    if (textView.textAttributes && !textView.markedTextRange) {
-        [textView qmui_setAttributedTextKeepingSelectedRange:[[NSAttributedString alloc] initWithString:textView.text attributes:textView.textAttributes]];
-    }
-}
-
-- (void)updatePlaceholderAttributedTextForTextView:(QMUITextView *)textView {
-    textView.placeholderLabel.attributedText = [[NSAttributedString alloc] initWithString:textView.placeholder attributes:textView.placeholderAttributes];
-    [self setNeedsLayout];
-}
-
-- (void)updatePlaceholderAttributesForTextView:(QMUITextView *)textView {
-    if (textView.textAttributes) {
-        for (NSString *keyName in textView.textAttributes) {
-            if ([keyName isEqualToString:NSForegroundColorAttributeName]) {
-                self.placeholderAttributes[NSForegroundColorAttributeName] = self.placeholderColor;
-            } else {
-                self.placeholderAttributes[keyName] = textView.textAttributes[keyName];
-            }
-        }
-    }
+- (void)setTypingAttributes:(NSDictionary<NSString *,id> *)typingAttributes {
+    [super setTypingAttributes:typingAttributes];
+    self.placeholder = self.placeholder;// 更新文字样式
 }
 
 - (void)setPlaceholder:(NSString *)placeholder {
     _placeholder = placeholder;
-    
-    if (self.placeholderAttributes) {
-        [self updatePlaceholderAttributedTextForTextView:self];
-    } else {
-        self.placeholderLabel.text = _placeholder;
+    self.placeholderLabel.attributedText = [[NSAttributedString alloc] initWithString:_placeholder attributes:self.typingAttributes];
+    if (self.placeholderColor) {
+        self.placeholderLabel.textColor = self.placeholderColor;
     }
-    
     [self sendSubviewToBack:self.placeholderLabel];
 }
 
 - (void)setPlaceholderColor:(UIColor *)placeholderColor {
     _placeholderColor = placeholderColor;
     self.placeholderLabel.textColor = _placeholderColor;
-    if (self.textAttributes) {
-        self.placeholderAttributes[NSForegroundColorAttributeName] = _placeholderColor ?: UIColorBlack;
-        [self updatePlaceholderAttributedTextForTextView:self];
-    }
 }
 
 - (void)handleTextChanged:(id)sender {
@@ -288,17 +194,13 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     
     if (textView) {
         
-        // 记录文字已经被改过了
-        if (!self.hasTextChangedOnce && textView.text.length > 0 && !textView.markedTextRange) {
-            self.hasTextChangedOnce = YES;
-        }
-        
         // 计算高度
-        
-        [self updateAttributedTextForTextView:textView];
-        
         if (self.autoResizable) {
+            
+            // 注意，这里 iOS 8 及以下有兼容问题，请查看文件里的 sizeThatFits:
+            self.callingSizeThatFitsByAutoResizable = YES;
             CGFloat resultHeight = [textView sizeThatFits:CGSizeMake(CGRectGetWidth(self.bounds), CGFLOAT_MAX)].height;
+            self.callingSizeThatFitsByAutoResizable = NO;
             
             if (self.debug) NSLog(@"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
             
@@ -311,7 +213,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         
         // iOS7的textView在内容可滚动的情况下，最后一行输入时文字会跑到可视区域外，因此要修复一下
         // 由于我们在文字换行的瞬间更改了输入框高度，所以即便内容不可滚动，换行瞬间contentOffset也是错的，所以这里完全接管了对contentOffset的自动调整
-        CGRect caretRect = [textView caretRectForPosition:textView.selectedTextRange.start];
+        CGRect caretRect = [textView caretRectForPosition:textView.selectedTextRange.end];
         if (self.debug) NSLog(@"调整前，caretRect.maxY = %f, contentOffset.y = %f, bounds.height = %f", CGRectGetMaxY(caretRect), textView.contentOffset.y, CGRectGetHeight(textView.bounds));
         
         CGFloat caretMarginBottom = self.textContainerInset.bottom;
@@ -321,40 +223,23 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             
             // 如果是粘贴导致光标掉出可视区域，则用动画去调整它（如果不用动画会不准，因为此时contentSize还是错的）
             // 如果是普通的键入换行导致光标掉出可视区域，则不用动画，否则会跳来跳去，但这会带来的问题就是换行没动画，不优雅😂
-            [textView setContentOffset:CGPointMake(textView.contentOffset.x, contentOffsetY) animated:self.textChangedBecauseOfPaste ? NO : NO];
+            [textView setContentOffset:CGPointMake(textView.contentOffset.x, contentOffsetY) animated:self.textChangedBecauseOfPaste ? YES : NO];
         }
         self.textChangedBecauseOfPaste = NO;
     }
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
-    CGSize resultSize = [super sizeThatFits:size];
-    resultSize = [self adjustSizeThatFitsWhenUsingParagraphStyleIfNeeded:resultSize];
-    return resultSize;
-}
-
-- (CGSize)adjustSizeThatFitsWhenUsingParagraphStyleIfNeeded:(CGSize)resultSize {
-    if (!self.hasTextChangedOnce && self.textAttributes[NSParagraphStyleAttributeName] && ((NSParagraphStyle *)self.textAttributes[NSParagraphStyleAttributeName]).minimumLineHeight > 0) {
-        // 如果使用了 textAttributes 来显示文本，并且在 attributes 里使用了段落样式来设置行高时，textView 默认的 sizeThatFits: 在以下几种情况下会返回不一致的高度：
-        // 1、初始化完后还没输入过文字，此时 sizeThatFits: 的高度是不带行高时的高度
-        // 2、输入第一个文字时，用的是中文输入法并且带有 markedTextRange（候选词），此时 sizeThatFits: 的高度是不带行高的高度
-        // 3、输入过文字（中英文均可），此时 sizeThatFits: 的高度是带行高的高度
-        // 4、输入过文字又把所有文字删掉（用删除键或用 text = nil 都行），此时 sizeThatFits: 的高度是带行高的高度
-        // 所以这里利用 self.hasTextChangedOnce 标志位来对第 1、2 种情况做调整，使其计算结果与3、4保持一致。
-        // 为了不触发额外的 textViewDidChanged: 事件，这里用两个 NSAttributedString 来计算高度差，而不是将当前的 textView.text 设为测试文字来计算高度。
-        
-        NSAttributedString *testingStringWithLineHeight = [[NSAttributedString alloc] initWithString:@"测" attributes:self.textAttributes];
-        CGSize stringSizeWithLineHeight = [testingStringWithLineHeight boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
-        
-        NSMutableDictionary *attributesWithoutLineHeight = [[NSMutableDictionary alloc] init];
-        [attributesWithoutLineHeight setDictionary:self.textAttributes];
-        [attributesWithoutLineHeight removeObjectForKey:NSParagraphStyleAttributeName];
-        NSAttributedString *testingStringWithoutLineHeight = [[NSAttributedString alloc] initWithString:testingStringWithLineHeight.string attributes:attributesWithoutLineHeight];
-        CGSize stringSizeWithoutLineHeight = [testingStringWithoutLineHeight boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
-        
-        resultSize.height += (flat(stringSizeWithLineHeight.height) - flat(stringSizeWithoutLineHeight.height));
+    // iOS 8 调用 sizeThatFits: 会导致文字跳动，因此自己计算 https://github.com/QMUI/QMUI_iOS/issues/92
+    if (IOS_VERSION < 9.0 && IOS_VERSION >= 8.0 && self.callingSizeThatFitsByAutoResizable) {
+        CGFloat contentWidth = size.width - UIEdgeInsetsGetHorizontalValue(self.textContainerInset) - UIEdgeInsetsGetHorizontalValue(self.contentInset);
+        CGRect textRect = [self.attributedText boundingRectWithSize:CGSizeMake(contentWidth, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil];
+        CGSize resultSize = CGSizeMake(size.width, CGRectGetHeight(textRect) + UIEdgeInsetsGetVerticalValue(self.textContainerInset) + UIEdgeInsetsGetVerticalValue(self.contentInset));
+        resultSize.height = fmin(size.height, resultSize.height);
+        return resultSize;
+    } else {
+        return [super sizeThatFits:size];
     }
-    return resultSize;
 }
 
 - (void)layoutSubviews {

@@ -47,7 +47,6 @@ BeginIgnoreDeprecatedWarning
 @interface QMUISearchDisplayController : UISearchDisplayController
 
 @property(nonatomic, strong) UIView *customDimmingView;
-@property(nonatomic, copy) void (^dimmingViewVisibleChangedBlock)(BOOL visible);
 @end
 
 @implementation QMUISearchDisplayController
@@ -84,9 +83,6 @@ BeginIgnoreDeprecatedWarning
             self.customDimmingView.frame = defaultDimmingView.bounds;
             if (self.customDimmingView.superview != defaultDimmingView) {
                 [defaultDimmingView addSubview:self.customDimmingView];
-            }
-            if (self.dimmingViewVisibleChangedBlock) {
-                self.dimmingViewVisibleChangedBlock(self.isActive);
             }
         }
     }
@@ -187,6 +183,8 @@ BeginIgnoreDeprecatedWarning
             self.searchDisplayController = [[QMUISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:viewController];
             self.searchDisplayController.delegate = self;
         }
+        
+        self.hidesNavigationBarDuringPresentation = YES;
     }
     return self;
 }
@@ -253,6 +251,23 @@ BeginIgnoreDeprecatedWarning
         self.searchController.customDimmingView = _launchView;
     } else {
         self.searchDisplayController.customDimmingView = _launchView;
+    }
+}
+
+- (BOOL)hidesNavigationBarDuringPresentation {
+    if (self.searchController) {
+        return self.searchController.hidesNavigationBarDuringPresentation;
+    } else {
+        NSLog(@"%s 仅支持 iOS 8 及以上版本", __func__);
+        return YES;
+    }
+}
+
+- (void)setHidesNavigationBarDuringPresentation:(BOOL)hidesNavigationBarDuringPresentation {
+    if (self.searchController) {
+        self.searchController.hidesNavigationBarDuringPresentation = hidesNavigationBarDuringPresentation;
+    } else {
+        NSLog(@"%s 仅支持 iOS 8 及以上版本", __func__);
     }
 }
 

@@ -75,4 +75,7 @@
  *  @param animated 是否要以动画的形式展示状态切换
  */
 - (void)setActive:(BOOL)active animated:(BOOL)animated;
+
+/// 进入搜索状态时是否要把原界面的 navigationBar 推走，默认为 YES，仅在 iOS 8 及以后有效
+@property(nonatomic, assign) BOOL hidesNavigationBarDuringPresentation;
 @end

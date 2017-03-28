@@ -13,10 +13,18 @@
 - (instancetype)initWithFont:(UIFont *)font textColor:(UIColor *)textColor;
 
 /**
- * 当设置了这个属性后，setText: 方法会自动把文字转成 NSAttributedString 然后再添加上去，无需每次都自己构造 attributedString
- * @note 如果先调用 setText: 然后再设置这个 textAttributes，则已经设置过的 text 仍然会被转换成 NSAttributedString
- * @note 如果包含了 NSKernAttributeName ，则此方法会自动帮你去掉最后一个字的 kern 效果，否则容易导致文字整体在视觉上不居中
- * 默认为nil
+ * @brief 在需要特殊样式时，可通过此属性直接给整个 label 添加 NSAttributeName 系列样式，然后 setText 即可，无需使用繁琐的 attributedText
+ *
+ * @note 即使先调用 setText/attributedText ，然后再设置此属性，此属性仍然会生效
+ * @note 如果此属性包含了 NSKernAttributeName ，则最后一个字的 kern 效果会自动被移除，否则容易导致文字在视觉上不居中
+ *
+ * 现在你有三种方法控制 label 的样式：
+ * 1. 本身的样式属性（如 textColor, font 等）
+ * 2. qmui_textAttributes
+ * 3. 构造 NSAttributedString
+ * 这三种方式可以同时使用，如果样式发生冲突（比如先通过方法1将文字设成红色，又通过方法2将文字设成蓝色），则绝大部分情况下代码执行顺序靠后的会最终生效
+ * 唯一例外的极端情况是：先用方法2将文字设成红色，再用方法1将文字设成蓝色，最后再 setText，这时虽然代码执行顺序靠后的是方法1，但最终生效的会是方法2，为了避免这种极端情况的困扰，建议不要同时使用方法1和方法2去设置同一种样式。
+ *
  */
 @property(nonatomic, copy) NSDictionary<NSString *, id> *qmui_textAttributes;
 
