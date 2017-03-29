@@ -20,8 +20,9 @@ const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet = {-1,
 const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 @interface QMUICommonTableViewController () {
-    QMUISearchController *_searchController;
-    UISearchBar *_searchBar;
+    BOOL                    _shouldShowSearchBar;
+    QMUISearchController    *_searchController;
+    UISearchBar             *_searchBar;
 }
 
 @property(nonatomic,strong,readwrite) QMUITableView *tableView;
@@ -166,7 +167,9 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 - (void)hideEmptyView {
     [self.emptyView removeFromSuperview];
-    if ([self shouldShowSearchBarInTableView:self.tableView] && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
+BeginIgnoreDeprecatedWarning
+    if ((self.shouldShowSearchBar || [self shouldShowSearchBarInTableView:self.tableView]) && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
+EndIgnoreDeprecatedWarning
         [self initSearchController];
         self.tableView.tableHeaderView = self.searchBar;
         [self hideTableHeaderViewInitialIfCanWithAnimated:NO];
@@ -330,6 +333,35 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 @implementation QMUICommonTableViewController (Search)
 
+- (BOOL)shouldShowSearchBar {
+    return _shouldShowSearchBar;
+}
+
+- (void)setShouldShowSearchBar:(BOOL)shouldShowSearchBar {
+    BOOL isValueChanged = _shouldShowSearchBar != shouldShowSearchBar;
+    if (!isValueChanged) {
+        return;
+    }
+    
+    if (shouldShowSearchBar) {
+        [self initSearchController];
+    } else {
+        if (self.searchBar) {
+            if (self.tableView.tableHeaderView == self.searchBar) {
+                self.tableView.tableHeaderView = nil;
+            }
+            [self.searchBar removeFromSuperview];
+            _searchBar = nil;
+        }
+        if (self.searchController) {
+            self.searchController.searchResultsDelegate = nil;
+            _searchController = nil;
+        }
+    }
+    
+    _shouldShowSearchBar = shouldShowSearchBar;
+}
+
 - (QMUISearchController *)searchController {
     return _searchController;
 }
@@ -339,7 +371,9 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 }
 
 - (void)initSearchController {
-    if ([self.tableView.delegate shouldShowSearchBarInTableView:self.tableView] && !self.searchController) {
+BeginIgnoreDeprecatedWarning
+    if ([self isViewLoaded] && (self.shouldShowSearchBar || [self.tableView.delegate shouldShowSearchBarInTableView:self.tableView]) && !self.searchController) {
+EndIgnoreDeprecatedWarning
         _searchController = [[QMUISearchController alloc] initWithContentsViewController:self];
         self.searchController.searchResultsDelegate = self;
         self.searchController.searchBar.placeholder = @"搜索";

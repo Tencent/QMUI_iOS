@@ -24,7 +24,7 @@
 /**
  * 控制是否在列表顶部显示搜索框。在QMUICommonTableViewController里已经接管了searchBar的初始化工作，所以外部只需要控制“显示/隐藏”，不需要自己再初始化一次。
  */
-- (BOOL)shouldShowSearchBarInTableView:(QMUITableView *)tableView;
+- (BOOL)shouldShowSearchBarInTableView:(QMUITableView *)tableView DEPRECATED_MSG_ATTRIBUTE("在 QMUI 1.3.7 里废弃，请使用 QMUICommonTableViewController.shouldShowSearchBar 代替");
 
 /**
  * 自定义要在<i>- (BOOL)touchesShouldCancelInContentView:(UIView *)view</i>内的逻辑<br/>
