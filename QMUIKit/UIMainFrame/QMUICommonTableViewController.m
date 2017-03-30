@@ -71,7 +71,15 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = self.style == UITableViewStylePlain ? TableViewBackgroundColor : TableViewGroupedBackgroundColor;
+    UIColor *backgroundColor = nil;
+    if (self.style == UITableViewStylePlain) {
+        backgroundColor = TableViewBackgroundColor;
+    } else {
+        backgroundColor = TableViewGroupedBackgroundColor;
+    }
+    if (backgroundColor) {
+        self.view.backgroundColor = backgroundColor;
+    }
 }
 
 - (void)initSubviews {

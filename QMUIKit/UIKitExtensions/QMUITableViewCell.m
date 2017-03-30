@@ -62,9 +62,12 @@
     
     // iOS7下背景色默认白色，之前的版本背景色继承tableView，这里统一设置为白色
     self.backgroundColor = TableViewCellBackgroundColor;
-    UIView *selectedBackgroundView = [[UIView alloc] init];
-    selectedBackgroundView.backgroundColor = TableViewCellSelectedBackgroundColor;
-    self.selectedBackgroundView = selectedBackgroundView;
+    UIColor *selectedBackgroundColor = TableViewCellSelectedBackgroundColor;
+    if (selectedBackgroundColor) {
+        UIView *selectedBackgroundView = [[UIView alloc] init];
+        selectedBackgroundView.backgroundColor = selectedBackgroundColor;
+        self.selectedBackgroundView = selectedBackgroundView;
+    }
     
     // 因为在hitTest里扩大了accessoryView的响应范围，因此提高了系统一个与此相关的bug的出现几率，所以又在scrollView.delegate里做一些补丁性质的东西来修复
     if ([self.subviews.firstObject isKindOfClass:[UIScrollView class]]) {
@@ -184,19 +187,30 @@
 // 重写accessoryType，如果是UITableViewCellAccessoryDisclosureIndicator类型的，则使用 QMUIConfigurationTemplate.m 配置表里的图片
 - (void)setAccessoryType:(UITableViewCellAccessoryType)accessoryType {
     [super setAccessoryType:accessoryType];
+    
     if (accessoryType == UITableViewCellAccessoryDisclosureIndicator) {
-        [self initDefaultAccessoryImageViewIfNeeded];
-        self.defaultAccessoryImageView.image = TableViewCellDisclosureIndicatorImage;
-        [self.defaultAccessoryImageView sizeToFit];
-        self.accessoryView = self.defaultAccessoryImageView;
-    } else if (accessoryType == UITableViewCellAccessoryCheckmark) {
-        [self initDefaultAccessoryImageViewIfNeeded];
-        self.defaultAccessoryImageView.image = TableViewCellCheckmarkImage;
-        [self.defaultAccessoryImageView sizeToFit];
-        self.accessoryView = self.defaultAccessoryImageView;
-    } else {
-        self.accessoryView = nil;
+        UIImage *indicatorImage = TableViewCellDisclosureIndicatorImage;
+        if (indicatorImage) {
+            [self initDefaultAccessoryImageViewIfNeeded];
+            self.defaultAccessoryImageView.image = TableViewCellDisclosureIndicatorImage;
+            [self.defaultAccessoryImageView sizeToFit];
+            self.accessoryView = self.defaultAccessoryImageView;
+            return;
+        }
     }
+    
+    if (accessoryType == UITableViewCellAccessoryCheckmark) {
+        UIImage *checkmarkImage = TableViewCellCheckmarkImage;
+        if (checkmarkImage) {
+            [self initDefaultAccessoryImageViewIfNeeded];
+            self.defaultAccessoryImageView.image = TableViewCellCheckmarkImage;
+            [self.defaultAccessoryImageView sizeToFit];
+            self.accessoryView = self.defaultAccessoryImageView;
+            return;
+        }
+    }
+    
+    self.accessoryView = nil;
 }
 
 #pragma mark - <UIScrollViewDelegate>

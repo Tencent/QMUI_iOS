@@ -283,7 +283,7 @@ BeginIgnoreDeprecatedWarning
     [super showEmptyView];
     
     // 格式化样式，以适应当前项目的需求
-    self.emptyView.backgroundColor = TableViewBackgroundColor;
+    self.emptyView.backgroundColor = TableViewBackgroundColor ?: UIColorWhite;
     if ([self.searchResultsDelegate respondsToSelector:@selector(searchController:willShowEmptyView:)]) {
         [self.searchResultsDelegate searchController:self willShowEmptyView:self.emptyView];
     }

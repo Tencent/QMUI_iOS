@@ -12,7 +12,7 @@
 /*
  * 定义宏，宏的值是通过QMUIConfigurationManager的单例来获取属性的值。
  * 如果项目需要修改根据项目来修改某些宏的名字，请通过QMUIConfigurationManager来修改相应的属性，然后在项目启动的地方调用。
- * @waining 如果需要增加一个宏，则需要定义一个新的QMUIConfigurationManager属性。(具体请联系zhoonchen/molicechen)
+ * @waining 如果需要增加一个宏，则需要定义一个新的QMUIConfigurationManager属性。
  */
 
 
@@ -56,10 +56,6 @@
 #define UIControlHighlightedAlpha       [QMUICMI controlHighlightedAlpha]          // 一般control的Highlighted透明值
 #define UIControlDisabledAlpha          [QMUICMI controlDisabledAlpha]             // 一般control的Disable透明值
 
-#define SegmentTextTintColor            [QMUICMI segmentTextTintColor]             // segment的tintColor
-#define SegmentTextSelectedTintColor    [QMUICMI segmentTextSelectedTintColor]     // segment选中态的tintColor
-#define SegmentFontSize                 [QMUICMI segmentFontSize]                  // segment的字体大小
-
 // 按钮
 #pragma mark - UIButton
 #define ButtonHighlightedAlpha          [QMUICMI buttonHighlightedAlpha]           // 按钮Highlighted状态的透明度
@@ -82,14 +78,6 @@
 #pragma mark - TextField & TextView
 #define TextFieldTintColor              [QMUICMI textFieldTintColor]               // 全局UITextField、UITextView的tintColor
 #define TextFieldTextInsets             [QMUICMI textFieldTextInsets]              // QMUITextField的内边距
-
-#pragma mark - ActionSheet
-
-#define ActionSheetButtonTintColor                      [QMUICMI actionSheetButtonTintColor]
-#define ActionSheetButtonBackgroundColor                [QMUICMI actionSheetButtonBackgroundColor]
-#define ActionSheetButtonBackgroundColorHighlighted     [QMUICMI actionSheetButtonBackgroundColorHighlighted]
-#define ActionSheetButtonFont                           [QMUICMI actionSheetButtonFont]
-#define ActionSheetButtonFontBold                       [QMUICMI actionSheetButtonFontBold]
 
 
 #pragma mark - NavigationBar

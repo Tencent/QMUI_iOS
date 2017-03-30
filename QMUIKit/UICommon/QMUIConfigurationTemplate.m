@@ -66,10 +66,6 @@
     //- QMUICMI.controlHighlightedAlpha = 0.5f;                                                 // UIControlHighlightedAlpha : 全局的highlighted alpha值
     //- QMUICMI.controlDisabledAlpha = 0.5f;                                                    // UIControlDisabledAlpha : 全局的disabled alpha值
     
-    //- QMUICMI.segmentTextTintColor = UIColorBlue;                                             // SegmentTextTintColor : segment的tintColor
-    //- QMUICMI.segmentTextSelectedTintColor = UIColorWhite;                                    // SegmentTextSelectedTintColor : segment选中态的tintColor
-    //- QMUICMI.segmentFontSize = UIFontMake(13);                                               // SegmentFontSize : segment的字体大小
-    
     #pragma mark - UIButton
     //- QMUICMI.buttonHighlightedAlpha = UIControlHighlightedAlpha;                             // ButtonHighlightedAlpha : 按钮的highlighted alpha值
     //- QMUICMI.buttonDisabledAlpha = UIControlDisabledAlpha;                                   // ButtonDisabledAlpha : 按钮的disabled alpha值
@@ -91,13 +87,6 @@
     #pragma mark - TextField & TextView
     //- QMUICMI.textFieldTintColor = UIColorBlue;                                               // TextFieldTintColor : 全局UITextField、UITextView的tintColor
     //- QMUICMI.textFieldTextInsets = UIEdgeInsetsMake(0, 7, 0, 7);                             // TextFieldTextInsets : QMUITextField的内边距
-    
-    #pragma mark - ActionSheet
-    //- QMUICMI.actionSheetButtonTintColor = UIColorBlue;                                       // ActionSheetButtonTintColor
-    //- QMUICMI.actionSheetButtonBackgroundColor = UIColorMake(255, 255, 255);                  // ActionSheetButtonBackgroundColor
-    //- QMUICMI.actionSheetButtonBackgroundColorHighlighted = UIColorMake(235, 235, 235);       // ActionSheetButtonBackgroundColorHighlighted
-    //- QMUICMI.actionSheetButtonFont = UIFontMake(21);                                         // ActionSheetButtonFont
-    //- QMUICMI.actionSheetButtonFontBold = UIFontBoldMake(21);                                 // ActionSheetButtonFontBold
     
     #pragma mark - NavigationBar
     

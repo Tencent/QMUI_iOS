@@ -61,20 +61,10 @@
     self.testColorGreen = UIColorMakeWithRGBA(0, 255, 0, .3);
     self.testColorBlue = UIColorMakeWithRGBA(0, 0, 255, .3);
     
-    #pragma mark - UIWindowLevel
-    self.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;
-    self.windowLevelQMUIActionSheet = UIWindowLevelAlert - 4.0;
-    self.windowLevelQMUIMoreOperationController = UIWindowLevelStatusBar + 1;
-    self.windowLevelQMUIImagePreviewView = UIWindowLevelStatusBar + 1;
-    
     #pragma mark - UIControl
     
     self.controlHighlightedAlpha = 0.5f;
     self.controlDisabledAlpha = 0.5f;
-    
-    self.segmentTextTintColor = self.blueColor;
-    self.segmentTextSelectedTintColor = self.whiteColor;
-    self.segmentFontSize = UIFontMake(13);
     
     #pragma mark - UIButton
     
@@ -99,14 +89,6 @@
     self.textFieldTintColor = UIColorBlue;
     self.textFieldTextInsets = UIEdgeInsetsMake(0, 7, 0, 7);
     
-    #pragma mark - ActionSheet
-    
-    self.actionSheetButtonTintColor = self.blueColor;
-    self.actionSheetButtonBackgroundColor = UIColorMake(255, 255, 255);
-    self.actionSheetButtonBackgroundColorHighlighted = UIColorMake(235, 235, 235);
-    self.actionSheetButtonFont = UIFontMake(21);
-    self.actionSheetButtonFontBold = UIFontBoldMake(21);
-    
     #pragma mark - NavigationBar
     
     self.navBarHighlightedAlpha = 0.2f;
@@ -115,10 +97,9 @@
     self.navBarButtonFontBold = UIFontBoldMake(17);
     self.navBarBackgroundImage = nil;
     self.navBarShadowImage = nil;
-    self.navBarShadowImageColor = UIColorMake(178, 178, 178);
     self.navBarBarTintColor = nil;
     self.navBarTintColor = self.blackColor;
-    self.navBarTitleColor = nil;
+    self.navBarTitleColor = self.navBarTintColor;
     self.navBarTitleFont = UIFontBoldMake(17);
     self.navBarBackButtonTitlePositionAdjustment = UIOffsetZero;
     self.navBarBackIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(12, 20) tintColor:self.navBarTintColor];
@@ -157,7 +138,7 @@
     self.searchBarBottomBorderColor = UIColorMake(205, 208, 210);
     self.searchBarBarTintColor = UIColorMake(247, 247, 247);
     self.searchBarTintColor = self.blueColor;
-    self.searchBarTextColor = UIColorBlack;
+    self.searchBarTextColor = self.blackColor;
     self.searchBarPlaceholderColor = self.placeholderColor;
     self.searchBarSearchIconImage = nil;
     self.searchBarClearIconImage = nil;
@@ -171,13 +152,18 @@
     self.tableSectionIndexBackgroundColor = self.clearColor;
     self.tableSectionIndexTrackingBackgroundColor = self.clearColor;
     self.tableViewSeparatorColor = self.separatorColor;
+    
+    self.tableViewCellNormalHeight = 44;
+    self.tableViewCellTitleLabelColor = self.blackColor;
+    self.tableViewCellDetailLabelColor = self.grayColor;
+    self.tableViewCellContentDefaultPaddingLeft = 15;
+    self.tableViewCellContentDefaultPaddingRight = 10;
     self.tableViewCellBackgroundColor = self.whiteColor;
     self.tableViewCellSelectedBackgroundColor = UIColorMake(232, 232, 232);
     self.tableViewCellWarningBackgroundColor = self.yellowColor;
-    self.tableViewCellNormalHeight = 44;
-    
     self.tableViewCellDisclosureIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeDisclosureIndicator size:CGSizeMake(8, 13) tintColor:UIColorMakeWithRGBA(0, 0, 0, .2)];
     self.tableViewCellCheckmarkImage = [UIImage qmui_imageWithShape:QMUIImageShapeCheckmark size:CGSizeMake(15, 12) tintColor:UIColorBlue];
+    
     self.tableViewSectionHeaderBackgroundColor = UIColorMake(244, 244, 244);
     self.tableViewSectionFooterBackgroundColor = UIColorMake(244, 244, 244);
     self.tableViewSectionHeaderFont = UIFontBoldMake(12);
@@ -198,10 +184,11 @@
     self.tableViewGroupedSectionHeaderContentInset = UIEdgeInsetsMake(16, 15, 8, 15);
     self.tableViewGroupedSectionFooterContentInset = UIEdgeInsetsMake(8, 15, 2, 15);
     
-    self.tableViewCellTitleLabelColor = self.blackColor;
-    self.tableViewCellDetailLabelColor = self.grayColor;
-    self.tableViewCellContentDefaultPaddingLeft = 15;
-    self.tableViewCellContentDefaultPaddingRight = 10;
+    #pragma mark - UIWindowLevel
+    self.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;
+    self.windowLevelQMUIActionSheet = UIWindowLevelAlert - 4.0;
+    self.windowLevelQMUIMoreOperationController = UIWindowLevelStatusBar + 1;
+    self.windowLevelQMUIImagePreviewView = UIWindowLevelStatusBar + 1;
     
     #pragma mark - Others
     
@@ -225,26 +212,52 @@
     UINavigationBar *navigationBarAppearance = [UINavigationBar appearance];
     navigationBarAppearance.barTintColor = NavBarBarTintColor;
     navigationBarAppearance.shadowImage = NavBarShadowImage;
-    navigationBarAppearance.titleTextAttributes = @{NSFontAttributeName: NavBarTitleFont, NSForegroundColorAttributeName: NavBarTitleColor};
     [navigationBarAppearance setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+    
+    UIFont *navigationBarTitleFont = NavBarTitleFont;
+    UIColor *navigationBarTitleColor = NavBarTitleColor;
+    if (navigationBarTitleFont || navigationBarTitleColor) {
+        NSMutableDictionary<NSString *, id> *titleTextAttributes = [[NSMutableDictionary alloc] init];
+        if (navigationBarTitleFont) {
+            [titleTextAttributes setValue:navigationBarTitleFont forKey:NSFontAttributeName];
+        }
+        if (navigationBarTitleColor) {
+            [titleTextAttributes setValue:navigationBarTitleColor forKey:NSForegroundColorAttributeName];
+        }
+        navigationBarAppearance.titleTextAttributes = titleTextAttributes;
+    }
     
     // UIToolBar
     UIToolbar *toolBarAppearance = [UIToolbar appearance];
     toolBarAppearance.barTintColor = ToolBarBarTintColor;
     [toolBarAppearance setBackgroundImage:ToolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-    [toolBarAppearance setShadowImage:[UIImage qmui_imageWithColor:ToolBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
+    
+    UIColor *toolbarShadowImageColor = ToolBarShadowImageColor;
+    if (toolbarShadowImageColor) {
+        [toolBarAppearance setShadowImage:[UIImage qmui_imageWithColor:toolbarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
+    }
     
     // UITabBar
     UITabBar *tabBarAppearance = [UITabBar appearance];
     tabBarAppearance.barTintColor = TabBarBarTintColor;
     tabBarAppearance.backgroundImage = TabBarBackgroundImage;
-    [tabBarAppearance setShadowImage:[UIImage qmui_imageWithColor:TabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
-    
+    UIColor *tabBarShadowImageColor = TabBarShadowImageColor;
+    if (tabBarShadowImageColor) {
+        [tabBarAppearance setShadowImage:[UIImage qmui_imageWithColor:tabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
+    }
     
     // UITabBarItem
     UITabBarItem *tabBarItemAppearance = [UITabBarItem appearance];
-    [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:TabBarItemTitleColor} forState:UIControlStateNormal];
-    [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:TabBarItemTitleColorSelected} forState:UIControlStateSelected];
+    
+    UIColor *tabBarItemTitleColor = TabBarItemTitleColor;
+    if (tabBarItemTitleColor) {
+        [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:tabBarItemTitleColor} forState:UIControlStateNormal];
+    }
+    
+    UIColor *tabBarItemTitleColorSelected = TabBarItemTitleColorSelected;
+    if (tabBarItemTitleColorSelected) {
+        [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:tabBarItemTitleColorSelected} forState:UIControlStateSelected];
+    }
 }
 
 @end
