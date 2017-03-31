@@ -186,8 +186,6 @@
     
     #pragma mark - UIWindowLevel
     self.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;
-    self.windowLevelQMUIActionSheet = UIWindowLevelAlert - 4.0;
-    self.windowLevelQMUIMoreOperationController = UIWindowLevelStatusBar + 1;
     self.windowLevelQMUIImagePreviewView = UIWindowLevelStatusBar + 1;
     
     #pragma mark - Others

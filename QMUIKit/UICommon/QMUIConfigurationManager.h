@@ -167,8 +167,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UIWindowLevel
 
 @property(nonatomic, assign) CGFloat            windowLevelQMUIAlertView;
-@property(nonatomic, assign) CGFloat            windowLevelQMUIActionSheet;
-@property(nonatomic, assign) CGFloat            windowLevelQMUIMoreOperationController;
 @property(nonatomic, assign) CGFloat            windowLevelQMUIImagePreviewView;
 
 #pragma mark - Others

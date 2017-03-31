@@ -182,8 +182,6 @@
 
 #pragma mark - UIWindowLevel
 #define UIWindowLevelQMUIAlertView                  [QMUICMI windowLevelQMUIAlertView]
-#define UIWindowLevelQMUIActionSheet                [QMUICMI windowLevelQMUIActionSheet]
-#define UIWindowLevelQMUIMoreOperationController    [QMUICMI windowLevelQMUIMoreOperationController]
 #define UIWindowLevelQMUIImagePreviewView           [QMUICMI windowLevelQMUIImagePreviewView]
 
 #pragma mark - Others
