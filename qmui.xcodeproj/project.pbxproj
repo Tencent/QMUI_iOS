@@ -237,7 +237,6 @@
 		CDB8CBF41DCC870800769DF0 /* QMUITabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CAC81DCC870700769DF0 /* QMUITabBarViewController.m */; };
 		CDB8CBF61DCC870800769DF0 /* QMUI_QQEmotion.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDB8CACA1DCC870700769DF0 /* QMUI_QQEmotion.bundle */; };
 		CDB8CBF81DCC870800769DF0 /* QMUIResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDB8CACB1DCC870700769DF0 /* QMUIResources.bundle */; };
-		CDB8CBFA1DCC870800769DF0 /* readme.txt in Resources */ = {isa = PBXBuildFile; fileRef = CDB8CACC1DCC870700769DF0 /* readme.txt */; };
 		CDBCD5451DFAA6E0009EFEF5 /* QMUITableViewProtocols.h in Headers */ = {isa = PBXBuildFile; fileRef = CDBCD53F1DFAA286009EFEF5 /* QMUITableViewProtocols.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD495151E60151500829B7D /* QMUIPopupMenuView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDD495181E60151500829B7D /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD495161E60151500829B7D /* QMUIPopupMenuView.m */; };
@@ -299,8 +298,6 @@
 		CDB8CA351DCC870700769DF0 /* QMUIConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIConfiguration.h; sourceTree = "<group>"; };
 		CDB8CA361DCC870700769DF0 /* QMUIConfigurationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIConfigurationManager.h; sourceTree = "<group>"; };
 		CDB8CA371DCC870700769DF0 /* QMUIConfigurationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIConfigurationManager.m; sourceTree = "<group>"; };
-		CDB8CA381DCC870700769DF0 /* QMUIConfigurationTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIConfigurationTemplate.h; sourceTree = "<group>"; };
-		CDB8CA391DCC870700769DF0 /* QMUIConfigurationTemplate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIConfigurationTemplate.m; sourceTree = "<group>"; };
 		CDB8CA3A1DCC870700769DF0 /* QMUIHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIHelper.h; sourceTree = "<group>"; };
 		CDB8CA3B1DCC870700769DF0 /* QMUIHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIHelper.m; sourceTree = "<group>"; };
 		CDB8CA3E1DCC870700769DF0 /* QMUIAsset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIAsset.h; sourceTree = "<group>"; };
@@ -433,7 +430,6 @@
 		CDB8CAC81DCC870700769DF0 /* QMUITabBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUITabBarViewController.m; sourceTree = "<group>"; };
 		CDB8CACA1DCC870700769DF0 /* QMUI_QQEmotion.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = QMUI_QQEmotion.bundle; sourceTree = "<group>"; };
 		CDB8CACB1DCC870700769DF0 /* QMUIResources.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = QMUIResources.bundle; sourceTree = "<group>"; };
-		CDB8CACC1DCC870700769DF0 /* readme.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.txt; sourceTree = "<group>"; };
 		CDBCD53F1DFAA286009EFEF5 /* QMUITableViewProtocols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUITableViewProtocols.h; sourceTree = "<group>"; };
 		CDD495151E60151500829B7D /* QMUIPopupMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuView.h; sourceTree = "<group>"; };
 		CDD495161E60151500829B7D /* QMUIPopupMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupMenuView.m; sourceTree = "<group>"; };
@@ -741,7 +737,6 @@
 			children = (
 				CDB8CACA1DCC870700769DF0 /* QMUI_QQEmotion.bundle */,
 				CDB8CACB1DCC870700769DF0 /* QMUIResources.bundle */,
-				CDB8CACC1DCC870700769DF0 /* readme.txt */,
 			);
 			path = UIResources;
 			sourceTree = "<group>";
@@ -919,7 +914,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				CDB8CBF81DCC870800769DF0 /* QMUIResources.bundle in Resources */,
-				CDB8CBFA1DCC870800769DF0 /* readme.txt in Resources */,
 				CDB8CBF61DCC870800769DF0 /* QMUI_QQEmotion.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

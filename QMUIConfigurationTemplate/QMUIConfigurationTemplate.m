@@ -7,9 +7,7 @@
 //
 
 #import "QMUIConfigurationTemplate.h"
-
-// 如果这里找不到QMUIKit.h，请尝试替换为 #import <QMUIKit/QMUIKit.h>
-#import "QMUIKit.h"
+#import <QMUIKit/QMUIKit.h>
 
 @implementation QMUIConfigurationTemplate
 
