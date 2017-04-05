@@ -158,7 +158,22 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
 - (void)setTypingAttributes:(NSDictionary<NSString *,id> *)typingAttributes {
     [super setTypingAttributes:typingAttributes];
-    self.placeholder = self.placeholder;// 更新文字样式
+    [self updatePlaceholderStyle];
+}
+
+- (void)setFont:(UIFont *)font {
+    [super setFont:font];
+    [self updatePlaceholderStyle];
+}
+
+- (void)setTextColor:(UIColor *)textColor {
+    [super setTextColor:textColor];
+    [self updatePlaceholderStyle];
+}
+
+- (void)setTextAlignment:(NSTextAlignment)textAlignment {
+    [super setTextAlignment:textAlignment];
+    [self updatePlaceholderStyle];
 }
 
 - (void)setPlaceholder:(NSString *)placeholder {
@@ -173,6 +188,10 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (void)setPlaceholderColor:(UIColor *)placeholderColor {
     _placeholderColor = placeholderColor;
     self.placeholderLabel.textColor = _placeholderColor;
+}
+
+- (void)updatePlaceholderStyle {
+    self.placeholder = self.placeholder;// 触发文字样式的更新
 }
 
 - (void)handleTextChanged:(id)sender {
