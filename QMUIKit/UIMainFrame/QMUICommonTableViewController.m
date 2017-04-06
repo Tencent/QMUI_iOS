@@ -351,6 +351,8 @@ EndIgnoreDeprecatedWarning
         return;
     }
     
+    _shouldShowSearchBar = shouldShowSearchBar;
+    
     if (shouldShowSearchBar) {
         [self initSearchController];
     } else {
@@ -366,8 +368,6 @@ EndIgnoreDeprecatedWarning
             _searchController = nil;
         }
     }
-    
-    _shouldShowSearchBar = shouldShowSearchBar;
 }
 
 - (QMUISearchController *)searchController {
