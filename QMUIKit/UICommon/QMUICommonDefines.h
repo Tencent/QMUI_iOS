@@ -515,4 +515,3 @@ CGRectSetSize(CGRect rect, CGSize size) {
     rect.size = CGSizeFlatted(size);
     return rect;
 }
-
