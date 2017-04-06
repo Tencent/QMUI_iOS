@@ -90,17 +90,3 @@
 @property(nonatomic, assign) BOOL autoResizable;
 
 @end
-
-@interface UITextView (QMUI)
-
-/**
- *  设置 text 会让 selectedTextRange 跳到最后一个字符，导致在中间修改文字后光标会跳到末尾，所以设置前要保存一下，设置后恢复过来
- */
-- (void)qmui_setTextKeepingSelectedRange:(NSString *)text;
-
-/**
- *  设置 attributedText 会让 selectedTextRange 跳到最后一个字符，导致在中间修改文字后光标会跳到末尾，所以设置前要保存一下，设置后恢复过来
- */
-- (void)qmui_setAttributedTextKeepingSelectedRange:(NSAttributedString *)attributedText;
-
-@end

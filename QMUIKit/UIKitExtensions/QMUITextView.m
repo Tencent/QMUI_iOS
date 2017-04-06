@@ -11,6 +11,7 @@
 #import "QMUILabel.h"
 #import "NSObject+QMUI.h"
 #import "NSString+QMUI.h"
+#import "UITextView+QMUI.h"
 
 /// 系统 textView 默认的字号大小，用于 placeholder 默认的文字大小。实测得到，请勿修改。
 const CGFloat kSystemTextViewDefaultFontPointSize = 12.0f;
@@ -425,22 +426,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     if ([self.originalDelegate respondsToSelector:_cmd]) {
         [self.originalDelegate scrollViewDidZoom:scrollView];
     }
-}
-
-@end
-
-@implementation UITextView (QMUI)
-
-- (void)qmui_setTextKeepingSelectedRange:(NSString *)text {
-    UITextRange *selectedTextRange = self.selectedTextRange;
-    self.text = text;
-    self.selectedTextRange = selectedTextRange;
-}
-
-- (void)qmui_setAttributedTextKeepingSelectedRange:(NSAttributedString *)attributedText {
-    UITextRange *selectedTextRange = self.selectedTextRange;
-    self.attributedText = attributedText;
-    self.selectedTextRange = selectedTextRange;
 }
 
 @end

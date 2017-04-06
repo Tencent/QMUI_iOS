@@ -41,6 +41,8 @@
 #import "UILabel+QMUI.h"
 #import "UIImageView+QMUI.h"
 #import "UIControl+QMUI.h"
+#import "UITextField+QMUI.h"
+#import "UITextView+QMUI.h"
 #import "UIButton+QMUI.h"
 #import "UISearchBar+QMUI.h"
 #import "UIScrollView+QMUI.h"
@@ -57,6 +59,7 @@
 #import "UINavigationController+NavigationBarTransition.h"
 
 /// UIComponents
+#import "QMUIKeyboardManager.h"
 #import "QMUIToastBackgroundView.h"
 #import "QMUIToastContentView.h"
 #import "QMUIToastAnimator.h"

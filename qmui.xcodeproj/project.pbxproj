@@ -241,6 +241,15 @@
 		CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD495151E60151500829B7D /* QMUIPopupMenuView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDD495181E60151500829B7D /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD495161E60151500829B7D /* QMUIPopupMenuView.m */; };
 		CDD495191E60151500829B7D /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD495161E60151500829B7D /* QMUIPopupMenuView.m */; };
+		FE1FBCA91E8BA61300C6C01A /* UITextField+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FE1FBCAA1E8BA61300C6C01A /* UITextField+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */; };
+		FE1FBCAC1E8BA73000C6C01A /* UITextField+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */; };
+		FE1FBCAF1E8BA79000C6C01A /* UITextView+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = FE1FBCAD1E8BA79000C6C01A /* UITextView+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		FE1FBCB01E8BA79000C6C01A /* UITextView+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = FE1FBCAE1E8BA79000C6C01A /* UITextView+QMUI.m */; };
+		FE1FBCB11E8BA79000C6C01A /* UITextView+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = FE1FBCAE1E8BA79000C6C01A /* UITextView+QMUI.m */; };
+		FE43652C1E8CC9EF00B5D34B /* QMUIKeyboardManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FE43652A1E8CC9EF00B5D34B /* QMUIKeyboardManager.m */; };
+		FE43652D1E8CC9EF00B5D34B /* QMUIKeyboardManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FE43652A1E8CC9EF00B5D34B /* QMUIKeyboardManager.m */; };
+		FE43652E1E8CC9EF00B5D34B /* QMUIKeyboardManager.h in Headers */ = {isa = PBXBuildFile; fileRef = FE43652B1E8CC9EF00B5D34B /* QMUIKeyboardManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -434,6 +443,12 @@
 		CDD495151E60151500829B7D /* QMUIPopupMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuView.h; sourceTree = "<group>"; };
 		CDD495161E60151500829B7D /* QMUIPopupMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupMenuView.m; sourceTree = "<group>"; };
 		FE0AFAD11D82B9D8000D21D9 /* QMUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = QMUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITextField+QMUI.h"; sourceTree = "<group>"; };
+		FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITextField+QMUI.m"; sourceTree = "<group>"; };
+		FE1FBCAD1E8BA79000C6C01A /* UITextView+QMUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITextView+QMUI.h"; sourceTree = "<group>"; };
+		FE1FBCAE1E8BA79000C6C01A /* UITextView+QMUI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITextView+QMUI.m"; sourceTree = "<group>"; };
+		FE43652A1E8CC9EF00B5D34B /* QMUIKeyboardManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIKeyboardManager.m; sourceTree = "<group>"; };
+		FE43652B1E8CC9EF00B5D34B /* QMUIKeyboardManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIKeyboardManager.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -551,6 +566,8 @@
 			children = (
 				CDB8CA3D1DCC870700769DF0 /* AssetLibrary */,
 				CDB8CA441DCC870700769DF0 /* ImagePickerLibrary */,
+				FE43652A1E8CC9EF00B5D34B /* QMUIKeyboardManager.m */,
+				FE43652B1E8CC9EF00B5D34B /* QMUIKeyboardManager.h */,
 				CDB8CA4F1DCC870700769DF0 /* QMUIDialogViewController.h */,
 				CDB8CA501DCC870700769DF0 /* QMUIDialogViewController.m */,
 				CDB8CA511DCC870700769DF0 /* QMUIEmotionView.h */,
@@ -713,6 +730,10 @@
 				CDB8CABF1DCC870700769DF0 /* UIWindow+QMUI.m */,
 				CD84F31B1E52DBEA00546111 /* UITabBar+QMUI.h */,
 				CD84F31C1E52DBEA00546111 /* UITabBar+QMUI.m */,
+				FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */,
+				FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */,
+				FE1FBCAD1E8BA79000C6C01A /* UITextView+QMUI.h */,
+				FE1FBCAE1E8BA79000C6C01A /* UITextView+QMUI.m */,
 			);
 			path = UIKitExtensions;
 			sourceTree = "<group>";
@@ -749,6 +770,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CDB8CB4D1DCC870700769DF0 /* QMUIZoomImageView.h in Headers */,
+				FE1FBCA91E8BA61300C6C01A /* UITextField+QMUI.h in Headers */,
 				CDB8CB611DCC870700769DF0 /* NSString+QMUI.h in Headers */,
 				CDB8CAD01DCC870700769DF0 /* QMUICommonDefines.h in Headers */,
 				CDB8CAF91DCC870700769DF0 /* QMUIImagePickerHelper.h in Headers */,
@@ -827,6 +849,8 @@
 				CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */,
 				CD84F31D1E52DBEA00546111 /* UITabBar+QMUI.h in Headers */,
 				CDB8CAF11DCC870700769DF0 /* QMUIAlbumViewController.h in Headers */,
+				FE43652E1E8CC9EF00B5D34B /* QMUIKeyboardManager.h in Headers */,
+				FE1FBCAF1E8BA79000C6C01A /* UITextView+QMUI.h in Headers */,
 				CDBCD5451DFAA6E0009EFEF5 /* QMUITableViewProtocols.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -925,6 +949,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FE1FBCAC1E8BA73000C6C01A /* UITextField+QMUI.m in Sources */,
 				CDB8CB0F1DCC870700769DF0 /* QMUIEmptyView.m in Sources */,
 				CDB8CB5F1DCC870700769DF0 /* NSParagraphStyle+QMUI.m in Sources */,
 				CD9D18FD1DD462200020F268 /* QMUIFloatLayoutView.m in Sources */,
@@ -943,6 +968,7 @@
 				CDB8CBD71DCC870800769DF0 /* UITableView+QMUI.m in Sources */,
 				CDB8CBE31DCC870800769DF0 /* UIWindow+QMUI.m in Sources */,
 				CDB8CBC71DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
+				FE43652C1E8CC9EF00B5D34B /* QMUIKeyboardManager.m in Sources */,
 				CDB8CB271DCC870700769DF0 /* QMUIPieProgressView.m in Sources */,
 				16F6B63B1DFD3AF500E58171 /* QMUIToastView.m in Sources */,
 				CDB8CB7B1DCC870700769DF0 /* QMUISearchBar.m in Sources */,
@@ -972,6 +998,7 @@
 				CDB8CB931DCC870700769DF0 /* QMUITextField.m in Sources */,
 				CDB8CB431DCC870700769DF0 /* QMUITestView.m in Sources */,
 				CDB8CB971DCC870700769DF0 /* QMUITextView.m in Sources */,
+				FE1FBCB01E8BA79000C6C01A /* UITextView+QMUI.m in Sources */,
 				CDB8CB131DCC870700769DF0 /* QMUIGridView.m in Sources */,
 				CDB8CAF71DCC870700769DF0 /* QMUIImagePickerCollectionViewCell.m in Sources */,
 				CDB8CB8F1DCC870700769DF0 /* QMUITableViewCell.m in Sources */,
@@ -1027,6 +1054,7 @@
 				CDB8CBD81DCC870800769DF0 /* UITableView+QMUI.m in Sources */,
 				CDB8CBE41DCC870800769DF0 /* UIWindow+QMUI.m in Sources */,
 				CDB8CBC81DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
+				FE43652D1E8CC9EF00B5D34B /* QMUIKeyboardManager.m in Sources */,
 				CDB8CB281DCC870700769DF0 /* QMUIPieProgressView.m in Sources */,
 				CDB8CB7C1DCC870700769DF0 /* QMUISearchBar.m in Sources */,
 				CD78CBD11DEE9E3500910DCE /* QMUIImagePreviewView.m in Sources */,
@@ -1057,6 +1085,7 @@
 				CDD495191E60151500829B7D /* QMUIPopupMenuView.m in Sources */,
 				CDB8CAF81DCC870700769DF0 /* QMUIImagePickerCollectionViewCell.m in Sources */,
 				CDB8CB901DCC870700769DF0 /* QMUITableViewCell.m in Sources */,
+				FE1FBCB11E8BA79000C6C01A /* UITextView+QMUI.m in Sources */,
 				CDB8CBF01DCC870800769DF0 /* QMUINavigationController.m in Sources */,
 				CDB8CBAC1DCC870800769DF0 /* UIColor+QMUI.m in Sources */,
 				CDB8CB881DCC870700769DF0 /* QMUIStaticTableViewCellData.m in Sources */,
@@ -1070,6 +1099,7 @@
 				CDB8CB8C1DCC870700769DF0 /* QMUITableView.m in Sources */,
 				CDB8CBE01DCC870800769DF0 /* UIViewController+QMUI.m in Sources */,
 				CDB8CAE41DCC870700769DF0 /* QMUIHelper.m in Sources */,
+				FE1FBCAA1E8BA61300C6C01A /* UITextField+QMUI.m in Sources */,
 				CDB8CB181DCC870700769DF0 /* QMUIModalPresentationViewController.m in Sources */,
 				CDB8CB041DCC870700769DF0 /* QMUIImagePickerViewController.m in Sources */,
 				CDB8CBC41DCC870800769DF0 /* UINavigationController+NavigationBarTransition.m in Sources */,
