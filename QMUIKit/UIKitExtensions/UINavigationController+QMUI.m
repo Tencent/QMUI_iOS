@@ -96,7 +96,9 @@ static char originGestureDelegateKey;
         if ([originGestureDelegate respondsToSelector:@selector(gestureRecognizer:shouldReceiveTouch:)]) {
             // 先判断要不要强制开启手势返回
             UIViewController *viewController = [self topViewController];
-            if ([viewController respondsToSelector:@selector(forceEnableInteractivePopGestureRecognizer)] &&
+            if (self.viewControllers.count > 1 &&
+                self.interactivePopGestureRecognizer.enabled &&
+                [viewController respondsToSelector:@selector(forceEnableInteractivePopGestureRecognizer)] &&
                 [viewController forceEnableInteractivePopGestureRecognizer]) {
                 return YES;
             }
