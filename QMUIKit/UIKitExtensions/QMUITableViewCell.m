@@ -27,14 +27,14 @@
     return self;
 }
 
-- (instancetype)initForTableView:(QMUITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+- (instancetype)initForTableView:(UITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [self initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         self.parentTableView = tableView;
     }
     return self;
 }
 
-- (instancetype)initForTableView:(QMUITableView *)tableView withReuseIdentifier:(NSString *)reuseIdentifier {
+- (instancetype)initForTableView:(UITableView *)tableView withReuseIdentifier:(NSString *)reuseIdentifier {
     return [self initForTableView:tableView withStyle:UITableViewCellStyleDefault reuseIdentifier:reuseIdentifier];
 }
 

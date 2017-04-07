@@ -44,4 +44,6 @@ QMUI iOS 支持 iOS 7+。
 - 关于 Swift：暂未检查过在 Swift 下使用 QMUI 的问题，如遇到问题可以反馈给我们，我们会尽快兼容。
 
 ## 其他
-建议搭配 QMUI 专用的 Code Snippets 使用： [https://github.com/QMUI/qmui-ios-codesnippets](https://github.com/QMUI/QMUI_iOS_CodeSnippets)
+建议搭配 QMUI 专用的 Code Snippets 及文件模板使用：
+1. [QMUI_iOS_CodeSnippets](https://github.com/QMUI/QMUI_iOS_CodeSnippets)
+2. [QMUI_iOS_Templates](https://github.com/QMUI/QMUI_iOS_Templates)
