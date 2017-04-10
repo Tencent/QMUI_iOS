@@ -12,7 +12,7 @@
 #import "QMUIHelper.h"
 
 void QMUIImageWriteToSavedPhotosAlbumWithAlbumAssetsGroup(UIImage *image, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock) {
-    [[QMUIAssetsManager sharedInstance] saveImageWithImageRef:image.CGImage albumAssetsGroup:albumAssetsGroup orientation:(UIImageOrientation)image.imageOrientation completionBlock:completionBlock];
+    [[QMUIAssetsManager sharedInstance] saveImageWithImageRef:image.CGImage albumAssetsGroup:albumAssetsGroup orientation:image.imageOrientation completionBlock:completionBlock];
 }
 
 void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock) {
@@ -342,11 +342,11 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
 
 + (PHAsset *)fetchLatestAssetWithAssetCollection:(PHAssetCollection *)assetCollection {
     PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-    // 按时间对 PHAssetCollection 内的资源进行排序，最新的资源排在数组第一位
+    // 按时间的先后对 PHAssetCollection 内的资源进行排序，最新的资源排在数组最后面
     fetchOptions.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
     PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:fetchOptions];
-    // 获取 PHAssetCollection 内第一个资源，即最新的资源
-    PHAsset *latestAsset = fetchResult.firstObject;
+    // 获取 PHAssetCollection 内最后一个资源，即最新的资源
+    PHAsset *latestAsset = fetchResult.lastObject;
     return latestAsset;
 }
 

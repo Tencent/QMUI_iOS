@@ -418,7 +418,7 @@ static QMUIModalPresentationViewController *appearance;
             }
         }];
     } else if (self.animationStyle == QMUIModalPresentationAnimationStyleSlide) {
-        [UIView animateWithDuration:.3 delay:0.0 options:UIViewAnimationOptionCurveLinear animations:^{
+        [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 0.0;
             self.contentView.transform = CGAffineTransformMakeTranslation(0, CGRectGetHeight(self.view.bounds) - CGRectGetMinY(self.contentView.frame));
         } completion:^(BOOL finished) {
