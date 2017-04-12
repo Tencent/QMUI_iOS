@@ -299,15 +299,18 @@ static UIResponder *kCurrentResponder = nil;
     return YES;
 }
 
-- (NSMutableArray <UIResponder *> *)targetResponders {
-    NSMutableArray *targetResponders = [[NSMutableArray alloc] init];
+- (NSArray<UIResponder *> *)allTargetResponders {
+    NSMutableArray *targetResponders = nil;
     for (int i = 0; i < self.targetResponderValues.count; i++) {
+        if (!targetResponders) {
+            targetResponders = [[NSMutableArray alloc] init];
+        }
         id unPackageValue = [self unPackageTargetResponder:self.targetResponderValues[i]];
         if (unPackageValue && [unPackageValue isKindOfClass:[UIResponder class]]) {
             [targetResponders addObject:(UIResponder *)unPackageValue];
         }
     }
-    return targetResponders;
+    return [targetResponders copy];
 }
 
 - (NSValue *)packageTargetResponder:(UIResponder *)targetResponder {
@@ -648,8 +651,6 @@ static UIResponder *kCurrentResponder = nil;
 
 + (UIWindow *)keyboardWindow {
     
-    // 这个方法参考YYKyeboardManager：https://github.com/ibireme/YYKeyboardManager/blob/master/YYKeyboardManager/YYKeyboardManager.m
-    
     for (UIWindow *window in [UIApplication sharedApplication].windows) {
         if ([self getKeyboardViewFromWindow:window]) {
             return window;
@@ -687,8 +688,6 @@ static UIResponder *kCurrentResponder = nil;
 }
 
 + (CGRect)convertKeyboardRect:(CGRect)rect toView:(UIView *)view {
-    
-    // 这个方法参考YYKyeboardManager：https://github.com/ibireme/YYKeyboardManager/blob/master/YYKeyboardManager/YYKeyboardManager.m
     
     if (CGRectIsNull(rect) || CGRectIsInfinite(rect)) {
         return rect;
@@ -744,59 +743,39 @@ static UIResponder *kCurrentResponder = nil;
 
 + (UIView *)getKeyboardViewFromWindow:(UIWindow *)window {
     
-    // 这个方法参考YYKyeboardManager：https://github.com/ibireme/YYKeyboardManager/blob/master/YYKeyboardManager/YYKeyboardManager.m
-    
-    /*
-     iOS 6/7:
-     UITextEffectsWindow
-     UIPeripheralHostView << keyboard
-     iOS 8:
-     UITextEffectsWindow
-     UIInputSetContainerView
-     UIInputSetHostView << keyboard
-     iOS 9:
-     UIRemoteKeyboardWindow
-     UIInputSetContainerView
-     UIInputSetHostView << keyboard
-     */
-    
     if (!window) return nil;
     
     NSString *windowName = NSStringFromClass(window.class);
     if (IOS_VERSION < 9) {
-        // UITextEffectsWindow
-        if (windowName.length != 19) return nil;
-        if (![windowName hasPrefix:@"UI"]) return nil;
-        if (![windowName hasSuffix:[NSString stringWithFormat:@"%@%@", @"TextEffects", @"Window"]]) return nil;
+        if (![windowName isEqualToString:@"UITextEffectsWindow"]) {
+            return nil;
+        }
     } else {
-        // UIRemoteKeyboardWindow
-        if (windowName.length != 22) return nil;
-        if (![windowName hasPrefix:@"UI"]) return nil;
-        if (![windowName hasSuffix:[NSString stringWithFormat:@"%@%@", @"RemoteKeyboard", @"Window"]]) return nil;
+        if (![windowName isEqualToString:@"UIRemoteKeyboardWindow"]) {
+            return nil;
+        }
     }
     
     if (IOS_VERSION < 8) {
-        // UIPeripheralHostView
         for (UIView *view in window.subviews) {
             NSString *viewName = NSStringFromClass(view.class);
-            if (viewName.length != 20) continue;
-            if (![viewName hasPrefix:@"UI"]) continue;
-            if (![viewName hasSuffix:[NSString stringWithFormat:@"%@%@", @"Peripheral", @"HostView"]]) continue;
+            if (![viewName isEqualToString:@"UIPeripheralHostView"]) {
+                continue;
+            }
             return view;
         }
     } else {
-        // UIInputSetContainerView
         for (UIView *view in window.subviews) {
             NSString *viewName = NSStringFromClass(view.class);
-            if (viewName.length != 23) continue;
-            if (![viewName hasPrefix:@"UI"]) continue;
-            if (![viewName hasSuffix:[NSString stringWithFormat:@"%@%@", @"InputSet", @"ContainerView"]]) continue;
-            // UIInputSetHostView
+            if (![viewName isEqualToString:@"UIInputSetContainerView"]) {
+                continue;
+            }
+            
             for (UIView *subView in view.subviews) {
                 NSString *subViewName = NSStringFromClass(subView.class);
-                if (subViewName.length != 18) continue;
-                if (![subViewName hasPrefix:@"UI"]) continue;
-                if (![subViewName hasSuffix:[NSString stringWithFormat:@"%@%@", @"InputSet", @"HostView"]]) continue;
+                if (![subViewName isEqualToString:@"UIInputSetHostView"]) {
+                    continue;
+                }
                 return subView;
             }
         }
