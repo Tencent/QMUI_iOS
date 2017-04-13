@@ -10,10 +10,12 @@
 #import "QMUICommonDefines.h"
 #import "QMUIConfiguration.h"
 #import "NSString+QMUI.h"
+#import "UITextField+QMUI.h"
 
-@interface QMUITextField ()<QMUITextFieldDelegate, UIScrollViewDelegate>
+@interface QMUITextField () <QMUITextFieldDelegate, UIScrollViewDelegate>
 
-@property(nonatomic, weak) id<QMUITextFieldDelegate> originalDelegate;
+@property(nonatomic, weak) id <QMUITextFieldDelegate> originalDelegate;
+
 @end
 
 @implementation QMUITextField
@@ -235,20 +237,10 @@
             textField.text = [textField.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textField.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
             
             if ([self.originalDelegate respondsToSelector:@selector(textField:didPreventTextChangeInRange:replacementString:)]) {
-                [self.originalDelegate textField:textField didPreventTextChangeInRange:textField.selectedRange replacementString:nil];
+                [self.originalDelegate textField:textField didPreventTextChangeInRange:textField.qmui_selectedRange replacementString:nil];
             }
         }
     }
-}
-
-@end
-
-@implementation UITextField (QMUI)
-
-- (NSRange)selectedRange {
-    NSInteger location = [self offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];
-    NSInteger length = [self offsetFromPosition:self.selectedTextRange.start toPosition:self.selectedTextRange.end];
-    return NSMakeRange(location, length);
 }
 
 @end

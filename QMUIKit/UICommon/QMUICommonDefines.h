@@ -155,10 +155,10 @@
 #define PixelOne [QMUIHelper pixelOne]
 
 // 获取最合适的适配值，默认以varFor55Inch为准，也即偏向大屏
-#define PreferredVarForDevices(varFor55Inch, varFor47Inch, varFor40Inch, var4) (IS_35INCH_SCREEN ? var4 : (IS_40INCH_SCREEN ? varFor40Inch : (IS_47INCH_SCREEN ? varFor47Inch : varFor55Inch)))
+#define PreferredVarForDevices(varFor55Inch, varFor47Inch, varFor40Inch, varFor35Inch) (IS_35INCH_SCREEN ? varFor35Inch : (IS_40INCH_SCREEN ? varFor40Inch : (IS_47INCH_SCREEN ? varFor47Inch : varFor55Inch)))
 
 // 同上，加多一个iPad的参数
-#define PreferredVarForUniversalDevices(varForPad, varFor55Inch, varFor47Inch, varFor40Inch, var4) (IS_IPAD ? varForPad :(IS_55INCH_SCREEN ? varFor55Inch : (IS_47INCH_SCREEN ? varFor47Inch : (IS_40INCH_SCREEN ? varFor40Inch : var4))))
+#define PreferredVarForUniversalDevices(varForPad, varFor55Inch, varFor47Inch, varFor40Inch, varFor35Inch) (IS_IPAD ? varForPad :(IS_55INCH_SCREEN ? varFor55Inch : (IS_47INCH_SCREEN ? varFor47Inch : (IS_40INCH_SCREEN ? varFor40Inch : varFor35Inch))))
 
 
 #pragma mark - 方法-创建器
@@ -515,4 +515,3 @@ CGRectSetSize(CGRect rect, CGSize size) {
     rect.size = CGSizeFlatted(size);
     return rect;
 }
-

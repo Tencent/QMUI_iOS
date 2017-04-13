@@ -24,10 +24,12 @@ typedef enum {
  * 1. 调用 init 方法初始化。
  * 2. 选择一种显示方式：
  * 2.1 如果要添加到某个 UIView 上，则先设置浮层 hidden = YES，然后调用 addSubview: 把浮层添加到目标 UIView 上。
- * 2.2 如果是轻量的场景用完即走，则 init 完浮层即可，无需设置 hidden，也无需调用 addSubview:。
+ * 2.2 如果是轻量的场景用完即走，则 init 完浮层即可，无需设置 hidden，也无需调用 addSubview:，在后面第 4 步里会自动把浮层添加到 UIWindow 上显示出来。
  * 3. 在适当的时机（例如 layoutSubviews: 或 viewDidLayoutSubviews:）调用 layoutWithTargetView: 让浮层参考目标 view 布局，或者调用 layoutWithTargetRectInScreenCoordinate: 让浮层参考基于屏幕坐标系里的一个 rect 来布局。
  * 4. 调用 showWithAnimated: 或 showWithAnimated:completion: 显示浮层。
  * 5. 调用 hideWithAnimated: 或 hideWithAnimated:completion: 隐藏浮层。
+ *
+ * @warning 如果使用方法 2.2，并且没有打开 automaticallyHidesWhenUserTap 属性，则记得在适当的时机（例如 viewWillDisappear:）隐藏浮层。
  *
  * 如果默认功能无法满足需求，可继承它重写一个子类，继承要点：
  * 1. 初始化时要做的事情请放在 didInitialized 里。
@@ -43,7 +45,8 @@ typedef enum {
 
 @property(nonatomic, assign) BOOL debug;
 
-/// 在浮层显示时，点击空白地方是否要自动隐藏浮层，仅在用方法 2 显示时有效。默认为 NO，也即需要代码手动调用才能隐藏。
+/// 在浮层显示时，点击空白地方是否要自动隐藏浮层，仅在用方法 2 显示时有效。
+/// 默认为 NO，也即需要手动调用代码去隐藏浮层。
 @property(nonatomic, assign) BOOL automaticallyHidesWhenUserTap;
 
 /// 所有subview都应该添加到contentView上，默认contentView.userInteractionEnabled = NO，需要事件操作时自行打开
@@ -94,7 +97,7 @@ typedef enum {
 @property(nonatomic, strong) UIColor *backgroundColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
 
-/// 当使用方法 2 显示时，可修改背景遮罩的颜色，默认为 UIColorClear。
+/// 当使用方法 2 显示并且打开了 automaticallyHidesWhenUserTap 时，可修改背景遮罩的颜色，默认为 UIColorMask，若非使用方法 2，或者没有打开 automaticallyHidesWhenUserTap，则背景遮罩为透明（可视为不存在背景遮罩）
 @property(nonatomic, strong) UIColor *maskViewBackgroundColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor *shadowColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor *borderColor UI_APPEARANCE_SELECTOR;

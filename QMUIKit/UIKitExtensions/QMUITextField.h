@@ -69,9 +69,3 @@
 @property(nonatomic, assign) IBInspectable BOOL shouldCountingNonASCIICharacterAsTwo;
 
 @end
-
-@interface UITextField (QMUI)
-
-/// UITextField只有selectedTextRange属性（在<UITextInput>协议里定义），这里拓展了一个方法可以将UITextRange类型的selectedTextRange转换为NSRange类型的selectedRange
-@property(nonatomic, assign, readonly) NSRange selectedRange;
-@end

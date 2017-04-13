@@ -14,6 +14,9 @@
 #import "QMUIEmptyView.h"
 #import "UISearchBar+QMUI.h"
 #import "UITableView+QMUI.h"
+#import "NSString+QMUI.h"
+#import "NSObject+QMUI.h"
+#import "UIView+QMUI.h"
 
 BeginIgnoreDeprecatedWarning
 
@@ -41,28 +44,132 @@ BeginIgnoreDeprecatedWarning
 
 @end
 
-@interface QMUISearchController ()<UISearchResultsUpdating,UISearchControllerDelegate,QMUISearchResultsTableViewControllerDelegate,UISearchDisplayDelegate>
+@interface QMUISearchDisplayController : UISearchDisplayController
 
-// iOS8及以后使用这个
-@property(nonatomic,strong) UISearchController *searchController;
+@property(nonatomic, strong) UIView *customDimmingView;
+@end
 
-// iOS7及以前使用这个
-@property(nonatomic,strong) UISearchDisplayController *searchDisplayController;
+@implementation QMUISearchDisplayController
+
+- (void)setActive:(BOOL)visible animated:(BOOL)animated {
+    [super setActive:visible animated:animated];
+    if (self.customDimmingView.superview) {
+        BOOL shouldChangeSize = !CGSizeEqualToSize(self.customDimmingView.frame.size, self.customDimmingView.superview.bounds.size);
+        [UIView qmui_animateWithAnimated:animated duration:[CATransaction animationDuration] animations:^{
+            self.customDimmingView.superview.alpha = visible ? 1 : 0;
+            if (shouldChangeSize) {
+                self.customDimmingView.frame = self.customDimmingView.superview.bounds;
+            }
+        }];
+    }
+}
+
+- (void)setCustomDimmingView:(UIView *)customDimmingView {
+    if (_customDimmingView != customDimmingView) {
+        [_customDimmingView removeFromSuperview];
+    }
+    _customDimmingView = customDimmingView;
+}
+
+- (UIColor *)_dimmingViewColor {
+    if (self.customDimmingView) {
+        BeginIgnorePerformSelectorLeaksWarning
+        UIView *containerView = [self performSelector:NSSelectorFromString(@"_containerView")];
+        EndIgnorePerformSelectorLeaksWarning
+        UIView *superviewOfDimmingView = containerView.subviews.lastObject;
+        UIView *defaultDimmingView = superviewOfDimmingView.subviews.firstObject;
+        if (defaultDimmingView) {
+            defaultDimmingView.alpha = 1;
+            self.customDimmingView.frame = defaultDimmingView.bounds;
+            if (self.customDimmingView.superview != defaultDimmingView) {
+                [defaultDimmingView addSubview:self.customDimmingView];
+            }
+        }
+    }
+    
+    return [self qmui_performSelectorToSuperclass:_cmd];
+}
+
+@end
+
+@interface QMUICustomSearchController : UISearchController
+
+@property(nonatomic, strong) UIView *customDimmingView;
+@end
+
+@implementation QMUICustomSearchController
+
+- (void)setCustomDimmingView:(UIView *)customDimmingView {
+    if (_customDimmingView != customDimmingView) {
+        [_customDimmingView removeFromSuperview];
+    }
+    _customDimmingView = customDimmingView;
+    
+    self.dimsBackgroundDuringPresentation = !_customDimmingView;
+    if ([self isViewLoaded]) {
+        [self addCustomDimmingView];
+    }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self addCustomDimmingView];
+}
+
+- (void)addCustomDimmingView {
+    UIView *superviewOfDimmingView = self.searchResultsController.view.superview;
+    if (self.customDimmingView && self.customDimmingView.superview != superviewOfDimmingView) {
+        [superviewOfDimmingView insertSubview:self.customDimmingView atIndex:0];
+        [self layoutCustomDimmingView];
+    }
+}
+
+- (void)layoutCustomDimmingView {
+    UIView *searchBarContainerView = nil;
+    for (UIView *subview in self.view.subviews) {
+        if ([NSStringFromClass(subview.class) isEqualToString:@"_UISearchBarContainerView"]) {
+            searchBarContainerView = subview;
+            break;
+        }
+    }
+    
+    self.customDimmingView.frame = CGRectInsetEdges(self.customDimmingView.superview.bounds, UIEdgeInsetsMake(searchBarContainerView ? CGRectGetMaxY(searchBarContainerView.frame) : 0, 0, 0, 0));
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    
+    if (self.customDimmingView) {
+        [UIView animateWithDuration:[CATransaction animationDuration] animations:^{
+            [self layoutCustomDimmingView];
+        }];
+    }
+}
+
+@end
+
+@interface QMUISearchController () <UISearchResultsUpdating, UISearchControllerDelegate, QMUISearchResultsTableViewControllerDelegate, UISearchDisplayDelegate>
+
+// iOS 8 及以后使用这个
+@property(nonatomic,strong) QMUICustomSearchController *searchController;
+
+// iOS 7 及以前使用这个
+@property(nonatomic,strong) QMUISearchDisplayController *searchDisplayController;
 @end
 
 @implementation QMUISearchController
 
 - (instancetype)initWithContentsViewController:(UIViewController *)viewController {
-    if (self = [self init]) {
+    if (self = [self initWithNibName:nil bundle:nil]) {
         if (NSStringFromClass([UISearchController class])) {
-            // 将definesPresentationContext置为YES有两个作用：
+            // 将 definesPresentationContext 置为 YES 有两个作用：
             // 1、保证从搜索结果界面进入子界面后，顶部的searchBar不会依然停留在navigationBar上
             // 2、使搜索结果界面的tableView的contentInset.top正确适配searchBar
             viewController.definesPresentationContext = YES;
             
-            QMUISearchResultsTableViewController *viewController = [[QMUISearchResultsTableViewController alloc] init];
-            viewController.delegate = self;
-            self.searchController = [[UISearchController alloc] initWithSearchResultsController:viewController];
+            QMUISearchResultsTableViewController *searchResultsViewController = [[QMUISearchResultsTableViewController alloc] init];
+            searchResultsViewController.delegate = self;
+            self.searchController = [[QMUICustomSearchController alloc] initWithSearchResultsController:searchResultsViewController];
             self.searchController.searchResultsUpdater = self;
             self.searchController.delegate = self;
             _searchBar = self.searchController.searchBar;
@@ -73,9 +180,11 @@ BeginIgnoreDeprecatedWarning
             [self.searchBar qmui_styledAsQMUISearchBar];
         } else {
             _searchBar = [[QMUISearchBar alloc] init];
-            self.searchDisplayController = [[UISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:viewController];
+            self.searchDisplayController = [[QMUISearchDisplayController alloc] initWithSearchBar:self.searchBar contentsController:viewController];
             self.searchDisplayController.delegate = self;
         }
+        
+        self.hidesNavigationBarDuringPresentation = YES;
     }
     return self;
 }
@@ -96,11 +205,23 @@ BeginIgnoreDeprecatedWarning
     }
 }
 
-- (BOOL)active {
+- (BOOL)isActive {
     if (self.searchController) {
         return self.searchController.active;
     } else {
         return self.searchDisplayController.active;
+    }
+}
+
+- (void)setActive:(BOOL)active {
+    [self setActive:active animated:NO];
+}
+
+- (void)setActive:(BOOL)active animated:(BOOL)animated {
+    if (self.searchController) {
+        self.searchController.active = active;
+    } else {
+        [self.searchDisplayController setActive:active animated:animated];
     }
 }
 
@@ -113,13 +234,40 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (void)removeDefaultEmptyLabelInSearchDisplayController {
-    // 移除UISearchDisplayController自带的“无结果”的label
+    // 移除 UISearchDisplayController 自带的“无结果”的label
     for (UIView *subview in self.searchDisplayController.searchResultsTableView.subviews) {
         if ([subview isKindOfClass:[UILabel class]]) {
             [subview removeFromSuperview];
             subview.hidden = YES;
             break;
         }
+    }
+}
+
+- (void)setLaunchView:(UIView *)dimmingView {
+    _launchView = dimmingView;
+    
+    if (self.searchController) {
+        self.searchController.customDimmingView = _launchView;
+    } else {
+        self.searchDisplayController.customDimmingView = _launchView;
+    }
+}
+
+- (BOOL)hidesNavigationBarDuringPresentation {
+    if (self.searchController) {
+        return self.searchController.hidesNavigationBarDuringPresentation;
+    } else {
+        NSLog(@"%s 仅支持 iOS 8 及以上版本", __func__);
+        return YES;
+    }
+}
+
+- (void)setHidesNavigationBarDuringPresentation:(BOOL)hidesNavigationBarDuringPresentation {
+    if (self.searchController) {
+        self.searchController.hidesNavigationBarDuringPresentation = hidesNavigationBarDuringPresentation;
+    } else {
+        NSLog(@"%s 仅支持 iOS 8 及以上版本", __func__);
     }
 }
 
@@ -135,7 +283,7 @@ BeginIgnoreDeprecatedWarning
     [super showEmptyView];
     
     // 格式化样式，以适应当前项目的需求
-    self.emptyView.backgroundColor = TableViewBackgroundColor;
+    self.emptyView.backgroundColor = TableViewBackgroundColor ?: UIColorWhite;
     if ([self.searchResultsDelegate respondsToSelector:@selector(searchController:willShowEmptyView:)]) {
         [self.searchResultsDelegate searchController:self willShowEmptyView:self.emptyView];
     }
@@ -156,7 +304,7 @@ BeginIgnoreDeprecatedWarning
 
 - (BOOL)layoutEmptyView {
     if ([self.emptyView.superview isKindOfClass:[UITableView class]]) {
-        // iOS7 UISearchDisplayController里，会把emptyView加到searchResultsTableView上，参照showEmptyView里的代码
+        // iOS7 UISearchDisplayController 里，会把emptyView加到searchResultsTableView上，参照showEmptyView里的代码
         UITableView *tableView = (UITableView *)self.emptyView.superview;
         CGSize newEmptyViewSize = CGSizeMake(CGRectGetWidth(tableView.bounds) - UIEdgeInsetsGetHorizontalValue(tableView.contentInset), CGRectGetHeight(tableView.frame) - UIEdgeInsetsGetVerticalValue(tableView.contentInset));
         CGSize oldEmptyViewSize = self.emptyView.frame.size;

@@ -39,7 +39,7 @@
 @property(nonatomic, assign, getter = isEnabled) BOOL enabled;
 
 /// 保存对tableView的弱引用，在布局时可能会使用到tableView的一些属性例如separatorColor等。只有使用下面两个 initForTableView: 的接口初始化时这个属性才有值，否则就只能自己初始化后赋值
-@property(nonatomic, weak) QMUITableView *parentTableView;
+@property(nonatomic, weak) UITableView *parentTableView;
 
 /**
  *  cell 处于 section 中的位置，要求：
@@ -58,10 +58,10 @@
  *
  *  @return 一个QMUITableViewCell实例
  */
-- (instancetype)initForTableView:(QMUITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
+- (instancetype)initForTableView:(UITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
 
 /// 同上
-- (instancetype)initForTableView:(QMUITableView *)tableView withReuseIdentifier:(NSString *)reuseIdentifier;
+- (instancetype)initForTableView:(UITableView *)tableView withReuseIdentifier:(NSString *)reuseIdentifier;
 
 @end
 

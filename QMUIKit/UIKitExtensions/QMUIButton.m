@@ -43,7 +43,7 @@
     self.adjustsImageTintColorAutomatically = NO;
     self.tintColor = ButtonTintColor;
     if (!self.adjustsTitleTintColorAutomatically) {
-        [self setTitleColor:ButtonTintColor forState:UIControlStateNormal];
+        [self setTitleColor:self.tintColor forState:UIControlStateNormal];
     }
     
     // 默认接管highlighted和disabled的表现，去掉系统默认的表现
@@ -508,11 +508,15 @@
         }
             break;
         case QMUINavigationButtonTypeBack: {
+            self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
             UIImage *backIndicatorImage = NavBarBackIndicatorImage;
+            if (!backIndicatorImage) {
+                QMUILog(@"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
+                return;
+            }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];
             [self setImage:[backIndicatorImage qmui_imageWithAlpha:NavBarHighlightedAlpha] forState:UIControlStateHighlighted];
             [self setImage:[backIndicatorImage qmui_imageWithAlpha:NavBarDisabledAlpha] forState:UIControlStateDisabled];
-            self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
         }
             break;
             
@@ -748,9 +752,11 @@
 }
 
 + (void)renderToolbarButtonAppearanceStyle {
-    // iOS7及以上默认使用系统自己的highlighted和disabled(及toolBar的tintColor)，不使用ToolBarHighlightedAlpha和ToolBarDisabledAlpha
-    UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:QMUINavigationController.class, nil];
-    [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: ToolBarButtonFont} forState:UIControlStateNormal];
+    UIFont *titleFont = ToolBarButtonFont;
+    if (titleFont) {
+        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:QMUINavigationController.class, nil];
+        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: titleFont} forState:UIControlStateNormal];
+    }
 }
 
 + (UIBarButtonItem *)barButtonItemWithToolbarButton:(QMUIToolbarButton *)button target:(id)target action:(SEL)selector {

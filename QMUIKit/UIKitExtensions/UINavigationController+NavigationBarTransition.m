@@ -476,23 +476,23 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
 - (NSArray<UIViewController *> *)NavigationBarTransition_popToViewController:(UIViewController *)viewController animated:(BOOL)animated {
     UIViewController *disappearingViewController = self.viewControllers.lastObject;
     UIViewController *appearingViewController = viewController;
-    if (!disappearingViewController) {
-        [self NavigationBarTransition_popToViewController:viewController animated:animated];
+    NSArray<UIViewController *> *poppedViewControllers = [self NavigationBarTransition_popToViewController:viewController animated:animated];
+    if (poppedViewControllers) {
+        [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
     }
-    [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
-    return [self NavigationBarTransition_popToViewController:viewController animated:animated];
+    return poppedViewControllers;
 }
 
 - (NSArray<UIViewController *> *)NavigationBarTransition_popToRootViewControllerAnimated:(BOOL)animated {
+    NSArray<UIViewController *> *poppedViewControllers = [self NavigationBarTransition_popToRootViewControllerAnimated:animated];
     if (self.viewControllers.count > 1) {
         UIViewController *disappearingViewController = self.viewControllers.lastObject;
         UIViewController *appearingViewController = self.viewControllers.firstObject;
-        if (!disappearingViewController) {
-            [self NavigationBarTransition_popToRootViewControllerAnimated:animated];
+        if (poppedViewControllers) {
+            [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
         }
-        [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
     }
-    return [self NavigationBarTransition_popToRootViewControllerAnimated:animated];
+    return poppedViewControllers;
 }
 
 - (void)handlePopViewControllerNavigationBarTransitionWithDisappearViewController:(UIViewController *)disappearViewController appearViewController:(UIViewController *)appearViewController {

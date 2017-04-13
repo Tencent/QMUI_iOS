@@ -14,7 +14,15 @@
 @implementation UITableView (QMUI)
 
 - (void)qmui_styledAsQMUITableView {
-    self.backgroundColor = self.style == UITableViewStylePlain ? TableViewBackgroundColor : TableViewGroupedBackgroundColor;
+    UIColor *backgroundColor = nil;
+    if (self.style == UITableViewStylePlain) {
+        backgroundColor = TableViewBackgroundColor;
+    } else {
+        backgroundColor = TableViewGroupedBackgroundColor;
+    }
+    if (backgroundColor) {
+        self.backgroundColor = backgroundColor;
+    }
     self.separatorColor = TableViewSeparatorColor;
     self.tableFooterView = [[UIView alloc] init];// 去掉尾部空cell
     self.backgroundView = [[UIView alloc] init];// 设置一个空的backgroundView，去掉系统的，以使backgroundColor生效
