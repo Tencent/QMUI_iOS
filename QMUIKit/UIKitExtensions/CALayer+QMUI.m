@@ -8,6 +8,7 @@
 
 #import "CALayer+QMUI.h"
 #import "QMUICommonDefines.h"
+#import "QMUIConfiguration.h"
 
 @implementation CALayer (QMUI)
 
@@ -78,6 +79,20 @@
     }
     
     self.actions = actions;
+}
+
++ (CALayer *)qmui_separatorLayer {
+    CALayer *layer = [CALayer layer];
+    [layer qmui_removeDefaultAnimations];
+    layer.backgroundColor = UIColorSeparator.CGColor;
+    layer.frame = CGRectMake(0, 0, 0, PixelOne);
+    return layer;
+}
+
++ (CALayer *)qmui_separatorLayerForTableView {
+    CALayer *layer = [self qmui_separatorLayer];
+    layer.backgroundColor = TableViewSeparatorColor.CGColor;
+    return layer;
 }
 
 @end
