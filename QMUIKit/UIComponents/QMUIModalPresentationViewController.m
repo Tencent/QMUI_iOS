@@ -393,6 +393,7 @@ static QMUIModalPresentationViewController *appearance;
         self.containerWindow.windowLevel = UIWindowLevelQMUIAlertView;
         self.containerWindow.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
     }
+    self.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
     self.containerWindow.rootViewController = self;
     [self.containerWindow makeKeyAndVisible];
 }
