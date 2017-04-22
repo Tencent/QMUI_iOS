@@ -34,6 +34,9 @@
 /// 当自定义了`leftBarButtonItem`按钮之后，系统的手势返回就失效了。可以通过`forceEnableInteractivePopGestureRecognizer`来决定要不要把那个手势返回强制加回来。当 interactivePopGestureRecognizer.enabled = NO 或者当前`UINavigationController`堆栈的viewControllers小于2的时候此方法无效。
 - (BOOL)forceEnableInteractivePopGestureRecognizer;
 
+/// 点击系统返回Button会调用，主要是与 WKWebView 的 allowsBackForwardNavigationGestures 区分开来，This method will call after canPopViewController()
+- (void)shouldPopItem:(UINavigationItem * _Nullable)item;
+
 @end
 
 
