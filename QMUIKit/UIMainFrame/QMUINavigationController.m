@@ -155,7 +155,7 @@
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     if (self.isViewControllerTransiting || !viewController) {
-        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
+        NSAssert(NO, @"%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@",  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
         return;
     }
     
