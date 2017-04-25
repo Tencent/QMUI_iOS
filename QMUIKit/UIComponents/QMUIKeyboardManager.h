@@ -126,7 +126,7 @@
 @property(nonatomic, strong, readonly) NSDictionary *originUserInfo;
 
 /**
- *  触发键盘事件的UIResponder
+ *  触发键盘事件的UIResponder，注意这里的 `targetResponder` 不一定是通过 `addTargetResponder:` 添加的 UIResponder，而是当前触发键盘事件的 UIResponder。
  */
 @property(nonatomic, weak, readonly) UIResponder *targetResponder;
 
