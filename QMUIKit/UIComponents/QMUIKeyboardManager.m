@@ -434,15 +434,10 @@ static UIResponder *kCurrentResponder = nil;
     }
     
     // 额外处理iPad浮动键盘
-    if (kCurrentResponder) {
     if (IS_IPAD) {
         if (self.targetResponderValues.count <= 0 || kCurrentResponder) {
             self.keyboardMoveUserInfo = userInfo;
             [self keyboardDidChangedFrame:[self.class keyboardView]];
-        } else {
-            if (!kCurrentResponder.km_isFirstResponder) {
-                kCurrentResponder = nil;
-            }
         }
     }
 }
@@ -513,18 +508,7 @@ static UIResponder *kCurrentResponder = nil;
     if (self.targetResponderValues.count <= 0) {
         return YES;
     } else {
-        id firstResponder = [[UIApplication sharedApplication].keyWindow km_findFirstResponder];
         return kCurrentResponder && [self.targetResponderValues containsObject:[self packageTargetResponder:kCurrentResponder]];
-            kCurrentResponder = firstResponder;
-            NSInteger fromIndex = [self.targetResponderValues indexOfObject:[self packageTargetResponder:firstResponder]];
-            NSInteger toIndex = self.targetResponderValues.count - 1;
-            if (fromIndex != toIndex) {
-                [self.targetResponderValues exchangeObjectAtIndex:fromIndex withObjectAtIndex:toIndex];
-            }
-            return YES;
-        } else {
-            return NO;
-        }
     }
 }
 
@@ -578,14 +562,14 @@ static UIResponder *kCurrentResponder = nil;
             // 第一次需要初始化
             self.keyboardMoveBeginRect = CGRectMake(0, keyboardWindow.bounds.size.height, keyboardWindow.bounds.size.width, 0);
         }
-    
+        
         CGRect endFrame = CGRectZero;
         if (keyboardWindow) {
             endFrame = [keyboardWindow convertRect:keyboardView.frame toWindow:nil];
         } else {
             endFrame = keyboardView.frame;
         }
-    
+        
         // 自己构造一个QMUIKeyboardUserInfo，一些属性使用之前最后一个keyboardUserInfo的值
         QMUIKeyboardUserInfo *keyboardMoveUserInfo = [[QMUIKeyboardUserInfo alloc] init];
         keyboardMoveUserInfo.keyboardManager = self;
@@ -668,7 +652,7 @@ static UIResponder *kCurrentResponder = nil;
             return window;
         }
     }
-
+    
     NSMutableArray *kbWindows = nil;
     
     for (UIWindow *window in [UIApplication sharedApplication].windows) {

@@ -106,8 +106,6 @@
 @end
 
 
-
-
 @interface QMUIKeyboardUserInfo : NSObject
 
 /**
@@ -171,8 +169,6 @@
 @property(nonatomic, assign, readonly) UIViewAnimationOptions animationOptions;
 
 @end
-
-
 
 
 /**
