@@ -22,7 +22,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 @interface QMUITextView ()
 
 @property(nonatomic, assign) BOOL debug;
-@property(nonatomic, assign) BOOL textChangedBecauseOfPaste; // 标志本次触发对handleTextChange:的调用，是否因为粘贴
+@property(nonatomic, assign) BOOL shouldRejectSystemScroll;// 如果在 handleTextChanged: 里主动调整 contentOffset，则为了避免被系统的自动调整覆盖，会利用这个标记去屏蔽系统对 setContentOffset: 的调用
 @property(nonatomic, assign) BOOL callingSizeThatFitsByAutoResizable; // 标志本次调用 sizeThatFits: 是因为 handleTextChange: 里计算高度导致的
 
 @property(nonatomic, strong) UILabel *placeholderLabel;
@@ -217,7 +217,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         // 计算高度
         if (self.autoResizable) {
             
-            // 注意，这里 iOS 8 及以下有兼容问题，请查看文件里的 sizeThatFits:
+            // 注意，这里 iOS 10 以下有兼容问题，请查看文件里的 sizeThatFits:
             self.callingSizeThatFitsByAutoResizable = YES;
             CGFloat resultHeight = [textView sizeThatFits:CGSizeMake(CGRectGetWidth(self.bounds), CGFLOAT_MAX)].height;
             self.callingSizeThatFitsByAutoResizable = NO;
@@ -231,27 +231,28 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             }
         }
         
-        // iOS7的textView在内容可滚动的情况下，最后一行输入时文字会跑到可视区域外，因此要修复一下
-        // 由于我们在文字换行的瞬间更改了输入框高度，所以即便内容不可滚动，换行瞬间contentOffset也是错的，所以这里完全接管了对contentOffset的自动调整
+        // 系统的 UITextView 在文字可滚动的情况下在最后一行输入，文字是贴边的（并不会考虑 textContainerInset.bottom），所以这里接管了 UITextView 的文字滚动
         CGRect caretRect = [textView caretRectForPosition:textView.selectedTextRange.end];
-        if (self.debug) NSLog(@"调整前，caretRect.maxY = %f, contentOffset.y = %f, bounds.height = %f", CGRectGetMaxY(caretRect), textView.contentOffset.y, CGRectGetHeight(textView.bounds));
+        if (self.debug) NSLog(@"调整前，caretRect.maxY = %.2f, contentOffset.y = %.2f, contentSize.height = %.2f bounds.height = %.2f", CGRectGetMaxY(caretRect), textView.contentOffset.y, textView.contentSize.height, CGRectGetHeight(textView.bounds));
         
         CGFloat caretMarginBottom = self.textContainerInset.bottom;
-        if (ceil(CGRectGetMaxY(caretRect) + caretMarginBottom) >= textView.contentOffset.y + CGRectGetHeight(textView.bounds)) {
-            CGFloat contentOffsetY = MAX(0, CGRectGetMaxY(caretRect) + caretMarginBottom - CGRectGetHeight(textView.bounds));
-            if (self.debug) NSLog(@"调整后，contentOffset.y = %f", contentOffsetY);
+        if (CGRectGetMaxY(caretRect) + caretMarginBottom >= textView.contentOffset.y + CGRectGetHeight(textView.bounds)) {
+            CGFloat contentOffsetY = fmax(0, ceil(CGRectGetMaxY(caretRect) + caretMarginBottom - CGRectGetHeight(textView.bounds)));
+            if (self.debug) NSLog(@"调整后，contentOffset.y = %.2f, contentSize.height = %.2f", contentOffsetY, textView.contentSize.height);
             
-            // 如果是粘贴导致光标掉出可视区域，则用动画去调整它（如果不用动画会不准，因为此时contentSize还是错的）
-            // 如果是普通的键入换行导致光标掉出可视区域，则不用动画，否则会跳来跳去，但这会带来的问题就是换行没动画，不优雅😂
-            [textView setContentOffset:CGPointMake(textView.contentOffset.x, contentOffsetY) animated:self.textChangedBecauseOfPaste ? YES : NO];
+            self.shouldRejectSystemScroll = YES;
+            // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                self.shouldRejectSystemScroll = NO;
+                [textView setContentOffset:CGPointMake(textView.contentOffset.x, contentOffsetY) animated:NO];
+            });
         }
-        self.textChangedBecauseOfPaste = NO;
     }
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
-    // iOS 8 调用 sizeThatFits: 会导致文字跳动，因此自己计算 https://github.com/QMUI/QMUI_iOS/issues/92
-    if (IOS_VERSION < 9.0 && IOS_VERSION >= 8.0 && self.callingSizeThatFitsByAutoResizable) {
+    // iOS 10 以下调用 sizeThatFits: 会导致文字跳动，因此自己计算 https://github.com/QMUI/QMUI_iOS/issues/92
+    if (IOS_VERSION < 10.0 && self.callingSizeThatFitsByAutoResizable) {
         CGFloat contentWidth = size.width - UIEdgeInsetsGetHorizontalValue(self.textContainerInset) - UIEdgeInsetsGetHorizontalValue(self.contentInset);
         CGRect textRect = [self.attributedText boundingRectWithSize:CGSizeMake(contentWidth, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil];
         CGSize resultSize = CGSizeMake(size.width, CGRectGetHeight(textRect) + UIEdgeInsetsGetVerticalValue(self.textContainerInset) + UIEdgeInsetsGetVerticalValue(self.contentInset));
@@ -285,11 +286,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     } else {
         self.placeholderLabel.alpha = 0;// 用alpha来让placeholder隐藏，从而尽量避免因为显隐 placeholder 导致 layout
     }
-}
-
-- (void)paste:(id)sender {
-    self.textChangedBecauseOfPaste = YES;
-    [super paste:sender];
 }
 
 - (NSUInteger)lengthWithString:(NSString *)string {
@@ -419,6 +415,24 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     if ([self.originalDelegate respondsToSelector:_cmd]) {
         [self.originalDelegate scrollViewDidScroll:scrollView];
+    }
+}
+
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated {
+    if (!self.shouldRejectSystemScroll) {
+        [super setContentOffset:contentOffset animated:animated];
+        if (self.debug) NSLog(@"%@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
+    } else {
+        if (self.debug) NSLog(@"被屏蔽的 %@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
+    }
+}
+
+- (void)setContentOffset:(CGPoint)contentOffset {
+    if (!self.shouldRejectSystemScroll) {
+        [super setContentOffset:contentOffset];
+        if (self.debug) NSLog(@"%@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
+    } else {
+        if (self.debug) NSLog(@"被屏蔽的 %@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
     }
 }
 
