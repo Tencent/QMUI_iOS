@@ -19,7 +19,14 @@
 
 @property(nonatomic, strong) CALayer *highlightedBackgroundLayer;
 @property(nonatomic, strong) UIColor *originBorderColor;
+
+// 记录上一次的 spacing 和 lastImagePosition，用于恢复状态
+@property(nonatomic, assign) CGFloat lastSpacingBetweenImageAndTitle;
+@property(nonatomic, assign) QMUIButtonImagePosition lastImagePosition;
+@property(nonatomic, assign) BOOL hasInitialSpacingBetweenImageAndTitle;
+
 - (void)didInitialized;// UISubclassingHooks
+
 @end
 
 @implementation QMUIButton
@@ -58,6 +65,7 @@
     
     // 图片默认在按钮左边，与系统UIButton保持一致
     self.imagePosition = QMUIButtonImagePositionLeft;
+    self.lastImagePosition = QMUIButtonImagePositionLeft;
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -274,9 +282,130 @@
     }
 }
 
+- (UIEdgeInsets)adjustTitleInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue insetsValue:(UIEdgeInsets)insetsValue {
+    
+    switch (imagePositionValue) {
+        case QMUIButtonImagePositionTop:
+            return UIEdgeInsetsMake(insetsValue.top + spacingValue, insetsValue.left, insetsValue.bottom - spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionBottom:
+            return UIEdgeInsetsMake(insetsValue.top - spacingValue, insetsValue.left, insetsValue.bottom + spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionLeft:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left + spacingValue, insetsValue.bottom, insetsValue.right - spacingValue);
+            break;
+            
+        case QMUIButtonImagePositionRight:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left - spacingValue, insetsValue.bottom, insetsValue.right + spacingValue);
+            break;
+    }
+}
+
+- (UIEdgeInsets)adjustImageInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue insetsValue:(UIEdgeInsets)insetsValue {
+    
+    switch (imagePositionValue) {
+        case QMUIButtonImagePositionTop:
+            return UIEdgeInsetsMake(insetsValue.top - spacingValue, insetsValue.left, insetsValue.bottom + spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionBottom:
+            return UIEdgeInsetsMake(insetsValue.top + spacingValue, insetsValue.left, insetsValue.bottom - spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionLeft:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left - spacingValue, insetsValue.bottom, insetsValue.right + spacingValue);
+            break;
+            
+        case QMUIButtonImagePositionRight:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left + spacingValue, insetsValue.bottom, insetsValue.right - spacingValue);
+            break;
+    }
+}
+
+- (UIEdgeInsets)adjustContentInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue insetsValue:(UIEdgeInsets)insetsValue {
+    
+    switch (imagePositionValue) {
+        case QMUIButtonImagePositionTop:
+        case QMUIButtonImagePositionBottom:
+            return UIEdgeInsetsMake(insetsValue.top + spacingValue, insetsValue.left, insetsValue.bottom + spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionLeft:
+        case QMUIButtonImagePositionRight:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left + spacingValue, insetsValue.bottom, insetsValue.right + spacingValue);
+            break;
+    }
+}
+
+- (void)adjustInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue {
+    UIEdgeInsets titleEdgeInsets = [self adjustTitleInsetsWithSpacingValue:spacingValue imagePositionValue:imagePositionValue insetsValue:self.titleEdgeInsets];
+    UIEdgeInsets imageEdgeInsets = [self adjustImageInsetsWithSpacingValue:spacingValue imagePositionValue:imagePositionValue insetsValue:self.imageEdgeInsets];
+    UIEdgeInsets contentEdgeInsets = [self adjustContentInsetsWithSpacingValue:spacingValue imagePositionValue:imagePositionValue insetsValue:self.contentEdgeInsets];
+    
+    [super setTitleEdgeInsets:titleEdgeInsets];
+    [super setImageEdgeInsets:imageEdgeInsets];
+    [super setContentEdgeInsets:contentEdgeInsets];
+}
+
+// 恢复到上一次的 insets 设置
+- (void)restoreInsets {
+    CGFloat spacingValue = -self.lastSpacingBetweenImageAndTitle / 2;
+    
+    [self adjustInsetsWithSpacingValue:spacingValue imagePositionValue:self.lastImagePosition];
+}
+
+// 重新保存当前 insets
+- (void)saveInsets {
+    CGFloat spacingValue = self.spacingBetweenImageAndTitle / 2;
+    
+    [self adjustInsetsWithSpacingValue:spacingValue imagePositionValue:self.imagePosition];
+}
+
+// 检查 insets 的设置，每次都恢复上一次没设置前的状态重新设置，避免多次赋值的问题。
+- (void)checkInsetsChange {
+    
+    // 设置过则需要回滚到未设置的状态
+    if (self.hasInitialSpacingBetweenImageAndTitle) {
+        [self restoreInsets];
+    }
+    
+    [self saveInsets];
+    
+    self.lastImagePosition = self.imagePosition;
+    
+    [self setNeedsLayout];
+}
+
+- (void)setSpacingBetweenImageAndTitle:(CGFloat)spacingBetweenImageAndTitle {
+    _spacingBetweenImageAndTitle = spacingBetweenImageAndTitle;
+    
+    [self checkInsetsChange];
+    
+    self.hasInitialSpacingBetweenImageAndTitle = YES;
+    self.lastSpacingBetweenImageAndTitle = self.spacingBetweenImageAndTitle;
+}
+
 - (void)setImagePosition:(QMUIButtonImagePosition)imagePosition {
     _imagePosition = imagePosition;
-    [self setNeedsLayout];
+    
+    [self checkInsetsChange];
+}
+
+- (void)setTitleEdgeInsets:(UIEdgeInsets)titleEdgeInsets {
+    UIEdgeInsets adjustedEdgeInsets = [self adjustTitleInsetsWithSpacingValue:self.spacingBetweenImageAndTitle / 2 imagePositionValue:self.imagePosition insetsValue:titleEdgeInsets];
+    [super setTitleEdgeInsets:adjustedEdgeInsets];
+}
+
+- (void)setImageEdgeInsets:(UIEdgeInsets)imageEdgeInsets {
+    UIEdgeInsets adjustedEdgeInsets = [self adjustImageInsetsWithSpacingValue:self.spacingBetweenImageAndTitle / 2 imagePositionValue:self.imagePosition insetsValue:imageEdgeInsets];
+    [super setImageEdgeInsets:adjustedEdgeInsets];
+}
+
+- (void)setContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets {
+    UIEdgeInsets adjustedEdgeInsets = [self adjustContentInsetsWithSpacingValue:self.spacingBetweenImageAndTitle / 2 imagePositionValue:self.imagePosition insetsValue:contentEdgeInsets];
+    [super setContentEdgeInsets:adjustedEdgeInsets];
 }
 
 - (void)setHighlightedBackgroundColor:(UIColor *)highlightedBackgroundColor {
@@ -572,9 +701,9 @@
         if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
             CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
             customBackIndicatorImage = [customBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
-                                                                                                                  0,
-                                                                                                                  imageExtensionVerticalFloat,
-                                                                                                                  systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)];
+                                                                                                                       0,
+                                                                                                                       imageExtensionVerticalFloat,
+                                                                                                                       systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)];
         }
         
         navBarAppearance.backIndicatorImage = customBackIndicatorImage;

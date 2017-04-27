@@ -51,7 +51,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     QMUINavigationButtonPositionRight,      // 用于rightBarButtonItem，如果用于rightBarButtonItems，则只对最右边的item使用，其他item使用QMUINavigationButtonPositionNone
 };
 
-
 /**
  * 提供以下功能：
  * <ol>
@@ -59,8 +58,10 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  * <li>支持点击时改变背景色颜色（<i>highlightedBackgroundColor</i>）</li>
  * <li>支持点击时改变边框颜色（<i>highlightedBorderColor</i>）</li>
  * <li>支持设置图片在按钮内的位置，无需自行调整imageEdgeInsets（<i>imagePosition</i>）</li>
+ * <li>支持设置按钮内文本和图片之间的间距，无需自行调整titleEdgeInests、imageEdgeInsets、contentEdgeInsets（<i>spacingBetweenImageAndTitle</i>）</li>
  * </ol>
  */
+
 @interface QMUIButton : UIButton
 
 /**
@@ -106,6 +107,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  * 可配合imageEdgeInsets、titleEdgeInsets、contentHorizontalAlignment、contentVerticalAlignment使用
  */
 @property(nonatomic, assign) QMUIButtonImagePosition imagePosition;
+
+/**
+ * 设置按钮里图标和文字之间的间隔，会自动响应 imagePosition 的变化而变化，默认为0。<br/>
+ * 系统默认实现需要同时设置 titleEdgeInsets 和 imageEdgeInsets，同时还需考虑 contentEdgeInsets 的增加（否则不会影响布局，可能会让图标或文字溢出或挤压），使用该属性可以避免以上情况。<br/>
+ * @warning 会与 imageEdgeInsets、 imageEdgeInsets、 contentEdgeInsets 共同作用。
+ */
+@property(nonatomic, assign) CGFloat spacingBetweenImageAndTitle;
 
 @end
 
