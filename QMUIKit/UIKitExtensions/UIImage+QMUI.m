@@ -589,13 +589,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 + (UIImage *)qmui_imageWithView:(UIView *)view {
-    CGContextInspectSize(view.frame.size);
-    // 老方式，因为drawViewHierarchyInRect:afterScreenUpdates:有一定的使用条件，有些情况下不一定截得到图，所有这种情况下可以使用老方式。
-    // 如果可以用新方式，则建议使用新方式，性能上好很多
+    CGContextInspectSize(view.bounds.size);
     UIImage *resultImage = nil;
-    // 第二个参数是不透明度，这里默认设置为YES，不用出来alpha通道的事情，可以提高性能
-    // 第三个参数是scale，设置为0的时候，意思是使用屏幕的scale
-    UIGraphicsBeginImageContextWithOptions(view.frame.size, NO, 0);
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
     [view.layer renderInContext:context];
@@ -605,18 +601,13 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 + (UIImage *)qmui_imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates {
-    // iOS7截图新方式，性能好会好一点，不过不一定适用，因为这个方法的使用条件是：界面要已经render完，否则截到得图将会是empty。
-    // 如果是iOS6调用这个接口，将会使用老的方式。
-    if ([view respondsToSelector:@selector(drawViewHierarchyInRect:afterScreenUpdates:)]) {
-        UIImage *resultImage = nil;
-        UIGraphicsBeginImageContextWithOptions(view.frame.size, NO, 0.0);
-        [view drawViewHierarchyInRect:CGRectMake(0, 0, CGRectGetWidth(view.frame), CGRectGetHeight(view.frame)) afterScreenUpdates:afterUpdates];
-        resultImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
-        return resultImage;
-    } else {
-        return [self qmui_imageWithView:view];
-    }
+    // iOS 7 截图新方式，性能好会好一点，不过不一定适用，因为这个方法的使用条件是：界面要已经render完，否则截到得图将会是empty。
+    UIImage *resultImage = nil;
+    UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 0);
+    [view drawViewHierarchyInRect:CGRectMakeWithSize(view.bounds.size) afterScreenUpdates:afterUpdates];
+    resultImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return resultImage;
 }
 
 @end

@@ -13,6 +13,7 @@
 #import "CALayer+QMUI.h"
 #import "UIColor+QMUI.h"
 #import "NSObject+QMUI.h"
+#import "UIImage+QMUI.h"
 
 @interface UIView ()
 
@@ -115,7 +116,7 @@
 @end
 
 
-@implementation UIView (Runtime)
+@implementation UIView (QMUI_Runtime)
 
 - (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector {
     // 排序依照 Xcode Interface Builder 里的控件排序，但保证子类在父类前面
@@ -407,6 +408,19 @@ static char kAssociatedObjectKey_borderLayer;
 
 - (CAShapeLayer *)qmui_borderLayer {
     return (CAShapeLayer *)objc_getAssociatedObject(self, &kAssociatedObjectKey_borderLayer);
+}
+
+@end
+
+
+@implementation UIView (QMUI_Snapshotting)
+
+- (UIImage *)qmui_snapshotLayerImage {
+    return [UIImage qmui_imageWithView:self];
+}
+
+- (UIImage *)qmui_snapshotImageAfterScreenUpdates:(BOOL)afterScreenUpdates {
+    return [UIImage qmui_imageWithView:self afterScreenUpdates:afterScreenUpdates];
 }
 
 @end
