@@ -36,6 +36,7 @@
 
 /**
  * 比如常见的上传头像预览界面中间有一个用于裁剪的方框，则 viewportRect 必须被设置为这个方框在 zoomImageView 坐标系内的 frame，否则拖拽图片时无法正确限制图片的显示范围
+ * @note 图片的初始位置会位于 viewportRect 正中间
  * @note 如果想要图片覆盖整个 viewportRect，将 contentMode 设置为 UIViewContentModeScaleAspectFill 即可
  * 如果设置为 CGRectZero 则表示使用默认值，默认值为和整个 zoomImageView 一样大
  */

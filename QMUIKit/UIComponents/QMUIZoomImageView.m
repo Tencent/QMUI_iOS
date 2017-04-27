@@ -204,6 +204,22 @@
     if (shouldFireDidZoomingManual) {
         [self handleDidEndZooming];
     }
+    
+    // 当图片比 viewport 的区域更大时，要把图片放在 viewport 正中间
+    self.scrollView.contentOffset = ({
+        CGFloat x = self.scrollView.contentOffset.x;
+        CGFloat y = self.scrollView.contentOffset.y;
+        CGRect viewport = [self finalViewportRect];
+        if (!CGRectIsEmpty(viewport)) {
+            if (CGRectGetWidth(viewport) < CGRectGetWidth(self.imageView.frame)) {
+                x = (CGRectGetWidth(self.imageView.frame) / 2 - CGRectGetWidth(viewport) / 2) - CGRectGetMinX(viewport);
+            }
+            if (CGRectGetHeight(viewport) < CGRectGetHeight(self.imageView.frame)) {
+                y = (CGRectGetHeight(self.imageView.frame) / 2 - CGRectGetHeight(viewport) / 2) - CGRectGetMinY(viewport);
+            }
+        }
+        CGPointMake(x, y);
+    });
 }
 
 - (void)setZoomScale:(CGFloat)zoomScale animated:(BOOL)animated {
@@ -354,7 +370,7 @@
 
 - (CGRect)finalViewportRect {
     CGRect rect = self.viewportRect;
-    if (CGRectIsEmpty(rect)) {
+    if (CGRectIsEmpty(rect) && !CGRectIsEmpty(self.bounds)) {
         // 有可能此时还没有走到过 layoutSubviews 因此拿不到正确的 scrollView 的 size，因此这里要强制 layout 一下
         if (!CGSizeEqualToSize(self.scrollView.bounds.size, self.bounds.size)) {
             [self setNeedsLayout];
