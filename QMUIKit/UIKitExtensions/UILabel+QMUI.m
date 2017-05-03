@@ -8,7 +8,7 @@
 
 #import "UILabel+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUILabel.h"
 
 @implementation UILabel (QMUI)

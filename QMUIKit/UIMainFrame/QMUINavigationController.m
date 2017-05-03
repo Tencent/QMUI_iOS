@@ -8,7 +8,7 @@
 
 #import "QMUINavigationController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUINavigationTitleView.h"
 #import "QMUICommonViewController.h"
 #import "QMUIButton.h"

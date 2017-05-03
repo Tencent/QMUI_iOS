@@ -8,7 +8,7 @@
 
 #import "CALayer+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 
 @implementation CALayer (QMUI)
 

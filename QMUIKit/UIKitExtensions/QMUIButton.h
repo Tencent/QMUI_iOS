@@ -249,11 +249,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  */
 + (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
 
-/**
- *  对`UINavigationBar`上的`UIBarButton`做统一的样式调整
- */
-+ (void)renderNavigationButtonAppearanceStyle;
-
 @end
 
 
@@ -292,9 +287,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 /// 创建一个图标类型的UIBarButtonItem
 + (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image target:(id)target action:(SEL)selector;
-
-/// 对UIToolbar上的UIBarButtonItem做统一的样式调整
-+ (void)renderToolbarButtonAppearanceStyle;
 
 @end
 

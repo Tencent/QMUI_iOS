@@ -9,7 +9,7 @@
 #import "UIControl+QMUI.h"
 #import <objc/runtime.h>
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 
 static char kAssociatedObjectKey_needsTakeOverTouchEvent;
 static char kAssociatedObjectKey_canSetHighlighted;

@@ -8,7 +8,7 @@
 
 #import "QMUIAssetsManager.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 
 void QMUIImageWriteToSavedPhotosAlbumWithAlbumAssetsGroup(UIImage *image, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock) {

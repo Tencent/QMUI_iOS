@@ -1,25 +1,25 @@
 //
-//  QMUIConfigurationManager.m
+//  QMUIConfiguration.m
 //  qmui
 //
 //  Created by QQMail on 15/3/29.
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
-#import "QMUIConfigurationManager.h"
-#import "QMUICommonDefines.h"
 #import "QMUIConfiguration.h"
+#import "QMUICommonDefines.h"
+#import "QMUIConfigurationMacros.h"
 #import "UIImage+QMUI.h"
 #import "QMUIButton.h"
 #import "QMUITabBarViewController.h"
 
-@implementation QMUIConfigurationManager
+@implementation QMUIConfiguration
 
-+ (QMUIConfigurationManager *) sharedInstance {
++ (instancetype)sharedInstance {
     static dispatch_once_t pred;
-    static QMUIConfigurationManager *sharedInstance = nil;
+    static QMUIConfiguration *sharedInstance = nil;
     dispatch_once(&pred, ^{
-        sharedInstance = [[QMUIConfigurationManager alloc] init];
+        sharedInstance = [[QMUIConfiguration alloc] init];
     });
     return sharedInstance;
 }
@@ -27,6 +27,7 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
+        [self initDefaultConfiguration];
     }
     return self;
 }
@@ -86,7 +87,7 @@
     
     #pragma mark - UITextField & UITextView
     
-    self.textFieldTintColor = UIColorBlue;
+    self.textFieldTintColor = self.blueColor;
     self.textFieldTextInsets = UIEdgeInsetsMake(0, 7, 0, 7);
     
     #pragma mark - NavigationBar
@@ -162,14 +163,14 @@
     self.tableViewCellSelectedBackgroundColor = UIColorMake(232, 232, 232);
     self.tableViewCellWarningBackgroundColor = self.yellowColor;
     self.tableViewCellDisclosureIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeDisclosureIndicator size:CGSizeMake(8, 13) tintColor:UIColorMakeWithRGBA(0, 0, 0, .2)];
-    self.tableViewCellCheckmarkImage = [UIImage qmui_imageWithShape:QMUIImageShapeCheckmark size:CGSizeMake(15, 12) tintColor:UIColorBlue];
+    self.tableViewCellCheckmarkImage = [UIImage qmui_imageWithShape:QMUIImageShapeCheckmark size:CGSizeMake(15, 12) tintColor:self.blueColor];
     
     self.tableViewSectionHeaderBackgroundColor = UIColorMake(244, 244, 244);
     self.tableViewSectionFooterBackgroundColor = UIColorMake(244, 244, 244);
     self.tableViewSectionHeaderFont = UIFontBoldMake(12);
     self.tableViewSectionFooterFont = UIFontBoldMake(12);
-    self.tableViewSectionHeaderTextColor = UIColorGrayDarken;
-    self.tableViewSectionFooterTextColor = UIColorGray;
+    self.tableViewSectionHeaderTextColor = self.grayDarkenColor;
+    self.tableViewSectionFooterTextColor = self.grayColor;
     self.tableViewSectionHeaderHeight = 20;
     self.tableViewSectionFooterHeight = 0;
     self.tableViewSectionHeaderContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
@@ -177,8 +178,8 @@
     
     self.tableViewGroupedSectionHeaderFont = UIFontMake(12);
     self.tableViewGroupedSectionFooterFont = UIFontMake(12);
-    self.tableViewGroupedSectionHeaderTextColor = UIColorGrayDarken;
-    self.tableViewGroupedSectionFooterTextColor = UIColorGray;
+    self.tableViewGroupedSectionHeaderTextColor = self.grayDarkenColor;
+    self.tableViewGroupedSectionFooterTextColor = self.grayColor;
     self.tableViewGroupedSectionHeaderHeight = 15;
     self.tableViewGroupedSectionFooterHeight = 1;
     self.tableViewGroupedSectionHeaderContentInset = UIEdgeInsetsMake(16, 15, 8, 15);
@@ -196,65 +197,133 @@
     self.hidesBottomBarWhenPushedInitially = YES;
 }
 
-@end
+- (void)setNavBarBarTintColor:(UIColor *)navBarBarTintColor {
+    _navBarBarTintColor = navBarBarTintColor;
+    [UINavigationBar appearance].barTintColor = _navBarBarTintColor;
+}
 
-@implementation QMUIConfigurationManager (UIAppearance)
+- (void)setNavBarShadowImage:(UIImage *)navBarShadowImage {
+    _navBarShadowImage = navBarShadowImage;
+    [UINavigationBar appearance].shadowImage = _navBarShadowImage;
+}
 
-+ (void)renderGlobalAppearances {
-    
-    // QMUIButton
-    [QMUINavigationButton renderNavigationButtonAppearanceStyle];
-    [QMUIToolbarButton renderToolbarButtonAppearanceStyle];
-    
-    // UINavigationBar
-    UINavigationBar *navigationBarAppearance = [UINavigationBar appearance];
-    navigationBarAppearance.barTintColor = NavBarBarTintColor;
-    navigationBarAppearance.shadowImage = NavBarShadowImage;
-    [navigationBarAppearance setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-    
-    UIFont *navigationBarTitleFont = NavBarTitleFont;
-    UIColor *navigationBarTitleColor = NavBarTitleColor;
-    if (navigationBarTitleFont || navigationBarTitleColor) {
+- (void)setNavBarBackgroundImage:(UIImage *)navBarBackgroundImage {
+    _navBarBackgroundImage = navBarBackgroundImage;
+    [[UINavigationBar appearance] setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+}
+
+- (void)setNavBarTitleFont:(UIFont *)navBarTitleFont {
+    _navBarTitleFont = navBarTitleFont;
+    if (self.navBarTitleFont || self.navBarTitleColor) {
         NSMutableDictionary<NSString *, id> *titleTextAttributes = [[NSMutableDictionary alloc] init];
-        if (navigationBarTitleFont) {
-            [titleTextAttributes setValue:navigationBarTitleFont forKey:NSFontAttributeName];
+        if (self.navBarTitleFont) {
+            [titleTextAttributes setValue:self.navBarTitleFont forKey:NSFontAttributeName];
         }
-        if (navigationBarTitleColor) {
-            [titleTextAttributes setValue:navigationBarTitleColor forKey:NSForegroundColorAttributeName];
+        if (self.navBarTitleColor) {
+            [titleTextAttributes setValue:self.navBarTitleColor forKey:NSForegroundColorAttributeName];
         }
-        navigationBarAppearance.titleTextAttributes = titleTextAttributes;
+        [UINavigationBar appearance].titleTextAttributes = titleTextAttributes;
     }
-    
-    // UIToolBar
-    UIToolbar *toolBarAppearance = [UIToolbar appearance];
-    toolBarAppearance.barTintColor = ToolBarBarTintColor;
-    [toolBarAppearance setBackgroundImage:ToolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-    
-    UIColor *toolbarShadowImageColor = ToolBarShadowImageColor;
-    if (toolbarShadowImageColor) {
-        [toolBarAppearance setShadowImage:[UIImage qmui_imageWithColor:toolbarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
+}
+
+- (void)setNavBarTitleColor:(UIColor *)navBarTitleColor {
+    _navBarTitleColor = navBarTitleColor;
+    if (self.navBarTitleFont || self.navBarTitleColor) {
+        NSMutableDictionary<NSString *, id> *titleTextAttributes = [[NSMutableDictionary alloc] init];
+        if (self.navBarTitleFont) {
+            [titleTextAttributes setValue:self.navBarTitleFont forKey:NSFontAttributeName];
+        }
+        if (self.navBarTitleColor) {
+            [titleTextAttributes setValue:self.navBarTitleColor forKey:NSForegroundColorAttributeName];
+        }
+        [UINavigationBar appearance].titleTextAttributes = titleTextAttributes;
     }
+}
+
+- (void)setNavBarBackIndicatorImage:(UIImage *)navBarBackIndicatorImage {
+    _navBarBackIndicatorImage = navBarBackIndicatorImage;
     
-    // UITabBar
-    UITabBar *tabBarAppearance = [UITabBar appearance];
-    tabBarAppearance.barTintColor = TabBarBarTintColor;
-    tabBarAppearance.backgroundImage = TabBarBackgroundImage;
-    UIColor *tabBarShadowImageColor = TabBarShadowImageColor;
-    if (tabBarShadowImageColor) {
-        [tabBarAppearance setShadowImage:[UIImage qmui_imageWithColor:tabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
+    if (_navBarBackIndicatorImage) {
+        UINavigationBar *navBarAppearance = [UINavigationBar appearance];
+        
+        // 返回按钮的图片frame是和系统默认的返回图片的大小一致的（13, 21），所以用自定义返回箭头时要保证图片大小与系统的箭头大小一样，否则无法对齐
+        CGSize systemBackIndicatorImageSize = CGSizeMake(13, 21); // 在iOS9上实际测量得到
+        CGSize customBackIndicatorImageSize = _navBarBackIndicatorImage.size;
+        if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
+            CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
+            _navBarBackIndicatorImage = [_navBarBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
+                                                                                                                         0,
+                                                                                                                         imageExtensionVerticalFloat,
+                                                                                                                         systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)];
+        }
+        
+        navBarAppearance.backIndicatorImage = _navBarBackIndicatorImage;
+        navBarAppearance.backIndicatorTransitionMaskImage = navBarAppearance.backIndicatorImage;
     }
+}
+
+- (void)setNavBarBackButtonTitlePositionAdjustment:(UIOffset)navBarBackButtonTitlePositionAdjustment {
+    _navBarBackButtonTitlePositionAdjustment = navBarBackButtonTitlePositionAdjustment;
     
-    // UITabBarItem
-    UITabBarItem *tabBarItemAppearance = [UITabBarItem appearance];
-    
-    UIColor *tabBarItemTitleColor = TabBarItemTitleColor;
-    if (tabBarItemTitleColor) {
-        [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:tabBarItemTitleColor} forState:UIControlStateNormal];
+    if (!UIOffsetEqualToOffset(UIOffsetZero, _navBarBackButtonTitlePositionAdjustment)) {
+        UIBarButtonItem *backBarButtonItem = [UIBarButtonItem appearance];
+        [backBarButtonItem setBackButtonTitlePositionAdjustment:_navBarBackButtonTitlePositionAdjustment forBarMetrics:UIBarMetricsDefault];
     }
-    
-    UIColor *tabBarItemTitleColorSelected = TabBarItemTitleColorSelected;
-    if (tabBarItemTitleColorSelected) {
-        [tabBarItemAppearance setTitleTextAttributes:@{NSForegroundColorAttributeName:tabBarItemTitleColorSelected} forState:UIControlStateSelected];
+}
+
+- (void)setToolBarBarTintColor:(UIColor *)toolBarBarTintColor {
+    _toolBarBarTintColor = toolBarBarTintColor;
+    [UIToolbar appearance].barTintColor = _toolBarBarTintColor;
+}
+
+- (void)setToolBarBackgroundImage:(UIImage *)toolBarBackgroundImage {
+    _toolBarBackgroundImage = toolBarBackgroundImage;
+    [[UIToolbar appearance] setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+}
+
+- (void)setToolBarShadowImageColor:(UIColor *)toolBarShadowImageColor {
+    _toolBarShadowImageColor = toolBarShadowImageColor;
+    if (_toolBarShadowImageColor) {
+        [[UIToolbar appearance] setShadowImage:[UIImage qmui_imageWithColor:_toolBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0] forToolbarPosition:UIBarPositionAny];
+    }
+}
+
+- (void)setToolBarButtonFont:(UIFont *)toolBarButtonFont {
+    _toolBarButtonFont = toolBarButtonFont;
+    if (_toolBarButtonFont) {
+        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearance];
+        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: _toolBarButtonFont} forState:UIControlStateNormal];
+    }
+}
+
+- (void)setTabBarBarTintColor:(UIColor *)tabBarBarTintColor {
+    _tabBarBarTintColor = tabBarBarTintColor;
+    [UITabBar appearance].barTintColor = _tabBarBarTintColor;
+}
+
+- (void)setTabBarBackgroundImage:(UIImage *)tabBarBackgroundImage {
+    _tabBarBackgroundImage = tabBarBackgroundImage;
+    [UITabBar appearance].backgroundImage = _tabBarBackgroundImage;
+}
+
+- (void)setTabBarShadowImageColor:(UIColor *)tabBarShadowImageColor {
+    _tabBarShadowImageColor = tabBarShadowImageColor;
+    if (_tabBarShadowImageColor) {
+        [[UITabBar appearance] setShadowImage:[UIImage qmui_imageWithColor:_tabBarShadowImageColor size:CGSizeMake(1, PixelOne) cornerRadius:0]];
+    }
+}
+
+- (void)setTabBarItemTitleColor:(UIColor *)tabBarItemTitleColor {
+    _tabBarItemTitleColor = tabBarItemTitleColor;
+    if (_tabBarItemTitleColor) {
+        [[UITabBarItem appearance] setTitleTextAttributes:@{NSForegroundColorAttributeName: _tabBarItemTitleColor} forState:UIControlStateNormal];
+    }
+}
+
+- (void)setTabBarItemTitleColorSelected:(UIColor *)tabBarItemTitleColorSelected {
+    _tabBarItemTitleColorSelected = tabBarItemTitleColorSelected;
+    if (_tabBarItemTitleColorSelected) {
+        [[UITabBarItem appearance] setTitleTextAttributes:@{NSForegroundColorAttributeName: _tabBarItemTitleColorSelected} forState:UIControlStateSelected];
     }
 }
 

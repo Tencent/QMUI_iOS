@@ -44,7 +44,7 @@
 // 颜色
 @property(nonatomic, strong) UIColor *textLabelTextColor UI_APPEARANCE_SELECTOR;    // 默认为(93, 100, 110)
 @property(nonatomic, strong) UIColor *detailTextLabelTextColor UI_APPEARANCE_SELECTOR;  // 默认为(133, 140, 150)
-@property(nonatomic, strong) UIColor *actionButtonTitleColor UI_APPEARANCE_SELECTOR;    // 默认为QMUICMI.buttonTintColor
+@property(nonatomic, strong) UIColor *actionButtonTitleColor UI_APPEARANCE_SELECTOR;    // 默认为 ButtonTintColor
 
 // 显示或隐藏loading图标
 - (void)setLoadingViewHidden:(BOOL)hidden;

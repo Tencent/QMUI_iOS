@@ -8,7 +8,7 @@
 
 #import "QMUIModalPresentationViewController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 
 @interface UIViewController ()

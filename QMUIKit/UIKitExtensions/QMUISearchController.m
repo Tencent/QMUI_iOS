@@ -8,7 +8,7 @@
 
 #import "QMUISearchController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUISearchBar.h"
 #import "QMUICommonTableViewController.h"
 #import "QMUIEmptyView.h"

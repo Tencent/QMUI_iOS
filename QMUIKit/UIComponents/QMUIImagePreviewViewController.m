@@ -7,7 +7,7 @@
 //
 
 #import "QMUIImagePreviewViewController.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUICommonDefines.h"
 
 @implementation QMUIImagePreviewViewController (UIAppearance)

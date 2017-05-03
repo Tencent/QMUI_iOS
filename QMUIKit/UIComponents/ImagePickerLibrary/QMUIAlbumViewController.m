@@ -8,7 +8,7 @@
 
 #import "QMUIAlbumViewController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "UIView+QMUI.h"
 #import "QMUIAssetsManager.h"

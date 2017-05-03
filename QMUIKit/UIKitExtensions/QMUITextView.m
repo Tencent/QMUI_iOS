@@ -7,7 +7,7 @@
 //
 #import "QMUITextView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUILabel.h"
 #import "NSObject+QMUI.h"
 #import "NSString+QMUI.h"

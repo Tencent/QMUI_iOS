@@ -8,7 +8,7 @@
 
 #import "QMUIImagePreviewView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUICollectionViewPagingLayout.h"
 #import "QMUIZoomImageView.h"
 #import "NSObject+QMUI.h"

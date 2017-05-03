@@ -8,7 +8,7 @@
 
 #import "UIColor+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "NSString+QMUI.h"
 
 @implementation UIColor (QMUI)
@@ -82,7 +82,7 @@
     return hexString.length < 2 ? [@"0" stringByAppendingString:hexString] : hexString;
 }
 
-+ (CGFloat)colorComponentFrom: (NSString *) string start: (NSUInteger) start length: (NSUInteger) length {
++ (CGFloat)colorComponentFrom:(NSString *)string start:(NSUInteger)start length:(NSUInteger)length {
     NSString *substring = [string substringWithRange: NSMakeRange(start, length)];
     NSString *fullHex = length == 2 ? substring : [NSString stringWithFormat: @"%@%@", substring, substring];
     unsigned hexComponent;

@@ -8,7 +8,7 @@
 
 #import "UIImage+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "UIBezierPath+QMUI.h"
 #import "UIColor+QMUI.h"

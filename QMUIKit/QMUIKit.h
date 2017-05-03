@@ -11,7 +11,7 @@
 /// QMUIBase
 #import "QMUIHelper.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 
 /// QMUIKit
 #import "QMUIVisualEffectView.h"

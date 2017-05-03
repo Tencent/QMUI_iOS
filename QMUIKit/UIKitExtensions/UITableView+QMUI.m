@@ -8,7 +8,7 @@
 
 #import "UITableView+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "UIScrollView+QMUI.h"
 
 @implementation UITableView (QMUI)

@@ -8,7 +8,7 @@
 
 #import "QMUITextField.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "NSString+QMUI.h"
 #import "UITextField+QMUI.h"
 

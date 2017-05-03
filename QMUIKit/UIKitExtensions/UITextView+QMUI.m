@@ -8,7 +8,7 @@
 
 #import "UITextView+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIKeyboardManager.h"
 
 @interface UITextView () <QMUIKeyboardManagerDelegate>

@@ -8,7 +8,7 @@
 
 #import "UIView+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "CALayer+QMUI.h"
 #import "UIColor+QMUI.h"

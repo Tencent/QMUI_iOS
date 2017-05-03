@@ -13,11 +13,6 @@
 
 + (void)setupConfigurationTemplate {
     
-    // === 初始化默认值 === //
-    
-    [QMUICMI initDefaultConfiguration];
-    
-    
     // === 修改配置值 === //
     
     #pragma mark - Global Color

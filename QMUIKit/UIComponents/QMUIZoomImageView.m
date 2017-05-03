@@ -8,7 +8,7 @@
 
 #import "QMUIZoomImageView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIEmptyView.h"
 #import "UIImage+QMUI.h"
 #import "UIColor+QMUI.h"

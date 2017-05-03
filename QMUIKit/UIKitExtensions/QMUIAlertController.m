@@ -8,7 +8,7 @@
 
 #import "QMUIAlertController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "QMUIModalPresentationViewController.h"
 #import "QMUIButton.h"

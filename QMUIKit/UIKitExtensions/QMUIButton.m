@@ -8,7 +8,7 @@
 
 #import "QMUIButton.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUICommonViewController.h"
 #import "QMUINavigationController.h"
 #import "UIImage+QMUI.h"
@@ -689,31 +689,6 @@
     [self setTitleColor:[self.tintColor colorWithAlphaComponent:NavBarDisabledAlpha] forState:UIControlStateDisabled];
 }
 
-+ (void)renderNavigationButtonAppearanceStyle {
-    // 更改全局的返回按钮图片
-    UIImage *customBackIndicatorImage = NavBarBackIndicatorImage;
-    if (customBackIndicatorImage && [UINavigationBar instancesRespondToSelector:@selector(setBackIndicatorImage:)]) {
-        UINavigationBar *navBarAppearance = [UINavigationBar appearanceWhenContainedIn:[QMUINavigationController class], nil];
-        
-        // 返回按钮的图片frame是和系统默认的返回图片的大小一致的（13, 21），所以用自定义返回箭头时要保证图片大小与系统的箭头大小一样，否则无法对齐
-        CGSize systemBackIndicatorImageSize = CGSizeMake(13, 21); // 在iOS9上实际测量得到
-        CGSize customBackIndicatorImageSize = customBackIndicatorImage.size;
-        if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
-            CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
-            customBackIndicatorImage = [customBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
-                                                                                                                       0,
-                                                                                                                       imageExtensionVerticalFloat,
-                                                                                                                       systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)];
-        }
-        
-        navBarAppearance.backIndicatorImage = customBackIndicatorImage;
-        navBarAppearance.backIndicatorTransitionMaskImage = navBarAppearance.backIndicatorImage;
-    }
-    // 更改全局返回按钮的文字间距
-    UIBarButtonItem *backBarButtonItem = [UIBarButtonItem appearanceWhenContainedIn:[QMUINavigationController class], nil];
-    [backBarButtonItem setBackButtonTitlePositionAdjustment:NavBarBarBackButtonTitlePositionAdjustment forBarMetrics:UIBarMetricsDefault];
-}
-
 // 返回按钮的文字会自动匹配上一个界面的title，如果需要自定义title，则直接用initWithType:title:工具类来做
 + (UIBarButtonItem *)backBarButtonItemWithTarget:(id)target action:(SEL)selector tintColor:(UIColor *)tintColor {
     NSString *backTitle = nil;
@@ -877,14 +852,6 @@
             break;
         default:
             break;
-    }
-}
-
-+ (void)renderToolbarButtonAppearanceStyle {
-    UIFont *titleFont = ToolBarButtonFont;
-    if (titleFont) {
-        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:QMUINavigationController.class, nil];
-        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: titleFont} forState:UIControlStateNormal];
     }
 }
 

@@ -8,7 +8,7 @@
 
 #import "QMUIImagePickerHelper.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "QMUIHelper.h"
 #import "QMUIAssetsManager.h"

@@ -8,7 +8,7 @@
 
 #import "QMUIToastContentView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "UIView+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
 
