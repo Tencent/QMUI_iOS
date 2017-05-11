@@ -129,6 +129,19 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
+- (UIImage *)qmui_imageWithBlendColor:(UIColor *)blendColor {
+    UIImage *coloredImage = [self qmui_imageWithTintColor:blendColor];
+    CIFilter *filter = [CIFilter filterWithName:@"CIColorBlendMode"];
+    [filter setValue:[CIImage imageWithCGImage:self.CGImage] forKey:kCIInputBackgroundImageKey];
+    [filter setValue:[CIImage imageWithCGImage:coloredImage.CGImage] forKey:kCIInputImageKey];
+    CIImage *outputImage = filter.outputImage;
+    CIContext *context = [CIContext contextWithOptions:nil];
+    CGImageRef imageRef = [context createCGImage:outputImage fromRect:outputImage.extent];
+    UIImage *resultImage = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
+    CGImageRelease(imageRef);
+    return resultImage;
+}
+
 - (UIImage *)qmui_imageWithImageAbove:(UIImage *)image atPoint:(CGPoint)point {
     UIImage *imageIn = self;
     UIImage *imageOut = nil;
@@ -472,7 +485,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     CGContextInspectSize(size);
     
     UIImage *resultImage = nil;
-    tintColor = tintColor ? tintColor : UIColorWhite;
+    tintColor = tintColor ? : [UIColor colorWithRed:1 green:1 blue:1 alpha:1];
     
     
     UIGraphicsBeginImageContextWithOptions(size, NO, 0);

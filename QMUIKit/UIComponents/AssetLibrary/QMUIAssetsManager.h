@@ -21,12 +21,12 @@
 #define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 下也使用 ALAssetLibrary，用于调试
 
 /// Asset授权的状态
-typedef enum {
+typedef NS_ENUM(NSUInteger, QMUIAssetAuthorizationStatus) {
     QMUIAssetAuthorizationStatusNotUsingPhotoKit,   // 对于iOS7及以下不支持PhotoKit的系统，没有所谓的“授权状态”，所以定义一个特定的status用于表示这种情况
     QMUIAssetAuthorizationStatusNotDetermined,      // 还不确定有没有授权
     QMUIAssetAuthorizationStatusAuthorized,         // 已经授权
     QMUIAssetAuthorizationStatusNotAuthorized       // 手动禁止了授权
-} QMUIAssetAuthorizationStatus;
+};
 
 typedef void (^QMUIWriteAssetCompletionBlock)(QMUIAsset *asset, NSError *error);
 

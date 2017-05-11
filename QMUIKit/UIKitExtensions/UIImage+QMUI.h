@@ -75,6 +75,17 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 - (UIImage *)qmui_imageWithTintColor:(UIColor *)tintColor;
 
 /**
+ *  以 CIColorBlendMode 的模式为当前图片叠加一个颜色，生成一张新图片并返回，在叠加过程中会保留图片内的纹理。
+ *
+ *  @param blendColor 要叠加的颜色
+ *
+ *  @return 基于当前图片纹理保持不变的情况下颜色变为指定的叠加颜色的新图片
+ *
+ *  @warning 这个方法可能比较慢，会卡住主线程，建议异步使用
+ */
+- (UIImage *)qmui_imageWithBlendColor:(UIColor *)blendColor;
+
+/**
  *  在当前图片的基础上叠加一张图片，并指定绘制叠加图片的起始位置
  *
  *  叠加上去的图片将保持原图片的大小不变，不被压缩、拉伸

@@ -11,11 +11,11 @@
 @class QMUIModalPresentationViewController;
 @class QMUIModalPresentationWindow;
 
-typedef enum : NSUInteger {
+typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
     QMUIModalPresentationAnimationStyleFade,    // 渐现渐隐，默认
     QMUIModalPresentationAnimationStylePopup,   // 从中心点弹出
     QMUIModalPresentationAnimationStyleSlide    // 从下往上升起
-} QMUIModalPresentationAnimationStyle;
+};
 
 @protocol QMUIModalPresentationContentViewControllerProtocol <NSObject>
 

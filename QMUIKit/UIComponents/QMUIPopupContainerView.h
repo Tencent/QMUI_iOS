@@ -9,10 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "UIControl+QMUI.h"
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
     QMUIPopupContainerViewLayoutDirectionAbove,
     QMUIPopupContainerViewLayoutDirectionBelow
-} QMUIPopupContainerViewLayoutDirection;
+};
 
 /**
  * 带箭头的小tips浮层，自带 imageView 和 textLabel，可展示简单的图文信息。

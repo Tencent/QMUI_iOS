@@ -17,6 +17,12 @@
 
 @implementation UITextView (QMUI)
 
+- (NSRange)qmui_convertNSRangeFromUITextRange:(UITextRange *)textRange {
+    NSInteger location = [self offsetFromPosition:self.beginningOfDocument toPosition:textRange.start];
+    NSInteger length = [self offsetFromPosition:textRange.start toPosition:textRange.end];
+    return NSMakeRange(location, length);
+}
+
 - (void)qmui_setTextKeepingSelectedRange:(NSString *)text {
     UITextRange *selectedTextRange = self.selectedTextRange;
     self.text = text;
@@ -27,6 +33,26 @@
     UITextRange *selectedTextRange = self.selectedTextRange;
     self.attributedText = attributedText;
     self.selectedTextRange = selectedTextRange;
+}
+
+- (void)qmui_scrollCaretVisibleAnimated:(BOOL)animated {
+    if (CGRectIsEmpty(self.bounds)) {
+        return;
+    }
+    
+    CGRect caretRect = [self caretRectForPosition:self.selectedTextRange.end];
+    CGFloat contentOffsetY = self.contentOffset.y;
+    if (CGRectGetMinY(caretRect) < self.contentOffset.y + self.textContainerInset.top) {
+        // 光标在可视区域上方，往下滚动
+        contentOffsetY = CGRectGetMinY(caretRect) - self.textContainerInset.top - self.contentInset.top;
+    } else if (CGRectGetMaxY(caretRect) > self.contentOffset.y + CGRectGetHeight(self.bounds) - self.textContainerInset.bottom - self.contentInset.bottom) {
+        // 光标在可视区域下方，往上滚动
+        contentOffsetY = CGRectGetMaxY(caretRect) - CGRectGetHeight(self.bounds) + self.textContainerInset.bottom + self.contentInset.bottom;
+    } else {
+        // 光标在可视区域内，不用调整
+        return;
+    }
+    [self setContentOffset:CGPointMake(self.contentOffset.x, contentOffsetY) animated:animated];
 }
 
 - (void)setQmui_keyboardWillShowNotificationBlock:(void (^)(QMUIKeyboardUserInfo *))keyboardWillShowNotificationBlock {

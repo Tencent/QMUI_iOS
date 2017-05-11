@@ -8,11 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-typedef enum : NSUInteger {
+typedef NS_ENUM(NSUInteger, QMUIFontWeight) {
     QMUIFontWeightLight,
     QMUIFontWeightNormal,
     QMUIFontWeightBold
-} QMUIFontWeight;
+};
 
 @interface UIFont (QMUI)
 

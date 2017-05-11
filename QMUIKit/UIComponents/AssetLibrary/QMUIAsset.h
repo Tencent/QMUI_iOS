@@ -8,20 +8,22 @@
 
 #import <Photos/PHImageManager.h>
 
-typedef enum {
+/// Asset 的类型
+typedef NS_ENUM(NSUInteger, QMUIAssetType) {
     QMUIAssetTypeUnknow,                              // 未知类型的 Asset
     QMUIAssetTypeImage,                               // 图片类型的 Asset
     QMUIAssetTypeVideo,                               // 视频类型的 Asset
     QMUIAssetTypeAudio NS_ENUM_AVAILABLE_IOS(8_0),    // 音频类型的 Asset，仅被 PhotoKit 支持，因此只适用于 iOS 8.0
     QMUIAssetTypeLivePhoto NS_ENUM_AVAILABLE_IOS(9_1) // Live Photo 类型的 Asset，仅被 PhotoKit 支持，因此只适用于 iOS 9.1
-} QMUIAssetType; // Asset 的类型
+};
 
-typedef enum {
+/// 从 iCloud 请求 Asset 大图的状态
+typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
     QMUIAssetDownloadStatusSucceed,     // 下载成功或资源本来已经在本地
     QMUIAssetDownloadStatusDownloading, // 下载中
     QMUIAssetDownloadStatusCanceled,    // 取消下载
     QMUIAssetDownloadStatusFailed,      // 下载失败
-} QMUIAssetDownloadStatus; // 从 iCloud 请求 Asset 大图的状态
+};
 
 
 @class ALAsset;

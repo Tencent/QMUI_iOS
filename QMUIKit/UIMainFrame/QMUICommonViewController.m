@@ -39,6 +39,7 @@
 
 - (void)didInitialized {
     self.titleView = [[QMUINavigationTitleView alloc] init];
+    self.titleView.title = self.title;// 从 storyboard 初始化的话，可能带有 self.title 的值
     
     self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
     

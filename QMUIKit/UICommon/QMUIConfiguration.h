@@ -136,8 +136,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) CGFloat            tableViewCellNormalHeight;
 @property(nonatomic, strong, nullable) UIColor  *tableViewCellTitleLabelColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewCellDetailLabelColor;
-@property(nonatomic, assign) CGFloat            tableViewCellContentDefaultPaddingLeft;
-@property(nonatomic, assign) CGFloat            tableViewCellContentDefaultPaddingRight;
 @property(nonatomic, strong, nullable) UIColor  *tableViewCellBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewCellSelectedBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewCellWarningBackgroundColor;

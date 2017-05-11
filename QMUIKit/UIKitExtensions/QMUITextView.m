@@ -23,7 +23,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
 @property(nonatomic, assign) BOOL debug;
 @property(nonatomic, assign) BOOL shouldRejectSystemScroll;// 如果在 handleTextChanged: 里主动调整 contentOffset，则为了避免被系统的自动调整覆盖，会利用这个标记去屏蔽系统对 setContentOffset: 的调用
-@property(nonatomic, assign) BOOL callingSizeThatFitsByAutoResizable; // 标志本次调用 sizeThatFits: 是因为 handleTextChange: 里计算高度导致的
 
 @property(nonatomic, strong) UILabel *placeholderLabel;
 
@@ -39,6 +38,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     self = [super initWithFrame:frame];
     if (self) {
         [self didInitialized];
+        self.tintColor = TextFieldTintColor;
     }
     return self;
 }
@@ -54,7 +54,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     self.debug = NO;
     self.delegate = self;
     self.scrollsToTop = NO;
-    self.tintColor = TextFieldTintColor;
     self.placeholderColor = UIColorPlaceholder;
     self.placeholderMargins = UIEdgeInsetsZero;
     self.autoResizable = NO;
@@ -81,9 +80,17 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     return [NSString stringWithFormat:@"%@; text.length: %@ | %@; markedTextRange: %@", [super description], @(self.text.length), @([self lengthWithString:self.text]), self.markedTextRange];
 }
 
+- (BOOL)isCurrentTextDifferentOfText:(NSString *)text {
+    NSString *textBeforeChange = self.text;// UITextView 如果文字为空，self.text 永远返回 @"" 而不是 nil（即便你设置为 nil 后立即 get 出来也是）
+    if ([textBeforeChange isEqualToString:text] || (textBeforeChange.length == 0 && !text)) {
+        return NO;
+    }
+    return YES;
+}
+
 - (void)setText:(NSString *)text {
     NSString *textBeforeChange = self.text;
-    BOOL textDifferent = ![textBeforeChange isEqualToString:text];
+    BOOL textDifferent = [self isCurrentTextDifferentOfText:text];
     
     // 如果前后文字没变化，则什么都不做
     if (!textDifferent) {
@@ -121,7 +128,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
 - (void)setAttributedText:(NSAttributedString *)attributedText {
     NSString *textBeforeChange = self.attributedText.string;
-    BOOL textDifferent = ![textBeforeChange isEqualToString:attributedText.string];
+    BOOL textDifferent = [self isCurrentTextDifferentOfText:attributedText.string];
     
     // 如果前后文字没变化，则什么都不做
     if (!textDifferent) {
@@ -217,10 +224,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         // 计算高度
         if (self.autoResizable) {
             
-            // 注意，这里 iOS 10 以下有兼容问题，请查看文件里的 sizeThatFits:
-            self.callingSizeThatFitsByAutoResizable = YES;
             CGFloat resultHeight = [textView sizeThatFits:CGSizeMake(CGRectGetWidth(self.bounds), CGFLOAT_MAX)].height;
-            self.callingSizeThatFitsByAutoResizable = NO;
             
             if (self.debug) NSLog(@"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
             
@@ -231,35 +235,17 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             }
         }
         
-        // 系统的 UITextView 在文字可滚动的情况下在最后一行输入，文字是贴边的（并不会考虑 textContainerInset.bottom），所以这里接管了 UITextView 的文字滚动
-        CGRect caretRect = [textView caretRectForPosition:textView.selectedTextRange.end];
-        if (self.debug) NSLog(@"调整前，caretRect.maxY = %.2f, contentOffset.y = %.2f, contentSize.height = %.2f bounds.height = %.2f", CGRectGetMaxY(caretRect), textView.contentOffset.y, textView.contentSize.height, CGRectGetHeight(textView.bounds));
-        
-        CGFloat caretMarginBottom = self.textContainerInset.bottom;
-        if (CGRectGetMaxY(caretRect) + caretMarginBottom >= textView.contentOffset.y + CGRectGetHeight(textView.bounds)) {
-            CGFloat contentOffsetY = fmax(0, ceil(CGRectGetMaxY(caretRect) + caretMarginBottom - CGRectGetHeight(textView.bounds)));
-            if (self.debug) NSLog(@"调整后，contentOffset.y = %.2f, contentSize.height = %.2f", contentOffsetY, textView.contentSize.height);
-            
-            self.shouldRejectSystemScroll = YES;
-            // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                self.shouldRejectSystemScroll = NO;
-                [textView setContentOffset:CGPointMake(textView.contentOffset.x, contentOffsetY) animated:NO];
-            });
+        // textView 尚未被展示到界面上时，此时过早进行光标调整会计算错误
+        if (!textView.window) {
+            return;
         }
-    }
-}
-
-- (CGSize)sizeThatFits:(CGSize)size {
-    // iOS 10 以下调用 sizeThatFits: 会导致文字跳动，因此自己计算 https://github.com/QMUI/QMUI_iOS/issues/92
-    if (IOS_VERSION < 10.0 && self.callingSizeThatFitsByAutoResizable) {
-        CGFloat contentWidth = size.width - UIEdgeInsetsGetHorizontalValue(self.textContainerInset) - UIEdgeInsetsGetHorizontalValue(self.contentInset);
-        CGRect textRect = [self.attributedText boundingRectWithSize:CGSizeMake(contentWidth, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil];
-        CGSize resultSize = CGSizeMake(size.width, CGRectGetHeight(textRect) + UIEdgeInsetsGetVerticalValue(self.textContainerInset) + UIEdgeInsetsGetVerticalValue(self.contentInset));
-        resultSize.height = fmin(size.height, resultSize.height);
-        return resultSize;
-    } else {
-        return [super sizeThatFits:size];
+        
+        self.shouldRejectSystemScroll = YES;
+        // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            self.shouldRejectSystemScroll = NO;
+            [self qmui_scrollCaretVisibleAnimated:NO];
+        });
     }
 }
 

@@ -53,15 +53,19 @@
     _accessoryHitTestEdgeInsets = UIEdgeInsetsMake(-12, -12, -12, -12);
     
     self.textLabel.font = UIFontMake(16);
-    self.textLabel.textColor = TableViewCellTitleLabelColor;
     self.textLabel.backgroundColor = UIColorClear;
+    UIColor *titleLabelColor = TableViewCellTitleLabelColor;
+    if (titleLabelColor) {
+        self.textLabel.textColor = titleLabelColor;
+    }
     
     self.detailTextLabel.font = UIFontMake(15);
-    self.detailTextLabel.textColor = TableViewCellDetailLabelColor;
     self.detailTextLabel.backgroundColor = UIColorClear;
+    UIColor *detailLabelColor = TableViewCellDetailLabelColor;
+    if (detailLabelColor) {
+        self.detailTextLabel.textColor = detailLabelColor;
+    }
     
-    // iOS7下背景色默认白色，之前的版本背景色继承tableView，这里统一设置为白色
-    self.backgroundColor = TableViewCellBackgroundColor;
     UIColor *selectedBackgroundColor = TableViewCellSelectedBackgroundColor;
     if (selectedBackgroundColor) {
         UIView *selectedBackgroundView = [[UIView alloc] init];
@@ -166,12 +170,21 @@
     if (_enabled != enabled) {
         if (enabled) {
             self.userInteractionEnabled = YES;
-            self.textLabel.textColor = TableViewCellTitleLabelColor;
-            self.detailTextLabel.textColor = TableViewCellDetailLabelColor;
+            UIColor *titleLabelColor = TableViewCellTitleLabelColor;
+            if (titleLabelColor) {
+                self.textLabel.textColor = titleLabelColor;
+            }
+            UIColor *detailLabelColor = TableViewCellDetailLabelColor;
+            if (detailLabelColor) {
+                self.detailTextLabel.textColor = detailLabelColor;
+            }
         } else {
             self.userInteractionEnabled = NO;
-            self.textLabel.textColor = UIColorDisabled;
-            self.detailTextLabel.textColor = UIColorDisabled;
+            UIColor *disabledColor = UIColorDisabled;
+            if (disabledColor) {
+                self.textLabel.textColor = disabledColor;
+                self.detailTextLabel.textColor = disabledColor;
+            }
         }
         _enabled = enabled;
     }

@@ -26,6 +26,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         [self didInitialized];
+        self.tintColor = TextFieldTintColor;
     }
     return self;
 }
@@ -39,7 +40,6 @@
 
 - (void)didInitialized {
     self.delegate = self;
-    self.tintColor = TextFieldTintColor;
     self.placeholderColor = UIColorPlaceholder;
     self.textInsets = TextFieldTextInsets;
     self.shouldResponseToProgrammaticallyTextChanges = YES;

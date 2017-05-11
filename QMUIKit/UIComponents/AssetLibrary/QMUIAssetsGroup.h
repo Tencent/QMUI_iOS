@@ -15,17 +15,19 @@
 
 @class QMUIAsset;
 
-typedef enum {
+/// 相册展示内容的类型
+typedef NS_ENUM(NSUInteger, QMUIAlbumContentType) {
     QMUIAlbumContentTypeAll,                                  // 展示所有资源（照片和视频）
     QMUIAlbumContentTypeOnlyPhoto,                            // 只展示照片
     QMUIAlbumContentTypeOnlyVideo,                            // 只展示视频
     QMUIAlbumContentTypeOnlyAudio  NS_ENUM_AVAILABLE_IOS(8_0) // 只展示音频
-} QMUIAlbumContentType; // 相册展示内容的类型
+};
 
-typedef enum {
+/// 相册展示内容按日期排序的方式
+typedef NS_ENUM(NSUInteger, QMUIAlbumSortType) {
     QMUIAlbumSortTypePositive,  // 日期最新的内容排在后面
     QMUIAlbumSortTypeReverse  // 日期最新的内容排在前面
-} QMUIAlbumSortType; // 相册展示内容按日期排序的方式
+};
 
 
 @interface QMUIAssetsGroup : NSObject

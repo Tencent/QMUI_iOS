@@ -177,8 +177,6 @@
 
 #define TableViewCellTitleLabelColor               [QMUICMI tableViewCellTitleLabelColor]               //cell的title颜色
 #define TableViewCellDetailLabelColor              [QMUICMI tableViewCellDetailLabelColor]              //cell的detailTitle颜色
-#define TableViewCellContentDefaultPaddingLeft     [QMUICMI tableViewCellContentDefaultPaddingLeft]     // Cell默认左边缘的间距
-#define TableViewCellContentDefaultPaddingRight    [QMUICMI tableViewCellContentDefaultPaddingRight]    // Cell默认右边缘的间距
 
 #pragma mark - UIWindowLevel
 #define UIWindowLevelQMUIAlertView                  [QMUICMI windowLevelQMUIAlertView]

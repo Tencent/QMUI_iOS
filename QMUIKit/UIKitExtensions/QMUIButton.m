@@ -34,6 +34,11 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
         [self didInitialized];
+        
+        self.tintColor = ButtonTintColor;
+        if (!self.adjustsTitleTintColorAutomatically) {
+            [self setTitleColor:self.tintColor forState:UIControlStateNormal];
+        }
     }
     return self;
 }
@@ -48,10 +53,6 @@
 - (void)didInitialized {
     self.adjustsTitleTintColorAutomatically = NO;
     self.adjustsImageTintColorAutomatically = NO;
-    self.tintColor = ButtonTintColor;
-    if (!self.adjustsTitleTintColorAutomatically) {
-        [self setTitleColor:self.tintColor forState:UIControlStateNormal];
-    }
     
     // 默认接管highlighted和disabled的表现，去掉系统默认的表现
     self.adjustsImageWhenHighlighted = NO;
@@ -900,7 +901,6 @@
 
 - (void)didInitialized {
     [super didInitialized];
-    [self setTitleColor:ButtonTintColor forState:UIControlStateNormal];
     
     self.underlineLayer = [CALayer layer];
     [self.underlineLayer qmui_removeDefaultAnimations];
