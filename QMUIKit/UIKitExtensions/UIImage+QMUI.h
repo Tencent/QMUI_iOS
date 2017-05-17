@@ -52,6 +52,15 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 - (UIImage *)qmui_grayImage;
 
 /**
+ 将原图进行拉伸，但受保护区域不会被拉伸(类似于Android中9Patch)
+ 
+ @param image 原图
+ @param capInsets 受保护区域的范围
+ @return 拉伸后的图片
+ */
+- (UIImage *)qmui_resizableImageWithImage:(UIImage *)image protectedArea:(UIEdgeInsets)capInsets;
+
+/**
  *  设置一张图片的透明度
  *
  *  @param alpha 要用于渲染透明度
