@@ -155,12 +155,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self initAlbum];
-}
-
-- (void)initAlbum {
-    QMUIAssetAuthorizationStatus authorizationStatus = [QMUIAssetsManager authorizationStatus];
-    if (authorizationStatus == QMUIAssetAuthorizationStatusNotAuthorized) {
+    if ([QMUIAssetsManager authorizationStatus] == QMUIAssetAuthorizationStatusNotAuthorized) {
         // 如果没有获取访问授权，或者访问授权状态已经被明确禁止，则显示提示语，引导用户开启授权
         if (!self.tipTextWhenNoPhotosAuthorization) {
             NSDictionary *mainInfoDictionary = [[NSBundle mainBundle] infoDictionary];
@@ -171,15 +166,8 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
             self.tipTextWhenNoPhotosAuthorization = [NSString stringWithFormat:@"请在设备的\"设置-隐私-照片\"选项中，允许%@访问你的手机相册", appName];
         }
         [self showEmptyViewWithText:self.tipTextWhenNoPhotosAuthorization detailText:nil buttonTitle:nil buttonAction:nil];
+    } else {
         
-    }else if (authorizationStatus == QMUIAssetAuthorizationStatusNotDetermined) {
-        [QMUIAssetsManager requestAuthorization:^(QMUIAssetAuthorizationStatus status) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self initAlbum];
-            });
-        }];
-        
-    }else {
         _albumsArray = [[NSMutableArray alloc] init];
         
         [[QMUIAssetsManager sharedInstance] enumerateAllAlbumsWithAlbumContentType:self.contentType usingBlock:^(QMUIAssetsGroup *resultAssetsGroup) {
