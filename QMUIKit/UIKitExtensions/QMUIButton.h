@@ -9,48 +9,47 @@
 #import <UIKit/UIKit.h>
 
 /// 控制图片在UIButton里的位置，默认为QMUIButtonImagePositionLeft
-typedef enum {
+typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
     QMUIButtonImagePositionTop,             // imageView在titleLabel上面
     QMUIButtonImagePositionLeft,            // imageView在titleLabel左边
     QMUIButtonImagePositionBottom,          // imageView在titleLabel下面
     QMUIButtonImagePositionRight,           // imageView在titleLabel右边
-} QMUIButtonImagePosition;
+};
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, QMUIGhostButtonColor) {
     QMUIGhostButtonColorBlue,
     QMUIGhostButtonColorRed,
     QMUIGhostButtonColorGreen,
     QMUIGhostButtonColorGray,
     QMUIGhostButtonColorWhite,
-} QMUIGhostButtonColor;
+};
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, QMUIFillButtonColor) {
     QMUIFillButtonColorBlue,
     QMUIFillButtonColorRed,
     QMUIFillButtonColorGreen,
     QMUIFillButtonColorGray,
     QMUIFillButtonColorWhite,
-} QMUIFillButtonColor;
+};
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, QMUINavigationButtonType) {
     QMUINavigationButtonTypeNormal,         // 普通导航栏文字按钮
     QMUINavigationButtonTypeBold,           // 导航栏加粗按钮
     QMUINavigationButtonTypeImage,          // 图标按钮
     QMUINavigationButtonTypeBack            // 自定义返回按钮(可以同时带有title)
-} QMUINavigationButtonType;
+};
 
-typedef enum {
+typedef NS_ENUM(NSUInteger, QMUIToolbarButtonType) {
     QMUIToolbarButtonTypeNormal,            // 普通工具栏按钮
     QMUIToolbarButtonTypeRed,               // 工具栏红色按钮，用于删除等警告性操作
     QMUIToolbarButtonTypeImage,              // 图标类型的按钮
-} QMUIToolbarButtonType;
+};
 
 typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     QMUINavigationButtonPositionNone = -1,  // 不处于navigationBar最左（右）边的按钮，则使用None。用None则不会在alignmentRectInsets里调整位置
     QMUINavigationButtonPositionLeft,       // 用于leftBarButtonItem，如果用于leftBarButtonItems，则只对最左边的item使用，其他item使用QMUINavigationButtonPositionNone
     QMUINavigationButtonPositionRight,      // 用于rightBarButtonItem，如果用于rightBarButtonItems，则只对最右边的item使用，其他item使用QMUINavigationButtonPositionNone
 };
-
 
 /**
  * 提供以下功能：
@@ -59,8 +58,10 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  * <li>支持点击时改变背景色颜色（<i>highlightedBackgroundColor</i>）</li>
  * <li>支持点击时改变边框颜色（<i>highlightedBorderColor</i>）</li>
  * <li>支持设置图片在按钮内的位置，无需自行调整imageEdgeInsets（<i>imagePosition</i>）</li>
+ * <li>支持设置按钮内文本和图片之间的间距，无需自行调整titleEdgeInests、imageEdgeInsets、contentEdgeInsets（<i>spacingBetweenImageAndTitle</i>）</li>
  * </ol>
  */
+
 @interface QMUIButton : UIButton
 
 /**
@@ -106,6 +107,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  * 可配合imageEdgeInsets、titleEdgeInsets、contentHorizontalAlignment、contentVerticalAlignment使用
  */
 @property(nonatomic, assign) QMUIButtonImagePosition imagePosition;
+
+/**
+ * 设置按钮里图标和文字之间的间隔，会自动响应 imagePosition 的变化而变化，默认为0。<br/>
+ * 系统默认实现需要同时设置 titleEdgeInsets 和 imageEdgeInsets，同时还需考虑 contentEdgeInsets 的增加（否则不会影响布局，可能会让图标或文字溢出或挤压），使用该属性可以避免以上情况。<br/>
+ * @warning 会与 imageEdgeInsets、 imageEdgeInsets、 contentEdgeInsets 共同作用。
+ */
+@property(nonatomic, assign) CGFloat spacingBetweenImageAndTitle;
 
 @end
 
@@ -241,11 +249,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  */
 + (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
 
-/**
- *  对`UINavigationBar`上的`UIBarButton`做统一的样式调整
- */
-+ (void)renderNavigationButtonAppearanceStyle;
-
 @end
 
 
@@ -284,9 +287,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 /// 创建一个图标类型的UIBarButtonItem
 + (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image target:(id)target action:(SEL)selector;
-
-/// 对UIToolbar上的UIBarButtonItem做统一的样式调整
-+ (void)renderToolbarButtonAppearanceStyle;
 
 @end
 

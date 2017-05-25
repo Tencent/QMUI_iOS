@@ -8,7 +8,7 @@
 
 #import "UINavigationController+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 
 @implementation UINavigationController (QMUI)
@@ -33,20 +33,27 @@ static char originGestureDelegateKey;
     self.interactivePopGestureRecognizer.delegate = (id<UIGestureRecognizerDelegate>)self;
 }
 
+- (BOOL)canPopViewController:(UIViewController *)viewController {
+    BOOL canPopViewController = YES;
+    
+    if ([viewController respondsToSelector:@selector(shouldHoldBackButtonEvent)] &&
+        [viewController shouldHoldBackButtonEvent] &&
+        [viewController respondsToSelector:@selector(canPopViewController)] &&
+        ![viewController canPopViewController]) {
+        canPopViewController = NO;
+    }
+    
+    return canPopViewController;
+}
+
 - (BOOL)qmui_navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
     
     UIViewController *viewController = [self topViewController];
     
-    BOOL canPopViewController = YES;
     //item == viewController.navigationItem to fix: 如果前后2个controller都需要hold时的BUG.
-    if ((item == viewController.navigationItem) &&
-        [viewController respondsToSelector:@selector(shouldHoldBackButtonEvent)] &&
-        [viewController shouldHoldBackButtonEvent] &&
-        [viewController respondsToSelector:@selector(canPopViewController)]) {
-        canPopViewController = [viewController canPopViewController];
-    }
+    BOOL canPopViewController = [self canPopViewController:viewController] && item == viewController.navigationItem;
     
-    // 如果nav的vc栈中有两个vc，第一个是root，第二个是second。这是second页面如果点击系统的返回按钮，topViewController获取的栈顶vc是second，而如果是直接代码写的pop操作，则获取的栈顶vc是root。也就是说只要代码写了pop操作，则系统会直接将顶层vc也就是second出栈，然后才回调的，所以这是我们获取到的顶层vc就是root了。然而不管哪种方式，参数中的item都是second的item。
+    // 如果nav的vc栈中有两个vc，第一个是root，第二个是second。这是second页面如果点击系统的返回按钮，topViewController获取的栈顶vc是second，而如果是直接代码写的pop操作，则获取的栈顶vc是root。也就是说只要代码写了pop操作，则系统会直接将顶层vc也就是second出栈，然后才回调的，所以这时我们获取到的顶层vc就是root了。然而不管哪种方式，参数中的item都是second的item。
     // 综上所述，使用item != viewController.navigationItem来判断就是为了解决这个问题。
     if (canPopViewController || item != viewController.navigationItem) {
         return [self qmui_navigationBar:navigationBar shouldPopItem:item];
@@ -70,12 +77,8 @@ static char originGestureDelegateKey;
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     if (gestureRecognizer == self.interactivePopGestureRecognizer) {
-        UIViewController *viewController = [self topViewController];
-        BOOL canPopViewController = YES;
-        if ([viewController respondsToSelector:@selector(shouldHoldBackButtonEvent)] && [viewController shouldHoldBackButtonEvent] &&
-            [viewController respondsToSelector:@selector(canPopViewController)] && ![viewController canPopViewController]) {
-            canPopViewController = NO;
-        }
+        BOOL canPopViewController = [self canPopViewController:self.topViewController];
+        
         if (canPopViewController) {
             id<UIGestureRecognizerDelegate>originGestureDelegate = objc_getAssociatedObject(self, &originGestureDelegateKey);
             if ([originGestureDelegate respondsToSelector:@selector(gestureRecognizerShouldBegin:)]) {

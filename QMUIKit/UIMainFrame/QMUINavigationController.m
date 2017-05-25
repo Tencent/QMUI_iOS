@@ -8,7 +8,7 @@
 
 #import "QMUINavigationController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUINavigationTitleView.h"
 #import "QMUICommonViewController.h"
 #import "QMUIButton.h"
@@ -155,7 +155,7 @@
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     if (self.isViewControllerTransiting || !viewController) {
-        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
+        NSAssert(NO, @"%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@",  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
         return;
     }
     

@@ -8,7 +8,7 @@
 
 #import "QMUISearchController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUISearchBar.h"
 #import "QMUICommonTableViewController.h"
 #import "QMUIEmptyView.h"
@@ -191,6 +191,12 @@ BeginIgnoreDeprecatedWarning
 
 - (void)dealloc {
     self.searchDisplayController.delegate = nil;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // 主动触发 loadView，如果不这么做，那么有可能直到 QMUISearchController 被销毁，这期间 self.searchController 都没有被触发 loadView，然后在 dealloc 时就会报错，提示尝试在释放 self.searchController 时触发了 self.searchController 的 loadView
+    [self.searchController loadViewIfNeeded];
 }
 
 - (void)setSearchResultsDelegate:(id<QMUISearchControllerDelegate>)searchResultsDelegate {

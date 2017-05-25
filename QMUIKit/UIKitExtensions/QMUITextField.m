@@ -8,7 +8,7 @@
 
 #import "QMUITextField.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "NSString+QMUI.h"
 #import "UITextField+QMUI.h"
 
@@ -26,6 +26,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         [self didInitialized];
+        self.tintColor = TextFieldTintColor;
     }
     return self;
 }
@@ -39,7 +40,6 @@
 
 - (void)didInitialized {
     self.delegate = self;
-    self.tintColor = TextFieldTintColor;
     self.placeholderColor = UIColorPlaceholder;
     self.textInsets = TextFieldTextInsets;
     self.shouldResponseToProgrammaticallyTextChanges = YES;

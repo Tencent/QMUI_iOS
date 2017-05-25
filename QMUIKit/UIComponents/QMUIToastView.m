@@ -8,7 +8,7 @@
 
 #import "QMUIToastView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIToastAnimator.h"
 #import "QMUIToastContentView.h"
 #import "QMUIToastBackgroundView.h"

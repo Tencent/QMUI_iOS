@@ -8,7 +8,7 @@
 
 #import "UIColor+QMUI.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "NSString+QMUI.h"
 
 @implementation UIColor (QMUI)
@@ -82,7 +82,7 @@
     return hexString.length < 2 ? [@"0" stringByAppendingString:hexString] : hexString;
 }
 
-+ (CGFloat)colorComponentFrom: (NSString *) string start: (NSUInteger) start length: (NSUInteger) length {
++ (CGFloat)colorComponentFrom:(NSString *)string start:(NSUInteger)start length:(NSUInteger)length {
     NSString *substring = [string substringWithRange: NSMakeRange(start, length)];
     NSString *fullHex = length == 2 ? substring : [NSString stringWithFormat: @"%@%@", substring, substring];
     unsigned hexComponent;
@@ -170,6 +170,38 @@
     return [UIColor qmui_colorFromColor:self toColor:toColor progress:progress];
 }
 
+- (BOOL)qmui_colorIsDark {
+    CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
+    [self getRed:&red green:&green blue:&blue alpha:&alpha];
+    
+    float referenceValue = 0.411;
+    float colorDelta = ((red * 0.299) + (green * 0.587) + (blue * 0.114));
+    
+    return 1.0 - colorDelta > referenceValue;
+}
+
+- (UIColor *)qmui_inverseColor {
+    const CGFloat *componentColors = CGColorGetComponents(self.CGColor);
+    UIColor *newColor = [[UIColor alloc] initWithRed:(1.0 - componentColors[0])
+                                               green:(1.0 - componentColors[1])
+                                                blue:(1.0 - componentColors[2])
+                                               alpha:componentColors[3]];
+    return newColor;
+}
+
+- (BOOL)qmui_isSystemTintColor {
+    return [self isEqual:[UIColor qmui_systemTintColor]];
+}
+
++ (UIColor *)qmui_systemTintColor {
+    static UIColor *systemTintColor = nil;
+    if (!systemTintColor) {
+        UIView *view = [[UIView alloc] init];
+        systemTintColor = view.tintColor;
+    }
+    return systemTintColor;
+}
+
 + (UIColor *)qmui_colorWithBackendColor:(UIColor *)backendColor frontColor:(UIColor *)frontColor {
     CGFloat bgAlpha = [backendColor qmui_alpha];
     CGFloat bgRed = [backendColor qmui_red];
@@ -213,25 +245,6 @@
     CGFloat green = ( arc4random() % 255 / 255.0 );
     CGFloat blue = ( arc4random() % 255 / 255.0 );
     return [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
-}
-
-- (BOOL)qmui_colorIsDark {
-    CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
-    [self getRed:&red green:&green blue:&blue alpha:&alpha];
-    
-    float referenceValue = 0.411;
-    float colorDelta = ((red * 0.299) + (green * 0.587) + (blue * 0.114));
-    
-    return 1.0 - colorDelta > referenceValue;
-}
-
-- (UIColor *)qmui_inverseColor {
-    const CGFloat *componentColors = CGColorGetComponents(self.CGColor);
-    UIColor *newColor = [[UIColor alloc] initWithRed:(1.0 - componentColors[0])
-                                               green:(1.0 - componentColors[1])
-                                                blue:(1.0 - componentColors[2])
-                                               alpha:componentColors[3]];
-    return newColor;
 }
 
 @end

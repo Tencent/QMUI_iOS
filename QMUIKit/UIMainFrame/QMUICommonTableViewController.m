@@ -8,7 +8,7 @@
 
 #import "QMUICommonTableViewController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUITableView.h"
 #import "QMUIEmptyView.h"
 #import "QMUILabel.h"

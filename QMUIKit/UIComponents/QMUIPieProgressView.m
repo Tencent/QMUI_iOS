@@ -8,7 +8,7 @@
 
 #import "QMUIPieProgressView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 
 @interface QMUIPieProgressLayer : CALayer
 
@@ -78,6 +78,9 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
+        self.backgroundColor = UIColorClear;
+        self.tintColor = UIColorBlue;
+        
         [self didInitialized];
     }
     return self;
@@ -86,6 +89,8 @@
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
         [self didInitialized];
+        // 从 xib 初始化的话，在 IB 里设置了 tintColor 也不会触发 tintColorDidChange，所以这里手动调用一下
+        [self tintColorDidChange];
     }
     return self;
 }
@@ -94,12 +99,8 @@
     self.progress = 0.0;
     self.progressAnimationDuration = 0.5;
     
-    self.backgroundColor = UIColorClear;
-    self.tintColor = UIColorBlue;
     self.layer.contentsScale = ScreenScale;// 要显示指定一个倍数
-    self.layer.backgroundColor = UIColorClear.CGColor;
     self.layer.borderWidth = 1.0;
-    
     [self.layer setNeedsDisplay];
 }
 

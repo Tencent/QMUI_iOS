@@ -8,7 +8,7 @@
 
 #import "QMUIImagePickerCollectionViewCell.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "QMUIImagePickerHelper.h"
 #import "QMUIPieProgressView.h"

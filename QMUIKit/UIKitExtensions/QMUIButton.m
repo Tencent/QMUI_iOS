@@ -8,7 +8,7 @@
 
 #import "QMUIButton.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUICommonViewController.h"
 #import "QMUINavigationController.h"
 #import "UIImage+QMUI.h"
@@ -19,7 +19,14 @@
 
 @property(nonatomic, strong) CALayer *highlightedBackgroundLayer;
 @property(nonatomic, strong) UIColor *originBorderColor;
+
+// 记录上一次的 spacing 和 lastImagePosition，用于恢复状态
+@property(nonatomic, assign) CGFloat lastSpacingBetweenImageAndTitle;
+@property(nonatomic, assign) QMUIButtonImagePosition lastImagePosition;
+@property(nonatomic, assign) BOOL hasInitialSpacingBetweenImageAndTitle;
+
 - (void)didInitialized;// UISubclassingHooks
+
 @end
 
 @implementation QMUIButton
@@ -27,6 +34,11 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
         [self didInitialized];
+        
+        self.tintColor = ButtonTintColor;
+        if (!self.adjustsTitleTintColorAutomatically) {
+            [self setTitleColor:self.tintColor forState:UIControlStateNormal];
+        }
     }
     return self;
 }
@@ -41,10 +53,6 @@
 - (void)didInitialized {
     self.adjustsTitleTintColorAutomatically = NO;
     self.adjustsImageTintColorAutomatically = NO;
-    self.tintColor = ButtonTintColor;
-    if (!self.adjustsTitleTintColorAutomatically) {
-        [self setTitleColor:self.tintColor forState:UIControlStateNormal];
-    }
     
     // 默认接管highlighted和disabled的表现，去掉系统默认的表现
     self.adjustsImageWhenHighlighted = NO;
@@ -58,6 +66,7 @@
     
     // 图片默认在按钮左边，与系统UIButton保持一致
     self.imagePosition = QMUIButtonImagePositionLeft;
+    self.lastImagePosition = QMUIButtonImagePositionLeft;
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -274,9 +283,130 @@
     }
 }
 
+- (UIEdgeInsets)adjustTitleInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue insetsValue:(UIEdgeInsets)insetsValue {
+    
+    switch (imagePositionValue) {
+        case QMUIButtonImagePositionTop:
+            return UIEdgeInsetsMake(insetsValue.top + spacingValue, insetsValue.left, insetsValue.bottom - spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionBottom:
+            return UIEdgeInsetsMake(insetsValue.top - spacingValue, insetsValue.left, insetsValue.bottom + spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionLeft:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left + spacingValue, insetsValue.bottom, insetsValue.right - spacingValue);
+            break;
+            
+        case QMUIButtonImagePositionRight:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left - spacingValue, insetsValue.bottom, insetsValue.right + spacingValue);
+            break;
+    }
+}
+
+- (UIEdgeInsets)adjustImageInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue insetsValue:(UIEdgeInsets)insetsValue {
+    
+    switch (imagePositionValue) {
+        case QMUIButtonImagePositionTop:
+            return UIEdgeInsetsMake(insetsValue.top - spacingValue, insetsValue.left, insetsValue.bottom + spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionBottom:
+            return UIEdgeInsetsMake(insetsValue.top + spacingValue, insetsValue.left, insetsValue.bottom - spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionLeft:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left - spacingValue, insetsValue.bottom, insetsValue.right + spacingValue);
+            break;
+            
+        case QMUIButtonImagePositionRight:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left + spacingValue, insetsValue.bottom, insetsValue.right - spacingValue);
+            break;
+    }
+}
+
+- (UIEdgeInsets)adjustContentInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue insetsValue:(UIEdgeInsets)insetsValue {
+    
+    switch (imagePositionValue) {
+        case QMUIButtonImagePositionTop:
+        case QMUIButtonImagePositionBottom:
+            return UIEdgeInsetsMake(insetsValue.top + spacingValue, insetsValue.left, insetsValue.bottom + spacingValue, insetsValue.right);
+            break;
+            
+        case QMUIButtonImagePositionLeft:
+        case QMUIButtonImagePositionRight:
+            return UIEdgeInsetsMake(insetsValue.top, insetsValue.left + spacingValue, insetsValue.bottom, insetsValue.right + spacingValue);
+            break;
+    }
+}
+
+- (void)adjustInsetsWithSpacingValue:(CGFloat)spacingValue imagePositionValue:(QMUIButtonImagePosition)imagePositionValue {
+    UIEdgeInsets titleEdgeInsets = [self adjustTitleInsetsWithSpacingValue:spacingValue imagePositionValue:imagePositionValue insetsValue:self.titleEdgeInsets];
+    UIEdgeInsets imageEdgeInsets = [self adjustImageInsetsWithSpacingValue:spacingValue imagePositionValue:imagePositionValue insetsValue:self.imageEdgeInsets];
+    UIEdgeInsets contentEdgeInsets = [self adjustContentInsetsWithSpacingValue:spacingValue imagePositionValue:imagePositionValue insetsValue:self.contentEdgeInsets];
+    
+    [super setTitleEdgeInsets:titleEdgeInsets];
+    [super setImageEdgeInsets:imageEdgeInsets];
+    [super setContentEdgeInsets:contentEdgeInsets];
+}
+
+// 恢复到上一次的 insets 设置
+- (void)restoreInsets {
+    CGFloat spacingValue = -self.lastSpacingBetweenImageAndTitle / 2;
+    
+    [self adjustInsetsWithSpacingValue:spacingValue imagePositionValue:self.lastImagePosition];
+}
+
+// 重新保存当前 insets
+- (void)saveInsets {
+    CGFloat spacingValue = self.spacingBetweenImageAndTitle / 2;
+    
+    [self adjustInsetsWithSpacingValue:spacingValue imagePositionValue:self.imagePosition];
+}
+
+// 检查 insets 的设置，每次都恢复上一次没设置前的状态重新设置，避免多次赋值的问题。
+- (void)checkInsetsChange {
+    
+    // 设置过则需要回滚到未设置的状态
+    if (self.hasInitialSpacingBetweenImageAndTitle) {
+        [self restoreInsets];
+    }
+    
+    [self saveInsets];
+    
+    self.lastImagePosition = self.imagePosition;
+    
+    [self setNeedsLayout];
+}
+
+- (void)setSpacingBetweenImageAndTitle:(CGFloat)spacingBetweenImageAndTitle {
+    _spacingBetweenImageAndTitle = spacingBetweenImageAndTitle;
+    
+    [self checkInsetsChange];
+    
+    self.hasInitialSpacingBetweenImageAndTitle = YES;
+    self.lastSpacingBetweenImageAndTitle = self.spacingBetweenImageAndTitle;
+}
+
 - (void)setImagePosition:(QMUIButtonImagePosition)imagePosition {
     _imagePosition = imagePosition;
-    [self setNeedsLayout];
+    
+    [self checkInsetsChange];
+}
+
+- (void)setTitleEdgeInsets:(UIEdgeInsets)titleEdgeInsets {
+    UIEdgeInsets adjustedEdgeInsets = [self adjustTitleInsetsWithSpacingValue:self.spacingBetweenImageAndTitle / 2 imagePositionValue:self.imagePosition insetsValue:titleEdgeInsets];
+    [super setTitleEdgeInsets:adjustedEdgeInsets];
+}
+
+- (void)setImageEdgeInsets:(UIEdgeInsets)imageEdgeInsets {
+    UIEdgeInsets adjustedEdgeInsets = [self adjustImageInsetsWithSpacingValue:self.spacingBetweenImageAndTitle / 2 imagePositionValue:self.imagePosition insetsValue:imageEdgeInsets];
+    [super setImageEdgeInsets:adjustedEdgeInsets];
+}
+
+- (void)setContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets {
+    UIEdgeInsets adjustedEdgeInsets = [self adjustContentInsetsWithSpacingValue:self.spacingBetweenImageAndTitle / 2 imagePositionValue:self.imagePosition insetsValue:contentEdgeInsets];
+    [super setContentEdgeInsets:adjustedEdgeInsets];
 }
 
 - (void)setHighlightedBackgroundColor:(UIColor *)highlightedBackgroundColor {
@@ -560,31 +690,6 @@
     [self setTitleColor:[self.tintColor colorWithAlphaComponent:NavBarDisabledAlpha] forState:UIControlStateDisabled];
 }
 
-+ (void)renderNavigationButtonAppearanceStyle {
-    // 更改全局的返回按钮图片
-    UIImage *customBackIndicatorImage = NavBarBackIndicatorImage;
-    if (customBackIndicatorImage && [UINavigationBar instancesRespondToSelector:@selector(setBackIndicatorImage:)]) {
-        UINavigationBar *navBarAppearance = [UINavigationBar appearanceWhenContainedIn:[QMUINavigationController class], nil];
-        
-        // 返回按钮的图片frame是和系统默认的返回图片的大小一致的（13, 21），所以用自定义返回箭头时要保证图片大小与系统的箭头大小一样，否则无法对齐
-        CGSize systemBackIndicatorImageSize = CGSizeMake(13, 21); // 在iOS9上实际测量得到
-        CGSize customBackIndicatorImageSize = customBackIndicatorImage.size;
-        if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
-            CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
-            customBackIndicatorImage = [customBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
-                                                                                                                  0,
-                                                                                                                  imageExtensionVerticalFloat,
-                                                                                                                  systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)];
-        }
-        
-        navBarAppearance.backIndicatorImage = customBackIndicatorImage;
-        navBarAppearance.backIndicatorTransitionMaskImage = navBarAppearance.backIndicatorImage;
-    }
-    // 更改全局返回按钮的文字间距
-    UIBarButtonItem *backBarButtonItem = [UIBarButtonItem appearanceWhenContainedIn:[QMUINavigationController class], nil];
-    [backBarButtonItem setBackButtonTitlePositionAdjustment:NavBarBarBackButtonTitlePositionAdjustment forBarMetrics:UIBarMetricsDefault];
-}
-
 // 返回按钮的文字会自动匹配上一个界面的title，如果需要自定义title，则直接用initWithType:title:工具类来做
 + (UIBarButtonItem *)backBarButtonItemWithTarget:(id)target action:(SEL)selector tintColor:(UIColor *)tintColor {
     NSString *backTitle = nil;
@@ -751,14 +856,6 @@
     }
 }
 
-+ (void)renderToolbarButtonAppearanceStyle {
-    UIFont *titleFont = ToolBarButtonFont;
-    if (titleFont) {
-        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:QMUINavigationController.class, nil];
-        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: titleFont} forState:UIControlStateNormal];
-    }
-}
-
 + (UIBarButtonItem *)barButtonItemWithToolbarButton:(QMUIToolbarButton *)button target:(id)target action:(SEL)selector {
     [button addTarget:target action:selector forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem *buttonItem = [[UIBarButtonItem alloc] initWithCustomView:button];
@@ -804,7 +901,6 @@
 
 - (void)didInitialized {
     [super didInitialized];
-    [self setTitleColor:ButtonTintColor forState:UIControlStateNormal];
     
     self.underlineLayer = [CALayer layer];
     [self.underlineLayer qmui_removeDefaultAnimations];

@@ -8,7 +8,7 @@
 
 #import "QMUIImagePickerViewController.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "QMUIImagePickerCollectionViewCell.h"
 #import "QMUIButton.h"
@@ -426,7 +426,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (imageAsset.downloadStatus == QMUIAssetDownloadStatusDownloading) {
         // 下载过程中点击，取消下载，理论上能点击 progressView 就肯定是下载中，这里只是做个保护
         QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
-        [[QMUIAssetsManager sharedInstance].phCachingImageManager cancelImageRequest:(int)imageAsset.requestID];
+        [[QMUIAssetsManager sharedInstance].phCachingImageManager cancelImageRequest:(int32_t)imageAsset.requestID];
         QMUILog(@"Cancel download asset image with request ID %@", [NSNumber numberWithInteger:imageAsset.requestID]);
         cell.downloadStatus = QMUIAssetDownloadStatusCanceled;
         [imageAsset updateDownloadStatusWithDownloadResult:NO];

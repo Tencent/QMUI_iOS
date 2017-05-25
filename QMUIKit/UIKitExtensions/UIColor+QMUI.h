@@ -96,6 +96,33 @@
 - (UIColor *)qmui_transitionToColor:(UIColor *)toColor progress:(CGFloat)progress;
 
 /**
+ *  判断当前颜色是否为深色，可用于根据不同色调动态设置不同文字颜色的场景。
+ *
+ *  @link http://stackoverflow.com/questions/19456288/text-color-based-on-background-image @/link
+ *
+ *  @return 若为深色则返回“YES”，浅色则返回“NO”
+ */
+- (BOOL)qmui_colorIsDark;
+
+/**
+ *  当前颜色的反色
+ *
+ *  @link http://stackoverflow.com/questions/5893261/how-to-get-inverse-color-from-uicolor @/link
+ */
+- (UIColor *)qmui_inverseColor;
+
+/**
+ *  判断当前颜色是否等于系统默认的 tintColor 颜色。
+ *  背景：如果将一个 UIView.tintColor 设置为 nil，表示这个 view 的 tintColor 希望跟随 superview.tintColor 变化而变化，所以设置完再获取 view.tintColor，得到的并非 nil，而是 superview.tintColor 的值，而如果整棵 view 层级树里的 view 都没有设置自己的 tintColor，则会返回系统默认的 tintColor（也即 [UIColor qmui_systemTintColor]），所以才提供这个方法用于代替判断 tintColor == nil 的作用。
+ */
+- (BOOL)qmui_isSystemTintColor;
+
+/**
+ *  获取当前系统的默认 tintColor 色值
+ */
++ (UIColor *)qmui_systemTintColor;
+
+/**
  *  计算两个颜色叠加之后的最终色（注意区分前景色后景色的顺序）<br/>
  *  @link http://stackoverflow.com/questions/10781953/determine-rgba-colour-received-by-combining-two-colours @/link
  */
@@ -113,21 +140,5 @@
  *  产生一个随机色，大部分情况下用于测试
  */
 + (UIColor *)qmui_randomColor;
-
-/**
- *  判断当前颜色是否为深色，可用于根据不同色调动态设置不同文字颜色的场景。
- *
- *  @link http://stackoverflow.com/questions/19456288/text-color-based-on-background-image @/link
- *
- *  @return 若为深色则返回“YES”，浅色则返回“NO”
- */
-- (BOOL)qmui_colorIsDark;
-
-/**
- *  当前颜色的反色
- *
- *  @link http://stackoverflow.com/questions/5893261/how-to-get-inverse-color-from-uicolor @/link
- */
-- (UIColor *)qmui_inverseColor;
 
 @end

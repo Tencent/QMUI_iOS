@@ -8,7 +8,7 @@
 
 #import "QMUINavigationTitleView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "UIImage+QMUI.h"
 #import "UILabel+QMUI.h"
 #import "UIActivityIndicatorView+QMUI.h"
@@ -520,9 +520,11 @@
 
 - (void)tintColorDidChange {
     [super tintColorDidChange];
-    self.titleLabel.textColor = self.tintColor;
-    self.subtitleLabel.textColor = self.tintColor;
-    self.loadingView.color = self.tintColor;
+    
+    UIColor *color = self.tintColor;
+    self.titleLabel.textColor = color;
+    self.subtitleLabel.textColor = color;
+    self.loadingView.color = color;
 }
 
 #pragma mark - Events

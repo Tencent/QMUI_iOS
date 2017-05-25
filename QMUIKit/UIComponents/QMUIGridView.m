@@ -8,7 +8,7 @@
 
 #import "QMUIGridView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "CALayer+QMUI.h"
 
 @interface QMUIGridView ()

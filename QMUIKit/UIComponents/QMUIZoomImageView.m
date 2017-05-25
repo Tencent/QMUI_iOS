@@ -8,7 +8,7 @@
 
 #import "QMUIZoomImageView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIEmptyView.h"
 #import "UIImage+QMUI.h"
 #import "UIColor+QMUI.h"
@@ -158,10 +158,11 @@
 }
 
 - (CGFloat)minimumZoomScale {
-    CGRect viewport = self.bounds;
-    if (CGRectIsEmpty(viewport) || (!self.image && !self.livePhoto)) {
+    if ((!self.image && !self.livePhoto)) {
         return 1;
     }
+
+    CGRect viewport = [self finalViewportRect];
     
     CGSize imageSize = self.image ? self.image.size : self.livePhoto.size;
     
@@ -203,6 +204,22 @@
     if (shouldFireDidZoomingManual) {
         [self handleDidEndZooming];
     }
+    
+    // 当图片比 viewport 的区域更大时，要把图片放在 viewport 正中间
+    self.scrollView.contentOffset = ({
+        CGFloat x = self.scrollView.contentOffset.x;
+        CGFloat y = self.scrollView.contentOffset.y;
+        CGRect viewport = [self finalViewportRect];
+        if (!CGRectIsEmpty(viewport)) {
+            if (CGRectGetWidth(viewport) < CGRectGetWidth(self.imageView.frame)) {
+                x = (CGRectGetWidth(self.imageView.frame) / 2 - CGRectGetWidth(viewport) / 2) - CGRectGetMinX(viewport);
+            }
+            if (CGRectGetHeight(viewport) < CGRectGetHeight(self.imageView.frame)) {
+                y = (CGRectGetHeight(self.imageView.frame) / 2 - CGRectGetHeight(viewport) / 2) - CGRectGetMinY(viewport);
+            }
+        }
+        CGPointMake(x, y);
+    });
 }
 
 - (void)setZoomScale:(CGFloat)zoomScale animated:(BOOL)animated {
@@ -231,30 +248,32 @@
 }
 
 - (void)handleDidEndZooming {
+    CGRect viewport = [self finalViewportRect];
+    
     UIView *imageView = [self currentContentImageView];
     CGRect imageViewFrame = (!self.image && !self.livePhoto) ? CGRectZero : [self convertRect:imageView.frame fromView:imageView.superview];
-    CGSize viewportSize = self.bounds.size;
     UIEdgeInsets contentInset = UIEdgeInsetsZero;
-    if (!CGRectIsEmpty(imageViewFrame) && !CGSizeIsEmpty(viewportSize)) {
-        if (CGRectGetWidth(imageViewFrame) < viewportSize.width) {
-            // 用 floor 而不是 flat，是因为 flat 本质上是向上取整，会导致 left + right 比实际的大，然后 scrollView 就认为可滚动了
-            contentInset.left = contentInset.right = floor((viewportSize.width - CGRectGetWidth(imageViewFrame)) / 2.0);
-        }
-        if (CGRectGetHeight(imageViewFrame) < viewportSize.height) {
-            // 用 floor 而不是 flat，是因为 flat 本质上是向上取整，会导致 top + bottom 比实际的大，然后 scrollView 就认为可滚动了
-            contentInset.top = contentInset.bottom = floor((viewportSize.height - CGRectGetHeight(imageViewFrame)) / 2.0);
-        }
+    
+    contentInset.top = CGRectGetMinY(viewport);
+    contentInset.left = CGRectGetMinX(viewport);
+    contentInset.right = CGRectGetWidth(self.bounds) - CGRectGetMaxX(viewport);
+    contentInset.bottom = CGRectGetHeight(self.bounds) - CGRectGetMaxY(viewport);
+    
+    // 图片 height 比选图框(viewport)的 height 小，这时应该把图片纵向摆放在选图框中间，且不允许上下移动
+    if (CGRectGetHeight(viewport) > CGRectGetHeight(imageViewFrame)) {
+        // 用 floor 而不是 flat，是因为 flat 本质上是向上取整，会导致 top + bottom 比实际的大，然后 scrollView 就认为可滚动了
+        contentInset.top = floor(CGRectGetMidY(viewport) - CGRectGetHeight(imageViewFrame) / 2.0);
+        contentInset.bottom = floor(CGRectGetHeight(self.bounds) - CGRectGetMidY(viewport) - CGRectGetHeight(imageViewFrame) / 2.0);
     }
+    
+    // 图片 width 比选图框的 width 小，这时应该把图片横向摆放在选图框中间，且不允许左右移动
+    if (CGRectGetWidth(viewport) > CGRectGetWidth(imageViewFrame)) {
+        contentInset.left = floor(CGRectGetMidX(viewport) - CGRectGetWidth(imageViewFrame) / 2.0);
+        contentInset.right = floor(CGRectGetWidth(self.bounds) - CGRectGetMidX(viewport) - CGRectGetWidth(imageViewFrame) / 2.0);
+    }
+    
     self.scrollView.contentInset = contentInset;
     self.scrollView.contentSize = imageView.frame.size;
-    
-    if (self.scrollView.contentInset.top > 0) {
-        self.scrollView.contentOffset = CGPointMake(self.scrollView.contentOffset.x, -self.scrollView.contentInset.top);
-    }
-    
-    if (self.scrollView.contentInset.left > 0) {
-        self.scrollView.contentOffset = CGPointMake(-self.scrollView.contentInset.left, self.scrollView.contentOffset.y);
-    }
 }
 
 - (BOOL)enabledZoomImageView {
@@ -345,6 +364,21 @@
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
     [self handleDidEndZooming];
+}
+
+#pragma mark - 工具方法
+
+- (CGRect)finalViewportRect {
+    CGRect rect = self.viewportRect;
+    if (CGRectIsEmpty(rect) && !CGRectIsEmpty(self.bounds)) {
+        // 有可能此时还没有走到过 layoutSubviews 因此拿不到正确的 scrollView 的 size，因此这里要强制 layout 一下
+        if (!CGSizeEqualToSize(self.scrollView.bounds.size, self.bounds.size)) {
+            [self setNeedsLayout];
+            [self layoutIfNeeded];
+        }
+        rect = CGRectMakeWithSize(self.scrollView.bounds.size);
+    }
+    return rect;
 }
 
 @end

@@ -8,7 +8,7 @@
 
 #import "QMUIEmotionView.h"
 #import "QMUICommonDefines.h"
-#import "QMUIConfiguration.h"
+#import "QMUIConfigurationMacros.h"
 #import "QMUIHelper.h"
 #import "QMUIButton.h"
 #import "UIView+QMUI.h"
