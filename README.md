@@ -9,6 +9,14 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 
 官网：[http://qmuiteam.com/ios](http://qmuiteam.com/ios)
 
+联系微信：
+
+**请优先通过提 issue 的方式发表问题，此微信仅接受以 issue 链接为申请内容的好友申请**
+
+<p>
+<img src="https://cloud.githubusercontent.com/assets/1190261/26618220/29386422-460c-11e7-84b9-f8d526b583b2.png" width="220" />
+</p>
+
 [![QMUI Team Name](https://img.shields.io/badge/Team-QMUI-brightgreen.svg?style=flat)](https://github.com/QMUI "QMUI Team")
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://opensource.org/licenses/MIT "Feel free to contribute.")
 
