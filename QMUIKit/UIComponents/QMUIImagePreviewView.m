@@ -7,8 +7,7 @@
 //
 
 #import "QMUIImagePreviewView.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "QMUICollectionViewPagingLayout.h"
 #import "QMUIZoomImageView.h"
 #import "NSObject+QMUI.h"
@@ -39,6 +38,10 @@
 }
 
 @end
+
+static NSString * const kLivePhotoCellIdentifier = @"livephoto";
+static NSString * const kVideoCellIdentifier = @"video";
+static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 
 @interface QMUIImagePreviewView ()
 
@@ -76,8 +79,11 @@
     self.collectionView.showsHorizontalScrollIndicator = NO;
     self.collectionView.showsVerticalScrollIndicator = NO;
     self.collectionView.scrollsToTop = NO;
+    self.collectionView.delaysContentTouches = NO;
     self.collectionView.decelerationRate = UIScrollViewDecelerationRateFast;
-    [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:@"cell"];
+    [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
+    [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
+    [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kLivePhotoCellIdentifier];
     [self addSubview:self.collectionView];
     
     self.loadingColor = UIColorWhite;
@@ -131,18 +137,41 @@
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    QMUIImagePreviewCell *cell = (QMUIImagePreviewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
-    cell.zoomImageView.delegate = self;
-    ((UIActivityIndicatorView *)cell.zoomImageView.emptyView.loadingView).color = self.loadingColor;
+    NSString *identifier = kImageOrUnknownCellIdentifier;
+    if ([self.delegate respondsToSelector:@selector(imagePreviewView:assetTypeAtIndex:)]) {
+        QMUIImagePreviewMediaType type = [self.delegate imagePreviewView:self assetTypeAtIndex:indexPath.item];
+        if (type == QMUIImagePreviewMediaTypeLivePhoto) {
+            identifier = kLivePhotoCellIdentifier;
+        } else if (type == QMUIImagePreviewMediaTypeVideo) {
+            identifier = kVideoCellIdentifier;
+        }
+    }
+    QMUIImagePreviewCell *cell = (QMUIImagePreviewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+    QMUIZoomImageView *zoomView = cell.zoomImageView;
+    ((UIActivityIndicatorView *)zoomView.emptyView.loadingView).color = self.loadingColor;
+    zoomView.delegate = self;
+    
+    // 因为 cell 复用的问题，很可能此时会显示一张错误的图片，因此这里要清空所有图片的显示
+    zoomView.image = nil;
+    zoomView.livePhoto = nil;
+    zoomView.videoPlayerItem = nil;
+    [zoomView showLoading];
+    
+    if ([self.delegate respondsToSelector:@selector(imagePreviewView:renderZoomImageView:atIndex:)]) {
+        [self.delegate imagePreviewView:self renderZoomImageView:zoomView atIndex:indexPath.item];
+    }
+    [zoomView hideEmptyView];
     return cell;
 }
 
 - (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
-    // 一张图滚走了再滚回来，会走到 willDisplayCell: 但不会走到 cellForItemAtIndexPath:，所以需要在这里更新图片，从而重置缩放状态
     QMUIImagePreviewCell *previewCell = (QMUIImagePreviewCell *)cell;
-    if ([self.delegate respondsToSelector:@selector(imagePreviewView:renderZoomImageView:atIndex:)]) {
-        [self.delegate imagePreviewView:self renderZoomImageView:previewCell.zoomImageView atIndex:indexPath.item];
-    }
+    [previewCell.zoomImageView revertZooming];
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
+    QMUIImagePreviewCell *previewCell = (QMUIImagePreviewCell *)cell;
+    [previewCell.zoomImageView endPlayingVideo];
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -243,6 +272,13 @@
     [self checkIfDelegateMissing];
     if ([self.delegate respondsToSelector:_cmd]) {
         [self.delegate longPressInZoomingImageView:imageView];
+    }
+}
+
+- (void)zoomImageView:(QMUIZoomImageView *)imageView didHideVideoToolbar:(BOOL)didHide {
+    [self checkIfDelegateMissing];
+    if ([self.delegate respondsToSelector:_cmd]) {
+        [self.delegate zoomImageView:imageView didHideVideoToolbar:didHide];
     }
 }
 

@@ -7,7 +7,7 @@
 //
 
 #import "QMUIAssetsGroup.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 #import "QMUIAsset.h"
 #import "QMUIAssetsManager.h"
 

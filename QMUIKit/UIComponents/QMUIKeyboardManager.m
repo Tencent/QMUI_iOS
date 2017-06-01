@@ -7,8 +7,7 @@
 //
 
 #import "QMUIKeyboardManager.h"
-#import "QMUICommonDefines.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 
 
 @interface UIView (KeyboardManager)

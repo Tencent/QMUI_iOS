@@ -15,10 +15,12 @@
 #import <Photos/PHAssetCollectionChangeRequest.h>
 #import <Photos/PHFetchOptions.h>
 #import <Photos/PHImageManager.h>
-#import "QMUIAsset.h"
 #import "QMUIAssetsGroup.h"
 
 #define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 下也使用 ALAssetLibrary，用于调试
+
+@class PHCachingImageManager;
+@class QMUIAsset;
 
 /// Asset授权的状态
 typedef NS_ENUM(NSUInteger, QMUIAssetAuthorizationStatus) {
@@ -36,9 +38,6 @@ extern void QMUIImageWriteToSavedPhotosAlbumWithAlbumAssetsGroup(UIImage *image,
 
 /// 保存视频到指定相册，该方法是一个 C 方法，与系统 ALAssetLibrary 保存图片的 C 方法 UISaveVideoAtPathToSavedPhotosAlbum 对应，方便调用
 extern void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);
-
-
-@class PHCachingImageManager;
 
 /**
  *  构建 QMUIAssetsManager 这个对象并提供单例的调用方式主要出于下面几点考虑：

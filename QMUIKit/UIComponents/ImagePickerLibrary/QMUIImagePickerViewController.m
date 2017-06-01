@@ -7,11 +7,10 @@
 //
 
 #import "QMUIImagePickerViewController.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "QMUIImagePickerCollectionViewCell.h"
 #import "QMUIButton.h"
+#import "QMUIPieProgressView.h"
 #import "QMUIAssetsManager.h"
 #import "QMUIAlertController.h"
 #import "QMUIImagePickerHelper.h"
@@ -22,8 +21,8 @@
 #import "UIView+QMUI.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <AssetsLibrary/AssetsLibrary.h>
-
-#define kCellIdentifier @"cell"
+#import "NSString+QMUI.h"
+#import "QMUIEmptyView.h"
 
 // 底部工具栏
 #define OperationToolBarViewHeight 44
@@ -34,6 +33,9 @@
 #define CollectionViewInsetHorizontal PreferredVarForDevices((PixelOne * 2), 1, 2, 2)
 #define CollectionViewInset UIEdgeInsetsMake(CollectionViewInsetHorizontal, CollectionViewInsetHorizontal, CollectionViewInsetHorizontal, CollectionViewInsetHorizontal)
 #define CollectionViewCellMargin CollectionViewInsetHorizontal
+
+static NSString * const kVideoCellIdentifier = @"video";
+static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 
 
 #pragma mark - QMUIImagePickerViewController (UIAppearance)
@@ -77,6 +79,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 @property(nonatomic, strong) QMUIImagePickerPreviewViewController *imagePickerPreviewViewController;
 @property(nonatomic, assign) BOOL hasScrollToInitialPosition;
+@property(nonatomic, assign) BOOL canScrollToInitialPosition;// 要等数据加载完才允许滚动
 @end
 
 @implementation QMUIImagePickerViewController
@@ -92,6 +95,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     _allowsMultipleSelection = YES;
     _maximumSelectImageCount = INT_MAX;
     _minimumSelectImageCount = 0;
+    _shouldShowDefaultLoadingView = YES;
     
     // 为了让使用者可以在 init 完就可以直接改 UI 相关的 property，这里提前触发 loadView
     [self loadViewIfNeeded];
@@ -117,7 +121,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     self.collectionView.showsHorizontalScrollIndicator = NO;
     self.collectionView.alwaysBounceHorizontal = NO;
     self.collectionView.backgroundColor = UIColorClear;
-    [self.collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kCellIdentifier];
+    [self.collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
+    [self.collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
     [self.view addSubview:self.collectionView];
     
     // 只有允许多选时，才显示底部工具
@@ -196,6 +201,11 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     [self.collectionView reloadData];
 }
 
+- (void)showEmptyView {
+    [super showEmptyView];
+    self.emptyView.backgroundColor = self.view.backgroundColor;// 为了盖住背后的 collectionView，这里加个背景色（不盖住的话会看到 collectionView 先滚到列表顶部然后跳到列表底部）
+}
+
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     
@@ -216,8 +226,6 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         self.collectionView.contentInset = UIEdgeInsetsSetBottom(self.collectionView.contentInset, operationToolBarViewHeight);
         self.collectionView.scrollIndicatorInsets = self.collectionView.contentInset;
     }
-    
-    [self scrollToInitialPositionIfNeeded];
 }
 
 - (void)refreshWithImagesArray:(NSMutableArray<QMUIAsset *> *)imagesArray {
@@ -238,14 +246,37 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (self.imagePickerViewControllerDelegate && [self.imagePickerViewControllerDelegate respondsToSelector:@selector(albumSortTypeForImagePickerViewController:)]) {
         albumSortType = [self.imagePickerViewControllerDelegate albumSortTypeForImagePickerViewController:self];
     }
-    [assetsGroup enumerateAssetsWithOptions:albumSortType usingBlock:^(QMUIAsset *resultAsset) {
-        if (resultAsset) {
-            [self.imagesAssetArray addObject:resultAsset];
-        } else {
-            // result 为 nil，即遍历相片或视频完毕
-            [self.collectionView reloadData];
-        }
-    }];
+    
+    // 遍历相册内的资源较为耗时，交给子线程去处理，因此这里需要显示 Loading
+    if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewControllerWillStartLoad:)]) {
+        [self.imagePickerViewControllerDelegate imagePickerViewControllerWillStartLoad:self];
+    }
+    if (self.shouldShowDefaultLoadingView) {
+        [self showEmptyViewWithLoading];
+    }
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        [assetsGroup enumerateAssetsWithOptions:albumSortType usingBlock:^(QMUIAsset *resultAsset) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // 这里需要对 UI 进行操作，因此放回主线程处理
+                if (resultAsset) {
+                    [self.imagesAssetArray addObject:resultAsset];
+                } else { // result 为 nil，即遍历相片或视频完毕
+                    [self.collectionView reloadData];
+                    [self.collectionView performBatchUpdates:NULL
+                                                  completion:^(BOOL finished) {
+                                                      [self scrollToInitialPositionIfNeeded];
+                                                      
+                                                      if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewControllerWillFinishLoad:)]) {
+                                                          [self.imagePickerViewControllerDelegate imagePickerViewControllerWillFinishLoad:self];
+                                                      }
+                                                      if (self.shouldShowDefaultLoadingView) {
+                                                          [self hideEmptyView];
+                                                      }
+                                                  }];
+                }
+            });
+        }];
+    });
 }
 
 - (void)initPreviewViewControllerIfNeeded {
@@ -276,17 +307,9 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
-- (void)setHasScrollToInitialPosition:(BOOL)hasScrollToInitialPosition {
-    BOOL valueChanged = _hasScrollToInitialPosition != hasScrollToInitialPosition;
-    _hasScrollToInitialPosition = hasScrollToInitialPosition;
-    if (valueChanged) {
-        [self scrollToInitialPositionIfNeeded];
-    }
-}
-
 - (void)scrollToInitialPositionIfNeeded {
-    // collectionView.contentSize.height > 0 这个条件是用来判断 collectionView 是否已经加载了数据
-    if (self.collectionView.window && self.collectionView.contentSize.height > 0 && !self.hasScrollToInitialPosition) {
+    BOOL hasDataLoaded = [self.collectionView numberOfItemsInSection:0] > 0;
+    if (self.collectionView.window && hasDataLoaded && !self.hasScrollToInitialPosition) {
         if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(albumSortTypeForImagePickerViewController:)] && [self.imagePickerViewControllerDelegate albumSortTypeForImagePickerViewController:self] == QMUIAlbumSortTypeReverse) {
             [self.collectionView qmui_scrollToTop];
         } else {
@@ -295,6 +318,11 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         
         self.hasScrollToInitialPosition = YES;
     }
+}
+
+- (void)willPopViewController {
+    [super willPopViewController];
+    self.hasScrollToInitialPosition = NO;
 }
 
 #pragma mark - <UICollectionViewDelegate, UICollectionViewDataSource>
@@ -312,9 +340,14 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    QMUIImagePickerCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:kCellIdentifier forIndexPath:indexPath];
+    NSString *identifier = kImageOrUnknownCellIdentifier;
     // 获取需要显示的资源
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
+    if (imageAsset.assetType == QMUIAssetTypeVideo) {
+        identifier = kVideoCellIdentifier;
+    }
+    QMUIImagePickerCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+    
     // 异步请求资源对应的缩略图（因系统接口限制，iOS 8.0 以下为实际上同步请求）
     [imageAsset requestThumbnailImageWithSize:[self referenceImageSize] completion:^(UIImage *result, NSDictionary *info) {
         if (!info || [[info objectForKey:PHImageResultIsDegradedKey] boolValue]) {
@@ -326,6 +359,10 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
             anotherCell.contentImageView.image = result;
         }
     }];
+    
+    if (imageAsset.assetType == QMUIAssetTypeVideo) {
+        cell.videoDurationLabel.text = [NSString qmui_timeStringFromSeconds:imageAsset.duration];
+    }
     
     [cell.checkboxButton addTarget:self action:@selector(handleCheckBoxButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     [cell.progressView addTarget:self action:@selector(handleProgressViewClick:) forControlEvents:UIControlEventTouchUpInside];

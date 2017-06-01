@@ -7,7 +7,7 @@
 //
 
 #import "NSAttributedString+QMUI.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 #import "NSString+QMUI.h"
 
 @implementation NSAttributedString (QMUI)

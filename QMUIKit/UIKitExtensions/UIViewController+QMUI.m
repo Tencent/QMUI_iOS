@@ -9,7 +9,7 @@
 #import "UIViewController+QMUI.h"
 #import "QMUINavigationController.h"
 #import <objc/runtime.h>
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 #import "NSObject+QMUI.h"
 
 @implementation UIViewController (QMUI)

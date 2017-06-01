@@ -7,8 +7,7 @@
 //
 
 #import "QMUIToastBackgroundView.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 
 @interface QMUIToastBackgroundView ()
 

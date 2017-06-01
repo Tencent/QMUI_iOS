@@ -7,7 +7,7 @@
 //
 
 #import "QMUICollectionViewPagingLayout.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 
 @interface QMUICollectionViewPagingLayout () {
     CGFloat _maximumScale;

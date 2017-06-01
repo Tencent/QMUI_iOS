@@ -7,9 +7,7 @@
 //
 
 #import "QMUIMoreOperationController.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "CALayer+QMUI.h"
 
 #define TagOffset 999

@@ -7,10 +7,7 @@
 //
 
 #import "QMUIImagePickerHelper.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "QMUIAssetsManager.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <Photos/PHCollection.h>

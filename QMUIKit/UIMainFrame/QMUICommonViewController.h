@@ -151,13 +151,6 @@
  */
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification;
 
-/**
- *  动态字体的回调函数。
- *
- *  交给子类重写。这个方法是在contentSizeCategoryDidChanged:里面被调用的，主要用来设置写在controller里面的view的font
- */
-- (void)setUIAfterContentSizeCategoryChanged;
-
 @end
 
 

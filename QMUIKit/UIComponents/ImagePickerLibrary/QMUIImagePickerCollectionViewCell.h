@@ -20,13 +20,13 @@ extern const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButton
  */
 @interface QMUIImagePickerCollectionViewCell : UICollectionViewCell
 
-/// checkbox未被选中时显示的图片
+/// checkbox 未被选中时显示的图片
 @property(nonatomic, strong) UIImage *checkboxImage UI_APPEARANCE_SELECTOR;
 
-/// checkbox被选中时显示的图片
+/// checkbox 被选中时显示的图片
 @property(nonatomic, strong) UIImage *checkboxCheckedImage UI_APPEARANCE_SELECTOR;
 
-/// checkbox的 margin，定位从每个 cell（即每张图片）的最右边开始计算
+/// checkbox 的 margin，定位从每个 cell（即每张图片）的最右边开始计算
 @property(nonatomic, assign) UIEdgeInsets checkboxButtonMargins UI_APPEARANCE_SELECTOR;
 
 /// progressView tintColor
@@ -35,10 +35,28 @@ extern const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButton
 /// downloadRetryButton 的 icon
 @property(nonatomic, strong) UIImage *downloadRetryImage UI_APPEARANCE_SELECTOR;
 
-@property(nonatomic, strong) UIImageView *contentImageView;
+/// videoMarkImageView 的 icon
+@property(nonatomic, strong) UIImage *videoMarkImage UI_APPEARANCE_SELECTOR;
+
+/// videoMarkImageView 的 margin，定位从每个 cell（即每张图片）的左下角开始计算
+@property(nonatomic, assign) UIEdgeInsets videoMarkImageViewMargins UI_APPEARANCE_SELECTOR;
+
+/// videoDurationLabel 的字号
+@property(nonatomic, strong) UIFont *videoDurationLabelFont UI_APPEARANCE_SELECTOR;
+
+/// videoDurationLabel 的字体颜色
+@property(nonatomic, strong) UIColor *videoDurationLabelTextColor UI_APPEARANCE_SELECTOR;
+
+/// videoDurationLabel 布局是对齐右下角再做 margins 偏移
+@property(nonatomic, assign) UIEdgeInsets videoDurationLabelMargins UI_APPEARANCE_SELECTOR;
+
+@property(nonatomic, strong, readonly) UIImageView *contentImageView;
 @property(nonatomic, strong, readonly) UIButton *checkboxButton;
 @property(nonatomic, strong, readonly) QMUIPieProgressView *progressView;
 @property(nonatomic, strong, readonly) UIButton *downloadRetryButton;
+@property(nonatomic, strong, readonly) UIImageView *videoMarkImageView;
+@property(nonatomic, strong, readonly) UILabel *videoDurationLabel;
+@property(nonatomic, strong, readonly) CAGradientLayer *videoBottomShadowLayer;
 
 @property(nonatomic, assign, getter=isEditing) BOOL editing;
 @property(nonatomic, assign, getter=isChecked) BOOL checked;

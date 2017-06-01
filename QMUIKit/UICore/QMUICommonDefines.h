@@ -6,10 +6,10 @@
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
-#import <objc/runtime.h>
 #import <UIKit/UIKit.h>
-#import "UIFont+QMUI.h"
+#import <objc/runtime.h>
 #import "QMUIHelper.h"
+#import "UIFont+QMUI.h"
 
 #pragma mark - 变量-编译相关
 
@@ -118,9 +118,6 @@
 // 是否Retina
 #define IS_RETINASCREEN ([[UIScreen mainScreen] scale] >= 2.0)
 
-// 是否支持动态字体
-#define IS_RESPOND_DYNAMICTYPE [UIApplication instancesRespondToSelector:@selector(preferredContentSizeCategory)]
-
 
 #pragma mark - 变量-布局相关
 
@@ -180,10 +177,12 @@ EndIgnoreAvailabilityWarning
 #define UIFontBoldWithFont(_font) [UIFont boldSystemFontOfSize:_font.pointSize]
 #define UIFontLightMake(size) [UIFont qmui_lightSystemFontOfSize:size]
 #define UIFontLightWithFont(_font) [UIFont qmui_lightSystemFontOfSize:_font.pointSize]
-#define UIDynamicFontMake(size) [UIFont qmui_dynamicFontWithSize:size bold:NO]
-#define UIDynamicFontMakeWithLimit(size, upperLimit, lowerLimit) [UIFont qmui_dynamicFontWithSize:size upperLimitSize:upperLimit lowerLimitSize:lowerLimit bold:NO]
-#define UIDynamicFontBoldMake(size) [UIFont qmui_dynamicFontWithSize:size bold:YES]
-#define UIDynamicFontBoldMakeWithLimit(size, upperLimit, lowerLimit) [UIFont qmui_dynamicFontWithSize:size upperLimitSize:upperLimit lowerLimitSize:lowerLimit bold:YES]
+#define UIDynamicFontMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightNormal italic:NO]
+#define UIDynamicFontMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightNormal italic:NO]
+#define UIDynamicFontBoldMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightBold italic:NO]
+#define UIDynamicFontBoldMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightBold italic:NO]
+#define UIDynamicFontLightMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightLight italic:NO]
+#define UIDynamicFontLightMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightLight italic:NO]
 
 // UIColor相关创建器
 #define UIColorMake(r, g, b) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1]
@@ -209,6 +208,20 @@ EndIgnoreAvailabilityWarning
 #define QMUILog(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ log:__VA_ARGS__]
 
 #pragma mark - 方法-C对象、结构操作
+
+CG_INLINE void
+ReplaceMethod(Class _class, SEL _originSelector, SEL _newSelector) {
+    Method oriMethod = class_getInstanceMethod(_class, _originSelector);
+    Method newMethod = class_getInstanceMethod(_class, _newSelector);
+    BOOL isAddedMethod = class_addMethod(_class, _originSelector, method_getImplementation(newMethod), method_getTypeEncoding(newMethod));
+    if (isAddedMethod) {
+        class_replaceMethod(_class, _newSelector, method_getImplementation(oriMethod), method_getTypeEncoding(oriMethod));
+    } else {
+        method_exchangeImplementations(oriMethod, newMethod);
+    }
+}
+
+#pragma mark - CGFloat
 
 /**
  *  基于指定的倍数，对传进来的 floatValue 进行像素取整。若指定倍数为0，则表示以当前设备的屏幕倍数为准。
@@ -251,19 +264,24 @@ betweenOrEqual(CGFloat minimumValue, CGFloat value, CGFloat maximumValue) {
     return minimumValue <= value && value <= maximumValue;
 }
 
-CG_INLINE void
-ReplaceMethod(Class _class, SEL _originSelector, SEL _newSelector) {
-    Method oriMethod = class_getInstanceMethod(_class, _originSelector);
-    Method newMethod = class_getInstanceMethod(_class, _newSelector);
-    BOOL isAddedMethod = class_addMethod(_class, _originSelector, method_getImplementation(newMethod), method_getTypeEncoding(newMethod));
-    if (isAddedMethod) {
-        class_replaceMethod(_class, _newSelector, method_getImplementation(oriMethod), method_getTypeEncoding(oriMethod));
-    } else {
-        method_exchangeImplementations(oriMethod, newMethod);
-    }
+/**
+ *  调整给定的某个 CGFloat 值的小数点精度，超过精度的部分按四舍五入处理。
+ *
+ *  例如 CGFloatToFixed(0.3333, 2) 会返回 0.33，而 CGFloatToFixed(0.6666, 2) 会返回 0.67
+ *
+ *  @warning 参数类型为 CGFloat，也即意味着不管传进来的是 float 还是 double 最终都会被强制转换成 CGFloat 再做计算
+ */
+CG_INLINE CGFloat
+CGFloatToFixed(CGFloat value, NSUInteger precision) {
+    NSString *formatString = [NSString stringWithFormat:@"%%.%@f", @(precision)];
+    NSString *toString = [NSString stringWithFormat:formatString, value];
+    #if defined(__LP64__) && __LP64__
+    CGFloat result = [toString doubleValue];
+    #else
+    CGFloat result = [toString floatValue];
+    #endif
+    return result;
 }
-
-#pragma mark - CGFloat
 
 /// 用于居中运算
 CG_INLINE CGFloat
@@ -288,6 +306,12 @@ CGPointGetCenterWithRect(CGRect rect) {
 CG_INLINE CGPoint
 CGPointGetCenterWithSize(CGSize size) {
     return CGPointMake(flat(size.width / 2.0), flat(size.height / 2.0));
+}
+
+CG_INLINE CGPoint
+CGPointToFixed(CGPoint point, NSUInteger precision) {
+    CGPoint result = CGPointMake(CGFloatToFixed(point.x, precision), CGFloatToFixed(point.y, precision));
+    return result;
 }
 
 #pragma mark - UIEdgeInsets
@@ -337,6 +361,12 @@ UIEdgeInsetsSetRight(UIEdgeInsets insets, CGFloat right) {
     return insets;
 }
 
+CG_INLINE UIEdgeInsets
+UIEdgeInsetsToFixed(UIEdgeInsets insets, NSUInteger precision) {
+    UIEdgeInsets result = UIEdgeInsetsMake(CGFloatToFixed(insets.top, precision), CGFloatToFixed(insets.left, precision), CGFloatToFixed(insets.bottom, precision), CGFloatToFixed(insets.right, precision));
+    return result;
+}
+
 #pragma mark - CGSize
 
 /// 判断一个size是否为空（宽或高为0）
@@ -361,6 +391,12 @@ CGSizeCeil(CGSize size) {
 CG_INLINE CGSize
 CGSizeFloor(CGSize size) {
     return CGSizeMake(floor(size.width), floor(size.height));
+}
+
+CG_INLINE CGSize
+CGSizeToFixed(CGSize size, NSUInteger precision) {
+    CGSize result = CGSizeMake(CGFloatToFixed(size.width, precision), CGFloatToFixed(size.height, precision));
+    return result;
 }
 
 #pragma mark - CGRect
@@ -514,4 +550,13 @@ CG_INLINE CGRect
 CGRectSetSize(CGRect rect, CGSize size) {
     rect.size = CGSizeFlatted(size);
     return rect;
+}
+
+CG_INLINE CGRect
+CGRectToFixed(CGRect rect, NSUInteger precision) {
+    CGRect result = CGRectMake(CGFloatToFixed(CGRectGetMinX(rect), precision),
+                               CGFloatToFixed(CGRectGetMinY(rect), precision),
+                               CGFloatToFixed(CGRectGetWidth(rect), precision),
+                               CGFloatToFixed(CGRectGetHeight(rect), precision));
+    return result;
 }

@@ -8,8 +8,7 @@
 
 #import "UINavigationController+NavigationBarTransition.h"
 #import "QMUINavigationController.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "UINavigationController+QMUI.h"
 #import "UIImage+QMUI.h"
 #import "UIViewController+QMUI.h"

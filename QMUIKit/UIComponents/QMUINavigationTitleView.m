@@ -7,8 +7,7 @@
 //
 
 #import "QMUINavigationTitleView.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "UIImage+QMUI.h"
 #import "UILabel+QMUI.h"
 #import "UIActivityIndicatorView+QMUI.h"

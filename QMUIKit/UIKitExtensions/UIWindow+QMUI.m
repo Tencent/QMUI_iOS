@@ -7,7 +7,7 @@
 //
 
 #import "UIWindow+QMUI.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 
 @implementation UIWindow (QMUI)
 

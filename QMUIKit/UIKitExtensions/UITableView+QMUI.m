@@ -7,8 +7,7 @@
 //
 
 #import "UITableView+QMUI.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "UIScrollView+QMUI.h"
 
 @implementation UITableView (QMUI)
@@ -46,6 +45,7 @@
     }
     
     CGPoint origin = [self convertPoint:view.frame.origin fromView:view.superview];
+    origin = CGPointToFixed(origin, 4);
     
     NSUInteger numberOfSection = [self numberOfSections];
     for (NSInteger i = numberOfSection - 1; i >= 0; i--) {
@@ -54,6 +54,8 @@
         if (isHeaderViewPinToTop) {
             rectForHeader = CGRectSetY(rectForHeader, CGRectGetMinY(rectForHeader) + (self.contentInset.top - CGRectGetMinY(rectForHeader) + self.contentOffset.y));
         }
+        
+        rectForHeader = CGRectToFixed(rectForHeader, 4);
         if (CGRectContainsPoint(rectForHeader, origin)) {
             return i;
         }

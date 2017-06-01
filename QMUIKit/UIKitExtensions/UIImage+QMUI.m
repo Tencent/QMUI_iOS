@@ -7,9 +7,7 @@
 //
 
 #import "UIImage+QMUI.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "UIBezierPath+QMUI.h"
 #import "UIColor+QMUI.h"
 #import <Accelerate/Accelerate.h>

@@ -91,6 +91,12 @@ result[12], result[13], result[14], result[15]]                         \
     return modifiedString;
 }
 
++ (NSString *)qmui_timeStringFromSeconds:(double)seconds {
+    NSUInteger min = floor(seconds / 60);
+    NSUInteger sec = floor(seconds - min * 60);
+    return [NSString stringWithFormat:@"%02ld:%02ld", (long)min, (long)sec];
+}
+
 - (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
     NSUInteger characterLength = 0;
     char *p = (char *)[self cStringUsingEncoding:NSUnicodeStringEncoding];

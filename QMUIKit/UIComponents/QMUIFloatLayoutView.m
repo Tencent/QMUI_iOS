@@ -7,7 +7,7 @@
 //
 
 #import "QMUIFloatLayoutView.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 
 #define ValueSwitchAlignLeftOrRight(valueLeft, valueRight) ([self shouldAlignRight] ? valueRight : valueLeft)
 

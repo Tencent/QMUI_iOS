@@ -8,10 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-/// QMUIBase
-#import "QMUIHelper.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+/// QMUICore
+#import "QMUICore.h"
 
 /// QMUIKit
 #import "QMUIVisualEffectView.h"
@@ -91,6 +89,8 @@
 #import "QMUIMoreOperationController.h"
 #import "QMUIDialogViewController.h"
 #import "QMUIOrderedDictionary.h"
+#import "QMUIMarqueeLabel.h"
+#import "QMUISlider.h"
 
 /// UIMainFrame
 #import "QMUISearchController.h"

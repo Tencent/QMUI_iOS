@@ -7,8 +7,7 @@
 //
 
 #import "UITextField+QMUI.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "QMUIKeyboardManager.h"
 
 @interface UITextField () <QMUIKeyboardManagerDelegate>

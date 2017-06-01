@@ -7,9 +7,7 @@
 //
 
 #import "UINavigationController+QMUI.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 
 @implementation UINavigationController (QMUI)
 
