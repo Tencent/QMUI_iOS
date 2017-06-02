@@ -284,9 +284,9 @@
         if (completion) {
             [self assetSize:^(long long size) {
                 // 获取 NSData 数据
-                uint8_t *buffer = malloc(size);
+                uint8_t *buffer = malloc((size_t)size);
                 NSError *error;
-                NSUInteger bytes = [_alAssetRepresentation getBytes:buffer fromOffset:0 length:size error:&error];
+                NSUInteger bytes = [_alAssetRepresentation getBytes:buffer fromOffset:0 length:(NSUInteger)size error:&error];
                 NSData *imageData = [NSData dataWithBytes:buffer length:bytes];
                 free(buffer);
                 // 判断是否为 GIF 图

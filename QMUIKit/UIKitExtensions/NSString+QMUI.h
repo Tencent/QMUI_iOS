@@ -30,9 +30,9 @@
 + (NSString *)qmui_hexStringWithInteger:(NSInteger)integer;
 
 /**
- * 将秒数转换为数字时钟格式，例如"100"->"01:40"
+ * 将秒数转换为同时包含分钟和秒数的格式的字符串，例如 100->"01:40"
  */
-+ (NSString *)qmui_timeStringFromSeconds:(double)seconds;
++ (NSString *)qmui_timeStringWithMinsAndSecsFromSecs:(double)seconds;
 
 /**
  * 用正则表达式匹配的方式去除字符串里一些特殊字符，避免UI上的展示问题

@@ -361,7 +361,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     }];
     
     if (imageAsset.assetType == QMUIAssetTypeVideo) {
-        cell.videoDurationLabel.text = [NSString qmui_timeStringFromSeconds:imageAsset.duration];
+        cell.videoDurationLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:imageAsset.duration];
     }
     
     [cell.checkboxButton addTarget:self action:@selector(handleCheckBoxButtonClick:) forControlEvents:UIControlEventTouchUpInside];

@@ -17,6 +17,7 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import "UIControl+QMUI.h"
 #import "UILabel+QMUI.h"
+#import "NSString+QMUI.h"
 
 #define kIconsColor UIColorMakeWithRGBA(255, 255, 255, .75)
 
@@ -475,9 +476,9 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 - (void)configVideoProgressSlider {
-    self.videoToolbar.sliderLeftLabel.text = [self timeStringFromSeconds:0];
+    self.videoToolbar.sliderLeftLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:0];
     double duration = CMTimeGetSeconds(self.videoPlayerItem.asset.duration);
-    self.videoToolbar.sliderRightLabel.text = [self timeStringFromSeconds:duration];
+    self.videoToolbar.sliderRightLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:duration];
     
     self.videoToolbar.slider.minimumValue = 0.0;
     self.videoToolbar.slider.maximumValue = duration;
@@ -510,14 +511,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (void)updateVideoSliderLeftLabel {
     double currentSeconds = CMTimeGetSeconds(self.videoPlayer.currentTime);
-    self.videoToolbar.sliderLeftLabel.text = [self timeStringFromSeconds:currentSeconds];
-}
-
-// convert "100" to "01:40"
-- (NSString *)timeStringFromSeconds:(NSUInteger)seconds {
-    NSUInteger min = floor(seconds / 60);
-    NSUInteger sec = floor(seconds - min * 60);
-    return [NSString stringWithFormat:@"%02ld:%02ld", (long)min, (long)sec];
+    self.videoToolbar.sliderLeftLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:currentSeconds];
 }
 
 - (void)pauseVideo {
