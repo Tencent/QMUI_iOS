@@ -7,7 +7,7 @@
 //
 
 #import "UITabBar+QMUI.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 #import "UITabBarItem+QMUI.h"
 
 NSInteger const kLastTouchedTabBarItemIndexNone = -1;

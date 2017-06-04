@@ -7,9 +7,7 @@
 //
 
 #import "UISearchBar+QMUI.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "UIImage+QMUI.h"
 
 @implementation UISearchBar (QMUI)

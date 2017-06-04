@@ -7,7 +7,7 @@
 //
 
 #import "UINavigationBar+Transition.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 
 @implementation UINavigationBar (Transition)
 

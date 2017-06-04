@@ -7,7 +7,7 @@
 //
 
 #import "UITabBarItem+QMUI.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 
 @implementation UITabBarItem (QMUI)
 

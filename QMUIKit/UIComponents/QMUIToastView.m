@@ -7,8 +7,7 @@
 //
 
 #import "QMUIToastView.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "QMUIToastAnimator.h"
 #import "QMUIToastContentView.h"
 #import "QMUIToastBackgroundView.h"
@@ -176,8 +175,8 @@
     [self.hideDelayTimer invalidate];
     self.alpha = 1.0;
     
-    if ([self.delegate respondsToSelector:@selector(toastView:willShowInView:)]) {
-        [self.delegate toastView:self willShowInView:self.parentView];
+    if (self.willShowBlock) {
+        self.willShowBlock(self.parentView, animated);
     }
     
     if (animated) {
@@ -187,26 +186,24 @@
         if (self.toastAnimator) {
             __weak __typeof(self)weakSelf = self;
             [self.toastAnimator showWithCompletion:^(BOOL finished) {
-                [weakSelf didShow];
+                if (weakSelf.didShowBlock) {
+                    weakSelf.didShowBlock(weakSelf.parentView, animated);
+                }
             }];
         }
     } else {
         self.backgroundView.alpha = 1.0;
         self.contentView.alpha = 1.0;
-        [self didShow];
-    }
-}
-
-- (void)didShow {
-    if ([self.delegate respondsToSelector:@selector(toastView:didShowInView:)]) {
-        [self.delegate toastView:self didShowInView:self.parentView];
+        if (self.didShowBlock) {
+            self.didShowBlock(self.parentView, animated);
+        }
     }
 }
 
 - (void)hideAnimated:(BOOL)animated {
     
-    if ([self.delegate respondsToSelector:@selector(toastView:willHideInView:)]) {
-        [self.delegate toastView:self willHideInView:self.parentView];
+    if (self.willHideBlock) {
+        self.willHideBlock(self.parentView, animated);
     }
     
     if (animated) {
@@ -216,20 +213,20 @@
         if (self.toastAnimator) {
             __weak __typeof(self)weakSelf = self;
             [self.toastAnimator hideWithCompletion:^(BOOL finished) {
-                [weakSelf didHide];
+                [weakSelf didHideWithAnimated:animated];
             }];
         }
     } else {
         self.backgroundView.alpha = 0.0;
         self.contentView.alpha = 0.0;
-        [self didHide];
+        [self didHideWithAnimated:animated];
     }
 }
 
-- (void)didHide {
+- (void)didHideWithAnimated:(BOOL)animated {
     
-    if ([self.delegate respondsToSelector:@selector(toastView:didHideInView:)]) {
-        [self.delegate toastView:self didHideInView:self.parentView];
+    if (self.didHideBlock) {
+        self.didHideBlock(self.parentView, animated);
     }
     
     [self.hideDelayTimer invalidate];

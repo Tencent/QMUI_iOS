@@ -40,7 +40,7 @@ extern const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet
 @property(nonatomic, assign, readonly) UITableViewStyle style;
 
 /// 获取当前的 tableView
-@property(nonatomic, strong, readonly) QMUITableView *tableView;
+@property(nonatomic, strong, readonly) IBOutlet QMUITableView *tableView;
 
 /**
  *  列表使用自定义的contentInset，不使用系统默认计算的，默认为QMUICommonTableViewControllerInitialContentInsetNotSet。<br/>
@@ -85,7 +85,6 @@ extern const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet
  *  控制列表里是否需要搜索框，如果为 YES，则会在 viewDidLoad 之后创建一个 searchBar 作为 tableHeaderView；如果为 NO，则会移除已有的 searchBar 和 searchController。
  *  默认为 NO。
  *  @note 若在 viewDidLoad 之前设置为 YES，也会等到 viewDidLoad 时才去创建搜索框。
- *  @note 用于代替 QMUI 1.3.7 以前使用的 `QMUITableViewDelegate shouldShowSearchBarInTableView:` 方法。
  */
 @property(nonatomic, assign) BOOL shouldShowSearchBar;
 

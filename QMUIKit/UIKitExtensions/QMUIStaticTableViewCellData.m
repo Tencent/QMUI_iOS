@@ -7,9 +7,8 @@
 //
 
 #import "QMUIStaticTableViewCellData.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "QMUITableViewCell.h"
-#import "QMUICommonDefines.h"
 
 @implementation QMUIStaticTableViewCellData
 

@@ -7,8 +7,7 @@
 //
 
 #import "QMUIEmptyView.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "UIControl+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
 

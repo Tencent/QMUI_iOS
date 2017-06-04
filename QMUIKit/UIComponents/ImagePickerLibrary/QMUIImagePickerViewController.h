@@ -64,6 +64,20 @@
  */
 - (void)imagePickerViewControllerDidCancel:(QMUIImagePickerViewController *)imagePickerViewController;
 
+/**
+ *  即将需要显示 Loading 时调用
+ *
+ *  @see shouldShowDefaultLoadingView
+ */
+- (void)imagePickerViewControllerWillStartLoad:(QMUIImagePickerViewController *)imagePickerViewController;
+
+/**
+ *  即将需要隐藏 Loading 时调用
+ *
+ *  @see shouldShowDefaultLoadingView
+ */
+- (void)imagePickerViewControllerWillFinishLoad:(QMUIImagePickerViewController *)imagePickerViewController;
+
 @end
 
 
@@ -101,6 +115,12 @@
 @property(nonatomic, assign) NSInteger minimumSelectImageCount; // 最少需要选择的图片数，默认为 0
 @property(nonatomic, copy) NSString *alertTitleWhenExceedMaxSelectImageCount; // 选择图片超出最大图片限制时 alertView 的标题
 @property(nonatomic, copy) NSString *alertButtonTitleWhenExceedMaxSelectImageCount; // 选择图片超出最大图片限制时 alertView 底部按钮的标题
+
+/**
+ *  加载相册列表时会出现 loading，若需要自定义 loading 的形式，可将该属性置为 NO，默认为 YES。
+ *  @see imagePickerViewControllerWillStartLoad: & imagePickerViewControllerWillFinishLoad:
+ */
+@property(nonatomic, assign) BOOL shouldShowDefaultLoadingView;
 
 @end
 

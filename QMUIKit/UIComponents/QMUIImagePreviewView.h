@@ -12,11 +12,22 @@
 @class QMUIImagePreviewView;
 @class QMUICollectionViewPagingLayout;
 
+typedef NS_ENUM (NSUInteger, QMUIImagePreviewMediaType) {
+    QMUIImagePreviewMediaTypeImage,
+    QMUIImagePreviewMediaTypeLivePhoto,
+    QMUIImagePreviewMediaTypeVideo,
+    QMUIImagePreviewMediaTypeOthers
+};
+
 @protocol QMUIImagePreviewViewDelegate <QMUIZoomImageViewDelegate>
 
 @required
 - (NSUInteger)numberOfImagesInImagePreviewView:(QMUIImagePreviewView *)imagePreviewView;
 - (void)imagePreviewView:(QMUIImagePreviewView *)imagePreviewView renderZoomImageView:(QMUIZoomImageView *)zoomImageView atIndex:(NSUInteger)index;
+
+@optional
+// 返回要展示的媒体资源的类型（图片、live photo、视频），如果不实现此方法，则 QMUIImagePreviewView 将无法选择最合适的 cell 来复用从而略微增大系统开销
+- (QMUIImagePreviewMediaType)imagePreviewView:(QMUIImagePreviewView *)imagePreviewView assetTypeAtIndex:(NSUInteger)index;
 
 @optional
 

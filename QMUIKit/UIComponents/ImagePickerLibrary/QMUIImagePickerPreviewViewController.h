@@ -8,9 +8,9 @@
 
 #import "QMUIImagePreviewViewController.h"
 #import "QMUIAsset.h"
-#import "QMUIPieProgressView.h"
 
 @class QMUIButton;
+@class QMUIPieProgressView;
 @class QMUIImagePickerViewController;
 @class QMUIImagePickerPreviewViewController;
 

@@ -7,9 +7,7 @@
 //
 
 #import "QMUICommonViewController.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "QMUINavigationTitleView.h"
 #import "QMUIEmptyView.h"
 #import "NSString+QMUI.h"
@@ -49,9 +47,7 @@
     self.supportedOrientationMask = SupportedOrientationMask;
     
     // 动态字体notification
-    if (IS_RESPOND_DYNAMICTYPE) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentSizeCategoryDidChanged:) name:UIContentSizeCategoryDidChangeNotification object:nil];
-    }
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentSizeCategoryDidChanged:) name:UIContentSizeCategoryDidChangeNotification object:nil];
 }
 
 - (void)setTitle:(NSString *)title {
@@ -207,11 +203,6 @@
 }
 
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification {
-    // 子类重写
-    [self setUIAfterContentSizeCategoryChanged];
-}
-
-- (void)setUIAfterContentSizeCategoryChanged {
     // 子类重写
 }
 

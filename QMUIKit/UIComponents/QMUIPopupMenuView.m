@@ -11,8 +11,7 @@
 #import "UIView+QMUI.h"
 #import "CALayer+QMUI.h"
 #import "UIButton+QMUI.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 
 @interface QMUIPopupMenuItem ()
 
@@ -181,7 +180,7 @@
     
     QMUIButton *button = [[QMUIButton alloc] initWithImage:image title:title];
     button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-    button.qmui_needsTakeOverTouchEvent = YES;
+    button.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [button addTarget:item action:@selector(handleButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     item.button = button;
     return item;

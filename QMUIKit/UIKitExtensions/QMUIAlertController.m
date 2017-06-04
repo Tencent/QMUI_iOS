@@ -7,9 +7,7 @@
 //
 
 #import "QMUIAlertController.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
-#import "QMUIHelper.h"
+#import "QMUICore.h"
 #import "QMUIModalPresentationViewController.h"
 #import "QMUIButton.h"
 #import "QMUITextField.h"
@@ -81,7 +79,7 @@ static NSUInteger alertControllerCount = 0;
     self = [super init];
     if (self) {
         self.buttonWrapView = [[QMUIAlertButtonWrapView alloc] init];
-        self.button.qmui_needsTakeOverTouchEvent = YES;
+        self.button.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
         [self.button addTarget:self action:@selector(handleAlertActionEvent:) forControlEvents:UIControlEventTouchUpInside];
     }
     return self;

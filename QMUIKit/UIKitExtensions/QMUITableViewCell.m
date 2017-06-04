@@ -7,8 +7,7 @@
 //
 
 #import "QMUITableViewCell.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "UITableView+QMUI.h"
 
 @interface QMUITableViewCell() <UIScrollViewDelegate>

@@ -9,7 +9,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "QMUIHelper.h"
-#import "QMUITableViewCell.h"
+
+@class QMUITableViewCell;
 
 typedef NS_ENUM(NSInteger, QMUIStaticTableViewCellAccessoryType) {
     QMUIStaticTableViewCellAccessoryTypeNone,

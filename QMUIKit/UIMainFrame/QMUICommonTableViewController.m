@@ -7,8 +7,7 @@
 //
 
 #import "QMUICommonTableViewController.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "QMUITableView.h"
 #import "QMUIEmptyView.h"
 #import "QMUILabel.h"
@@ -113,7 +112,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
         self.hasSetInitialContentInset = YES;
     }
     
-    [self hideTableHeaderViewInitialIfCanWithAnimated:NO];
+    [self hideTableHeaderViewInitialIfCanWithAnimated:NO force:NO];
     
     [self layoutEmptyView];
 }
@@ -128,8 +127,8 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
     return _tableView;
 }
 
-- (void)hideTableHeaderViewInitialIfCanWithAnimated:(BOOL)animated {
-    if (self.tableView.tableHeaderView && [self shouldHideTableHeaderViewInitial] && !self.hasHideTableHeaderViewInitial) {
+- (void)hideTableHeaderViewInitialIfCanWithAnimated:(BOOL)animated force:(BOOL)force {
+    if (self.tableView.tableHeaderView && [self shouldHideTableHeaderViewInitial] && (force || !self.hasHideTableHeaderViewInitial)) {
         CGPoint contentOffset = CGPointMake(self.tableView.contentOffset.x, self.tableView.contentOffset.y + CGRectGetHeight(self.tableView.tableHeaderView.frame));
         [self.tableView setContentOffset:contentOffset animated:animated];
         self.hasHideTableHeaderViewInitial = YES;
@@ -176,11 +175,13 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 - (void)hideEmptyView {
     [self.emptyView removeFromSuperview];
 BeginIgnoreDeprecatedWarning
-    if ((self.shouldShowSearchBar || [self shouldShowSearchBarInTableView:self.tableView]) && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
+    if (self.shouldShowSearchBar && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
 EndIgnoreDeprecatedWarning
         [self initSearchController];
+        // 隐藏 emptyView 后重新设置 tableHeaderView，会导致原先 shouldHideTableHeaderViewInitial 隐藏头部的操作被重置，所以下面的 force 参数要传 YES
+        // https://github.com/QMUI/QMUI_iOS/issues/128
         self.tableView.tableHeaderView = self.searchBar;
-        [self hideTableHeaderViewInitialIfCanWithAnimated:NO];
+        [self hideTableHeaderViewInitialIfCanWithAnimated:NO force:YES];
     }
 }
 
@@ -198,10 +199,6 @@ EndIgnoreDeprecatedWarning
 }
 
 #pragma mark - <QMUITableViewDelegate, QMUITableViewDataSource>
-
-- (BOOL)shouldShowSearchBarInTableView:(QMUITableView *)tableView {
-    return NO;
-}
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
     return 1;
@@ -380,7 +377,7 @@ EndIgnoreDeprecatedWarning
 
 - (void)initSearchController {
 BeginIgnoreDeprecatedWarning
-    if ([self isViewLoaded] && (self.shouldShowSearchBar || [self.tableView.delegate shouldShowSearchBarInTableView:self.tableView]) && !self.searchController) {
+    if ([self isViewLoaded] && self.shouldShowSearchBar && !self.searchController) {
 EndIgnoreDeprecatedWarning
         _searchController = [[QMUISearchController alloc] initWithContentsViewController:self];
         self.searchController.searchResultsDelegate = self;

@@ -8,10 +8,10 @@
 
 #import "UIControl+QMUI.h"
 #import <objc/runtime.h>
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 
 static char kAssociatedObjectKey_needsTakeOverTouchEvent;
+static char kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView;
 static char kAssociatedObjectKey_canSetHighlighted;
 static char kAssociatedObjectKey_touchEndCount;
 static char kAssociatedObjectKey_outsideEdge;
@@ -31,6 +31,14 @@ static char kAssociatedObjectKey_outsideEdge;
 
 - (BOOL)qmui_needsTakeOverTouchEvent {
     return (BOOL)[objc_getAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent) boolValue];
+}
+
+- (void)setQmui_automaticallyAdjustTouchHighlightedInScrollView:(BOOL)qmui_automaticallyAdjustTouchHighlightedInScrollView {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView, [NSNumber numberWithBool:qmui_automaticallyAdjustTouchHighlightedInScrollView], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)qmui_automaticallyAdjustTouchHighlightedInScrollView {
+    return (BOOL)[objc_getAssociatedObject(self, &kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView) boolValue];
 }
 
 - (void)setCanSetHighlighted:(BOOL)canSetHighlighted {
@@ -88,9 +96,10 @@ static char kAssociatedObjectKey_outsideEdge;
     });
 }
 
+BeginIgnoreDeprecatedWarning
 - (void)qmui_touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     self.touchEndCount = 0;
-    if (self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = YES;
         [self qmui_touchesBegan:touches withEvent:event];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -104,7 +113,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)qmui_touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = NO;
         [self qmui_touchesMoved:touches withEvent:event];
     } else {
@@ -113,7 +122,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)qmui_touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = NO;
         if (self.touchInside) {
             [self setHighlighted:YES];
@@ -135,7 +144,7 @@ static char kAssociatedObjectKey_outsideEdge;
 }
 
 - (void)qmui_touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
         self.canSetHighlighted = NO;
         [self qmui_touchesCancelled:touches withEvent:event];
         if (self.highlighted) {
@@ -145,6 +154,7 @@ static char kAssociatedObjectKey_outsideEdge;
         [self qmui_touchesCancelled:touches withEvent:event];
     }
 }
+EndIgnoreDeprecatedWarning
 
 - (BOOL)qmui_pointInside:(CGPoint)point withEvent:(UIEvent *)event {
     if (([event type] != UIEventTypeTouches)) {

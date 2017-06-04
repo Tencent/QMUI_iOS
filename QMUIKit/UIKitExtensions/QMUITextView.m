@@ -6,8 +6,7 @@
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 #import "QMUITextView.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "QMUILabel.h"
 #import "NSObject+QMUI.h"
 #import "NSString+QMUI.h"

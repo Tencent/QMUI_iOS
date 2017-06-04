@@ -7,8 +7,7 @@
 //
 
 #import "QMUIButton.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "QMUICommonViewController.h"
 #import "QMUINavigationController.h"
 #import "UIImage+QMUI.h"
@@ -39,6 +38,9 @@
         if (!self.adjustsTitleTintColorAutomatically) {
             [self setTitleColor:self.tintColor forState:UIControlStateNormal];
         }
+        
+        // iOS7以后的button，sizeToFit后默认会自带一个上下的contentInsets，为了保证按钮大小即为内容大小，这里直接去掉，改为一个最小的值。
+        self.contentEdgeInsets = UIEdgeInsetsMake(CGFLOAT_MIN, 0, CGFLOAT_MIN, 0);
     }
     return self;
 }
@@ -59,12 +61,6 @@
     self.adjustsImageWhenDisabled = NO;
     self.adjustsButtonWhenHighlighted = YES;
     self.adjustsButtonWhenDisabled = YES;
-    
-    // iOS7以后的button，sizeToFit后默认会自带一个上下的contentInsets，为了保证按钮大小即为内容大小，这里直接去掉，改为一个最小的值。
-    // 不能设为0，否则无效；也不能设置为小数点，否则无法像素对齐
-    if (UIEdgeInsetsEqualToEdgeInsets(self.contentEdgeInsets, UIEdgeInsetsZero)) {
-        self.contentEdgeInsets = UIEdgeInsetsMake(1, 0, 1, 0);
-    }
     
     // 图片默认在按钮左边，与系统UIButton保持一致
     self.imagePosition = QMUIButtonImagePositionLeft;

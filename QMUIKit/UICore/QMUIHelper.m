@@ -7,8 +7,7 @@
 //
 
 #import "QMUIHelper.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "UIViewController+QMUI.h"
 #import <AVFoundation/AVFoundation.h>
 #import "NSString+QMUI.h"

@@ -7,8 +7,7 @@
 //
 
 #import "QMUIPieProgressView.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 
 @interface QMUIPieProgressLayer : CALayer
 

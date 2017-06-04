@@ -7,8 +7,7 @@
 //
 
 #import "QMUIConfiguration.h"
-#import "QMUICommonDefines.h"
-#import "QMUIConfigurationMacros.h"
+#import "QMUICore.h"
 #import "UIImage+QMUI.h"
 #import "QMUIButton.h"
 #import "QMUITabBarViewController.h"
