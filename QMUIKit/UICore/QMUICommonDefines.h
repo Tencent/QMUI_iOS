@@ -401,10 +401,16 @@ CGSizeToFixed(CGSize size, NSUInteger precision) {
 
 #pragma mark - CGRect
 
-/// 判断一个CGRect是否存在NaN
+/// 判断一个 CGRect 是否存在NaN
 CG_INLINE BOOL
 CGRectIsNaN(CGRect rect) {
     return isnan(rect.origin.x) || isnan(rect.origin.y) || isnan(rect.size.width) || isnan(rect.size.height);
+}
+
+/// 判断一个 CGRect 是否合法（例如不带无穷大的值、不带非法数字、不为空）
+CG_INLINE BOOL
+CGRectIsValidated(CGRect rect) {
+    return !CGRectIsNull(rect) && !CGRectIsEmpty(rect) && !CGRectIsInfinite(rect) && !CGRectIsNaN(rect);
 }
 
 /// 创建一个像素对齐的CGRect

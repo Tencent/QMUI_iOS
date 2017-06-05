@@ -51,8 +51,8 @@
 @property(nonatomic, strong) NSMutableArray<QMUIAsset *> *selectedImageAssetArray;
 
 @property(nonatomic, assign) QMUIAssetDownloadStatus downloadStatus;
-@property(nonatomic, assign) NSInteger maximumSelectImageCount; // 最多可以选择的图片数，默认为无穷大
-@property(nonatomic, assign) NSInteger minimumSelectImageCount; // 最少需要选择的图片数，默认为 0
+@property(nonatomic, assign) NSUInteger maximumSelectImageCount; // 最多可以选择的图片数，默认为无穷大
+@property(nonatomic, assign) NSUInteger minimumSelectImageCount; // 最少需要选择的图片数，默认为 0
 @property(nonatomic, copy) NSString *alertTitleWhenExceedMaxSelectImageCount; // 选择图片超出最大图片限制时 alertView 的标题
 @property(nonatomic, copy) NSString *alertButtonTitleWhenExceedMaxSelectImageCount; // 选择图片超出最大图片限制时 alertView 的标题
 

@@ -72,7 +72,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  *
  *  @return 返回请求图片的请求 id
  */
-- (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *result, NSDictionary *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
+- (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
 
 /**
  *  异步请求 Asset 的缩略图，不会产生网络请求
@@ -83,7 +83,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  *
  *  @return 返回请求图片的请求 id
  */
-- (NSInteger)requestThumbnailImageWithSize:(CGSize)size completion:(void (^)(UIImage *result, NSDictionary *info))completion;
+- (NSInteger)requestThumbnailImageWithSize:(CGSize)size completion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion;
 
 /**
  *  异步请求 Asset 的预览图，可能会有网络请求
@@ -96,7 +96,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  *
  *  @return 返回请求图片的请求 id
  */
-- (NSInteger)requestPreviewImageWithCompletion:(void (^)(UIImage *result, NSDictionary *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
+- (NSInteger)requestPreviewImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
 
 /**
  *  异步请求 Live Photo，可能会有网络请求
@@ -108,7 +108,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  *
  *  @return 返回请求图片的请求 id
  */
-- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *livePhoto, NSDictionary *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler NS_AVAILABLE_IOS(9_1);
+- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *livePhoto, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler NS_AVAILABLE_IOS(9_1);
 
 /**
  *  异步请求 AVPlayerItem，可能会有网络请求
@@ -120,14 +120,16 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  *
  *  @return 返回请求 AVPlayerItem 的请求 id
  */
-- (NSInteger)requestPlayerItemWithCompletion:(void (^)(AVPlayerItem *playerItem, NSDictionary *info))completion withProgressHandler:(PHAssetVideoProgressHandler)phProgressHandler;
+- (NSInteger)requestPlayerItemWithCompletion:(void (^)(AVPlayerItem *playerItem, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetVideoProgressHandler)phProgressHandler;
 
 /**
- *  获取图片的 Data
+ *  异步请求图片的 Data
  *
  *  @param completion 完成请求后调用的 block，参数中包含了请求的图片 Data（若 assetType 不是 QMUIAssetTypeImage 或 QMUIAssetTypeLivePhoto 则为 nil），以及该图片是否为 GIF 的判断值
+ *
+ *  @wraning iOS 8.0 以下中并没有异步请求 Data 的接口，因此实际上为同步请求，这时 block 中的第二个参数（图片信息）返回的为 nil。
  */
-- (void)requestImageData:(void (^)(NSData *imageData, BOOL isGif))completion;
+- (void)requestImageData:(void (^)(NSData *imageData, NSDictionary<NSString *, id> *info, BOOL isGif))completion;
 
 /**
  * 获取图片的 UIImageOrientation 值，仅 assetType 为 QMUIAssetTypeImage 或 QMUIAssetTypeLivePhoto 时有效
