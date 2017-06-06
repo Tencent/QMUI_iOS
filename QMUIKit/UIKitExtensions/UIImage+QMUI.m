@@ -91,6 +91,11 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return grayImage;
 }
 
+- (UIImage *)qmui_resizableImageWithImage:(UIImage *)image protectedArea:(UIEdgeInsets)capInsets {
+    UIImage *newImage = [image resizableImageWithCapInsets:capInsets resizingMode:UIImageResizingModeStretch];
+    return newImage;
+}
+
 - (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha {
     UIGraphicsBeginImageContextWithOptions(self.size, NO, self.scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
