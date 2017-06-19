@@ -41,4 +41,19 @@
     return [self.selectedViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.selectedViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 
+
+#pragma mark - 状态栏
+
+- (BOOL)prefersStatusBarHidden {
+    return [self.selectedViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.selectedViewController prefersStatusBarHidden] : NO;
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return [self.selectedViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.selectedViewController preferredStatusBarStyle] : UIStatusBarStyleDefault;
+}
+
+- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
+    return [self.selectedViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.selectedViewController preferredStatusBarUpdateAnimation] : UIStatusBarAnimationNone;
+}
+
 @end
