@@ -302,20 +302,6 @@
     return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 
-#pragma mark - 状态栏
-
-- (BOOL)prefersStatusBarHidden {
-    return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController prefersStatusBarHidden] : NO;
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController preferredStatusBarStyle] : UIStatusBarStyleDefault;
-}
-
-- (UIStatusBarAnimation)preferredStatusBarUpdateAnimation {
-    return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController preferredStatusBarUpdateAnimation] : UIStatusBarAnimationNone;
-}
-
 @end
 
 
