@@ -71,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (QMUITips *)showError:(nullable NSString *)text inView:(UIView *)view;
 + (QMUITips *)showError:(nullable NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
 + (QMUITips *)showError:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view;
-+ (QMUITips *)showError:nullable (NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showError:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
 
 + (QMUITips *)showInfo:(nullable NSString *)text inView:(UIView *)view;
 + (QMUITips *)showInfo:(nullable NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
