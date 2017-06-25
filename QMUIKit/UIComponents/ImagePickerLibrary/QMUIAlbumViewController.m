@@ -229,7 +229,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
     // 显示相册名称
     cell.textLabel.text = [assetsGroup name];
     // 显示相册中所包含的资源数量
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"(%ld)", (long)assetsGroup.numberOfAssets];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"(%@)", @(assetsGroup.numberOfAssets)];
     
     [cell updateCellAppearanceWithIndexPath:indexPath];
     

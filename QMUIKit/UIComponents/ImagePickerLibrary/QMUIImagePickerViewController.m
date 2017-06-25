@@ -189,7 +189,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
             // 如果有图片被选择，则预览按钮和发送按钮可点击，并刷新当前被选中的图片数量
             self.previewButton.enabled = YES;
             self.sendButton.enabled = YES;
-            self.imageCountLabel.text = [NSString stringWithFormat:@"%ld", (long)selectedImageCount];
+            self.imageCountLabel.text = [NSString stringWithFormat:@"%@", @(selectedImageCount)];
             self.imageCountLabel.hidden = NO;
         } else {
             // 如果没有任何图片被选择，则预览和发送按钮不可点击，并且隐藏显示图片数量的 Label
@@ -481,7 +481,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (selectedImageCount > 0 && selectedImageCount >= _minimumSelectImageCount) {
         self.previewButton.enabled = YES;
         self.sendButton.enabled = YES;
-        self.imageCountLabel.text = [NSString stringWithFormat:@"%ld", (long)selectedImageCount];
+        self.imageCountLabel.text = [NSString stringWithFormat:@"%@", @(selectedImageCount)];
         self.imageCountLabel.hidden = NO;
         [QMUIImagePickerHelper springAnimationOfImageSelectedCountChangeWithCountLabel:self.imageCountLabel];
     } else {
@@ -508,7 +508,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
             
             if ([_selectedImageAssetArray count] >= _maximumSelectImageCount) {
                 if (!_alertTitleWhenExceedMaxSelectImageCount) {
-                    _alertTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"你最多只能选择%lu张图片", (unsigned long)_maximumSelectImageCount];
+                    _alertTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"你最多只能选择%@张图片", @(_maximumSelectImageCount)];
                 }
                 if (!_alertButtonTitleWhenExceedMaxSelectImageCount) {
                     _alertButtonTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"我知道了"];

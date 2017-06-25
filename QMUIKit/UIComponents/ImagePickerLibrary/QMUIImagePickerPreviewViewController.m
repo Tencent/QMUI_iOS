@@ -278,7 +278,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     } else {
         if ([self.selectedImageAssetArray count] >= self.maximumSelectImageCount) {
             if (!self.alertTitleWhenExceedMaxSelectImageCount) {
-                self.alertTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"你最多只能选择%lu张图片", (long)self.maximumSelectImageCount];
+                self.alertTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"你最多只能选择%@张图片", @(self.maximumSelectImageCount)];
             }
             if (!self.alertButtonTitleWhenExceedMaxSelectImageCount) {
                 self.alertButtonTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"我知道了"];

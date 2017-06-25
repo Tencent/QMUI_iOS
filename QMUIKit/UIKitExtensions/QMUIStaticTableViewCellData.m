@@ -75,13 +75,13 @@
 
 + (QMUIStaticTableViewCellData *)staticTableCellDataInDataSource:(NSArray *)dataSource withIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= dataSource.count) {
-        NSLog(@"cellDataWithIndexPath:[%lu-%lu], data not exist in section!", (long)indexPath.section, (long)indexPath.row);
+        NSLog(@"cellDataWithIndexPath:%@, data not exist in section!", indexPath);
         return nil;
     }
     
     NSArray *rowDatas = [dataSource objectAtIndex:indexPath.section];
     if (indexPath.row >= rowDatas.count) {
-        NSLog(@"cellDataWithIndexPath:[%lu-%lu], data not exist in row!", (long)indexPath.section, (long)indexPath.row);
+        NSLog(@"cellDataWithIndexPath:%@, data not exist in row!", indexPath);
         return nil;
     }
     
@@ -90,7 +90,7 @@
 
 + (NSString *)staticTableViewReuseIdentifierAtIndexPath:(NSIndexPath *)indexPath withDataSource:(NSArray *)dataSource {
     QMUIStaticTableViewCellData *data = [QMUIHelper staticTableCellDataInDataSource:dataSource withIndexPath:indexPath];
-    return [NSString stringWithFormat:@"cell%lu", (long)data.identifier];
+    return [NSString stringWithFormat:@"cell%@", @(data.identifier)];
 }
 
 + (UITableViewCell *)staticTableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath ofClass:(Class)cellClass withDataSource:(NSArray *)dataSource {

@@ -17,7 +17,6 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import "UIControl+QMUI.h"
 #import "UILabel+QMUI.h"
-#import "NSString+QMUI.h"
 
 #define kIconsColor UIColorMakeWithRGBA(255, 255, 255, .75)
 
@@ -391,7 +390,8 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     self.videoSize = CGSizeZero;
     for (AVAssetTrack *track in tracksArray) {
         if ([track.mediaType isEqualToString:AVMediaTypeVideo]) {
-            self.videoSize = track.naturalSize;
+            CGSize size = CGSizeApplyAffineTransform(track.naturalSize, track.preferredTransform);
+            self.videoSize = CGSizeMake(fabs(size.width), fabs(size.height));
             break;
         }
     }
@@ -476,9 +476,9 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 - (void)configVideoProgressSlider {
-    self.videoToolbar.sliderLeftLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:0];
+    self.videoToolbar.sliderLeftLabel.text = [self timeStringFromSeconds:0];
     double duration = CMTimeGetSeconds(self.videoPlayerItem.asset.duration);
-    self.videoToolbar.sliderRightLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:duration];
+    self.videoToolbar.sliderRightLabel.text = [self timeStringFromSeconds:duration];
     
     self.videoToolbar.slider.minimumValue = 0.0;
     self.videoToolbar.slider.maximumValue = duration;
@@ -511,7 +511,14 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (void)updateVideoSliderLeftLabel {
     double currentSeconds = CMTimeGetSeconds(self.videoPlayer.currentTime);
-    self.videoToolbar.sliderLeftLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:currentSeconds];
+    self.videoToolbar.sliderLeftLabel.text = [self timeStringFromSeconds:currentSeconds];
+}
+
+// convert "100" to "01:40"
+- (NSString *)timeStringFromSeconds:(NSUInteger)seconds {
+    NSUInteger min = floor(seconds / 60);
+    NSUInteger sec = floor(seconds - min * 60);
+    return [NSString stringWithFormat:@"%02ld:%02ld", (long)min, (long)sec];
 }
 
 - (void)pauseVideo {
@@ -565,6 +572,9 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     }
     _videoToolbar = ({
         QMUIZoomImageViewVideoToolbar * b = [[QMUIZoomImageViewVideoToolbar alloc] init];
+        if ([self.delegate respondsToSelector:@selector(contentInsetsForVideoToolbar:inZoomingImageView:)]) {
+            b.contentInsets = [self.delegate contentInsetsForVideoToolbar:b inZoomingImageView:self];
+        }
         [b.playButton addTarget:self action:@selector(handlePlayButton:) forControlEvents:UIControlEventTouchUpInside];
         [b.pauseButton addTarget:self action:@selector(handlePauseButton) forControlEvents:UIControlEventTouchUpInside];
         [self insertSubview:b belowSubview:self.emptyView];
@@ -959,6 +969,11 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     CGFloat contentHeight = [self maxHeightAmongViews:@[self.playButton, self.pauseButton, self.sliderLeftLabel, self.sliderRightLabel, self.slider]];
     size.height = contentHeight + UIEdgeInsetsGetVerticalValue(self.contentInsets);
     return size;
+}
+
+- (void)setContentInsets:(UIEdgeInsets)contentInsets {
+    _contentInsets = contentInsets;
+    [self setNeedsLayout];
 }
 
 - (void)setPlayButtonImage:(UIImage *)playButtonImage {

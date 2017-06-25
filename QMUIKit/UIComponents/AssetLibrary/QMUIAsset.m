@@ -14,6 +14,12 @@
 #import "QMUIAssetsManager.h"
 #import "NSString+QMUI.h"
 
+static NSString * const kAssetInfoImageData = @"imageData";
+static NSString * const kAssetInfoOriginInfo = @"originInfo";
+static NSString * const kAssetInfoDataUTI = @"dataUTI";
+static NSString * const kAssetInfoOrientation = @"orientation";
+static NSString * const kAssetInfoSize = @"size";
+
 @interface QMUIAsset ()
 
 @property (nonatomic, assign, readwrite) QMUIAssetType assetType;
@@ -159,7 +165,7 @@
     return resultImage;
 }
 
-- (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *result, NSDictionary *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
+- (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if (_usePhotoKit) {
         PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
         imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
@@ -177,7 +183,7 @@
     }
 }
 
-- (NSInteger)requestThumbnailImageWithSize:(CGSize)size completion:(void (^)(UIImage *result, NSDictionary *info))completion {
+- (NSInteger)requestThumbnailImageWithSize:(CGSize)size completion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion {
     if (_usePhotoKit) {
         PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
         imageRequestOptions.resizeMode = PHImageRequestOptionsResizeModeFast;
@@ -196,7 +202,7 @@
     }
 }
 
-- (NSInteger)requestPreviewImageWithCompletion:(void (^)(UIImage *result, NSDictionary *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
+- (NSInteger)requestPreviewImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if (_usePhotoKit) {
         PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
         imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
@@ -214,7 +220,7 @@
     }
 }
 
-- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *livePhoto, NSDictionary *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
+- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *livePhoto, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if (_usePhotoKit && [[PHCachingImageManager class] instancesRespondToSelector:@selector(requestLivePhotoForAsset:targetSize:contentMode:options:resultHandler:)]) {
         PHLivePhotoRequestOptions *livePhotoRequestOptions = [[PHLivePhotoRequestOptions alloc] init];
         livePhotoRequestOptions.networkAccessAllowed = YES; // 允许访问网络
@@ -229,7 +235,7 @@
     }
 }
 
-- (NSInteger)requestPlayerItemWithCompletion:(void (^)(AVPlayerItem *playerItem, NSDictionary *info))completion withProgressHandler:(PHAssetVideoProgressHandler)phProgressHandler {
+- (NSInteger)requestPlayerItemWithCompletion:(void (^)(AVPlayerItem *playerItem, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetVideoProgressHandler)phProgressHandler {
     if (_usePhotoKit && [[PHCachingImageManager class] instancesRespondToSelector:@selector(requestPlayerItemForVideo:options:resultHandler:)]) {
         PHVideoRequestOptions *videoRequestOptions = [[PHVideoRequestOptions alloc] init];
         videoRequestOptions.networkAccessAllowed = YES; // 允许访问网络
@@ -249,10 +255,10 @@
     }
 }
 
-- (void)requestImageData:(void (^)(NSData *imageData, BOOL isGif))completion {
+- (void)requestImageData:(void (^)(NSData *imageData, NSDictionary<NSString *, id> *info, BOOL isGif))completion {
     if (self.assetType != QMUIAssetTypeImage && self.assetType != QMUIAssetTypeLivePhoto) {
         if (completion) {
-            completion(nil, NO);
+            completion(nil, nil, NO);
         }
         return;
     }
@@ -262,22 +268,24 @@
             [self requestPhAssetInfo:^(NSDictionary *phAssetInfo) {
                 _phAssetInfo = phAssetInfo;
                 if (completion) {
-                    NSString *dataUTI = phAssetInfo[@"dataUTI"];
+                    NSString *dataUTI = phAssetInfo[kAssetInfoDataUTI];
                     BOOL isGif = [dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF];
+                    NSDictionary<NSString *, id> *originInfo = phAssetInfo[kAssetInfoOriginInfo];
                     /**
                      *  这里不在主线程执行，若用户在该 block 中操作 UI 时会产生一些问题，
                      *  为了避免这种情况，这里该 block 主动放到主线程执行。
                      */
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        completion(phAssetInfo[@"imageData"], isGif);
+                        completion(phAssetInfo[kAssetInfoImageData], originInfo, isGif);
                     });
                 }
             }];
         } else {
             if (completion) {
-                NSString *dataUTI = _phAssetInfo[@"dataUTI"];
+                NSString *dataUTI = _phAssetInfo[kAssetInfoDataUTI];
                 BOOL isGif = [dataUTI isEqualToString:(__bridge NSString *)kUTTypeGIF];
-                completion(_phAssetInfo[@"imageData"], isGif);
+                NSDictionary<NSString *, id> *originInfo = _phAssetInfo[kAssetInfoOriginInfo];
+                completion(_phAssetInfo[kAssetInfoImageData], originInfo, isGif);
             }
         }
     } else {
@@ -292,9 +300,9 @@
                 // 判断是否为 GIF 图
                 ALAssetRepresentation *gifRepresentation = [_alAsset representationForUTI: (__bridge NSString *)kUTTypeGIF];
                 if (gifRepresentation) {
-                    completion(imageData, YES);
+                    completion(imageData, nil, YES);
                 } else {
-                    completion(imageData, NO);
+                    completion(imageData, nil, NO);
                 }
             }];
         }
@@ -312,7 +320,7 @@
                 } synchronous:YES];
             }
             // 从 PhAssetInfo 中获取 UIImageOrientation 对应的字段
-            orientation = (UIImageOrientation)[_phAssetInfo[@"orientation"] integerValue];
+            orientation = (UIImageOrientation)[_phAssetInfo[kAssetInfoOrientation] integerValue];
         } else {
             orientation = (UIImageOrientation)[[_alAsset valueForProperty:@"ALAssetPropertyOrientation"] integerValue];
         }
@@ -347,13 +355,13 @@
             if ([asset isKindOfClass:[AVURLAsset class]]) {
                 NSMutableDictionary *tempInfo = [[NSMutableDictionary alloc] init];
                 if (info) {
-                    [tempInfo addEntriesFromDictionary:info];
+                    [tempInfo setObject:info forKey:kAssetInfoOriginInfo];
                 }
                 
                 AVURLAsset *urlAsset = (AVURLAsset*)asset;
                 NSNumber *size;
                 [urlAsset.URL getResourceValue:&size forKey:NSURLFileSizeKey error:nil];
-                [tempInfo setObject:size forKey:@"size"];
+                [tempInfo setObject:size forKey:kAssetInfoSize];
                 if (completion) {
                     completion(tempInfo);
                 }
@@ -375,14 +383,14 @@
     [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageDataForAsset:_phAsset options:imageRequestOptions resultHandler:^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info) {
         if (info) {
             NSMutableDictionary *tempInfo = [[NSMutableDictionary alloc] init];
-            [tempInfo setObject:imageData forKey:@"imageData"];
+            [tempInfo setObject:imageData forKey:kAssetInfoImageData];
             
-            [tempInfo addEntriesFromDictionary:info];
+            [tempInfo setObject:info forKey:kAssetInfoOriginInfo];
             if (dataUTI) {
-                [tempInfo setObject:dataUTI forKey:@"dataUTI"]; // TODO: kayo 这个字段对应的是不是就是文件的 data？换句话说，要支持 GIF 就要从这里获取 data？
+                [tempInfo setObject:dataUTI forKey:kAssetInfoDataUTI];
             }
-            [tempInfo setObject:@(orientation) forKey:@"orientation"];
-            [tempInfo setObject:@(imageData.length) forKey:@"size"];
+            [tempInfo setObject:@(orientation) forKey:kAssetInfoOrientation];
+            [tempInfo setObject:@(imageData.length) forKey:kAssetInfoSize];
             if (completion) {
                 completion(tempInfo);
             }
@@ -411,13 +419,13 @@
                      *  为了避免这种情况，这里该 block 主动放到主线程执行。
                      */
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        completion([phAssetInfo[@"size"] longLongValue]);
+                        completion([phAssetInfo[kAssetInfoSize] longLongValue]);
                     });
                 }
             }];
         } else {
             if (completion) {
-                completion([_phAssetInfo[@"size"] longLongValue]);
+                completion([_phAssetInfo[kAssetInfoSize] longLongValue]);
             }
         }
     } else {

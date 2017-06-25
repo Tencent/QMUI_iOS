@@ -16,64 +16,68 @@
 
 @interface QMUITips : QMUIToastView
 
+NS_ASSUME_NONNULL_BEGIN
+
 /// 实例方法：需要自己addSubview，hide之后不会自动removeFromSuperView
 
-- (void)showWithText:(NSString *)text;
-- (void)showWithText:(NSString *)text hideAfterDelay:(NSTimeInterval)delay;
-- (void)showWithText:(NSString *)text detailText:(NSString *)detailText;
-- (void)showWithText:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
+- (void)showWithText:(nullable NSString *)text;
+- (void)showWithText:(nullable NSString *)text hideAfterDelay:(NSTimeInterval)delay;
+- (void)showWithText:(nullable NSString *)text detailText:(nullable NSString *)detailText;
+- (void)showWithText:(nullable NSString *)text detailText:(nullable NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
 
 - (void)showLoading;
-- (void)showLoading:(NSString *)text;
+- (void)showLoading:(nullable NSString *)text;
 - (void)showLoadingHideAfterDelay:(NSTimeInterval)delay;
-- (void)showLoading:(NSString *)text hideAfterDelay:(NSTimeInterval)delay;
-- (void)showLoading:(NSString *)text detailText:(NSString *)detailText;
-- (void)showLoading:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
+- (void)showLoading:(nullable NSString *)text hideAfterDelay:(NSTimeInterval)delay;
+- (void)showLoading:(nullable NSString *)text detailText:(nullable NSString *)detailText;
+- (void)showLoading:(nullable NSString *)text detailText:(nullable NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
 
-- (void)showSucceed:(NSString *)text;
-- (void)showSucceed:(NSString *)text hideAfterDelay:(NSTimeInterval)delay;
-- (void)showSucceed:(NSString *)text detailText:(NSString *)detailText;
-- (void)showSucceed:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
+- (void)showSucceed:(nullable NSString *)text;
+- (void)showSucceed:(nullable NSString *)text hideAfterDelay:(NSTimeInterval)delay;
+- (void)showSucceed:(nullable NSString *)text detailText:(nullable NSString *)detailText;
+- (void)showSucceed:(nullable NSString *)text detailText:(nullable NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
 
-- (void)showError:(NSString *)text;
-- (void)showError:(NSString *)text hideAfterDelay:(NSTimeInterval)delay;
-- (void)showError:(NSString *)text detailText:(NSString *)detailText;
-- (void)showError:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
+- (void)showError:(nullable NSString *)text;
+- (void)showError:(nullable NSString *)text hideAfterDelay:(NSTimeInterval)delay;
+- (void)showError:(nullable NSString *)text detailText:(nullable NSString *)detailText;
+- (void)showError:(nullable NSString *)text detailText:(nullable NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
 
-- (void)showInfo:(NSString *)text;
-- (void)showInfo:(NSString *)text hideAfterDelay:(NSTimeInterval)delay;
-- (void)showInfo:(NSString *)text detailText:(NSString *)detailText;
-- (void)showInfo:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
+- (void)showInfo:(nullable NSString *)text;
+- (void)showInfo:(nullable NSString *)text hideAfterDelay:(NSTimeInterval)delay;
+- (void)showInfo:(nullable NSString *)text detailText:(nullable NSString *)detailText;
+- (void)showInfo:(nullable NSString *)text detailText:(nullable NSString *)detailText hideAfterDelay:(NSTimeInterval)delay;
 
 /// 类方法：主要用在局部一次性使用的场景，hide之后会自动removeFromSuperView
 
 + (QMUITips *)createTipsToView:(UIView *)view;
 
-+ (QMUITips *)showWithText:(NSString *)text inView:(UIView *)view;
-+ (QMUITips *)showWithText:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
-+ (QMUITips *)showWithText:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view;
-+ (QMUITips *)showWithText:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showWithText:(nullable NSString *)text inView:(UIView *)view;
++ (QMUITips *)showWithText:(nullable NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showWithText:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view;
++ (QMUITips *)showWithText:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
 
 + (QMUITips *)showLoadingInView:(UIView *)view;
-+ (QMUITips *)showLoading:(NSString *)text inView:(UIView *)view;
++ (QMUITips *)showLoading:(nullable NSString *)text inView:(UIView *)view;
 + (QMUITips *)showLoadingInView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
-+ (QMUITips *)showLoading:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
-+ (QMUITips *)showLoading:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view;
-+ (QMUITips *)showLoading:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showLoading:(nullable NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showLoading:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view;
++ (QMUITips *)showLoading:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
 
-+ (QMUITips *)showSucceed:(NSString *)text inView:(UIView *)view;
-+ (QMUITips *)showSucceed:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
-+ (QMUITips *)showSucceed:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view;
-+ (QMUITips *)showSucceed:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showSucceed:(nullable NSString *)text inView:(UIView *)view;
++ (QMUITips *)showSucceed:(nullable NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showSucceed:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view;
++ (QMUITips *)showSucceed:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
 
-+ (QMUITips *)showError:(NSString *)text inView:(UIView *)view;
-+ (QMUITips *)showError:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
-+ (QMUITips *)showError:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view;
-+ (QMUITips *)showError:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showError:(nullable NSString *)text inView:(UIView *)view;
++ (QMUITips *)showError:(nullable NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showError:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view;
++ (QMUITips *)showError:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
 
-+ (QMUITips *)showInfo:(NSString *)text inView:(UIView *)view;
-+ (QMUITips *)showInfo:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
-+ (QMUITips *)showInfo:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view;
-+ (QMUITips *)showInfo:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showInfo:(nullable NSString *)text inView:(UIView *)view;
++ (QMUITips *)showInfo:(nullable NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
++ (QMUITips *)showInfo:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view;
++ (QMUITips *)showInfo:(nullable NSString *)text detailText:(nullable NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay;
+
+NS_ASSUME_NONNULL_END
 
 @end
