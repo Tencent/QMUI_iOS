@@ -383,7 +383,9 @@ static NSString * const kAssetInfoSize = @"size";
     [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageDataForAsset:_phAsset options:imageRequestOptions resultHandler:^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info) {
         if (info) {
             NSMutableDictionary *tempInfo = [[NSMutableDictionary alloc] init];
-            [tempInfo setObject:imageData forKey:kAssetInfoImageData];
+            if (imageData) {
+                [tempInfo setObject:imageData forKey:kAssetInfoImageData];
+            }
             
             [tempInfo setObject:info forKey:kAssetInfoOriginInfo];
             if (dataUTI) {
