@@ -385,6 +385,7 @@ static NSString * const kAssetInfoSize = @"size";
             NSMutableDictionary *tempInfo = [[NSMutableDictionary alloc] init];
             if (imageData) {
                 [tempInfo setObject:imageData forKey:kAssetInfoImageData];
+                [tempInfo setObject:@(imageData.length) forKey:kAssetInfoSize];
             }
             
             [tempInfo setObject:info forKey:kAssetInfoOriginInfo];
@@ -392,7 +393,6 @@ static NSString * const kAssetInfoSize = @"size";
                 [tempInfo setObject:dataUTI forKey:kAssetInfoDataUTI];
             }
             [tempInfo setObject:@(orientation) forKey:kAssetInfoOrientation];
-            [tempInfo setObject:@(imageData.length) forKey:kAssetInfoSize];
             if (completion) {
                 completion(tempInfo);
             }
