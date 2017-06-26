@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.social_media_url = 'https://github.com/QMUI/QMUI_iOS'
   s.requires_arc     = true
   s.documentation_url = 'http://qmuiteam.com/ios/page/document.html'
-  s.screenshot        = 'https://raw.githubusercontent.com/QMUI/QMUI_iOS/master/logo_2x.png'
+  s.screenshot        = 'https://cloud.githubusercontent.com/assets/1190261/26751376/63f96538-486a-11e7-81cf-5bc83a945207.png'
 
   s.platform         = :ios, '7.0'
   s.source_files     = 'QMUIKit/**/*.{h,m}'
