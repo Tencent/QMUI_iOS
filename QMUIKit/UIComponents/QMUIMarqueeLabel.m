@@ -9,6 +9,7 @@
 #import "QMUIMarqueeLabel.h"
 #import "QMUICore.h"
 #import "CALayer+QMUI.h"
+#import "NSString+QMUI.h"
 
 @interface QMUIMarqueeLabel ()
 
@@ -18,6 +19,11 @@
 
 @property(nonatomic, strong) CAGradientLayer *fadeLeftLayer;
 @property(nonatomic, strong) CAGradientLayer *fadeRightLayer;
+
+@property(nonatomic, assign) BOOL isFirstDisplay;
+
+/// 绘制文本时重复绘制的次数，用于实现首尾连接的滚动效果，1 表示不首尾连接，大于 1 表示首尾连接。
+@property(nonatomic, assign) NSInteger textRepeatCount;
 @end
 
 @implementation QMUIMarqueeLabel
@@ -28,13 +34,18 @@
         self.lineBreakMode = NSLineBreakByClipping;
         self.clipsToBounds = YES;// 显示非英文字符时，滚动的时候字符会稍微露出两端，所以这里直接裁剪掉
         
-        self.speed = 1;
-        self.pauseDurationWhenMoveToEdge = 1.0;
+        self.speed = .5;
+        self.pauseDurationWhenMoveToEdge = 2.5;
+        self.spacingBetweenHeadToTail = 40;
         self.automaticallyValidateVisibleFrame = YES;
         self.fadeWidth = 20;
         self.fadeStartColor = UIColorMakeWithRGBA(255, 255, 255, 1);
         self.fadeEndColor = UIColorMakeWithRGBA(255, 255, 255, 0);
-        self.shouldFadeAtEdge = NO;
+        self.shouldFadeAtEdge = YES;
+        self.textStartAfterFade = NO;
+        
+        self.isFirstDisplay = YES;
+        self.textRepeatCount = 2;
         
         self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink:)];
         self.displayLink.paused = YES;
@@ -74,14 +85,34 @@
 }
 
 - (void)setFrame:(CGRect)frame {
+    BOOL isSizeChanged = !CGSizeEqualToSize(frame.size, self.frame.size);
     [super setFrame:frame];
-    self.offsetX = 0;
-    self.displayLink.paused = ![self shouldPlayDisplayLink];
+    if (isSizeChanged) {
+        self.offsetX = 0;
+        self.displayLink.paused = ![self shouldPlayDisplayLink];
+    }
 }
 
 - (void)drawTextInRect:(CGRect)rect {
-    CGRect rectToDrawAfterAnimated = CGRectLimitLeft(rect, self.offsetX);
-    [super drawTextInRect:rectToDrawAfterAnimated];
+    CGFloat textInitialX = 0;
+    if (self.textAlignment == NSTextAlignmentLeft) {
+        textInitialX = 0;
+    } else if (self.textAlignment == NSTextAlignmentCenter) {
+        textInitialX = fmax(0, CGFloatGetCenter(CGRectGetWidth(self.bounds), self.textWidth));
+    } else if (self.textAlignment == NSTextAlignmentRight) {
+        textInitialX = fmax(0, CGRectGetWidth(self.bounds) - self.textWidth);
+    }
+    
+    // 考虑渐变遮罩的偏移
+    CGFloat textOffsetXByFade = textInitialX < self.fadeWidth ? ((self.shouldFadeAtEdge && self.textStartAfterFade) ? self.fadeWidth : 0) : 0;
+    textInitialX += textOffsetXByFade;
+    
+    for (NSInteger i = 0; i < self.textRepeatCountConsiderTextWidth; i++) {
+        [self.attributedText drawInRect:CGRectMake(self.offsetX + (self.textWidth + self.spacingBetweenHeadToTail) * i + textInitialX, 0, self.textWidth, CGRectGetHeight(rect))];
+    }
+    
+    // 自定义绘制就不需要调用 super
+//    [super drawTextInRect:rectToDrawAfterAnimated];
 }
 
 - (void)layoutSubviews {
@@ -96,27 +127,40 @@
     }
 }
 
+- (NSInteger)textRepeatCountConsiderTextWidth {
+    if (self.textWidth < CGRectGetWidth(self.bounds)) {
+        return 1;
+    }
+    return self.textRepeatCount;
+}
+
 - (void)handleDisplayLink:(CADisplayLink *)displayLink {
     if (self.offsetX == 0) {
         displayLink.paused = YES;
         [self setNeedsDisplay];
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.pauseDurationWhenMoveToEdge * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        int64_t delay = (self.isFirstDisplay || self.textRepeatCount <= 1) ? self.pauseDurationWhenMoveToEdge : 0;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             displayLink.paused = ![self shouldPlayDisplayLink];
             if (!displayLink.paused) {
-                self.offsetX -= 1.0 * self.speed;
+                self.offsetX -= self.speed;
             }
         });
+        
+        if (delay > 0 && self.textRepeatCount > 1) {
+            self.isFirstDisplay = NO;
+        }
         
         return;
     }
     
-    self.offsetX -= 1.0 * self.speed;
+    self.offsetX -= self.speed;
     [self setNeedsDisplay];
     
-    if (self.offsetX - CGRectGetWidth(self.bounds) < -self.textWidth) {
+    if (-self.offsetX >= self.textWidth + (self.textRepeatCountConsiderTextWidth > 1 ? self.spacingBetweenHeadToTail : 0)) {
         displayLink.paused = YES;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(self.pauseDurationWhenMoveToEdge * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        int64_t delay = self.textRepeatCount > 1 ? self.pauseDurationWhenMoveToEdge : 0;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             self.offsetX = 0;
             [self handleDisplayLink:displayLink];
         });
@@ -150,23 +194,50 @@
     [self updateFadeLayersHidden];
 }
 
+- (void)setFadeStartColor:(UIColor *)fadeStartColor {
+    _fadeStartColor = fadeStartColor;
+    [self updateFadeLayerColors];
+}
+
+- (void)setFadeEndColor:(UIColor *)fadeEndColor {
+    _fadeEndColor = fadeEndColor;
+    [self updateFadeLayerColors];
+}
+
+- (void)updateFadeLayerColors {
+    if (self.fadeLeftLayer) {
+        if (self.fadeStartColor && self.fadeEndColor) {
+            self.fadeLeftLayer.colors = @[(id)self.fadeStartColor.CGColor,
+                                          (id)self.fadeEndColor.CGColor];
+        } else {
+            self.fadeLeftLayer.colors = nil;
+        }
+    }
+    if (self.fadeRightLayer) {
+        if (self.fadeStartColor && self.fadeEndColor) {
+            self.fadeRightLayer.colors = @[(id)self.fadeStartColor.CGColor,
+                                           (id)self.fadeEndColor.CGColor];
+        } else {
+            self.fadeRightLayer.colors = nil;
+        }
+    }
+}
+
 - (void)updateFadeLayersHidden {
     if (!self.fadeLeftLayer || !self.fadeRightLayer) {
         return;
     }
     
-    BOOL shouldShowFadeLeftLayer = self.offsetX < 0;
+    BOOL shouldShowFadeLeftLayer = self.shouldFadeAtEdge && (self.offsetX < 0 || (self.offsetX == 0 && !self.isFirstDisplay));
     self.fadeLeftLayer.hidden = !shouldShowFadeLeftLayer;
     
-    BOOL shouldShowFadeRightLayer = self.textWidth > CGRectGetWidth(self.bounds) && self.offsetX != self.textWidth - CGRectGetWidth(self.bounds);
+    BOOL shouldShowFadeRightLayer = self.shouldFadeAtEdge && (self.textWidth > CGRectGetWidth(self.bounds) && self.offsetX != self.textWidth - CGRectGetWidth(self.bounds));
     self.fadeRightLayer.hidden = !shouldShowFadeRightLayer;
 }
 
 - (void)initFadeLayersIfNeeded {
     if (!self.fadeLeftLayer) {
         self.fadeLeftLayer = [CAGradientLayer layer];// 请保留自带的 hidden 动画
-        self.fadeLeftLayer.colors = @[(id)self.fadeStartColor.CGColor,
-                                      (id)self.fadeEndColor.CGColor];
         self.fadeLeftLayer.startPoint = CGPointMake(0, .5);
         self.fadeLeftLayer.endPoint = CGPointMake(1, .5);
         [self.layer addSublayer:self.fadeLeftLayer];
@@ -175,13 +246,13 @@
     
     if (!self.fadeRightLayer) {
         self.fadeRightLayer = [CAGradientLayer layer];// 请保留自带的 hidden 动画
-        self.fadeRightLayer.colors = @[(id)self.fadeStartColor.CGColor,
-                                       (id)self.fadeEndColor.CGColor];
         self.fadeRightLayer.startPoint = CGPointMake(1, .5);
         self.fadeRightLayer.endPoint = CGPointMake(0, .5);
         [self.layer addSublayer:self.fadeRightLayer];
         [self setNeedsLayout];
     }
+    
+    [self updateFadeLayerColors];
 }
 
 #pragma mark - Superclass
