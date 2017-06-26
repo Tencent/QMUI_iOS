@@ -36,6 +36,11 @@ extern const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
 
+/**
+ *  初始化时调用的方法，会在两个 NS_DESIGNATED_INITIALIZER 方法中被调用，所以子类如果需要同时支持两个 NS_DESIGNATED_INITIALIZER 方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个 NS_DESIGNATED_INITIALIZER 方法即可。
+ */
+- (void)didInitializedWithStyle:(UITableViewStyle)style NS_REQUIRES_SUPER;
+
 /// 获取当前的 `UITableViewStyle`
 @property(nonatomic, assign, readonly) UITableViewStyle style;
 
@@ -46,14 +51,14 @@ extern const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet
  *  列表使用自定义的contentInset，不使用系统默认计算的，默认为QMUICommonTableViewControllerInitialContentInsetNotSet。<br/>
  *  当更改了这个值后，会把self.automaticallyAdjustsScrollViewInsets = NO
  */
-@property(nonatomic,assign) UIEdgeInsets tableViewInitialContentInset;
+@property(nonatomic, assign) UIEdgeInsets tableViewInitialContentInset;
 
 /**
  *  是否需要让scrollIndicatorInsets与tableView.contentInsets区分开来，如果不设置，则与tableView.contentInset保持一致。
  *
  *  只有当更改了tableViewInitialContentInset后，这个属性才会生效。
  */
-@property(nonatomic,assign) UIEdgeInsets tableViewInitialScrollIndicatorInsets;
+@property(nonatomic, assign) UIEdgeInsets tableViewInitialScrollIndicatorInsets;
 
 @end
 

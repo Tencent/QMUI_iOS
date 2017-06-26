@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "QMUINavigationController.h"
 
 /**
  *  维护项目全局 UI 配置的单例，通过业务项目自己的 QMUIConfigurationTemplate 来为这个单例赋值，而业务代码里则通过 QMUIConfigurationMacros.h 文件里的宏来使用这些值。
@@ -31,7 +32,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, strong) UIColor            *linkColor;
 @property(nonatomic, strong) UIColor            *disabledColor;
-@property(nonatomic, strong) UIColor            *backgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *backgroundColor;
 @property(nonatomic, strong) UIColor            *maskDarkColor;
 @property(nonatomic, strong) UIColor            *maskLightColor;
 @property(nonatomic, strong) UIColor            *separatorColor;
@@ -97,6 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *tabBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColorSelected;
+@property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFont;
 
 #pragma mark - Toolbar
 
@@ -141,6 +143,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *tableViewCellWarningBackgroundColor;
 @property(nonatomic, strong, nullable) UIImage  *tableViewCellDisclosureIndicatorImage;
 @property(nonatomic, strong, nullable) UIImage  *tableViewCellCheckmarkImage;
+@property(nonatomic, strong, nullable) UIImage  *tableViewCellDetailButtonImage;
+@property(nonatomic, assign) CGFloat tableViewCellSpacingBetweenDetailButtonAndDisclosureIndicator;
 
 @property(nonatomic, strong, nullable) UIColor  *tableViewSectionHeaderBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewSectionFooterBackgroundColor;
@@ -170,9 +174,12 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Others
 
 @property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
+@property(nonatomic, assign) BOOL               automaticallyRotateDeviceOrientation;
 @property(nonatomic, assign) BOOL               statusbarStyleLightInitially;
 @property(nonatomic, assign) BOOL               needsBackBarButtonItemTitle;
 @property(nonatomic, assign) BOOL               hidesBottomBarWhenPushedInitially;
+@property(nonatomic, assign) BOOL               navigationBarHiddenStateUsable;
+@property(nonatomic, assign) QMUINavigationBarHiddenState navigationBarHiddenStateInitially;
 
 NS_ASSUME_NONNULL_END
 

@@ -8,6 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
+/**
+ *  建议作为项目里 tabBarController 的基类，内部处理了几件事情：
+ *  1. 配合配置表修改 tabBar 的样式。
+ *  2. 管理界面支持显示的方向。
+ *
+ *  @warning 当你需要实现“tabBarController 首页那几个界面显示 tabBar，而 push 进去的所有子界面都隐藏 tabBar”的效果时，可将配置表里的 HidesBottomBarWhenPushedInitially 改为 YES，然后手动将 tabBarController 首页的那几个界面的 hidesBottomBarWhenPushed 属性改为 NO，即可实现。
+ */
 @interface QMUITabBarViewController : UITabBarController
 
 /**

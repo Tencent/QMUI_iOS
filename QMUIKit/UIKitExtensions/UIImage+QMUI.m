@@ -515,8 +515,8 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         }
             break;
         case QMUIImageShapeDisclosureIndicator: {
-            path = [UIBezierPath bezierPath];
             drawByStroke = YES;
+            path = [UIBezierPath bezierPath];
             path.lineWidth = lineWidth;
             [path moveToPoint:CGPointMake(drawOffset, drawOffset)];
             [path addLineToPoint:CGPointMake(size.width - drawOffset, size.height / 2)];
@@ -533,6 +533,12 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             [path addLineToPoint:CGPointMake(size.width / 3, size.height - lineWidth / sin(lineAngle))];
             [path addLineToPoint:CGPointMake(lineWidth * sin(lineAngle), size.height / 2 - lineWidth * sin(lineAngle))];
             [path closePath];
+        }
+            break;
+        case QMUIImageShapeDetailButtonImage: {
+            drawByStroke = YES;
+            path = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(CGRectMakeWithSize(size), drawOffset, drawOffset)];
+            path.lineWidth = lineWidth;
         }
             break;
         case QMUIImageShapeNavClose: {
@@ -560,6 +566,14 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         [path fill];
     }
     
+    if (shape == QMUIImageShapeDetailButtonImage) {
+        CGFloat fontPointSize = flat(size.height * 0.8);
+        UIFont *font = [UIFont fontWithName:@"Georgia" size:fontPointSize];
+        NSAttributedString *string = [[NSAttributedString alloc] initWithString:@"i" attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: tintColor}];
+        CGSize stringSize = [string boundingRectWithSize:size options:NSStringDrawingUsesFontLeading context:nil].size;
+        [string drawAtPoint:CGPointMake(CGFloatGetCenter(size.width, stringSize.width), CGFloatGetCenter(size.height, stringSize.height))];
+    }
+    
     resultImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
@@ -577,6 +591,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             break;
         case QMUIImageShapeCheckmark:
             lineWidth = 1.5f;
+            break;
+        case QMUIImageShapeDetailButtonImage:
+            lineWidth = 1.0f;
             break;
         case QMUIImageShapeNavClose:
             lineWidth = 1.2f;   // 取消icon默认的lineWidth

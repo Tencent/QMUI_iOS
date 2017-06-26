@@ -9,10 +9,10 @@
 #import "QMUIConfiguration.h"
 
 
-/*
- * 定义宏，宏的值是通过 QMUIConfiguration 的单例来获取属性的值。
- * 如果项目需要修改根据项目来修改某些宏的名字，请通过 QMUIConfiguration 来修改相应的属性，然后在项目启动的地方调用。
- * @waining 如果需要增加一个宏，则需要定义一个新的 QMUIConfiguration 属性。
+/**
+ *  提供一系列方便书写的宏，以便在代码里读取配置表的各种属性。
+ *  @warning 请不要在 + load 方法里调用 QMUIConfigurationTemplate 或 QMUIConfigurationMacros 提供的宏，那个时机太早，可能导致 crash
+ *  @waining 维护时，如果需要增加一个宏，则需要定义一个新的 QMUIConfiguration 属性。
  */
 
 
@@ -110,6 +110,7 @@
 #define TabBarTintColor                                 [QMUICMI tabBarTintColor]
 #define TabBarItemTitleColor                            [QMUICMI tabBarItemTitleColor]
 #define TabBarItemTitleColorSelected                    [QMUICMI tabBarItemTitleColorSelected]
+#define TabBarItemTitleFont                             [QMUICMI tabBarItemTitleFont]
 
 
 #pragma mark - Toolbar
@@ -147,13 +148,15 @@
 #define TableSectionIndexBackgroundColor           [QMUICMI tableSectionIndexBackgroundColor]           // 列表右边索引条的背景色，iOS7及以后生效
 #define TableSectionIndexTrackingBackgroundColor   [QMUICMI tableSectionIndexTrackingBackgroundColor]   // 列表右边索引条按下时的背景色，iOS6及以后生效
 #define TableViewSeparatorColor                    [QMUICMI tableViewSeparatorColor]                    // 列表分隔线颜色
-#define TableViewCellBackgroundColor               [QMUICMI tableViewCellBackgroundColor]               // 列表cel的背景色
-#define TableViewCellSelectedBackgroundColor       [QMUICMI tableViewCellSelectedBackgroundColor]       // 列表cell按下时的背景色
-#define TableViewCellWarningBackgroundColor        [QMUICMI tableViewCellWarningBackgroundColor]        // 列表cell在未读状态下的背景色
-#define TableViewCellNormalHeight                  [QMUICMI tableViewCellNormalHeight]                  // 默认cell的高度
+#define TableViewCellBackgroundColor               [QMUICMI tableViewCellBackgroundColor]               // 列表 cell 的背景色
+#define TableViewCellSelectedBackgroundColor       [QMUICMI tableViewCellSelectedBackgroundColor]       // 列表 cell 按下时的背景色
+#define TableViewCellWarningBackgroundColor        [QMUICMI tableViewCellWarningBackgroundColor]        // 列表 cell 在未读状态下的背景色
+#define TableViewCellNormalHeight                  [QMUICMI tableViewCellNormalHeight]                  // 默认 cell 的高度
 
-#define TableViewCellDisclosureIndicatorImage      [QMUICMI tableViewCellDisclosureIndicatorImage]      // 列表cell右边的箭头图片
-#define TableViewCellCheckmarkImage                [QMUICMI tableViewCellCheckmarkImage]                // 列表cell右边的打钩checkmark
+#define TableViewCellDisclosureIndicatorImage      [QMUICMI tableViewCellDisclosureIndicatorImage]      // 列表 cell 右边的箭头图片
+#define TableViewCellCheckmarkImage                [QMUICMI tableViewCellCheckmarkImage]                // 列表 cell 右边的打钩checkmark
+#define TableViewCellDetailButtonImage             [QMUICMI tableViewCellDetailButtonImage]             // 列表 cell 右边的 i 按钮
+#define TableViewCellSpacingBetweenDetailButtonAndDisclosureIndicator [QMUICMI tableViewCellSpacingBetweenDetailButtonAndDisclosureIndicator]   // 列表 cell 右边的 i 按钮和向右箭头之间的间距（仅当两者都使用了自定义图片并且同时显示时才生效）
 
 #define TableViewSectionHeaderBackgroundColor      [QMUICMI tableViewSectionHeaderBackgroundColor]
 #define TableViewSectionFooterBackgroundColor      [QMUICMI tableViewSectionFooterBackgroundColor]
@@ -185,7 +188,10 @@
 #pragma mark - Others
 
 #define SupportedOrientationMask                        [QMUICMI supportedOrientationMask]          // 默认支持的横竖屏方向
+#define AutomaticallyRotateDeviceOrientation            [QMUICMI automaticallyRotateDeviceOrientation]  // 是否在界面切换或 viewController.supportedOrientationMask 发生变化时自动旋转屏幕，默认为 NO
 #define StatusbarStyleLightInitially                    [QMUICMI statusbarStyleLightInitially]      // 默认的状态栏内容是否使用白色，默认为NO，也即黑色
 #define NeedsBackBarButtonItemTitle                     [QMUICMI needsBackBarButtonItemTitle]       // 全局是否需要返回按钮的title，不需要则只显示一个返回image
-#define HidesBottomBarWhenPushedInitially               [QMUICMI hidesBottomBarWhenPushedInitially] // QMUICommonViewController.hidesBottomBarWhenPushed的初始值，默认为YES
+#define HidesBottomBarWhenPushedInitially               [QMUICMI hidesBottomBarWhenPushedInitially] // QMUICommonViewController.hidesBottomBarWhenPushed 的初始值，默认为 NO，以保持与系统默认值一致，但通常建议改为 YES，因为一般只有 tabBar 首页那几个界面要求为 NO
+#define NavigationBarHiddenStateUsable                  [QMUICMI navigationBarHiddenStateUsable]    // NavigationBarHiddenStateUsable : 是否使用 navigationBarHiddenState 来管理导航栏的显示隐藏的初始值，默认为NO
+#define NavigationBarHiddenStateInitially               [QMUICMI navigationBarHiddenStateInitially] // NavigationBarHiddenStateInitially : preferredNavigationBarHiddenState 的初始值，默认为QMUINavigationBarHiddenStateShowWithAnimated
 

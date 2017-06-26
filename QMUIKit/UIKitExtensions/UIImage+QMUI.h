@@ -20,8 +20,9 @@
 typedef NS_ENUM(NSInteger, QMUIImageShape) {
     QMUIImageShapeOval,                 // 椭圆
     QMUIImageShapeTriangle,             // 三角形
-    QMUIImageShapeDisclosureIndicator,  // 列表cell右边的箭头
-    QMUIImageShapeCheckmark,            // 列表cell右边的checkmark
+    QMUIImageShapeDisclosureIndicator,  // 列表 cell 右边的箭头
+    QMUIImageShapeCheckmark,            // 列表 cell 右边的checkmark
+    QMUIImageShapeDetailButtonImage,    // 列表 cell 右边的 i 按钮图片
     QMUIImageShapeNavBack,              // 返回按钮的箭头
     QMUIImageShapeNavClose              // 导航栏的关闭icon
 };

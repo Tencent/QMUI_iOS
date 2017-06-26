@@ -10,13 +10,29 @@
 #import "QMUICore.h"
 #import "UIImage+QMUI.h"
 #import "QMUIButton.h"
+#import "NSString+QMUI.h"
 #import "QMUITabBarViewController.h"
+#import "QMUINavigationController.h"
 
 @implementation QMUIConfiguration
 
 + (instancetype)sharedInstance {
     static dispatch_once_t pred;
     static QMUIConfiguration *sharedInstance = nil;
+    
+    // 检查是否有在某些类的 +load 方法里调用 QMUICMI，因为在 [QMUIConfiguration init] 方法里会操作到 UI 的东西，例如 [UINavigationBar appearance] xxx 等，这些操作不能太早（+load 里就太早了）执行，否则会 crash，所以加这个检测
+#ifdef DEBUG
+    BOOL shouldCheckCallStack = NO;
+    if (shouldCheckCallStack) {
+        for (NSString *symbol in [NSThread callStackSymbols]) {
+            if ([symbol qmui_includesString:@" load]"]) {
+                NSAssert(NO, @"不应该在 + load 方法里调用 %s", __func__);
+                return nil;
+            }
+        }
+    }
+#endif
+    
     dispatch_once(&pred, ^{
         sharedInstance = [[QMUIConfiguration alloc] init];
     });
@@ -50,7 +66,7 @@
 
     self.linkColor = UIColorMake(56, 116, 171);
     self.disabledColor = self.grayColor;
-    self.backgroundColor = UIColorMake(246, 246, 246);
+    self.backgroundColor = nil;
     self.maskDarkColor = UIColorMakeWithRGBA(0, 0, 0, .35f);
     self.maskLightColor = UIColorMakeWithRGBA(255, 255, 255, .5f);
     self.separatorColor = UIColorMake(222, 224, 226);
@@ -118,6 +134,7 @@
     self.tabBarTintColor = nil;
     self.tabBarItemTitleColor = nil;
     self.tabBarItemTitleColorSelected = self.tabBarTintColor;
+    self.tabBarItemTitleFont = nil;
     
     #pragma mark - Toolbar
     
@@ -146,8 +163,8 @@
     
     #pragma mark - TableView / TableViewCell
     
-    self.tableViewBackgroundColor = self.whiteColor;
-    self.tableViewGroupedBackgroundColor = self.backgroundColor;
+    self.tableViewBackgroundColor = nil;
+    self.tableViewGroupedBackgroundColor = nil;
     self.tableSectionIndexColor = nil;
     self.tableSectionIndexBackgroundColor = nil;
     self.tableSectionIndexTrackingBackgroundColor = nil;
@@ -161,6 +178,8 @@
     self.tableViewCellWarningBackgroundColor = self.yellowColor;
     self.tableViewCellDisclosureIndicatorImage = nil;
     self.tableViewCellCheckmarkImage = nil;
+    self.tableViewCellDetailButtonImage = nil;
+    self.tableViewCellSpacingBetweenDetailButtonAndDisclosureIndicator = 12;
     
     self.tableViewSectionHeaderBackgroundColor = UIColorMake(244, 244, 244);
     self.tableViewSectionFooterBackgroundColor = UIColorMake(244, 244, 244);
@@ -189,9 +208,12 @@
     #pragma mark - Others
     
     self.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;
+    self.automaticallyRotateDeviceOrientation = NO;
     self.statusbarStyleLightInitially = NO;
     self.needsBackBarButtonItemTitle = NO;
-    self.hidesBottomBarWhenPushedInitially = YES;
+    self.hidesBottomBarWhenPushedInitially = NO;
+    self.navigationBarHiddenStateUsable = NO;
+    self.navigationBarHiddenStateInitially = QMUINavigationBarHiddenStateShowWithAnimated;
 }
 
 - (void)setNavBarTintColor:(UIColor *)navBarTintColor {
@@ -337,7 +359,20 @@
 - (void)setTabBarItemTitleColor:(UIColor *)tabBarItemTitleColor {
     _tabBarItemTitleColor = tabBarItemTitleColor;
     if (_tabBarItemTitleColor) {
-        NSDictionary<NSString *, id> *textAttributes = @{NSForegroundColorAttributeName: _tabBarItemTitleColor};
+        NSMutableDictionary<NSString *, id> *textAttributes = [[NSMutableDictionary alloc] initWithDictionary:[[UITabBarItem appearance] titleTextAttributesForState:UIControlStateNormal]];
+        textAttributes[NSForegroundColorAttributeName] = _tabBarItemTitleColor;
+        [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
+        [[QMUIHelper visibleViewController].tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [obj setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
+        }];
+    }
+}
+
+- (void)setTabBarItemTitleFont:(UIFont *)tabBarItemTitleFont {
+    _tabBarItemTitleFont = tabBarItemTitleFont;
+    if (_tabBarItemTitleFont) {
+        NSMutableDictionary<NSString *, id> *textAttributes = [[NSMutableDictionary alloc] initWithDictionary:[[UITabBarItem appearance] titleTextAttributesForState:UIControlStateNormal]];
+        textAttributes[NSFontAttributeName] = _tabBarItemTitleFont;
         [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
         [[QMUIHelper visibleViewController].tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [obj setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
@@ -348,7 +383,8 @@
 - (void)setTabBarItemTitleColorSelected:(UIColor *)tabBarItemTitleColorSelected {
     _tabBarItemTitleColorSelected = tabBarItemTitleColorSelected;
     if (_tabBarItemTitleColorSelected) {
-        NSDictionary<NSString *, id> *textAttributes = @{NSForegroundColorAttributeName: _tabBarItemTitleColorSelected};
+        NSMutableDictionary<NSString *, id> *textAttributes = [[NSMutableDictionary alloc] initWithDictionary:[[UITabBarItem appearance] titleTextAttributesForState:UIControlStateSelected]];
+        textAttributes[NSForegroundColorAttributeName] = _tabBarItemTitleColorSelected;
         [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateSelected];
         [[QMUIHelper visibleViewController].tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [obj setTitleTextAttributes:textAttributes forState:UIControlStateSelected];

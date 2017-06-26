@@ -68,6 +68,23 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
     _tableView.dataSource = nil;
 }
 
+- (NSString *)description {
+    NSString *result = [NSString stringWithFormat:@"%@\ntableView:\t\t\t\t%@", [super description], self.tableView];
+    NSInteger sections = [self.tableView.dataSource numberOfSectionsInTableView:self.tableView];
+    if (sections > 0) {
+        NSMutableString *sectionCountString = [[NSMutableString alloc] init];
+        [sectionCountString appendFormat:@"\ndataCount(%@):\t\t\t\t(\n", @(sections)];
+        NSInteger sections = [self.tableView.dataSource numberOfSectionsInTableView:self.tableView];
+        for (NSInteger i = 0; i < sections; i++) {
+            NSInteger rows = [self.tableView.dataSource tableView:self.tableView numberOfRowsInSection:i];
+            [sectionCountString appendFormat:@"\t\t\t\t\t\t\tsection%@ - rows%@%@\n", @(i), @(rows), i < sections - 1 ? @"," : @""];
+        }
+        [sectionCountString appendString:@"\t\t\t\t\t\t)"];
+        result = [result stringByAppendingString:sectionCountString];
+    }
+    return result;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     UIColor *backgroundColor = nil;

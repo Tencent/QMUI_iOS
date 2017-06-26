@@ -37,6 +37,15 @@
 		CD5387711EE004A300654A73 /* QMUISlider.h in Headers */ = {isa = PBXBuildFile; fileRef = CD53876F1EE004A300654A73 /* QMUISlider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD5387721EE004A300654A73 /* QMUISlider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD5387701EE004A300654A73 /* QMUISlider.m */; };
 		CD5387731EE004A300654A73 /* QMUISlider.m in Sources */ = {isa = PBXBuildFile; fileRef = CD5387701EE004A300654A73 /* QMUISlider.m */; };
+		CD6CC63B1EF911E000602EDD /* QMUIStaticTableViewCellData.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6CC6371EF911DF00602EDD /* QMUIStaticTableViewCellData.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD6CC63C1EF911E000602EDD /* QMUIStaticTableViewCellData.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6CC6381EF911DF00602EDD /* QMUIStaticTableViewCellData.m */; };
+		CD6CC63D1EF911E000602EDD /* QMUIStaticTableViewCellData.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6CC6381EF911DF00602EDD /* QMUIStaticTableViewCellData.m */; };
+		CD6CC63E1EF911E000602EDD /* QMUIStaticTableViewCellDataSource.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6CC6391EF911DF00602EDD /* QMUIStaticTableViewCellDataSource.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD6CC63F1EF911E000602EDD /* QMUIStaticTableViewCellDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6CC63A1EF911DF00602EDD /* QMUIStaticTableViewCellDataSource.m */; };
+		CD6CC6401EF911E000602EDD /* QMUIStaticTableViewCellDataSource.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6CC63A1EF911DF00602EDD /* QMUIStaticTableViewCellDataSource.m */; };
+		CD6CC6431EF9123000602EDD /* UITableView+QMUIStaticCell.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6CC6411EF9123000602EDD /* UITableView+QMUIStaticCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD6CC6441EF9123000602EDD /* UITableView+QMUIStaticCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6CC6421EF9123000602EDD /* UITableView+QMUIStaticCell.m */; };
+		CD6CC6451EF9123000602EDD /* UITableView+QMUIStaticCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6CC6421EF9123000602EDD /* UITableView+QMUIStaticCell.m */; };
 		CD78CBCA1DEE9D6300910DCE /* QMUIImagePreviewViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = CD78CBC81DEE9D6300910DCE /* QMUIImagePreviewViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD78CBCB1DEE9D6300910DCE /* QMUIImagePreviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD78CBC91DEE9D6300910DCE /* QMUIImagePreviewViewController.m */; };
 		CD78CBCC1DEE9D6300910DCE /* QMUIImagePreviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD78CBC91DEE9D6300910DCE /* QMUIImagePreviewViewController.m */; };
@@ -158,9 +167,6 @@
 		CDB8CB811DCC870700769DF0 /* QMUISegmentedControl.h in Headers */ = {isa = PBXBuildFile; fileRef = CDB8CA8E1DCC870700769DF0 /* QMUISegmentedControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDB8CB831DCC870700769DF0 /* QMUISegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CA8F1DCC870700769DF0 /* QMUISegmentedControl.m */; };
 		CDB8CB841DCC870700769DF0 /* QMUISegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CA8F1DCC870700769DF0 /* QMUISegmentedControl.m */; };
-		CDB8CB851DCC870700769DF0 /* QMUIStaticTableViewCellData.h in Headers */ = {isa = PBXBuildFile; fileRef = CDB8CA901DCC870700769DF0 /* QMUIStaticTableViewCellData.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CDB8CB871DCC870700769DF0 /* QMUIStaticTableViewCellData.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CA911DCC870700769DF0 /* QMUIStaticTableViewCellData.m */; };
-		CDB8CB881DCC870700769DF0 /* QMUIStaticTableViewCellData.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CA911DCC870700769DF0 /* QMUIStaticTableViewCellData.m */; };
 		CDB8CB891DCC870700769DF0 /* QMUITableView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDB8CA921DCC870700769DF0 /* QMUITableView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDB8CB8B1DCC870700769DF0 /* QMUITableView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CA931DCC870700769DF0 /* QMUITableView.m */; };
 		CDB8CB8C1DCC870700769DF0 /* QMUITableView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CA931DCC870700769DF0 /* QMUITableView.m */; };
@@ -311,6 +317,12 @@
 		CD4DA9C11E8E3B0500836A1A /* QMUIConfigurationTemplate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIConfigurationTemplate.m; sourceTree = "<group>"; };
 		CD53876F1EE004A300654A73 /* QMUISlider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUISlider.h; sourceTree = "<group>"; };
 		CD5387701EE004A300654A73 /* QMUISlider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUISlider.m; sourceTree = "<group>"; };
+		CD6CC6371EF911DF00602EDD /* QMUIStaticTableViewCellData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIStaticTableViewCellData.h; sourceTree = "<group>"; };
+		CD6CC6381EF911DF00602EDD /* QMUIStaticTableViewCellData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIStaticTableViewCellData.m; sourceTree = "<group>"; };
+		CD6CC6391EF911DF00602EDD /* QMUIStaticTableViewCellDataSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIStaticTableViewCellDataSource.h; sourceTree = "<group>"; };
+		CD6CC63A1EF911DF00602EDD /* QMUIStaticTableViewCellDataSource.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIStaticTableViewCellDataSource.m; sourceTree = "<group>"; };
+		CD6CC6411EF9123000602EDD /* UITableView+QMUIStaticCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UITableView+QMUIStaticCell.h"; sourceTree = "<group>"; };
+		CD6CC6421EF9123000602EDD /* UITableView+QMUIStaticCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UITableView+QMUIStaticCell.m"; sourceTree = "<group>"; };
 		CD78CBC81DEE9D6300910DCE /* QMUIImagePreviewViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIImagePreviewViewController.h; sourceTree = "<group>"; };
 		CD78CBC91DEE9D6300910DCE /* QMUIImagePreviewViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIImagePreviewViewController.m; sourceTree = "<group>"; };
 		CD78CBCD1DEE9E3500910DCE /* QMUIImagePreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIImagePreviewView.h; sourceTree = "<group>"; };
@@ -393,8 +405,6 @@
 		CDB8CA8D1DCC870700769DF0 /* QMUISearchController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUISearchController.m; sourceTree = "<group>"; };
 		CDB8CA8E1DCC870700769DF0 /* QMUISegmentedControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUISegmentedControl.h; sourceTree = "<group>"; };
 		CDB8CA8F1DCC870700769DF0 /* QMUISegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUISegmentedControl.m; sourceTree = "<group>"; };
-		CDB8CA901DCC870700769DF0 /* QMUIStaticTableViewCellData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIStaticTableViewCellData.h; sourceTree = "<group>"; };
-		CDB8CA911DCC870700769DF0 /* QMUIStaticTableViewCellData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIStaticTableViewCellData.m; sourceTree = "<group>"; };
 		CDB8CA921DCC870700769DF0 /* QMUITableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUITableView.h; sourceTree = "<group>"; };
 		CDB8CA931DCC870700769DF0 /* QMUITableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUITableView.m; sourceTree = "<group>"; };
 		CDB8CA941DCC870700769DF0 /* QMUITableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUITableViewCell.h; sourceTree = "<group>"; };
@@ -560,6 +570,19 @@
 			path = QMUIConfigurationTemplate;
 			sourceTree = "<group>";
 		};
+		CD6CC6361EF911DF00602EDD /* StaticTableView */ = {
+			isa = PBXGroup;
+			children = (
+				CD6CC6371EF911DF00602EDD /* QMUIStaticTableViewCellData.h */,
+				CD6CC6381EF911DF00602EDD /* QMUIStaticTableViewCellData.m */,
+				CD6CC6391EF911DF00602EDD /* QMUIStaticTableViewCellDataSource.h */,
+				CD6CC63A1EF911DF00602EDD /* QMUIStaticTableViewCellDataSource.m */,
+				CD6CC6411EF9123000602EDD /* UITableView+QMUIStaticCell.h */,
+				CD6CC6421EF9123000602EDD /* UITableView+QMUIStaticCell.m */,
+			);
+			path = StaticTableView;
+			sourceTree = "<group>";
+		};
 		CDB8CA2D1DCC870700769DF0 /* QMUIKit */ = {
 			isa = PBXGroup;
 			children = (
@@ -629,6 +652,7 @@
 				CDB8CA721DCC870700769DF0 /* QMUIVisualEffectView.m */,
 				CDB8CA731DCC870700769DF0 /* QMUIZoomImageView.h */,
 				CDB8CA741DCC870700769DF0 /* QMUIZoomImageView.m */,
+				CD6CC6361EF911DF00602EDD /* StaticTableView */,
 			);
 			path = UIComponents;
 			sourceTree = "<group>";
@@ -694,8 +718,6 @@
 				CDB8CA8F1DCC870700769DF0 /* QMUISegmentedControl.m */,
 				CD53876F1EE004A300654A73 /* QMUISlider.h */,
 				CD5387701EE004A300654A73 /* QMUISlider.m */,
-				CDB8CA901DCC870700769DF0 /* QMUIStaticTableViewCellData.h */,
-				CDB8CA911DCC870700769DF0 /* QMUIStaticTableViewCellData.m */,
 				CDB8CA921DCC870700769DF0 /* QMUITableView.h */,
 				CDB8CA931DCC870700769DF0 /* QMUITableView.m */,
 				CDB8CA941DCC870700769DF0 /* QMUITableViewCell.h */,
@@ -786,6 +808,9 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD6CC6431EF9123000602EDD /* UITableView+QMUIStaticCell.h in Headers */,
+				CD6CC63E1EF911E000602EDD /* QMUIStaticTableViewCellDataSource.h in Headers */,
+				CD6CC63B1EF911E000602EDD /* QMUIStaticTableViewCellData.h in Headers */,
 				CDB8CB4D1DCC870700769DF0 /* QMUIZoomImageView.h in Headers */,
 				FE1FBCA91E8BA61300C6C01A /* UITextField+QMUI.h in Headers */,
 				CDB8CB611DCC870700769DF0 /* NSString+QMUI.h in Headers */,
@@ -833,7 +858,6 @@
 				CDB8CB7D1DCC870700769DF0 /* QMUISearchController.h in Headers */,
 				CDB8CB151DCC870700769DF0 /* QMUIModalPresentationViewController.h in Headers */,
 				CDB8CBE91DCC870800769DF0 /* QMUICommonViewController.h in Headers */,
-				CDB8CB851DCC870700769DF0 /* QMUIStaticTableViewCellData.h in Headers */,
 				CDB8CB491DCC870700769DF0 /* QMUIVisualEffectView.h in Headers */,
 				CDB8CAE51DCC870700769DF0 /* QMUIAsset.h in Headers */,
 				CDB8CBBD1DCC870800769DF0 /* UILabel+QMUI.h in Headers */,
@@ -987,6 +1011,7 @@
 				CDB8CB6F1DCC870700769DF0 /* QMUICellHeightCache.m in Sources */,
 				CDB8CBD71DCC870800769DF0 /* UITableView+QMUI.m in Sources */,
 				CDB8CBE31DCC870800769DF0 /* UIWindow+QMUI.m in Sources */,
+				CD6CC6441EF9123000602EDD /* UITableView+QMUIStaticCell.m in Sources */,
 				CD5387721EE004A300654A73 /* QMUISlider.m in Sources */,
 				CDB8CBC71DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
 				FE43652C1E8CC9EF00B5D34B /* QMUIKeyboardManager.m in Sources */,
@@ -1011,6 +1036,7 @@
 				CDB8CB4F1DCC870700769DF0 /* QMUIZoomImageView.m in Sources */,
 				CD27AB5C1ECC48C90000B4D0 /* QMUIHelper.m in Sources */,
 				CDB8CBCF1DCC870800769DF0 /* UISearchBar+QMUI.m in Sources */,
+				CD6CC63F1EF911E000602EDD /* QMUIStaticTableViewCellDataSource.m in Sources */,
 				CD2B01F41EDEB42D00183450 /* QMUIMarqueeLabel.m in Sources */,
 				CDB8CB771DCC870700769DF0 /* QMUILabel.m in Sources */,
 				CDB8CB4B1DCC870700769DF0 /* QMUIVisualEffectView.m in Sources */,
@@ -1027,7 +1053,6 @@
 				CDB8CB8F1DCC870700769DF0 /* QMUITableViewCell.m in Sources */,
 				CDB8CBEF1DCC870800769DF0 /* QMUINavigationController.m in Sources */,
 				CDB8CBAB1DCC870700769DF0 /* UIColor+QMUI.m in Sources */,
-				CDB8CB871DCC870700769DF0 /* QMUIStaticTableViewCellData.m in Sources */,
 				CDB8CB0B1DCC870700769DF0 /* QMUIEmotionView.m in Sources */,
 				CDB8CB631DCC870700769DF0 /* NSString+QMUI.m in Sources */,
 				CDB8CB9B1DCC870700769DF0 /* UIActivityIndicatorView+QMUI.m in Sources */,
@@ -1048,6 +1073,7 @@
 				16F6B64F1DFD9ADD00E58171 /* QMUIToastContentView.m in Sources */,
 				36C72E111DE826B800F5F116 /* UINavigationBar+Transition.m in Sources */,
 				CDB8CAFB1DCC870700769DF0 /* QMUIImagePickerHelper.m in Sources */,
+				CD6CC63C1EF911E000602EDD /* QMUIStaticTableViewCellData.m in Sources */,
 				CDB8CAFF1DCC870700769DF0 /* QMUIImagePickerPreviewViewController.m in Sources */,
 				CDB8CBBB1DCC870800769DF0 /* UIImageView+QMUI.m in Sources */,
 			);
@@ -1075,6 +1101,7 @@
 				CDB8CB701DCC870700769DF0 /* QMUICellHeightCache.m in Sources */,
 				CDB8CBD81DCC870800769DF0 /* UITableView+QMUI.m in Sources */,
 				CDB8CBE41DCC870800769DF0 /* UIWindow+QMUI.m in Sources */,
+				CD6CC6451EF9123000602EDD /* UITableView+QMUIStaticCell.m in Sources */,
 				CD5387731EE004A300654A73 /* QMUISlider.m in Sources */,
 				CDB8CBC81DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
 				FE43652D1E8CC9EF00B5D34B /* QMUIKeyboardManager.m in Sources */,
@@ -1099,6 +1126,7 @@
 				CDB8CBD01DCC870800769DF0 /* UISearchBar+QMUI.m in Sources */,
 				CD27AB5D1ECC48C90000B4D0 /* QMUIHelper.m in Sources */,
 				CDB8CB781DCC870700769DF0 /* QMUILabel.m in Sources */,
+				CD6CC6401EF911E000602EDD /* QMUIStaticTableViewCellDataSource.m in Sources */,
 				CD2B01F51EDEB42D00183450 /* QMUIMarqueeLabel.m in Sources */,
 				CDB8CB4C1DCC870700769DF0 /* QMUIVisualEffectView.m in Sources */,
 				CD84F31F1E52DBEA00546111 /* UITabBar+QMUI.m in Sources */,
@@ -1113,7 +1141,6 @@
 				FE1FBCB11E8BA79000C6C01A /* UITextView+QMUI.m in Sources */,
 				CDB8CBF01DCC870800769DF0 /* QMUINavigationController.m in Sources */,
 				CDB8CBAC1DCC870800769DF0 /* UIColor+QMUI.m in Sources */,
-				CDB8CB881DCC870700769DF0 /* QMUIStaticTableViewCellData.m in Sources */,
 				CDB8CB0C1DCC870700769DF0 /* QMUIEmotionView.m in Sources */,
 				CDB8CB641DCC870700769DF0 /* NSString+QMUI.m in Sources */,
 				CDB8CB9C1DCC870700769DF0 /* UIActivityIndicatorView+QMUI.m in Sources */,
@@ -1136,6 +1163,7 @@
 				36C72E121DE826B800F5F116 /* UINavigationBar+Transition.m in Sources */,
 				16F6B63C1DFD3AF500E58171 /* QMUIToastView.m in Sources */,
 				CDB8CAFC1DCC870700769DF0 /* QMUIImagePickerHelper.m in Sources */,
+				CD6CC63D1EF911E000602EDD /* QMUIStaticTableViewCellData.m in Sources */,
 				CDB8CB001DCC870700769DF0 /* QMUIImagePickerPreviewViewController.m in Sources */,
 				CDB8CBBC1DCC870800769DF0 /* UIImageView+QMUI.m in Sources */,
 			);
