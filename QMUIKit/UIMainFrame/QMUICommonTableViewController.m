@@ -69,6 +69,10 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 }
 
 - (NSString *)description {
+    if (![self isViewLoaded]) {
+        return [super description];
+    }
+    
     NSString *result = [NSString stringWithFormat:@"%@\ntableView:\t\t\t\t%@", [super description], self.tableView];
     NSInteger sections = [self.tableView.dataSource numberOfSectionsInTableView:self.tableView];
     if (sections > 0) {
@@ -286,7 +290,8 @@ EndIgnoreDeprecatedWarning
     if ([tableView.delegate respondsToSelector:@selector(tableView:viewForHeaderInSection:)]) {
         UIView *view = [tableView.delegate tableView:tableView viewForHeaderInSection:section];
         if (view) {
-            return MAX(CGRectGetHeight(view.bounds), tableView.style == UITableViewStylePlain ? TableViewSectionHeaderHeight : TableViewGroupedSectionHeaderHeight);
+            CGFloat height = [view sizeThatFits:CGSizeMake(CGRectGetWidth(tableView.bounds), CGFLOAT_MAX)].height;
+            return fmax(height, tableView.style == UITableViewStylePlain ? TableViewSectionHeaderHeight : TableViewGroupedSectionHeaderHeight);
         }
     }
     // 默认 plain 类型直接设置为 0，TableViewSectionHeaderHeight 是在需要重写 headerHeight 的时候才用的
