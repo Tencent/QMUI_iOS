@@ -91,7 +91,7 @@ static char kAssociatedObjectKey_TextColor;
 }
 
 - (UITextField *)textField {
-    UITextField *textField = [self valueForKey:@"_searchField"];
+    UITextField *textField = [self valueForKey:@"searchField"];
     return textField;
 }
 

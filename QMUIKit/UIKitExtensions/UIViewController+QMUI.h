@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
+/**
+ *  @warning 在这里兼容了 iOS 9.0 以下的版本对 loadViewIfNeeded 方法的调用
+ */
 @interface UIViewController (QMUI)
 
 /** 获取和自身处于同一个UINavigationController里的上一个UIViewController */
@@ -19,14 +22,17 @@
 /**
  *  获取当前controller里的最高层可见viewController（可见的意思是还会判断self.view.window是否存在）
  *
- *  @see 如果要获取当前App里的可见viewController，请使用<i>[QMUIHelper visibleViewController]</i>
+ *  @see 如果要获取当前App里的可见viewController，请使用 [QMUIHelper visibleViewController]
  *
  *  @return 当前controller里的最高层可见viewController
  */
 - (UIViewController *)qmui_visibleViewControllerIfExist;
 
-/** 当前controller是否被present，否则为push */
-- (BOOL)qmui_isTransitioningTypePresented;
+/**
+ *  当前 viewController 是否是被以 present 的方式显示的，是则返回 YES，否则返回 NO
+ *  @warning 对于被放在 UINavigationController 里显示的 UIViewController，如果 self 是 self.navigationController 的第一个 viewController，则如果 self.navigationController 是被 present 起来的，那么 self.qmui_isPresented = self.navigationController.qmui_isPresented = YES。利用这个特性，可以方便地给 navigationController 的第一个界面的左上角添加关闭按钮。
+ */
+- (BOOL)qmui_isPresented;
 
 /** 是否响应 QMUINavigationControllerDelegate */
 - (BOOL)qmui_respondQMUINavigationControllerDelegate;

@@ -146,6 +146,19 @@ extern NSString *const _Nonnull QMUIResourcesQQEmotionBundleName;
 
 @interface QMUIHelper (Orientation)
 
+/**
+ *  旋转当前设备的方向到指定方向，一般用于 [UIViewController supportedInterfaceOrientations] 发生变化时主动触发界面方向的刷新
+ *  @return 是否真正旋转了方向，YES 表示参数的方向和目前设备方向不一致，NO 表示一致也即不会旋转
+ *  @see [QMUIConfiguration automaticallyRotateDeviceOrientation]
+ */
++ (BOOL)rotateToDeviceOrientation:(UIDeviceOrientation)orientation;
+
+/**
+ *  记录手动旋转方向前的设备方向，当值不为 UIDeviceOrientationUnknown 时表示设备方向有经过了手动调整。默认值为 UIDeviceOrientationUnknown。
+ *  @see [QMUIHelper rotateToDeviceOrientation]
+ */
+@property(nonatomic, assign) UIDeviceOrientation orientationBeforeChangingByHelper;
+
 /// 根据指定的旋转方向计算出对应的旋转角度
 + (CGFloat)angleForTransformWithInterfaceOrientation:(UIInterfaceOrientation)orientation;
 

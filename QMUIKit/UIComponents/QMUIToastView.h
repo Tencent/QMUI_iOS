@@ -102,15 +102,15 @@ typedef NS_ENUM(NSInteger, QMUIToastViewPosition) {
  */
 @property(nonatomic, strong, readonly) UIView *maskView;
 
-/**
- * `contentView`下面的view，可以设置其：背景色、圆角、size等一些属性。
+/**s
+ * 承载Toast内容的UIView，可以自定义并赋值给contentView。如果contentView需要跟随ToastView的tintColor变化而变化，可以重写自定义view的`tintColorDidChange`来实现。默认使用`QMUIToastContentView`实现。
  */
-@property(nonatomic, strong) UIView *backgroundView;
+@property(nonatomic, strong) __kindof UIView *contentView;
 
 /**
- * 所有类型的Toast都是通过给contentView赋值来实现的，每一个contentView都可以自己定义subview以及subview的样式和layout，最终作为ToastView的contentView来显示。如果contentView需要跟随ToastView的tintColor变化而变化，可以重写`tintColorDidChange`来实现。
+ * `contentView`下面的黑色背景UIView，默认使用`QMUIToastBackgroundView`实现，可以通过`QMUIToastBackgroundView`的 cornerRadius 和 styleColor 来修改圆角和背景色。
  */
-@property(nonatomic, strong) UIView *contentView;
+@property(nonatomic, strong) __kindof UIView *backgroundView;
 
 
 ///////////////////

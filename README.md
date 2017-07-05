@@ -38,6 +38,7 @@ QMUI iOS 支持 iOS 7+。
 请下载 QMUI Demo：[https://github.com/QMUI/QMUIDemo_iOS](https://github.com/QMUI/QMUIDemo_iOS)。
 
 ## 注意事项
+- 关于版本更新：QMUI iOS 更新较为频繁（通常半个月到一个月会发一次 Release），每次更新都会有一些新旧版本兼容的工作要做，请仔细阅读[版本更新说明](https://github.com/QMUI/QMUI_iOS/releases)。
 - 关于 AutoLayout：目前暂未支持，考虑到 AutoLayout 的普及性，我们将会尽快支持。
 - 关于 xib / storyboard：现已全面支持。
 - 关于 Swift：暂未检查过在 Swift 下使用 QMUI 的问题，如遇到问题可以反馈给我们，我们会尽快兼容。

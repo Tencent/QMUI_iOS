@@ -65,7 +65,6 @@
 #import "QMUITips.h"
 #import "QMUIEmptyView.h"
 #import "QMUINavigationTitleView.h"
-#import "QMUIStaticTableViewCellData.h"
 #import "QMUIGridView.h"
 #import "QMUIFloatLayoutView.h"
 #import "QMUIZoomImageView.h"
@@ -91,6 +90,9 @@
 #import "QMUIOrderedDictionary.h"
 #import "QMUIMarqueeLabel.h"
 #import "QMUISlider.h"
+#import "QMUIStaticTableViewCellData.h"
+#import "QMUIStaticTableViewCellDataSource.h"
+#import "UITableView+QMUIStaticCell.h"
 
 /// UIMainFrame
 #import "QMUISearchController.h"

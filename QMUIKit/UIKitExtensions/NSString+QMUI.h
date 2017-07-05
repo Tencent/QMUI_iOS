@@ -29,6 +29,9 @@
 /// 把某个十进制数字转换成十六进制的数字的字符串，例如“10”->“A”
 + (NSString *)qmui_hexStringWithInteger:(NSInteger)integer;
 
+/// 把参数列表拼接成一个字符串并返回，相当于用另一种语法来代替 [NSString stringWithFormat:]
++ (NSString *)qmui_stringByConcat:(id)firstArgv, ...;
+
 /**
  * 将秒数转换为同时包含分钟和秒数的格式的字符串，例如 100->"01:40"
  */

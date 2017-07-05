@@ -67,7 +67,7 @@ typedef NS_ENUM(NSInteger, QMUIMoreOperationItemType) {
 @property(nonatomic, assign) CGFloat contentEdgeMargin UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat contentMaximumWidth UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat contentCornerRadius UI_APPEARANCE_SELECTOR;
-@property(nonatomic, assign) CGFloat itemMarginTop UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) CGFloat itemTitleMarginTop UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) UIEdgeInsets topScrollViewInsets UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) UIEdgeInsets bottomScrollViewInsets UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat cancelButtonHeight UI_APPEARANCE_SELECTOR;

@@ -111,14 +111,6 @@ NSString *const QMUIResourcesQQEmotionBundleName = @"QMUI_QQEmotion.bundle";
 
 @implementation QMUIHelper (Keyboard)
 
-+ (void)initialize {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [[NSNotificationCenter defaultCenter] addObserver:[self sharedInstance] selector:@selector(handleKeyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:[self sharedInstance] selector:@selector(handleKeyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
-    });
-}
-
 - (void)handleKeyboardWillShow:(NSNotification *)notification {
     self.keyboardVisible = YES;
     self.lastKeyboardHeight = [QMUIHelper keyboardHeightWithNotification:notification];
@@ -390,6 +382,30 @@ static NSInteger isHighPerformanceDevice = -1;
 
 @implementation QMUIHelper (Orientation)
 
+- (void)handleDeviceOrientationNotification:(NSNotification *)notification {
+    // 如果是由 setValue:forKey: 方式修改方向而走到这个 notification 的话，理论上是不需要重置为 Unknown 的，但因为在 UIViewController (QMUI) 那边会再次记录旋转前的值，所以这里就算重置也无所谓
+    [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = UIDeviceOrientationUnknown;
+}
+
++ (BOOL)rotateToDeviceOrientation:(UIDeviceOrientation)orientation {
+    if ([UIDevice currentDevice].orientation == orientation) {
+        [UIViewController attemptRotationToDeviceOrientation];
+        return NO;
+    }
+    
+    [[UIDevice currentDevice] setValue:@(orientation) forKey:@"orientation"];
+    return YES;
+}
+
+static char kAssociatedObjectKey_orientationBeforeChangedByHelper;
+- (void)setOrientationBeforeChangingByHelper:(UIDeviceOrientation)orientationBeforeChangedByHelper {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_orientationBeforeChangedByHelper, @(orientationBeforeChangedByHelper), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (UIDeviceOrientation)orientationBeforeChangingByHelper {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_orientationBeforeChangedByHelper)) integerValue];
+}
+
 + (CGFloat)angleForTransformWithInterfaceOrientation:(UIInterfaceOrientation)orientation {
     CGFloat angle;
     switch (orientation)
@@ -496,6 +512,11 @@ NSString *const QMUISpringAnimationKey = @"QMUISpringAnimationKey";
         // 先设置默认值，不然可能变量的指针地址错误
         instance.keyboardVisible = NO;
         instance.lastKeyboardHeight = 0;
+        instance.orientationBeforeChangingByHelper = UIDeviceOrientationUnknown;
+        
+        [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleKeyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleKeyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleDeviceOrientationNotification:) name:UIDeviceOrientationDidChangeNotification object:nil];
     });
     return instance;
 }
@@ -505,7 +526,7 @@ NSString *const QMUISpringAnimationKey = @"QMUISpringAnimationKey";
 }
 
 - (void)dealloc {
-    // QMUIHelper (Keyboard)里用到消息监听，所以在dealloc的时候注销一下
+    // QMUIHelper 若干个分类里有用到消息监听，所以在 dealloc 的时候注销一下
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 

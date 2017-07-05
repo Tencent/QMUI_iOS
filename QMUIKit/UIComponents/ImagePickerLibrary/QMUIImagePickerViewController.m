@@ -320,8 +320,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     }
 }
 
-- (void)willPopViewController {
-    [super willPopViewController];
+- (void)willPopInNavigationControllerWithAnimated:(BOOL)animated {
     self.hasScrollToInitialPosition = NO;
 }
 

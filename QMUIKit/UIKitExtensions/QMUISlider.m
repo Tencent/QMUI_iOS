@@ -17,15 +17,15 @@
     [self updateThumbImage];
 }
 
-- (void)setThumbTintColor:(UIColor *)thumbTintColor {
-    [super setThumbTintColor:thumbTintColor];
+- (void)setThumbColor:(UIColor *)thumbColor {
+    _thumbColor = thumbColor;
     [self updateThumbImage];
 }
 
 - (void)updateThumbImage {
     if (!CGSizeIsEmpty(self.thumbSize)) {
-        UIColor *thumbTintColor = self.thumbTintColor ?: self.tintColor;
-        UIImage *thumbImage = [UIImage qmui_imageWithShape:QMUIImageShapeOval size:_thumbSize tintColor:thumbTintColor];
+        UIColor *thumbColor = self.thumbColor ?: self.tintColor;
+        UIImage *thumbImage = [UIImage qmui_imageWithShape:QMUIImageShapeOval size:_thumbSize tintColor:thumbColor];
         [self setThumbImage:thumbImage forState:UIControlStateNormal];
         [self setThumbImage:thumbImage forState:UIControlStateHighlighted];
     }

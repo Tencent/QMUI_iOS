@@ -20,9 +20,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        
         self.layer.allowsGroupOpacity = NO;
-        
         self.backgroundColor = self.styleColor;
         self.layer.cornerRadius = self.cornerRadius;
         

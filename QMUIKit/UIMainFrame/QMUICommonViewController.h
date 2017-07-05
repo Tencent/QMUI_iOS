@@ -24,12 +24,12 @@
  *
  *  4. 统一约定的常用接口，例如初始化 subview、设置顶部 `navigationItem`、底部 `toolbarItem`、响应系统的动态字体大小变化、...，从而保证相同类型的代码集中到同一个方法内，避免多人交叉维护时代码分散难以查找
  *
- *  5. 配合 `QMUINavigationController` 使用时，可以得到 `willPopViewController`、`didPopViewController` 这两个时机
+ *  5. 配合 `QMUINavigationController` 使用时，可以得到 `willPopInNavigationControllerWithAnimated:`、`didPopInNavigationControllerWithAnimated:` 这两个时机
  *
  *  @see QMUINavigationTitleView
  *  @see QMUIEmptyView
  */
-@interface QMUICommonViewController : UIViewController
+@interface QMUICommonViewController : UIViewController<QMUINavigationControllerDelegate>
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
@@ -45,7 +45,7 @@
  *  同时，QMUINavigationTitleView提供了更多的功能，具体可以参考QMUINavigationTitleView的文档。<br/>
  *  @see QMUINavigationTitleView
  */
-@property(nonatomic,strong,readonly) QMUINavigationTitleView *titleView;
+@property(nonatomic, strong, readonly) QMUINavigationTitleView *titleView;
 
 /**
  *  修改当前界面要支持的横竖屏方向，默认为 SupportedOrientationMask
@@ -55,10 +55,10 @@
 /**
  *  空列表控件，支持显示提示文字、loading、操作按钮
  */
-@property(nonatomic,strong) QMUIEmptyView *emptyView;
+@property(nonatomic, strong) QMUIEmptyView *emptyView;
 
 /// 当前self.emptyView是否显示
-@property(nonatomic,assign,readonly,getter = isEmptyViewShowing) BOOL emptyViewShowing;
+@property(nonatomic, assign, readonly, getter = isEmptyViewShowing) BOOL emptyViewShowing;
 
 /**
  *  显示emptyView
@@ -150,22 +150,5 @@
  *  @param notification test
  */
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification;
-
-@end
-
-
-@interface QMUICommonViewController (QMUINavigationController) <QMUINavigationControllerDelegate>
-
-/**
- *  在self.navigationController popViewControllerAnimated:内被调用，此时尚未被pop。一些自身被pop的时候需要做的事情可以写在这里。
- *
- *  在ARC环境下，viewController可能被放在autorelease池中，因此viewController被pop后不一定立即被销毁，所以一些对实时性要求很高的内存管理逻辑可以写在这里（而不是写在dealloc内）
- *
- *  @warning 不要尝试将willPopViewController视为点击返回按钮的回调，因为导致viewController被pop的情况不止点击返回按钮这一途径。系统的返回按钮是无法添加回调的，只能使用自定义的返回按钮。
- */
-- (void)willPopViewController;
-
-/** 在self.navigationController popViewControllerAnimated:内被调用，此时self已经不在viewControllers数组内 */
-- (void)didPopViewController;
 
 @end

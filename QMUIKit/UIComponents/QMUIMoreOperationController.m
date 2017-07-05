@@ -9,6 +9,7 @@
 #import "QMUIMoreOperationController.h"
 #import "QMUICore.h"
 #import "CALayer+QMUI.h"
+#import "UIControl+QMUI.h"
 
 #define TagOffset 999
 
@@ -45,7 +46,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         moreOperationViewControllerAppearance.contentEdgeMargin = 10;
         moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - moreOperationViewControllerAppearance.contentEdgeMargin * 2;
         moreOperationViewControllerAppearance.contentCornerRadius = 10;
-        moreOperationViewControllerAppearance.itemMarginTop = 9;
+        moreOperationViewControllerAppearance.itemTitleMarginTop = 9;
         moreOperationViewControllerAppearance.topScrollViewInsets = UIEdgeInsetsMake(18, 14, 12, 14);
         moreOperationViewControllerAppearance.bottomScrollViewInsets = UIEdgeInsetsMake(18, 14, 12, 14);
         moreOperationViewControllerAppearance.cancelButtonHeight = 52.0;
@@ -72,14 +73,18 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     if (self) {
         self.imagePosition = QMUIButtonImagePositionTop;
         self.adjustsButtonWhenHighlighted = NO;
-        self.adjustsImageWhenHighlighted = YES;
-        self.adjustsImageWhenDisabled = YES;
+        self.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
         self.titleLabel.numberOfLines = 0;
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
         self.imageView.contentMode = UIViewContentModeCenter;
         self.imageView.backgroundColor = UIColorClear;
     }
     return self;
+}
+
+- (void)setHighlighted:(BOOL)highlighted {
+    [super setHighlighted:highlighted];
+    self.imageView.alpha = highlighted ? ButtonHighlightedAlpha : 1;
 }
 
 - (void)setTag:(NSInteger)tag {
@@ -144,7 +149,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         self.contentEdgeMargin = [QMUIMoreOperationController appearance].contentEdgeMargin;
         self.contentMaximumWidth = [QMUIMoreOperationController appearance].contentMaximumWidth;
         self.contentCornerRadius = [QMUIMoreOperationController appearance].contentCornerRadius;
-        self.itemMarginTop = [QMUIMoreOperationController appearance].itemMarginTop;
+        self.itemTitleMarginTop = [QMUIMoreOperationController appearance].itemTitleMarginTop;
         self.topScrollViewInsets = [QMUIMoreOperationController appearance].topScrollViewInsets;
         self.bottomScrollViewInsets = [QMUIMoreOperationController appearance].bottomScrollViewInsets;
         self.cancelButtonHeight = [QMUIMoreOperationController appearance].cancelButtonHeight;
@@ -244,10 +249,10 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     }
 }
 
-- (void)setItemMarginTop:(CGFloat)itemMarginTop {
-    _itemMarginTop = itemMarginTop;
+- (void)setItemTitleMarginTop:(CGFloat)itemTitleMarginTop {
+    _itemTitleMarginTop = itemTitleMarginTop;
     for (QMUIMoreOperationItemView *item in [self.importantItems arrayByAddingObjectsFromArray:self.normalItems]) {
-        item.titleEdgeInsets = UIEdgeInsetsMake(itemMarginTop, 0, 0, 0);
+        item.titleEdgeInsets = UIEdgeInsetsMake(itemTitleMarginTop, 0, 0, 0);
     }
 }
 
@@ -333,7 +338,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     self.maskView.frame = self.view.bounds;
     
     CGFloat layoutOriginY = 0;
-    CGFloat contentWidth =  fmin(CGRectGetWidth(self.view.bounds) - self.contentEdgeMargin * 2, self.contentMaximumWidth);
+    CGFloat contentWidth = fmin(CGRectGetWidth(self.view.bounds) - self.contentEdgeMargin * 2, self.contentMaximumWidth);
     
     UIEdgeInsets importantScrollViewInsets = self.topScrollViewInsets;
     UIEdgeInsets normaltScrollViewInsets = self.bottomScrollViewInsets;
@@ -354,7 +359,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     NSInteger maxItemCountInScrollView = MAX(self.importantShowingItems.count, self.normalShowingItems.count);
     NSInteger itemCountForTotallyVisibleItem = isLargeSreen ? 4 : 3;
     
-    CGFloat itemWidth = flat((contentWidth - fmaxf(UIEdgeInsetsGetHorizontalValue(importantScrollViewInsets), UIEdgeInsetsGetHorizontalValue(normaltScrollViewInsets))) / itemCountForTotallyVisibleItem) - (maxItemCountInScrollView > itemCountForTotallyVisibleItem ? (isLargeSreen ? 8 : 12) : 0);
+    CGFloat itemWidth = flat((contentWidth - fmaxf(UIEdgeInsetsGetHorizontalValue(importantScrollViewInsets), UIEdgeInsetsGetHorizontalValue(normaltScrollViewInsets))) / itemCountForTotallyVisibleItem) - (maxItemCountInScrollView > itemCountForTotallyVisibleItem ? 11 : 0);
     
     CGFloat itemMaxHeight = 0;
     CGFloat itemMaxX = 0;
@@ -527,7 +532,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     QMUIMoreOperationItemView *itemView = [[QMUIMoreOperationItemView alloc] init];
     itemView.itemType = itemType;
     itemView.titleLabel.font = self.itemTitleFont;
-    itemView.titleEdgeInsets = UIEdgeInsetsMake(self.itemMarginTop, 0, 0, 0);
+    itemView.titleEdgeInsets = UIEdgeInsetsMake(self.itemTitleMarginTop, 0, 0, 0);
     [itemView setImage:image forState:UIControlStateNormal];
     [itemView setImage:selectedImage forState:UIControlStateSelected];
     [itemView setImage:selectedImage forState:UIControlStateHighlighted|UIControlStateSelected];

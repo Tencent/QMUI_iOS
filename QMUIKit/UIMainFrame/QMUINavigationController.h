@@ -8,9 +8,41 @@
 
 #import <UIKit/UIKit.h>
 
+
+typedef NS_ENUM(NSInteger, QMUINavigationBarHiddenState) {
+    QMUINavigationBarHiddenStateShowWithAnimated,
+    QMUINavigationBarHiddenStateShowWithoutAnimated,
+    QMUINavigationBarHiddenStateHideWithAnimated,
+    QMUINavigationBarHiddenStateHideWithoutAnimated
+};
+
+
+@interface QMUINavigationController : UINavigationController <UINavigationControllerDelegate>
+
 /**
- *  <b>QMUINavigationControllerDelegate</b><br/>
- *  用来控制navigationController在push或者pop的时候，可以很方便的控制controller之间的<i>status bar</i>, <i>navigationBarBackgroundImage</i>, <i>navigationBarShadowImage</i>, <i>navigationBarTintColor</i> 的切换，从而不用在每个controller的viewWillAppear或者viewWillDisappear里面单独控制
+ *  初始化时调用的方法，会在 initWithNibName:bundle: 和 initWithCoder: 这两个指定的初始化方法中被调用，所以子类如果需要同时支持两个初始化方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个初始化方法即可。
+ */
+- (void)didInitialized NS_REQUIRES_SUPER;
+
+@end
+
+@interface QMUINavigationController (UISubclassingHooks)
+
+/**
+ *  每个界面Controller在即将展示的时候被调用，在`UINavigationController`的方法`navigationController:willShowViewController:animated:`中会自动被调用，同时因为如果把一个界面dismiss后回来此时并不会调用`navigationController:willShowViewController`，所以需要在`viewWillAppear`里面也会调用一次。
+ */
+- (void)willShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
+
+/**
+ *  同上
+ */
+- (void)didShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
+
+@end
+
+/**
+ *  若某些 UIViewController 实现了 QMUINavigationControllerDelegate，则在 QMUINavigationController 里显示时，可以很方便地控制 viewController 之间的样式切换（例如状态栏、导航栏等），不用在每个 viewController 的 viewWillAppear: 或viewWillDisappear: 里面单独控制。
+ *  QMUICommonViewController、QMUICommonTableViewController 默认实现了这个协议。
  */
 @protocol QMUINavigationControllerDelegate <NSObject>
 
@@ -19,7 +51,41 @@
 /// 是否需要将状态栏改为浅色文字，默认为宏StatusbarStyleLightInitially的值
 - (BOOL)shouldSetStatusBarStyleLight;
 
+/// 设置每个界面导航栏的显示/隐藏以及是否需要动画，为了减少对项目的侵入性，默认不开启这个接口的功能，只有当配置表中的 NavigationBarHiddenStateUsable 被设置 YES 时才会开启此功能。
+- (QMUINavigationBarHiddenState)preferredNavigationBarHiddenState;
+
 @optional
+
+/**
+ *  在 self.navigationController 进行以下 4 个操作前，相应的 viewController 的 willPopInNavigationControllerWithAnimated: 方法会被调用：
+ *  1. popViewControllerAnimated:
+ *  2. popToViewController:animated:
+ *  3. popToRootViewControllerAnimated:
+ *  4. setViewControllers:animated:
+ *
+ *  此时 self 仍存在于 self.navigationController.viewControllers 堆栈内。
+ *
+ *  在 ARC 环境下，viewController 可能被放在 autorelease 池中，因此 viewController 被pop后不一定立即被销毁，所以一些对实时性要求很高的内存管理逻辑可以写在这里（而不是写在dealloc内）
+ *
+ *  @warning 不要尝试将 willPopInNavigationControllerWithAnimated: 视为点击返回按钮的回调，因为导致 viewController 被 pop 的情况不止点击返回按钮这一途径。系统的返回按钮是无法添加回调的，只能使用自定义的返回按钮。
+ */
+- (void)willPopInNavigationControllerWithAnimated:(BOOL)animated;
+
+/**
+ *  在 self.navigationController 进行以下 4 个操作后，相应的 viewController 的 didPopInNavigationControllerWithAnimated: 方法会被调用：
+ *  1. popViewControllerAnimated:
+ *  2. popToViewController:animated:
+ *  3. popToRootViewControllerAnimated:
+ *  4. setViewControllers:animated:
+ *
+ *  @warning 此时 self 已经不在 viewControllers 数组内
+ */
+- (void)didPopInNavigationControllerWithAnimated:(BOOL)animated;
+
+/**
+ *  当通过 setViewControllers:animated: 来修改 viewController 的堆栈时，如果参数 viewControllers.lastObject 与当前的 self.viewControllers.lastObject 不相同，则意味着会产生界面的切换，这种情况系统会自动调用两个切换的界面的生命周期方法，但如果两者相同，则意味着并不会产生界面切换，此时之前就已经在显示的那个 viewController 的 viewWillAppear:、viewDidAppear: 并不会被调用，那如果用户确实需要在这个时候修改一些界面元素，则找不到一个时机。所以这个方法就是提供这样一个时机给用户修改界面元素。
+ */
+- (void)viewControllerKeepingAppearWhenSetViewControllersWithAnimated:(BOOL)animated;
 
 /// 设置titleView的tintColor
 - (nullable UIColor *)titleViewTintColor;
@@ -65,44 +131,13 @@
  *  自定义navBar效果过程中UINavigationController的containerView的背景色
  *  @see UINavigationController+NavigationBarTransition.h
  */
-- (nullable UIColor *)containerViewBackgroundColorWhenTransition;
+- (nullable UIColor *)containerViewBackgroundColorWhenTransitioning;
 
 /**
- *  当前导航栏是否具备全屏（隐藏navBar）的能力，默认返回NO。<br/>
- *  因为默认的全屏状态（隐藏navigationBar）下，手势返回时 toViewController 的 navigationBar 会缺失，需要设置此值用自定义的 pushViewController:animate: 来解决。
+ *  当没有开启 NavigationBarHiddenStateUsable 功能的时候，如果一个有 navBar 的界面和一个没有 navBar 的界面做转场动画的时候（包括手势返回）就无法优雅的控制 navBar 的转场动画，因此需要通过开启 shouldCustomNavigationBarTransitionIfBarHiddenable 来适配这种情况。<br/>
+ *  如果通过这种方式来控制 navBar 的转场动画，那么同时需要实现 preferredNavigationBarHiddenState 来返回一个值告知此时是否显示或者隐藏 navBar，返回值的 animated 会变的无关紧要，是否需要 animated 是在 viewWillAppear: 的时候获取其 animated 的值来决定的。
  *  @see UINavigationController+NavigationBarTransition.h
  */
 - (BOOL)shouldCustomNavigationBarTransitionIfBarHiddenable;
-
-/**
- *  当前导航栏是否处于全屏状态，如果是则返回YES，默认返回NO。<br/>
- *  该属性用于判断如果在 popViewController 的时候如果 toViewController 是处于全屏的则不改变它的状态。
- *  @see UINavigationController+NavigationBarTransition.h
- */
-- (BOOL)shouldCustomNavigationBarTransitionWithBarHiddenState;
-
-@end
-
-
-@interface QMUINavigationController : UINavigationController <UINavigationControllerDelegate>
-
-/**
- *  初始化时调用的方法，会在 initWithNibName:bundle: 和 initWithCoder: 这两个指定的初始化方法中被调用，所以子类如果需要同时支持两个初始化方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个初始化方法即可。
- */
-- (void)didInitialized NS_REQUIRES_SUPER;
-
-@end
-
-@interface QMUINavigationController (UISubclassingHooks)
-
-/**
- *  每个界面Controller在即将展示的时候被调用，在`UINavigationController`的方法`navigationController:willShowViewController:animated:`中会自动被调用，同时因为如果把一个界面dismiss后回来此时并不会调用`navigationController:willShowViewController`，所以需要在`viewWillAppear`里面也会调用一次。
- */
-- (void)willShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
-
-/**
- *  同上
- */
-- (void)didShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
 
 @end

@@ -22,41 +22,36 @@
 
 /// 使用iOS7 API时要加`ifdef IOS7_SDK_ALLOWED`的判断
 
-#ifndef __IPHONE_7_0
-#define __IPHONE_7_0 70000
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_7_0
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
 #define IOS7_SDK_ALLOWED YES
 #endif
 
 
 /// 使用iOS8 API时要加`ifdef IOS8_SDK_ALLOWED`的判断
 
-#ifndef __IPHONE_8_0
-#define __IPHONE_8_0 80000
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
 #define IOS8_SDK_ALLOWED YES
 #endif
 
 
 /// 使用iOS9 API时要加`ifdef IOS9_SDK_ALLOWED`的判断
 
-#ifndef __IPHONE_9_0
-#define __IPHONE_9_0 90000
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_9_0
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 90000
 #define IOS9_SDK_ALLOWED YES
 #endif
 
 
 /// 使用iOS10 API时要加`ifdef IOS10_SDK_ALLOWED`的判断
 
-#ifndef __IPHONE_10_0
-#define __IPHONE_10_0 100000
-#endif
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
 #define IOS10_SDK_ALLOWED YES
+#endif
+
+
+/// 使用iOS11 API时要加`ifdef IOS11_SDK_ALLOWED`的判断
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
+#define IOS11_SDK_ALLOWED YES
 #endif
 
 #pragma mark - Clang

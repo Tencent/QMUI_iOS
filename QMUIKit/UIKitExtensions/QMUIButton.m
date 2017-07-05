@@ -164,6 +164,8 @@
                 titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
                 titleFrame = CGRectSetWidth(titleFrame, titleLimitSize.width);
                 break;
+            default:
+                break;
         }
         
         if (self.imagePosition == QMUIButtonImagePositionTop) {
@@ -252,6 +254,8 @@
                 imageFrame = CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame));
                 titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
                 titleFrame = CGRectSetWidth(titleFrame, CGRectGetMinX(imageFrame) - self.imageEdgeInsets.left - self.titleEdgeInsets.right - CGRectGetMinX(titleFrame));
+                break;
+            default:
                 break;
         }
         

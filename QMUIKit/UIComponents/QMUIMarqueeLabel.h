@@ -9,17 +9,21 @@
 #import <UIKit/UIKit.h>
 
 /**
- *  简易的跑马灯 label 控件，在文字超过 label 可视区域时会自动开启跑马灯效果展示文字。
- *  @warning lineBreakMode 默认为 NSLineBreakByClipping（UILabel 默认值为 NSLineBreakByTruncatingTail）
+ *  简易的跑马灯 label 控件，在文字超过 label 可视区域时会自动开启跑马灯效果展示文字，文字滚动时是首尾连接的效果（参考播放音乐时系统锁屏界面顶部的音乐标题）。
+ *  @warning lineBreakMode 默认为 NSLineBreakByClipping（UILabel 默认值为 NSLineBreakByTruncatingTail）。
+ *  @warning textAlignment 暂不支持 NSTextAlignmentJustified 和 NSTextAlignmentNatural。
  *  @warning 会忽略 numberOfLines 属性，强制以 1 来展示。
  */
 @interface QMUIMarqueeLabel : UILabel
 
-/// 控制滚动的速度，1 表示一帧滚动 1pt，10 表示一帧滚动 10pt
+/// 控制滚动的速度，1 表示一帧滚动 1pt，10 表示一帧滚动 10pt，默认为 .5，与系统一致。
 @property(nonatomic, assign) CGFloat speed;
 
-/// 当文字滚动到开头和结尾两处时都要停顿一下，这个属性控制停顿的时长，默认为 1，单位为秒。
+/// 当文字第一次显示在界面上，以及重复滚动到开头时都要停顿一下，这个属性控制停顿的时长，默认为 2.5（也是与系统一致），单位为秒。
 @property(nonatomic, assign) NSTimeInterval pauseDurationWhenMoveToEdge;
+
+/// 用于控制首尾连接的文字之间的间距，默认为 40pt。
+@property(nonatomic, assign) CGFloat spacingBetweenHeadToTail;
 
 /**
  *  自动判断 label 的 frame 是否超出当前的 UIWindow 可视范围，超出则自动停止动画。默认为 YES。
@@ -27,11 +31,20 @@
  */
 @property(nonatomic, assign) BOOL automaticallyValidateVisibleFrame;
 
-/// 在文字滚动到左右边缘时，是否要显示一个阴影渐变遮罩，默认为 NO。
+/// 在文字滚动到左右边缘时，是否要显示一个阴影渐变遮罩，默认为 YES。
 @property(nonatomic, assign) BOOL shouldFadeAtEdge;
+
+/// 渐变遮罩的宽度，默认为 20。
 @property(nonatomic, assign) CGFloat fadeWidth;
+
+/// 渐变遮罩外边缘的颜色，请使用带 Alpha 通道的颜色
 @property(nonatomic, strong) UIColor *fadeStartColor;
+
+/// 渐变遮罩内边缘的颜色，一般是 fadeStartColor 的 alpha 通道为 0 的色值
 @property(nonatomic, strong) UIColor *fadeEndColor;
+
+/// 文字是否要在渐隐区域之后显示，默认为 NO，如果想避免停靠在初始位置时文字被遮罩盖住，可以把它改为 YES。
+@property(nonatomic, assign) BOOL textStartAfterFade;
 @end
 
 
