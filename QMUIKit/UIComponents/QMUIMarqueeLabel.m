@@ -46,10 +46,6 @@
         
         self.isFirstDisplay = YES;
         self.textRepeatCount = 2;
-        
-        self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink:)];
-        self.displayLink.paused = YES;
-        
     }
     return self;
 }
@@ -62,9 +58,11 @@
 - (void)didMoveToWindow {
     [super didMoveToWindow];
     if (self.window) {
+        self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink:)];
         [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     } else {
         [self.displayLink invalidate];
+        self.displayLink = nil;
     }
     self.offsetX = 0;
     self.displayLink.paused = ![self shouldPlayDisplayLink];
@@ -168,7 +166,7 @@
 }
 
 - (BOOL)shouldPlayDisplayLink {
-    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textWidth > CGRectGetWidth(self.bounds);
+    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textWidth > (CGRectGetWidth(self.bounds) - ((self.shouldFadeAtEdge && self.textStartAfterFade) ? self.fadeWidth : 0));
     
     // 如果 label.frame 在 window 可视区域之外，也视为不可见，暂停掉 displayLink
     if (result && self.automaticallyValidateVisibleFrame) {
