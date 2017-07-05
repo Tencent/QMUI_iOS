@@ -50,13 +50,6 @@
 - (NSString *)reuseIdentifierForCellAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
- *  用于结合 indexPath 和 dataSource 生成 cell 的方法
- *  @prama indexPath 当前 cell 的 indexPath
- *  @param cellClass cell 的 Class，必须为 QMUITableViewCell 或它的 subclass
- */
-- (__kindof QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath ofClass:(Class)cellClass;
-
-/**
  *  用于结合 indexPath 和 dataSource 生成 cell 的方法，其中 cell 使用的是 QMUITableViewCell
  *  @prama indexPath 当前 cell 的 indexPath
  */

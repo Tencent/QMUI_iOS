@@ -32,6 +32,9 @@ typedef NS_ENUM(NSInteger, QMUIStaticTableViewCellAccessoryType) {
 /// 当前 cellData 所对应的 indexPath
 @property(nonatomic, strong, readonly) NSIndexPath *indexPath;
 
+/// cell 要使用的 class，默认为 QMUITableViewCell，若要改为自定义 class，必须是 QMUITableViewCell 的子类
+@property(nonatomic, assign) Class cellClass;
+
 /// init cell 时要使用的 style
 @property(nonatomic, assign) UITableViewCellStyle style;
 
@@ -78,6 +81,7 @@ typedef NS_ENUM(NSInteger, QMUIStaticTableViewCellAccessoryType) {
                                         accessoryType:(QMUIStaticTableViewCellAccessoryType)accessoryType;
 
 + (instancetype)staticTableViewCellDataWithIdentifier:(NSInteger)identifier
+                                            cellClass:(Class)cellClass
                                                 style:(UITableViewCellStyle)style
                                                height:(CGFloat)height
                                                 image:(UIImage *)image

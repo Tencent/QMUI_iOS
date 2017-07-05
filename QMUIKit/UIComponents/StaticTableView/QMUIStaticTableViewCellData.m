@@ -24,6 +24,7 @@
                                       didSelectAction:(SEL)didSelectAction
                                         accessoryType:(QMUIStaticTableViewCellAccessoryType)accessoryType {
     return [QMUIStaticTableViewCellData staticTableViewCellDataWithIdentifier:identifier
+                                                                    cellClass:[QMUITableViewCell class]
                                                                         style:UITableViewCellStyleDefault
                                                                        height:TableViewCellNormalHeight
                                                                         image:image
@@ -38,6 +39,7 @@
 }
 
 + (instancetype)staticTableViewCellDataWithIdentifier:(NSInteger)identifier
+                                            cellClass:(Class)cellClass
                                                 style:(UITableViewCellStyle)style
                                                height:(CGFloat)height
                                                 image:(UIImage *)image
@@ -51,6 +53,7 @@
                                       accessoryAction:(SEL)accessoryAction {
     QMUIStaticTableViewCellData *data = [[QMUIStaticTableViewCellData alloc] init];
     data.identifier = identifier;
+    data.cellClass = cellClass;
     data.style = style;
     data.height = height;
     data.image = image;
@@ -67,9 +70,15 @@
 
 - (instancetype)init {
     if (self = [super init]) {
+        self.cellClass = [QMUITableViewCell class];
         self.height = TableViewCellNormalHeight;
     }
     return self;
+}
+
+- (void)setCellClass:(Class)cellClass {
+    NSAssert([cellClass isSubclassOfClass:[QMUITableViewCell class]], @"%@.cellClass 必须为 QMUITableViewCell 的子类", NSStringFromClass(self.class));
+    _cellClass = cellClass;
 }
 
 + (UITableViewCellAccessoryType)tableViewCellAccessoryTypeWithStaticAccessoryType:(QMUIStaticTableViewCellAccessoryType)type {

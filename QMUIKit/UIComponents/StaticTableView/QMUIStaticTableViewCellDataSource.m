@@ -76,7 +76,7 @@
     return [NSString stringWithFormat:@"cell_%@", @(data.identifier)];
 }
 
-- (QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath ofClass:(Class)cellClass {
+- (QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     QMUIStaticTableViewCellData *data = [self cellDataAtIndexPath:indexPath];
     if (!data) {
@@ -84,15 +84,10 @@
     }
     
     NSString *identifier = [self reuseIdentifierForCellAtIndexPath:indexPath];
-    if (!cellClass) {
-        cellClass = [QMUITableViewCell class];
-    }
-    
-    NSAssert([cellClass isSubclassOfClass:[QMUITableViewCell class]], @"staticTableView不支持非QMUITableViewCell子类的class");
     
     QMUITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
-        cell = [[cellClass alloc] initForTableView:self.tableView withStyle:data.style reuseIdentifier:identifier];
+        cell = [[data.cellClass alloc] initForTableView:self.tableView withStyle:data.style reuseIdentifier:identifier];
     }
     cell.imageView.image = data.image;
     cell.textLabel.text = data.text;
@@ -127,10 +122,6 @@
     [cell updateCellAppearanceWithIndexPath:indexPath];
     
     return cell;
-}
-
-- (QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return [self cellForRowAtIndexPath:indexPath ofClass:[QMUITableViewCell class]];
 }
 
 - (CGFloat)heightForRowAtIndexPath:(NSIndexPath *)indexPath {
