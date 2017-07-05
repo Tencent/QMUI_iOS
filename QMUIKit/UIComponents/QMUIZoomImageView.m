@@ -916,7 +916,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         self.slider.minimumTrackTintColor = UIColorMake(195, 195, 195);
         self.slider.maximumTrackTintColor = UIColorMake(95, 95, 95);
         self.slider.thumbSize = CGSizeMake(12, 12);
-        self.slider.thumbTintColor = UIColorWhite;
+        self.slider.thumbColor = UIColorWhite;
         [self addSubview:self.slider];
         
         _sliderLeftLabel = [[UILabel alloc] initWithFont:UIFontMake(12) textColor:UIColorWhite];
