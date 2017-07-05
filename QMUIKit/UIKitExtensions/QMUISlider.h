@@ -20,8 +20,12 @@
 @property(nonatomic, assign) IBInspectable CGFloat trackHeight UI_APPEARANCE_SELECTOR;
 
 /// 中间圆球的大小，默认为 CGSizeZero
-/// @warning 注意若设置了 thumbSize 但没设置 thumbTintColor，则圆点的颜色会使用 self.tintColor 的颜色（但系统 UISlider 默认的圆点颜色是白色带阴影）
+/// @warning 注意若设置了 thumbSize 但没设置 thumbColor，则圆点的颜色会使用 self.tintColor 的颜色（但系统 UISlider 默认的圆点颜色是白色带阴影）
 @property(nonatomic, assign) IBInspectable CGSize thumbSize UI_APPEARANCE_SELECTOR;
+
+/// 中间圆球的颜色，默认为 nil。
+/// @warning 注意请勿使用系统的 thumbTintColor，因为 thumbTintColor 和 thumbImage 是互斥的，设置一个会导致另一个被清空，从而导致样式错误。
+@property(nonatomic, strong) IBInspectable UIColor *thumbColor UI_APPEARANCE_SELECTOR;
 
 /// 中间圆球的阴影颜色，默认为 nil
 @property(nonatomic, strong) IBInspectable UIColor *thumbShadowColor UI_APPEARANCE_SELECTOR;
