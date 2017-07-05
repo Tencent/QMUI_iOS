@@ -285,11 +285,11 @@
             if (navigationBarHiddenOption == QMUINavigationBarHiddenStateShowWithoutAnimated || navigationBarHiddenOption == QMUINavigationBarHiddenStateHideWithoutAnimated) {
                 animated = NO;
             }
-            if (hidden && !vc.navigationController.navigationBarHidden) {
-                [vc.navigationController setNavigationBarHidden:YES animated:animated];
+            if (hidden && !self.navigationBarHidden) {
+                [self setNavigationBarHidden:YES animated:animated];
             }
-            if (!hidden && vc.navigationController.navigationBarHidden) {
-                [vc.navigationController setNavigationBarHidden:NO animated:animated];
+            if (!hidden && self.navigationBarHidden) {
+                [self setNavigationBarHidden:NO animated:animated];
             }
         }
         
