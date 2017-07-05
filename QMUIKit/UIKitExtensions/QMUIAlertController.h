@@ -10,6 +10,7 @@
 
 @class QMUIModalPresentationViewController;
 @class QMUIButton;
+@class QMUITextField;
 
 typedef NS_ENUM(NSInteger, QMUIAlertActionStyle) {
     QMUIAlertActionStyleDefault = 0,
@@ -118,8 +119,8 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 - (void)showWithAnimated:(BOOL)animated;
 - (void)hideWithAnimated:(BOOL)animated;
 
-@property(nonatomic, strong, readonly) NSArray *actions;
-@property(nonatomic, strong, readonly) NSArray *textFields;
+@property(nonatomic, copy, readonly) NSArray <QMUIAlertAction *> *actions;
+@property(nonatomic, copy, readonly) NSArray <QMUITextField *> *textFields;
 @property(nonatomic, strong, readonly) UIView  *customView;
 
 @property(nonatomic, copy) NSString *title;

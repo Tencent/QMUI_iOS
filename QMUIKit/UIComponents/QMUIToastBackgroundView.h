@@ -11,7 +11,7 @@
 @interface QMUIToastBackgroundView : UIView
 
 /**
- * 是否需要磨砂，默认NO。仅支持iOS8及以上版本。
+ * 是否需要磨砂，默认NO。仅支持iOS8及以上版本。可以通过修改`styleColor`来控制磨砂的效果。
  */
 @property(nonatomic, assign) BOOL shouldBlurBackgroundView;
 
