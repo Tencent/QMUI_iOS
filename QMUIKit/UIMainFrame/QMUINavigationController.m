@@ -14,6 +14,45 @@
 #import "UIViewController+QMUI.h"
 #import "UINavigationController+QMUI.h"
 
+
+@interface UIViewController (QMUILifeCycleObserver)
+@property (nonatomic) BOOL qmui_isViewWillAppeared;
+@end
+
+@implementation UIViewController (QMUILifeCycleObserver)
+
++ (void)load {
+    Class cls = [self class];
+    ReplaceMethod(cls, @selector(viewWillAppear:), @selector(QMUILifeCycleObserver_viewWillAppear:));
+    ReplaceMethod(cls, @selector(viewDidDisappear:), @selector(QMUILifeCycleObserver_viewDidDisappear:));
+}
+
+
+- (void)QMUILifeCycleObserver_viewWillAppear:(BOOL)animated {
+    self.qmui_isViewWillAppeared = YES;
+    [self QMUILifeCycleObserver_viewWillAppear:animated];
+}
+
+- (void)QMUILifeCycleObserver_viewDidDisappear:(BOOL)animated {
+    self.qmui_isViewWillAppeared = NO;
+    [self QMUILifeCycleObserver_viewDidDisappear:animated];
+}
+
+#pragma mark - setter && getter
+
+- (void)setQmui_isViewWillAppeared:(BOOL)qmui_isViewWillAppeared {
+    [self willChangeValueForKey:@"qmui_isViewWillAppeared"];
+    objc_setAssociatedObject(self, _cmd, @(qmui_isViewWillAppeared), OBJC_ASSOCIATION_COPY_NONATOMIC);
+    [self didChangeValueForKey:@"qmui_isViewWillAppeared"];
+}
+
+- (BOOL)qmui_isViewWillAppeared {
+    return [(NSNumber *)objc_getAssociatedObject(self, @selector(setQmui_isViewWillAppeared:)) boolValue];
+}
+
+@end
+
+
 @interface QMUINavigationController () <UIGestureRecognizerDelegate>
 
 /// 记录当前是否正在 push/pop 界面的动画过程，如果动画尚未结束，不应该继续 push/pop 其他界面
@@ -336,12 +375,28 @@
     if (state == UIGestureRecognizerStateEnded) {
         if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
             // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
-            [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];
-            self.viewControllerPopping = nil;
-            self.isViewControllerTransiting = NO;
+//            [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];
+//            self.viewControllerPopping = nil;
+//            self.isViewControllerTransiting = NO;
             QMUILog(@"手势返回放弃了");
         } else {
             QMUILog(@"执行手势返回");
+        }
+    }else if (state == UIGestureRecognizerStateBegan) {
+        [self.viewControllerPopping addObserver:self forKeyPath:@"qmui_isViewWillAppeared" options:NSKeyValueObservingOptionNew context:nil];
+    }
+}
+
+
+#pragma mark - KVO
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if ([keyPath isEqualToString:@"qmui_isViewWillAppeared"]) {
+        [self.viewControllerPopping removeObserver:self forKeyPath:@"qmui_isViewWillAppeared"];
+        NSNumber *new = change[NSKeyValueChangeNewKey];
+        if (new.boolValue) {
+            [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];
+            self.viewControllerPopping = nil;
+            self.isViewControllerTransiting = NO;
         }
     }
 }
