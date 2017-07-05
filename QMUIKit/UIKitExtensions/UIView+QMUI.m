@@ -25,6 +25,10 @@
 
 @implementation UIView (QMUI)
 
+- (instancetype)qmui_initWithSize:(CGSize)size {
+    return [self initWithFrame:CGRectMakeWithSize(size)];
+}
+
 - (void)qmui_setWidth:(CGFloat)width height:(CGFloat)height {
     CGRect frame = self.frame;
     frame.size.height = height;

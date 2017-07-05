@@ -11,6 +11,11 @@
 @interface UIView (QMUI)
 
 /**
+ *  相当于 initWithFrame:CGRectMake(0, 0, size.width, size.height)
+ */
+- (instancetype)qmui_initWithSize:(CGSize)size;
+
+/**
  * 设置view的width和height
  */
 - (void)qmui_setWidth:(CGFloat)width height:(CGFloat)height;
