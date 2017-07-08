@@ -297,78 +297,6 @@
 
 #pragma mark - 自定义方法
 
-// 根据当前的viewController，统一处理导航栏底部的分隔线、状态栏的颜色
-- (void)renderStyleInNavigationController:(UINavigationController *)navigationController currentViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if ([[viewController class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)viewController;
-        
-        // 控制界面的状态栏颜色
-        if ([vc shouldSetStatusBarStyleLight]) {
-            if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleLight];
-            }
-        } else {
-            if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleDark];
-            }
-        }
-        
-        // 显示/隐藏 导航栏
-        if (NavigationBarHiddenStateUsable) {
-            QMUINavigationBarHiddenState navigationBarHiddenOption = [vc preferredNavigationBarHiddenState];
-            BOOL hidden = NO;
-//            BOOL animated = YES;
-            if (navigationBarHiddenOption == QMUINavigationBarHiddenStateHideWithAnimated || navigationBarHiddenOption == QMUINavigationBarHiddenStateHideWithoutAnimated) {
-                hidden = YES;
-            }
-            if (navigationBarHiddenOption == QMUINavigationBarHiddenStateShowWithoutAnimated || navigationBarHiddenOption == QMUINavigationBarHiddenStateHideWithoutAnimated) {
-//                animated = NO;
-            }
-            if (hidden && !self.navigationBarHidden) {
-                [self setNavigationBarHidden:YES animated:animated];
-            }
-            if (!hidden && self.navigationBarHidden) {
-                [self setNavigationBarHidden:NO animated:animated];
-            }
-        }
-        
-        // 导航栏的背景
-        if ([vc respondsToSelector:@selector(navigationBarBackgroundImage)]) {
-            UIImage *backgroundImage = [vc navigationBarBackgroundImage];
-            [self.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
-        } else {
-            [self.navigationBar setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-        }
-        
-        // 导航栏底部的分隔线
-        if ([vc respondsToSelector:@selector(navigationBarShadowImage)]) {
-            UIImage *shadowImage = [vc navigationBarShadowImage];
-            [self.navigationBar setShadowImage:shadowImage];
-        } else {
-            [self.navigationBar setShadowImage:NavBarShadowImage];
-        }
-        
-        // 导航栏上控件的主题色
-        if ([vc respondsToSelector:@selector(navigationBarTintColor)]) {
-            UIColor *tintColor = [vc navigationBarTintColor];
-            self.navigationBar.tintColor = tintColor;
-        } else {
-            self.navigationBar.tintColor = NavBarTintColor;
-        }
-        
-        // 导航栏title的颜色
-        if ([vc isKindOfClass:[QMUICommonViewController class]]) {
-            QMUICommonViewController *qmuiVC = (QMUICommonViewController *)vc;
-            if ([qmuiVC respondsToSelector:@selector(titleViewTintColor)]) {
-                UIColor *tintColor = [qmuiVC titleViewTintColor];
-                qmuiVC.titleView.tintColor = tintColor;
-            } else {
-                qmuiVC.titleView.tintColor = NavBarTitleColor;
-            }
-        }
-    }
-}
-
 // 接管系统手势返回的回调
 - (void)handleInteractivePopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
     UIGestureRecognizerState state = gestureRecognizer.state;
@@ -458,7 +386,7 @@
 
 - (void)willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     // 子类可以重写
-    [self renderStyleInNavigationController:self currentViewController:viewController animated:animated];
+    
 }
 
 - (void)didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
