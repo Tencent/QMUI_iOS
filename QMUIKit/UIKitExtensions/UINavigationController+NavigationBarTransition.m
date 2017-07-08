@@ -220,14 +220,15 @@
             }
         }
         
-        if ([self canCustomNavigationBarTransitionIfBarHiddenable] &&
-            [self hideNavigationBarWhenTransitioning]) {
-            if (!navigationController.isNavigationBarHidden) {
-                [navigationController setNavigationBarHidden:YES animated:animated];
-            }
-        } else {
-            if (navigationController.isNavigationBarHidden) {
-                [navigationController setNavigationBarHidden:NO animated:animated];
+        if ([self canCustomNavigationBarTransitionIfBarHiddenable]) {
+            if ([self hideNavigationBarWhenTransitioning]) {
+                if (!navigationController.isNavigationBarHidden) {
+                    [navigationController setNavigationBarHidden:YES animated:animated];
+                }
+            } else {
+                if (navigationController.isNavigationBarHidden) {
+                    [navigationController setNavigationBarHidden:NO animated:animated];
+                }
             }
         }
         
