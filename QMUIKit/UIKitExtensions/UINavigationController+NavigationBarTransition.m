@@ -220,7 +220,7 @@
             }
         }
         
-        if ([self hideNavigationBarWhenTransitioning]) {
+        if ([self canCustomNavigationBarTransitionIfBarHiddenable] && [self hideNavigationBarWhenTransitioning]) {
             if (!navigationController.isNavigationBarHidden) {
                 [navigationController setNavigationBarHidden:YES animated:animated];
             }
