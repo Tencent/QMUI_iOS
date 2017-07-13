@@ -49,10 +49,6 @@
 /// 原始containerView的背景色
 @property(nonatomic, strong) UIColor *originContainerViewBackgroundColor;
 
-/// 用于插入到fromVC和toVC的block
-typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *viewController, BOOL animated);
-@property (nonatomic, copy) navigationBarTransitionWillAppearInjectBlock willAppearInjectBlock;
-
 /// 添加假的navBar
 - (void)addTransitionNavigationBarIfNeeded;
 
@@ -79,9 +75,6 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
 
 - (void)NavigationBarTransition_viewWillAppear:(BOOL)animated {
     [self NavigationBarTransition_viewWillAppear:animated];
-    if (self.willAppearInjectBlock) {
-        self.willAppearInjectBlock(self, animated);
-    }
 }
 
 - (void)NavigationBarTransition_viewDidAppear:(BOOL)animated {
@@ -377,13 +370,6 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
     objc_setAssociatedObject(self, @selector(prefersNavigationBarBackgroundViewHidden), [[NSNumber alloc] initWithBool:prefersNavigationBarBackgroundViewHidden], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
-    return objc_getAssociatedObject(self, _cmd);
-}
-
-- (void)setWillAppearInjectBlock:(navigationBarTransitionWillAppearInjectBlock)willAppearInjectBlock {
-    objc_setAssociatedObject(self, @selector(willAppearInjectBlock), willAppearInjectBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
 
 - (BOOL)originClipsToBounds {
     return [objc_getAssociatedObject(self, _cmd) boolValue];
@@ -434,44 +420,10 @@ typedef void (^navigationBarTransitionWillAppearInjectBlock)(UIViewController *v
         [disappearingViewController addTransitionNavigationBarIfNeeded];
         disappearingViewController.prefersNavigationBarBackgroundViewHidden = YES;
     }
-    
-    // tq：这是为了兼容全屏状态下的效果。如果原来的"页面A"是 disappearingViewController ，将显示的"页面B"是 appearingViewController ，则：
-    // 当 A 或 B 是允许全屏的界面，那么 A 和 B 都需要插入一个 block 来等下次 viewWillAppear 改变 bavBar 的状态，以防回退旧的页面 bar 的显示/隐藏状态错误。
-    // 如果开启了 QMUINavigationControllerDelegate 的 NavigationBarHiddenStateUsable 功能，则那边已经实现了类似的功能，所以屏蔽这个功能。
-    if (!NavigationBarHiddenStateUsable &&
-        ([viewController canCustomNavigationBarTransitionIfBarHiddenable] ||
-        [disappearingViewController canCustomNavigationBarTransitionIfBarHiddenable])) {
-        [self setupNavigationBarAppearanceWithViewController:viewController];
-    }
 
     return [self NavigationBarTransition_pushViewController:viewController animated:animated];
 }
 
-- (void)setupNavigationBarAppearanceWithViewController:(UIViewController *)viewController {
-    __weak typeof(self) weakSelf = self;
-    navigationBarTransitionWillAppearInjectBlock block = ^(UIViewController *viewController, BOOL animated) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (strongSelf) {
-            if ([viewController hideNavigationBarWhenTransitioning]) {
-                if (!strongSelf.isNavigationBarHidden) {
-                    [strongSelf setNavigationBarHidden:YES animated:animated];
-                }
-            } else {
-                if (strongSelf.isNavigationBarHidden) {
-                    [strongSelf setNavigationBarHidden:NO animated:animated];
-                }
-            }
-        }
-    };
-    if (!viewController.willAppearInjectBlock) {
-        viewController.willAppearInjectBlock = block;
-    }
-    // 如果是进入新的vc，需要把旧的 vc 也加上该 block。
-    UIViewController *disappearingViewController = self.viewControllers.lastObject;
-    if (!disappearingViewController.willAppearInjectBlock) {
-        disappearingViewController.willAppearInjectBlock = block;
-    }
-}
 
 - (UIViewController *)NavigationBarTransition_popViewControllerAnimated:(BOOL)animated {
     UIViewController *disappearingViewController = self.viewControllers.lastObject;
