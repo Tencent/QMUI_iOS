@@ -13,8 +13,6 @@
 #import "UIImage+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "UINavigationBar+Transition.h"
-#import "QMUICommonViewController.h"
-#import "QMUINavigationTitleView.h"
 
 @interface _QMUITransitionNavigationBar : UINavigationBar
 
@@ -77,7 +75,6 @@
 
 - (void)NavigationBarTransition_viewWillAppear:(BOOL)animated {
     [self NavigationBarTransition_viewWillAppear:animated];
-    [self renderStyleInNavigationController:self.navigationController currentViewController:self animated:animated];
 }
 
 - (void)NavigationBarTransition_viewDidAppear:(BOOL)animated {
@@ -204,72 +201,6 @@
 }
 
 #pragma mark - 工具方法
-//统一处理导航栏底部的分隔线、状态栏的颜色
-- (void)renderStyleInNavigationController:(UINavigationController *)navigationController currentViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if ([[viewController class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)viewController;
-        
-        // 控制界面的状态栏颜色
-        if ([vc shouldSetStatusBarStyleLight]) {
-            if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleLight];
-            }
-        } else {
-            if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleDark];
-            }
-        }
-        
-        if ([self canCustomNavigationBarTransitionIfBarHiddenable]) {
-            if ([self hideNavigationBarWhenTransitioning]) {
-                if (!navigationController.isNavigationBarHidden) {
-                    [navigationController setNavigationBarHidden:YES animated:animated];
-                }
-            } else {
-                if (navigationController.isNavigationBarHidden) {
-                    [navigationController setNavigationBarHidden:NO animated:animated];
-                }
-            }
-        }
-        
-        if (navigationController.navigationBarHidden) return;
-        
-        // 导航栏的背景
-        if ([vc respondsToSelector:@selector(navigationBarBackgroundImage)]) {
-            UIImage *backgroundImage = [vc navigationBarBackgroundImage];
-            [navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
-        } else {
-            [navigationController.navigationBar setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-        }
-        
-        // 导航栏底部的分隔线
-        if ([vc respondsToSelector:@selector(navigationBarShadowImage)]) {
-            UIImage *shadowImage = [vc navigationBarShadowImage];
-            [navigationController.navigationBar setShadowImage:shadowImage];
-        } else {
-            [navigationController.navigationBar setShadowImage:NavBarShadowImage];
-        }
-        
-        // 导航栏上控件的主题色
-        if ([vc respondsToSelector:@selector(navigationBarTintColor)]) {
-            UIColor *tintColor = [vc navigationBarTintColor];
-            navigationController.navigationBar.tintColor = tintColor;
-        } else {
-            navigationController.navigationBar.tintColor = NavBarTintColor;
-        }
-        
-        // 导航栏title的颜色
-        if ([vc isKindOfClass:[QMUICommonViewController class]]) {
-            QMUICommonViewController *qmuiVC = (QMUICommonViewController *)vc;
-            if ([qmuiVC respondsToSelector:@selector(titleViewTintColor)]) {
-                UIColor *tintColor = [qmuiVC titleViewTintColor];
-                qmuiVC.titleView.tintColor = tintColor;
-            } else {
-                qmuiVC.titleView.tintColor = NavBarTitleColor;
-            }
-        }
-    }
-}
 
 + (void)replaceStyleForNavigationBar:(UINavigationBar *)navbarA withNavigationBar:(UINavigationBar *)navbarB {
     navbarB.barStyle = navbarA.barStyle;

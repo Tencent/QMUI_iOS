@@ -297,6 +297,80 @@
 
 #pragma mark - 自定义方法
 
+//统一处理导航栏底部的分隔线、状态栏的颜色
+- (void)renderStyleInNavigationController:(UINavigationController *)navigationController currentViewController:(UIViewController *)viewController animated:(BOOL)animated {
+    if (![[viewController class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)]) return;
+    
+    UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)viewController;
+    
+    // 控制界面的状态栏颜色
+    if ([vc shouldSetStatusBarStyleLight]) {
+        if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
+            [QMUIHelper renderStatusBarStyleLight];
+        }
+    } else {
+        if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
+            [QMUIHelper renderStatusBarStyleDark];
+        }
+    }
+    
+    if (NavigationBarHiddenStateUsable && [vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionIfBarHiddenable)]) {
+        if ([vc shouldCustomNavigationBarTransitionIfBarHiddenable] &&
+            [vc respondsToSelector:@selector(preferredNavigationBarHiddenState)]) {
+            QMUINavigationBarHiddenState hiddenState = [vc preferredNavigationBarHiddenState];
+            if (hiddenState == QMUINavigationBarHiddenStateHideWithAnimated ||
+                hiddenState == QMUINavigationBarHiddenStateHideWithoutAnimated) {
+                if (!navigationController.isNavigationBarHidden) {
+                    [navigationController setNavigationBarHidden:YES animated:animated];
+                }
+            } else {
+                if (navigationController.isNavigationBarHidden) {
+                    [navigationController setNavigationBarHidden:NO animated:animated];
+                }
+            }
+        }
+    }
+    
+    
+    if (!navigationController.isNavigationBarHidden) {
+        // 导航栏的背景
+        if ([vc respondsToSelector:@selector(navigationBarBackgroundImage)]) {
+            UIImage *backgroundImage = [vc navigationBarBackgroundImage];
+            [navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
+        } else {
+            [navigationController.navigationBar setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+        }
+        
+        // 导航栏底部的分隔线
+        if ([vc respondsToSelector:@selector(navigationBarShadowImage)]) {
+            UIImage *shadowImage = [vc navigationBarShadowImage];
+            [navigationController.navigationBar setShadowImage:shadowImage];
+        } else {
+            [navigationController.navigationBar setShadowImage:NavBarShadowImage];
+        }
+        
+        // 导航栏上控件的主题色
+        if ([vc respondsToSelector:@selector(navigationBarTintColor)]) {
+            UIColor *tintColor = [vc navigationBarTintColor];
+            navigationController.navigationBar.tintColor = tintColor;
+        } else {
+            navigationController.navigationBar.tintColor = NavBarTintColor;
+        }
+        
+        // 导航栏title的颜色
+        if ([vc isKindOfClass:[QMUICommonViewController class]]) {
+            QMUICommonViewController *qmuiVC = (QMUICommonViewController *)vc;
+            if ([qmuiVC respondsToSelector:@selector(titleViewTintColor)]) {
+                UIColor *tintColor = [qmuiVC titleViewTintColor];
+                qmuiVC.titleView.tintColor = tintColor;
+            } else {
+                qmuiVC.titleView.tintColor = NavBarTitleColor;
+            }
+        }
+    }
+}
+
+
 // 接管系统手势返回的回调
 - (void)handleInteractivePopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
     UIGestureRecognizerState state = gestureRecognizer.state;
@@ -386,7 +460,7 @@
 
 - (void)willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     // 子类可以重写
-    
+    [self renderStyleInNavigationController:self currentViewController:viewController animated:animated];
 }
 
 - (void)didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
