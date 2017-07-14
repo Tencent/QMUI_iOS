@@ -52,14 +52,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 };
 
 /**
- * 提供以下功能：
- * <ol>
- * <li>highlighted、disabled状态均通过改变整个按钮的alpha来表现，无需分别设置不同state下的titleColor、image</li>
- * <li>支持点击时改变背景色颜色（<i>highlightedBackgroundColor</i>）</li>
- * <li>支持点击时改变边框颜色（<i>highlightedBorderColor</i>）</li>
- * <li>支持设置图片在按钮内的位置，无需自行调整imageEdgeInsets（<i>imagePosition</i>）</li>
- * <li>支持设置按钮内文本和图片之间的间距，无需自行调整titleEdgeInests、imageEdgeInsets、contentEdgeInsets（<i>spacingBetweenImageAndTitle</i>）</li>
- * </ol>
+ *  提供以下功能：
+ *  1. highlighted、disabled 状态均通过改变整个按钮的alpha来表现，无需分别设置不同 state 下的 titleColor、image。alpha 的值可在配置表里修改 ButtonHighlightedAlpha、ButtonDisabledAlpha。
+ *  2. 支持点击时改变背景色颜色（highlightedBackgroundColor）
+ *  3. 支持点击时改变边框颜色（highlightedBorderColor）
+ *  4. 支持设置图片相对于 titleLabel 的位置（imagePosition）
+ *  5. 支持设置图片和 titleLabel 之间的间距，无需自行调整 titleEdgeInests、imageEdgeInsets（spacingBetweenImageAndTitle）
+ *  @warning QMUIButton 重新定义了 UIButton.titleEdgeInests、imageEdgeInsets、contentEdgeInsets 这三者的布局逻辑，sizeThatFits: 里会把 titleEdgeInests 和 imageEdgeInsets 也考虑在内（UIButton 不会），以使这三个接口的使用更符合直觉。
  */
 
 @interface QMUIButton : UIButton
@@ -90,14 +89,14 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 /**
  * 设置按钮点击时的背景色，默认为nil。
- * @warning 不支持带透明度的背景颜色。当设置<i>highlightedBackgroundColor</i>时，会强制把<i>adjustsButtonWhenHighlighted</i>设为NO，避免两者效果冲突。
+ * @warning 不支持带透明度的背景颜色。当设置highlightedBackgroundColor时，会强制把adjustsButtonWhenHighlighted设为NO，避免两者效果冲突。
  * @see adjustsButtonWhenHighlighted
  */
 @property(nonatomic, strong) IBInspectable UIColor *highlightedBackgroundColor;
 
 /**
  * 设置按钮点击时的边框颜色，默认为nil。
- * @warning 当设置<i>highlightedBorderColor</i>时，会强制把<i>adjustsButtonWhenHighlighted</i>设为NO，避免两者效果冲突。
+ * @warning 当设置highlightedBorderColor时，会强制把adjustsButtonWhenHighlighted设为NO，避免两者效果冲突。
  * @see adjustsButtonWhenHighlighted
  */
 @property(nonatomic, strong) IBInspectable UIColor *highlightedBorderColor;
