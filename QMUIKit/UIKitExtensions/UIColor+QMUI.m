@@ -25,7 +25,7 @@
     NSInteger green = self.qmui_green * 255;
     NSInteger blue = self.qmui_blue * 255;
     CGFloat alpha = self.qmui_alpha;
-    NSString *description = [NSString stringWithFormat:@"color = RGBA: (%@, %@, %@, %.2f), AARRGGBB: %@", @(red), @(green), @(blue), alpha, [self qmui_hexString]];
+    NSString *description = [NSString stringWithFormat:@"%@, RGBA(%@, %@, %@, %.2f), %@", [self qmui_description], @(red), @(green), @(blue), alpha, [self qmui_hexString]];
     return description;
 }
 
