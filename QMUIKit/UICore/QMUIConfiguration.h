@@ -121,6 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *searchBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarPlaceholderColor;
+@property(nonatomic, strong, nullable) UIFont   *searchBarFont;
 /// 搜索框放大镜icon的图片，大小必须为13x13pt，否则会失真（系统的限制）
 @property(nonatomic, strong, nullable) UIImage  *searchBarSearchIconImage;
 @property(nonatomic, strong, nullable) UIImage  *searchBarClearIconImage;
@@ -178,8 +179,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               statusbarStyleLightInitially;
 @property(nonatomic, assign) BOOL               needsBackBarButtonItemTitle;
 @property(nonatomic, assign) BOOL               hidesBottomBarWhenPushedInitially;
-@property(nonatomic, assign) BOOL               navigationBarHiddenStateUsable;
-@property(nonatomic, assign) QMUINavigationBarHiddenState navigationBarHiddenStateInitially;
+@property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
 
 NS_ASSUME_NONNULL_END
 
