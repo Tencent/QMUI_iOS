@@ -9,14 +9,6 @@
 #import <UIKit/UIKit.h>
 
 
-typedef NS_ENUM(NSInteger, QMUINavigationBarHiddenState) {
-    QMUINavigationBarHiddenStateShowWithAnimated,
-    QMUINavigationBarHiddenStateShowWithoutAnimated,
-    QMUINavigationBarHiddenStateHideWithAnimated,
-    QMUINavigationBarHiddenStateHideWithoutAnimated
-};
-
-
 @interface QMUINavigationController : UINavigationController <UINavigationControllerDelegate>
 
 /**
@@ -31,12 +23,12 @@ typedef NS_ENUM(NSInteger, QMUINavigationBarHiddenState) {
 /**
  *  每个界面Controller在即将展示的时候被调用，在`UINavigationController`的方法`navigationController:willShowViewController:animated:`中会自动被调用，同时因为如果把一个界面dismiss后回来此时并不会调用`navigationController:willShowViewController`，所以需要在`viewWillAppear`里面也会调用一次。
  */
-- (void)willShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
+- (void)willShowViewController:(nonnull UIViewController *)viewController animated:(BOOL)animated NS_REQUIRES_SUPER;
 
 /**
  *  同上
  */
-- (void)didShowViewController:(nonnull UIViewController *)viewController NS_REQUIRES_SUPER;
+- (void)didShowViewController:(nonnull UIViewController *)viewController animated:(BOOL)animated NS_REQUIRES_SUPER;
 
 @end
 
@@ -51,8 +43,8 @@ typedef NS_ENUM(NSInteger, QMUINavigationBarHiddenState) {
 /// 是否需要将状态栏改为浅色文字，默认为宏StatusbarStyleLightInitially的值
 - (BOOL)shouldSetStatusBarStyleLight;
 
-/// 设置每个界面导航栏的显示/隐藏以及是否需要动画，为了减少对项目的侵入性，默认不开启这个接口的功能，只有当配置表中的 NavigationBarHiddenStateUsable 被设置 YES 时才会开启此功能。
-- (QMUINavigationBarHiddenState)preferredNavigationBarHiddenState;
+/// 设置每个界面导航栏的显示/隐藏，为了减少对项目的侵入性，默认不开启这个接口的功能，只有当 shouldCustomNavigationBarTransitionIfBarHiddenable 返回 YES 时才会开启此功能。如果需要全局开启，那么就在 Controller 基类里面返回 YES；如果是老项目并不想全局使用此功能，那么则可以在单独的界面里面开启。
+- (BOOL)preferredNavigationBarHidden;
 
 @optional
 
@@ -134,9 +126,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationBarHiddenState) {
 - (nullable UIColor *)containerViewBackgroundColorWhenTransitioning;
 
 /**
- *  当没有开启 NavigationBarHiddenStateUsable 功能的时候，如果一个有 navBar 的界面和一个没有 navBar 的界面做转场动画的时候（包括手势返回）就无法优雅的控制 navBar 的转场动画，因此需要通过开启 shouldCustomNavigationBarTransitionIfBarHiddenable 来适配这种情况。<br/>
- *  如果通过这种方式来控制 navBar 的转场动画，那么同时需要实现 preferredNavigationBarHiddenState 来返回一个值告知此时是否显示或者隐藏 navBar，返回值的 animated 会变的无关紧要，是否需要 animated 是在 viewWillAppear: 的时候获取其 animated 的值来决定的。
+ *  当切换界面时，如果不同界面导航栏的显示状态不同，可以通过 shouldCustomNavigationBarTransitionIfBarHiddenable 设置是否需要接管导航栏的显示和隐藏。从而不需要在各自的界面的 viewWillappear 和 viewWillDisappear 里面去管理导航栏的状态。
  *  @see UINavigationController+NavigationBarTransition.h
+ *  @see preferredNavigationBarHidden
  */
 - (BOOL)shouldCustomNavigationBarTransitionIfBarHiddenable;
 

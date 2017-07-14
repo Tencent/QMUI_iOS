@@ -177,8 +177,8 @@
     return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
 }
 
-- (QMUINavigationBarHiddenState)preferredNavigationBarHiddenState {
-    return NavigationBarHiddenStateInitially;
+- (BOOL)preferredNavigationBarHidden {
+    return NavigationBarHiddenInitially;
 }
 
 - (void)viewControllerKeepingAppearWhenSetViewControllersWithAnimated:(BOOL)animated {

@@ -117,9 +117,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
-    if (!NavigationBarHiddenStateUsable) {
-        [self.navigationController setNavigationBarHidden:YES animated:NO];
-    }
+    [self.navigationController setNavigationBarHidden:YES animated:NO];
     if (!_singleCheckMode) {
         QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:self.imagePreviewView.currentImageIndex];
         self.checkboxButton.selected = [self.selectedImageAssetArray containsObject:imageAsset];
@@ -129,9 +127,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [[UIApplication sharedApplication] setStatusBarHidden:NO];
-    if (!NavigationBarHiddenStateUsable) {
-        [self.navigationController setNavigationBarHidden:NO animated:NO];
-    }
+    [self.navigationController setNavigationBarHidden:NO animated:NO];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -430,12 +426,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
         } withProgressHandler:phProgressHandler];
         imageView.tag = imageAsset.requestID;
     }
-}
-
-#pragma mark - <QMUINavigationControllerDelegate>
-
-- (QMUINavigationBarHiddenState)preferredNavigationBarHiddenState {
-    return NavigationBarHiddenStateInitially;
 }
 
 @end
