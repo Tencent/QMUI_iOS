@@ -182,16 +182,16 @@ extern NSString *const _Nonnull QMUIResourcesQQEmotionBundleName;
 @interface QMUIHelper (UIApplication)
 
 /**
- * 更改状态栏内容颜色为深色
+ *  更改状态栏内容颜色为深色
  *
- * @warning 需在Info.plist文件内设置字段“View controller-based status bar appearance”的值为“NO”才能生效
+ *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
  */
 + (void)renderStatusBarStyleDark;
 
 /**
- * 更改状态栏内容颜色为浅色
+ *  更改状态栏内容颜色为浅色
  *
- * @warning 需在Info.plist文件内设置字段“View controller-based status bar appearance”的值为“NO”才能生效
+ *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
  */
 + (void)renderStatusBarStyleLight;
 

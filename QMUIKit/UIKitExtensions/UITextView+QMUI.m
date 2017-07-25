@@ -41,6 +41,12 @@
     
     CGRect caretRect = [self caretRectForPosition:self.selectedTextRange.end];
     CGFloat contentOffsetY = self.contentOffset.y;
+    
+    if (CGRectGetMinY(caretRect) == self.contentOffset.y + self.textContainerInset.top) {
+        // 命中这个条件说明已经不用调整了，直接 return，避免继续走下面的判断，会重复调整，导致光标跳动
+        return;
+    }
+    
     if (CGRectGetMinY(caretRect) < self.contentOffset.y + self.textContainerInset.top) {
         // 光标在可视区域上方，往下滚动
         contentOffsetY = CGRectGetMinY(caretRect) - self.textContainerInset.top - self.contentInset.top;

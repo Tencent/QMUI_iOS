@@ -225,6 +225,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (self.collectionView.contentInset.bottom != operationToolBarViewHeight) {
         self.collectionView.contentInset = UIEdgeInsetsSetBottom(self.collectionView.contentInset, operationToolBarViewHeight);
         self.collectionView.scrollIndicatorInsets = self.collectionView.contentInset;
+        // 放在这里是因为有时候会先走完 refreshWithAssetsGroup 里的 completion 再走到这里，此时前者不会导致 scollToInitialPosition 的滚动，所以在这里再调用一次保证一定会滚
+        [self scrollToInitialPositionIfNeeded];
     }
 }
 
@@ -264,6 +266,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
                     [self.collectionView reloadData];
                     [self.collectionView performBatchUpdates:NULL
                                                   completion:^(BOOL finished) {
+                                                      
+                                                      // 有时候如果这里很早就执行（比 viewWillAppear: 以及 self.view 被添加到 superview 上还早），那它实际上是不会滚动的，会等到 viewDidLayoutSubviews 里改完 contentInsets 后才滚
                                                       [self scrollToInitialPositionIfNeeded];
                                                       
                                                       if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewControllerWillFinishLoad:)]) {

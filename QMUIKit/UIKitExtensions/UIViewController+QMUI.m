@@ -215,6 +215,62 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
 
 @end
 
+@interface UIViewController ()
+
+@property(nonatomic, assign) BOOL qmui_isViewDidAppear;
+@end
+
+@implementation UIViewController (Data)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ReplaceMethod(self.class, @selector(viewDidAppear:), @selector(qmui_viewDidAppear:));
+    });
+}
+
+- (void)qmui_viewDidAppear:(BOOL)animated {
+    [self qmui_viewDidAppear:animated];
+    self.qmui_isViewDidAppear = YES;
+    if (self.qmui_didAppearAndLoadDataBlock && self.qmui_isViewDidAppear && self.qmui_dataLoaded) {
+        self.qmui_didAppearAndLoadDataBlock();
+        self.qmui_didAppearAndLoadDataBlock = nil;
+    }
+}
+
+static char kAssociatedObjectKey_isViewDidAppear;
+- (void)setQmui_isViewDidAppear:(BOOL)qmui_isViewDidAppear {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_isViewDidAppear, @(qmui_isViewDidAppear), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)qmui_isViewDidAppear {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_isViewDidAppear)) boolValue];
+}
+
+static char kAssociatedObjectKey_didAppearAndLoadDataBlock;
+- (void)setQmui_didAppearAndLoadDataBlock:(void (^)())qmui_didAppearAndLoadDataBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock, qmui_didAppearAndLoadDataBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)())qmui_didAppearAndLoadDataBlock {
+    return (void (^)())objc_getAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock);
+}
+
+static char kAssociatedObjectKey_dataLoaded;
+- (void)setQmui_dataLoaded:(BOOL)qmui_dataLoaded {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_dataLoaded, @(qmui_dataLoaded), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (self.qmui_didAppearAndLoadDataBlock && qmui_dataLoaded && self.qmui_isViewDidAppear) {
+        self.qmui_didAppearAndLoadDataBlock();
+        self.qmui_didAppearAndLoadDataBlock = nil;
+    }
+}
+
+- (BOOL)isQmui_dataLoaded {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_dataLoaded)) boolValue];
+}
+
+@end
+
 @implementation UIViewController (Runtime)
 
 - (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector {

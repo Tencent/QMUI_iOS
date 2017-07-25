@@ -69,6 +69,12 @@
         size = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
     }
     
+    BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
+    BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
+    CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
+    CGSize titleTotalSize = CGSizeZero;// 包含 titleEdgeInsets 那些空间
+    CGFloat spacingBetweenImageAndTitle = isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0;// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
+    
     CGSize resultSize = CGSizeZero;
     CGSize contentLimitSize = CGSizeMake(size.width - UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets), size.height - UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets));
     
@@ -76,34 +82,48 @@
         case QMUIButtonImagePositionTop:
         case QMUIButtonImagePositionBottom: {
             // 图片和文字上下排版时，宽度以文字或图片的最大宽度为最终宽度
-            CGFloat imageLimitWidth = contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
-            CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)];// 假设图片高度必定完整显示
+            if (isImageViewShowing) {
+                CGFloat imageLimitWidth = contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
+                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)];// 假设图片高度必定完整显示
+                imageSize.width = fmin(imageSize.width, imageLimitWidth);
+                imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
+            }
             
-            CGSize titleLimitSize = CGSizeMake(contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets) - imageSize.height - self.spacingBetweenImageAndTitle - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
-            CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
-            titleSize.height = fmin(titleSize.height, titleLimitSize.height);
+            if (isTitleLabelShowing) {
+                CGSize titleLimitSize = CGSizeMake(contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), contentLimitSize.height - imageTotalSize.height - spacingBetweenImageAndTitle - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+                CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
+                titleSize.height = fmin(titleSize.height, titleLimitSize.height);
+                titleTotalSize = CGSizeMake(titleSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), titleSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+            }
             
             resultSize.width = UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets);
-            resultSize.width += fmax(UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) + imageSize.width, UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) + titleSize.width);
-            resultSize.height = UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets) + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets) + imageSize.height + self.spacingBetweenImageAndTitle + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets) + titleSize.height;
+            resultSize.width += fmax(imageTotalSize.width, titleTotalSize.width);
+            resultSize.height = UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets) + imageTotalSize.height + spacingBetweenImageAndTitle + titleTotalSize.height;
         }
             break;
             
         case QMUIButtonImagePositionLeft:
         case QMUIButtonImagePositionRight: {
             // 图片和文字水平排版时，高度以文字或图片的最大高度为最终高度
-            // titleLabel为多行时，系统的sizeThatFits计算结果依然为单行的，所以当QMUIButtonImagePositionLeft并且titleLabel多行的情况下，使用自己计算的结果
+            // 注意这里有一个和系统不一致的行为：当 titleLabel 为多行时，系统的 sizeThatFits: 计算结果固定是单行的，所以当 QMUIButtonImagePositionLeft 并且titleLabel 多行的情况下，QMUIButton 计算的结果与系统不一致
             
-            CGFloat imageLimitHeight = contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
-            CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)];// 假设图片宽度必定完整显示，高度不超过按钮内容
+            if (isImageViewShowing) {
+                CGFloat imageLimitHeight = contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
+                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)];// 假设图片宽度必定完整显示，高度不超过按钮内容
+                imageSize.height = fmin(imageSize.height, imageLimitHeight);
+                imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
+            }
             
-            CGSize titleLimitSize = CGSizeMake(contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) - imageSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) - self.spacingBetweenImageAndTitle, contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
-            CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
-            titleSize.height = fmin(titleSize.height, titleLimitSize.height);
+            if (isTitleLabelShowing) {
+                CGSize titleLimitSize = CGSizeMake(contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) - imageTotalSize.width - spacingBetweenImageAndTitle, contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+                CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
+                titleSize.height = fmin(titleSize.height, titleLimitSize.height);
+                titleTotalSize = CGSizeMake(titleSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), titleSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+            }
             
-            resultSize.width = UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets) + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) + imageSize.width + self.spacingBetweenImageAndTitle + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) + titleSize.width;
+            resultSize.width = UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets) + imageTotalSize.width + spacingBetweenImageAndTitle + titleTotalSize.width;
             resultSize.height = UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets);
-            resultSize.height += fmax(UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets) + imageSize.height, UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets) + titleSize.height);
+            resultSize.height += fmax(imageTotalSize.height, titleTotalSize.height);
         }
             break;
     }
@@ -117,38 +137,60 @@
         return;
     }
     
+    BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
+    BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
+    CGSize imageLimitSize = CGSizeZero;
+    CGSize titleLimitSize = CGSizeZero;
+    CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
+    CGSize titleTotalSize = CGSizeZero;// 包含 titleEdgeInsets 那些空间
+    CGFloat spacingBetweenImageAndTitle = isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0;// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
+    CGRect imageFrame = CGRectZero;
+    CGRect titleFrame = CGRectZero;
     CGSize contentSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets));
+    
+    // 图片的布局原则都是尽量完整展示，所以不管 imagePosition 的值是什么，这个计算过程都是相同的
+    if (isImageViewShowing) {
+        imageLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
+        CGSize imageSize = [self.imageView sizeThatFits:imageLimitSize];
+        imageSize.width = fmin(imageLimitSize.width, imageSize.width);
+        imageSize.height = fmin(imageLimitSize.height, imageSize.height);
+        imageFrame = CGRectMakeWithSize(imageSize);
+        imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
+    }
     
     if (self.imagePosition == QMUIButtonImagePositionTop || self.imagePosition == QMUIButtonImagePositionBottom) {
         
-        CGFloat imageLimitWidth = contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
-        CGSize imageSize = self.imageView.hidden ? CGSizeZero : [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)];// 假设图片高度必定完整显示
-        CGRect imageFrame = CGRectMakeWithSize(imageSize);
-        
-        CGSize titleLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets) - imageSize.height - self.spacingBetweenImageAndTitle - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
-        CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
-        titleSize.height = fmin(titleSize.height, titleLimitSize.height);
-        titleSize = self.titleLabel.hidden ? CGSizeZero : titleSize;
-        CGRect titleFrame = CGRectMakeWithSize(titleSize);
+        if (isTitleLabelShowing) {
+            titleLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), contentSize.height - imageTotalSize.height - spacingBetweenImageAndTitle - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+            CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
+            titleSize.width = fmin(titleLimitSize.width, titleSize.width);
+            titleSize.height = fmin(titleLimitSize.height, titleSize.height);
+            titleFrame = CGRectMakeWithSize(titleSize);
+            titleTotalSize = CGSizeMake(titleSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), titleSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+        }
         
         switch (self.contentHorizontalAlignment) {
             case UIControlContentHorizontalAlignmentLeft:
-                imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
-                titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
+                imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left) : imageFrame;
+                titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left) : titleFrame;
                 break;
             case UIControlContentHorizontalAlignmentCenter:
-                imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left + CGFloatGetCenter(imageLimitWidth, imageSize.width));
-                titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left + CGFloatGetCenter(titleLimitSize.width, titleSize.width));
+                imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left + CGFloatGetCenter(imageLimitSize.width, CGRectGetWidth(imageFrame))) : imageFrame;
+                titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left + CGFloatGetCenter(titleLimitSize.width, CGRectGetWidth(titleFrame))) : titleFrame;
                 break;
             case UIControlContentHorizontalAlignmentRight:
-                imageFrame = CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - imageSize.width);
-                titleFrame = CGRectSetX(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.titleEdgeInsets.right - titleSize.width);
+                imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame)) : imageFrame;
+                titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.titleEdgeInsets.right - CGRectGetWidth(titleFrame)) : titleFrame;
                 break;
             case UIControlContentHorizontalAlignmentFill:
-                imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
-                imageFrame = CGRectSetWidth(imageFrame, imageLimitWidth);
-                titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
-                titleFrame = CGRectSetWidth(titleFrame, titleLimitSize.width);
+                if (isImageViewShowing) {
+                    imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
+                    imageFrame = CGRectSetWidth(imageFrame, imageLimitSize.width);
+                }
+                if (isTitleLabelShowing) {
+                    titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
+                    titleFrame = CGRectSetWidth(titleFrame, titleLimitSize.width);
+                }
                 break;
             default:
                 break;
@@ -157,29 +199,29 @@
         if (self.imagePosition == QMUIButtonImagePositionTop) {
             switch (self.contentVerticalAlignment) {
                 case UIControlContentVerticalAlignmentTop:
-                    imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top);
-                    titleFrame = CGRectSetY(titleFrame, CGRectGetMaxY(imageFrame) + self.imageEdgeInsets.bottom + self.spacingBetweenImageAndTitle + self.titleEdgeInsets.top);
+                    imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top) : imageFrame;
+                    titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, self.contentEdgeInsets.top + imageTotalSize.height + spacingBetweenImageAndTitle + self.titleEdgeInsets.top) : titleFrame;
                     break;
                 case UIControlContentVerticalAlignmentCenter: {
-                    CGFloat contentHeight = CGRectGetHeight(imageFrame) + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets) + CGRectGetHeight(titleFrame) + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets) + self.spacingBetweenImageAndTitle;
+                    CGFloat contentHeight = imageTotalSize.height + spacingBetweenImageAndTitle + titleTotalSize.height;
                     CGFloat minY = CGFloatGetCenter(contentSize.height, contentHeight) + self.contentEdgeInsets.top;
-                    imageFrame = CGRectSetY(imageFrame, minY + self.imageEdgeInsets.top);
-                    titleFrame = CGRectSetY(titleFrame, CGRectGetMaxY(imageFrame) + self.imageEdgeInsets.bottom + self.spacingBetweenImageAndTitle + self.titleEdgeInsets.top);
+                    imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, minY + self.imageEdgeInsets.top) : imageFrame;
+                    titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, minY + imageTotalSize.height + spacingBetweenImageAndTitle + self.titleEdgeInsets.top) : titleFrame;
                 }
                     break;
                 case UIControlContentVerticalAlignmentBottom:
-                    titleFrame = CGRectSetY(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.titleEdgeInsets.bottom - CGRectGetHeight(titleFrame));
-                    imageFrame = CGRectSetY(imageFrame, CGRectGetMinY(titleFrame) - self.spacingBetweenImageAndTitle - self.titleEdgeInsets.top - self.imageEdgeInsets.bottom - CGRectGetHeight(imageFrame));
+                    titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.titleEdgeInsets.bottom - CGRectGetHeight(titleFrame)) : titleFrame;
+                    imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - titleTotalSize.height - spacingBetweenImageAndTitle - self.imageEdgeInsets.bottom - CGRectGetHeight(imageFrame)) : imageFrame;
                     break;
                 case UIControlContentVerticalAlignmentFill: {
-                    if (imageSize.height > 0 && titleSize.height > 0) {
+                    if (isImageViewShowing && isTitleLabelShowing) {
                         
                         // 同时显示图片和 label 的情况下，图片高度按本身大小显示，剩余空间留给 label
-                        imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top);
-                        titleFrame = CGRectSetY(titleFrame, CGRectGetMaxY(imageFrame) + self.imageEdgeInsets.bottom + self.titleEdgeInsets.top + self.spacingBetweenImageAndTitle);
-                        titleFrame = CGRectSetHeight(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.titleEdgeInsets.bottom - CGRectGetMinY(titleFrame));
+                        imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top) : imageFrame;
+                        titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, self.contentEdgeInsets.top + imageTotalSize.height + spacingBetweenImageAndTitle + self.titleEdgeInsets.top) : titleFrame;
+                        titleFrame = isTitleLabelShowing ? CGRectSetHeight(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.titleEdgeInsets.bottom - CGRectGetMinY(titleFrame)) : titleFrame;
                         
-                    } else if (imageSize.height > 0) {
+                    } else if (isImageViewShowing) {
                         imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top);
                         imageFrame = CGRectSetHeight(imageFrame, contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
                     } else {
@@ -192,30 +234,29 @@
         } else {
             switch (self.contentVerticalAlignment) {
                 case UIControlContentVerticalAlignmentTop:
-                    titleFrame = CGRectSetY(titleFrame, self.contentEdgeInsets.top + self.titleEdgeInsets.top);
-                    imageFrame = CGRectSetY(imageFrame, CGRectGetMaxY(titleFrame) + self.titleEdgeInsets.bottom + self.spacingBetweenImageAndTitle + self.imageEdgeInsets.top);
+                    titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, self.contentEdgeInsets.top + self.titleEdgeInsets.top) : titleFrame;
+                    imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, self.contentEdgeInsets.top + titleTotalSize.height + spacingBetweenImageAndTitle + self.imageEdgeInsets.top) : imageFrame;
                     break;
                 case UIControlContentVerticalAlignmentCenter: {
-                    CGFloat contentHeight = CGRectGetHeight(titleFrame) + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets) + self.spacingBetweenImageAndTitle + CGRectGetHeight(imageFrame) + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
+                    CGFloat contentHeight = imageTotalSize.height + titleTotalSize.height + spacingBetweenImageAndTitle;
                     CGFloat minY = CGFloatGetCenter(contentSize.height, contentHeight) + self.contentEdgeInsets.top;
-                    titleFrame = CGRectSetY(titleFrame, minY + self.titleEdgeInsets.top);
-                    imageFrame = CGRectSetY(imageFrame, CGRectGetMaxY(titleFrame) + self.titleEdgeInsets.bottom + self.spacingBetweenImageAndTitle + self.imageEdgeInsets.top);
+                    titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, minY + self.titleEdgeInsets.top) : titleFrame;
+                    imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, minY + titleTotalSize.height + spacingBetweenImageAndTitle + self.imageEdgeInsets.top) : imageFrame;
                 }
                     break;
                 case UIControlContentVerticalAlignmentBottom:
-                    imageFrame = CGRectSetY(imageFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.imageEdgeInsets.bottom - CGRectGetHeight(imageFrame));
-                    titleFrame = CGRectSetY(titleFrame, CGRectGetMinY(imageFrame) - self.imageEdgeInsets.top - self.spacingBetweenImageAndTitle - self.titleEdgeInsets.bottom - CGRectGetHeight(titleFrame));
-                    
+                    imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.imageEdgeInsets.bottom - CGRectGetHeight(imageFrame)) : imageFrame;
+                    titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - imageTotalSize.height - spacingBetweenImageAndTitle - self.titleEdgeInsets.bottom - CGRectGetHeight(titleFrame)) : titleFrame;
                     break;
                 case UIControlContentVerticalAlignmentFill: {
-                    if (imageSize.height > 0 && titleSize.height > 0) {
+                    if (isImageViewShowing && isTitleLabelShowing) {
                         
                         // 同时显示图片和 label 的情况下，图片高度按本身大小显示，剩余空间留给 label
                         imageFrame = CGRectSetY(imageFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.imageEdgeInsets.bottom - CGRectGetHeight(imageFrame));
                         titleFrame = CGRectSetY(titleFrame, self.contentEdgeInsets.top + self.titleEdgeInsets.top);
-                        titleFrame = CGRectSetHeight(titleFrame, CGRectGetMinY(imageFrame) - self.imageEdgeInsets.top - self.spacingBetweenImageAndTitle - self.titleEdgeInsets.bottom - CGRectGetMinY(titleFrame));
+                        titleFrame = CGRectSetHeight(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - imageTotalSize.height - spacingBetweenImageAndTitle - self.titleEdgeInsets.bottom - CGRectGetMinY(titleFrame));
                         
-                    } else if (imageSize.height > 0) {
+                    } else if (isImageViewShowing) {
                         imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top);
                         imageFrame = CGRectSetHeight(imageFrame, contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
                     } else {
@@ -232,73 +273,73 @@
         
     } else if (self.imagePosition == QMUIButtonImagePositionLeft || self.imagePosition == QMUIButtonImagePositionRight) {
         
-        CGFloat imageLimitHeight = contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
-        CGSize imageSize = self.imageView.hidden ? CGSizeZero : [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)];// 假设图片宽度必定完整显示，高度不超过按钮内容
-        CGRect imageFrame = CGRectMakeWithSize(imageSize);
-        
-        CGSize titleLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) - CGRectGetWidth(imageFrame) - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) - self.spacingBetweenImageAndTitle, contentSize.height - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
-        CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
-        titleSize.height = fmin(titleSize.height, titleLimitSize.height);
-        titleSize = self.titleLabel.hidden ? CGSizeZero : titleSize;
-        CGRect titleFrame = CGRectMakeWithSize(titleSize);
+        if (isTitleLabelShowing) {
+            titleLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) - imageTotalSize.width - spacingBetweenImageAndTitle, contentSize.height - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+            CGSize titleSize = [self.titleLabel sizeThatFits:titleLimitSize];
+            titleSize.width = fmin(titleLimitSize.width, titleSize.width);
+            titleSize.height = fmin(titleLimitSize.height, titleSize.height);
+            titleFrame = CGRectMakeWithSize(titleSize);
+            titleTotalSize = CGSizeMake(titleSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets), titleSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+        }
         
         switch (self.contentVerticalAlignment) {
             case UIControlContentVerticalAlignmentTop:
-                titleFrame = CGRectSetY(titleFrame, self.contentEdgeInsets.top + self.titleEdgeInsets.top);
-                imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top);
+                imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top) : imageFrame;
+                titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, self.contentEdgeInsets.top + self.titleEdgeInsets.top) : titleFrame;
+                
                 break;
             case UIControlContentVerticalAlignmentCenter:
-                titleFrame = CGRectSetY(titleFrame, self.contentEdgeInsets.top + CGFloatGetCenter(contentSize.height, CGRectGetHeight(titleFrame)) + self.titleEdgeInsets.top);
-                imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + CGFloatGetCenter(contentSize.height, CGRectGetHeight(imageFrame)) + self.imageEdgeInsets.top);
+                imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, self.contentEdgeInsets.top + CGFloatGetCenter(contentSize.height, CGRectGetHeight(imageFrame)) + self.imageEdgeInsets.top) : imageFrame;
+                titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, self.contentEdgeInsets.top + CGFloatGetCenter(contentSize.height, CGRectGetHeight(titleFrame)) + self.titleEdgeInsets.top) : titleFrame;
                 break;
             case UIControlContentVerticalAlignmentBottom:
-                titleFrame = CGRectSetY(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.titleEdgeInsets.bottom - CGRectGetHeight(titleFrame));
-                imageFrame = CGRectSetY(imageFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.imageEdgeInsets.bottom - CGRectGetHeight(imageFrame));
+                imageFrame = isImageViewShowing ? CGRectSetY(imageFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.imageEdgeInsets.bottom - CGRectGetHeight(imageFrame)) : imageFrame;
+                titleFrame = isTitleLabelShowing ? CGRectSetY(titleFrame, CGRectGetHeight(self.bounds) - self.contentEdgeInsets.bottom - self.titleEdgeInsets.bottom - CGRectGetHeight(titleFrame)) : titleFrame;
                 break;
             case UIControlContentVerticalAlignmentFill:
-                titleFrame = CGRectSetY(titleFrame, self.contentEdgeInsets.top + self.titleEdgeInsets.top);
-                titleFrame = CGRectSetHeight(titleFrame, contentSize.height - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
-                imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top);
-                imageFrame = CGRectSetHeight(imageFrame, contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
+                if (isImageViewShowing) {
+                    imageFrame = CGRectSetY(imageFrame, self.contentEdgeInsets.top + self.imageEdgeInsets.top);
+                    imageFrame = CGRectSetHeight(imageFrame, contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
+                }
+                if (isTitleLabelShowing) {
+                    titleFrame = CGRectSetY(titleFrame, self.contentEdgeInsets.top + self.titleEdgeInsets.top);
+                    titleFrame = CGRectSetHeight(titleFrame, contentSize.height - UIEdgeInsetsGetVerticalValue(self.titleEdgeInsets));
+                }
                 break;
         }
         
         if (self.imagePosition == QMUIButtonImagePositionLeft) {
             switch (self.contentHorizontalAlignment) {
                 case UIControlContentHorizontalAlignmentLeft:
-                    imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
-                    titleFrame = CGRectSetX(titleFrame, CGRectGetMaxX(imageFrame) + self.imageEdgeInsets.right + self.spacingBetweenImageAndTitle + self.titleEdgeInsets.left);
-                    titleFrame = CGRectSetWidth(titleFrame, fmin(CGRectGetWidth(titleFrame), contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) - CGRectGetWidth(imageFrame) - self.spacingBetweenImageAndTitle - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets)));// 保护 titleLabel 不要溢出 button
+                    imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left) : imageFrame;
+                    titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, self.contentEdgeInsets.left + imageTotalSize.width + spacingBetweenImageAndTitle + self.titleEdgeInsets.left) : titleFrame;
                     break;
                 case UIControlContentHorizontalAlignmentCenter: {
-                    CGFloat contentWidth = CGRectGetWidth(titleFrame) + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) + self.spacingBetweenImageAndTitle + CGRectGetWidth(imageFrame) + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
+                    CGFloat contentWidth = imageTotalSize.width + spacingBetweenImageAndTitle + titleTotalSize.width;
                     CGFloat minX = self.contentEdgeInsets.left + CGFloatGetCenter(contentSize.width, contentWidth);
-                    imageFrame = CGRectSetX(imageFrame, minX + self.imageEdgeInsets.left);
-                    titleFrame = CGRectSetX(titleFrame, CGRectGetMaxX(imageFrame) + self.imageEdgeInsets.right + self.spacingBetweenImageAndTitle + self.titleEdgeInsets.left);
+                    imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, minX + self.imageEdgeInsets.left) : imageFrame;
+                    titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, minX + imageTotalSize.width + spacingBetweenImageAndTitle + self.titleEdgeInsets.left) : titleFrame;
                 }
                     break;
                 case UIControlContentHorizontalAlignmentRight: {
-                    if (CGRectGetWidth(imageFrame) + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) + self.spacingBetweenImageAndTitle + CGRectGetWidth(titleFrame) + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) > contentSize.width) {
+                    if (imageTotalSize.width + spacingBetweenImageAndTitle + titleTotalSize.width > contentSize.width) {
                         // 图片和文字总宽超过按钮宽度，则优先完整显示图片
-                        imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
-                        titleFrame = CGRectSetX(titleFrame, CGRectGetMaxX(imageFrame) + self.imageEdgeInsets.right + self.spacingBetweenImageAndTitle + self.titleEdgeInsets.left);
-                        titleFrame = CGRectSetWidth(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.titleEdgeInsets.right - CGRectGetMinX(titleFrame));
+                        imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left) : imageFrame;
+                        titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, self.contentEdgeInsets.left + imageTotalSize.width + spacingBetweenImageAndTitle + self.titleEdgeInsets.left) : titleFrame;
                     } else {
                         // 内容不超过按钮宽度，则靠右布局即可
-                        titleFrame = CGRectSetX(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.titleEdgeInsets.right - CGRectGetWidth(titleFrame));
-                        imageFrame = CGRectSetX(imageFrame, CGRectGetMinX(titleFrame) - self.titleEdgeInsets.left - self.spacingBetweenImageAndTitle - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame));
+                        titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.titleEdgeInsets.right - CGRectGetWidth(titleFrame)) : titleFrame;
+                        imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - titleTotalSize.width - spacingBetweenImageAndTitle - imageTotalSize.width + self.imageEdgeInsets.left) : imageFrame;
                     }
                 }
                     break;
                 case UIControlContentHorizontalAlignmentFill: {
-                    if (imageSize.width > 0 && titleSize.width > 0) {
-                        
+                    if (isImageViewShowing && isTitleLabelShowing) {
                         // 同时显示图片和 label 的情况下，图片按本身宽度显示，剩余空间留给 label
                         imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
-                        titleFrame = CGRectSetX(titleFrame, CGRectGetMaxX(imageFrame) + self.imageEdgeInsets.right + self.spacingBetweenImageAndTitle + self.titleEdgeInsets.left);
-                        titleFrame = CGRectSetWidth(titleFrame, CGRectGetWidth(self.bounds) - CGRectGetMinX(titleFrame) - self.titleEdgeInsets.right - self.contentEdgeInsets.right);
-                        
-                    } else if (imageSize.width > 0) {
+                        titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + imageTotalSize.width + spacingBetweenImageAndTitle + self.titleEdgeInsets.left);
+                        titleFrame = CGRectSetWidth(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.titleEdgeInsets.right - CGRectGetMinX(titleFrame));
+                    } else if (isImageViewShowing) {
                         imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
                         imageFrame = CGRectSetWidth(imageFrame, contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets));
                     } else {
@@ -313,39 +354,36 @@
         } else {
             switch (self.contentHorizontalAlignment) {
                 case UIControlContentHorizontalAlignmentLeft: {
-                    if (CGRectGetWidth(imageFrame) + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) + self.spacingBetweenImageAndTitle + CGRectGetWidth(titleFrame) + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) > contentSize.width) {
+                    if (imageTotalSize.width + spacingBetweenImageAndTitle + titleTotalSize.width > contentSize.width) {
                         // 图片和文字总宽超过按钮宽度，则优先完整显示图片
-                        imageFrame = CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame));
-                        titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
-                        titleFrame = CGRectSetWidth(titleFrame, CGRectGetMinX(imageFrame) - self.imageEdgeInsets.left - self.spacingBetweenImageAndTitle - self.titleEdgeInsets.right - CGRectGetMinX(titleFrame));
+                        imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame)) : imageFrame;
+                        titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - imageTotalSize.width - spacingBetweenImageAndTitle - titleTotalSize.width + self.titleEdgeInsets.left) : titleFrame;
                     } else {
                         // 内容不超过按钮宽度，则靠左布局即可
-                        titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
-                        imageFrame = CGRectSetX(imageFrame, CGRectGetMaxX(titleFrame) + self.titleEdgeInsets.right + self.spacingBetweenImageAndTitle + self.imageEdgeInsets.left);
+                        titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left) : titleFrame;
+                        imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, self.contentEdgeInsets.left + titleTotalSize.width + spacingBetweenImageAndTitle + self.imageEdgeInsets.left) : imageFrame;
                     }
                 }
                     break;
                 case UIControlContentHorizontalAlignmentCenter: {
-                    CGFloat contentWidth = CGRectGetWidth(titleFrame) + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets) + CGRectGetWidth(imageFrame) + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) + self.spacingBetweenImageAndTitle;
+                    CGFloat contentWidth = imageTotalSize.width + spacingBetweenImageAndTitle + titleTotalSize.width;
                     CGFloat minX = self.contentEdgeInsets.left + CGFloatGetCenter(contentSize.width, contentWidth);
-                    titleFrame = CGRectSetX(titleFrame, minX + self.titleEdgeInsets.left);
-                    imageFrame = CGRectSetX(imageFrame, CGRectGetMaxX(titleFrame) + self.titleEdgeInsets.right + self.spacingBetweenImageAndTitle + self.imageEdgeInsets.left);
+                    titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, minX + self.titleEdgeInsets.left) : titleFrame;
+                    imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, minX + titleTotalSize.width + spacingBetweenImageAndTitle + self.imageEdgeInsets.left) : imageFrame;
                 }
                     break;
                 case UIControlContentHorizontalAlignmentRight:
-                    imageFrame = CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame));
-                    titleFrame = CGRectSetX(titleFrame, CGRectGetMinX(imageFrame) - self.imageEdgeInsets.left - self.spacingBetweenImageAndTitle - self.titleEdgeInsets.right - CGRectGetWidth(titleFrame));
-                    titleFrame = CGRectSetWidth(titleFrame, fmin(CGRectGetWidth(titleFrame), contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets) - CGRectGetWidth(imageFrame) - self.spacingBetweenImageAndTitle - UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsets)));// 保护 titleLabel 不要溢出 button
+                    imageFrame = isImageViewShowing ? CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame)) : imageFrame;
+                    titleFrame = isTitleLabelShowing ? CGRectSetX(titleFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - imageTotalSize.width - spacingBetweenImageAndTitle - self.titleEdgeInsets.right - CGRectGetWidth(titleFrame)) : titleFrame;
                     break;
                 case UIControlContentHorizontalAlignmentFill: {
-                    if (imageSize.width > 0 && titleSize.width > 0) {
-                        
+                    if (isImageViewShowing && isTitleLabelShowing) {
                         // 图片按自身大小显示，剩余空间由标题占满
                         imageFrame = CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - self.contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame));
                         titleFrame = CGRectSetX(titleFrame, self.contentEdgeInsets.left + self.titleEdgeInsets.left);
                         titleFrame = CGRectSetWidth(titleFrame, CGRectGetMinX(imageFrame) - self.imageEdgeInsets.left - self.spacingBetweenImageAndTitle - self.titleEdgeInsets.right - CGRectGetMinX(titleFrame));
                         
-                    } else if (imageSize.width > 0) {
+                    } else if (isImageViewShowing) {
                         imageFrame = CGRectSetX(imageFrame, self.contentEdgeInsets.left + self.imageEdgeInsets.left);
                         imageFrame = CGRectSetWidth(imageFrame, contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets));
                     } else {
@@ -628,11 +666,13 @@
             // 只针对返回按钮，调整箭头和title之间的间距
             // @warning 这些数值都是每个iOS版本核对过没问题的，如果修改则要检查要每个版本里与系统UIBarButtonItem的布局是否一致
             if (useForBarButtonItem) {
-                UIOffset titleOffset = NavBarBarBackButtonTitlePositionAdjustment;
-                CGFloat customTitleOffset = IOS_VERSION < 8.0 ? 1 : 0;  // 除了全局设置的titleOffset，有些版本的自定义返回按钮还需要一个偏移值
-                CGFloat titleHorizontalOffset = 7.0;
-                self.titleEdgeInsets = UIEdgeInsetsMake(titleOffset.vertical + customTitleOffset, titleHorizontalOffset + titleOffset.horizontal, - titleOffset.vertical, -titleHorizontalOffset - titleOffset.horizontal);
-                self.contentEdgeInsets = UIEdgeInsetsMake(1, 0, 0, titleHorizontalOffset + titleOffset.horizontal);// 箭头左边的间距
+                UIOffset titleOffsetBaseOnSystem = UIOffsetMake(IOS_VERSION >= 11.0 ? 6 : 7, IOS_VERSION < 8.0 ? 1 : 0);// 经过这些数值的调整后，自定义返回按钮的位置才能和系统默认返回按钮的位置对准，而配置表里设置的值是在这个调整的基础上再调整
+                UIOffset configurationOffset = NavBarBarBackButtonTitlePositionAdjustment;
+                self.titleEdgeInsets = UIEdgeInsetsMake(titleOffsetBaseOnSystem.vertical + configurationOffset.vertical, titleOffsetBaseOnSystem.horizontal + configurationOffset.horizontal, -titleOffsetBaseOnSystem.vertical - configurationOffset.vertical, -titleOffsetBaseOnSystem.horizontal - configurationOffset.horizontal);
+                self.contentEdgeInsets = UIEdgeInsetsMake(IOS_VERSION >= 11.0 ? 0 : 1,// iOS 11 以前的自定义返回按钮要特地往下偏移一点才会和系统的一模一样
+                                                          IOS_VERSION >= 11.0 ? -8 : 0,// iOS 11 使用了自定义按钮后整个按钮都会强制被往右边挪 8pt，所以这里要通过 contentEdgeInsets.left 偏移回来
+                                                          0,
+                                                          self.titleEdgeInsets.left);// 保证 button 有足够的宽度
             }
             // 由于contentEdgeInsets会影响frame的大小，所以更新数值后需要重新计算size
             [self sizeToFit];
