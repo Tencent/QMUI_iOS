@@ -214,7 +214,7 @@
         return;
     }
     
-    if ([[viewController class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)]) {
+    if (viewController.qmui_respondQMUINavigationControllerDelegate) {
         UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)viewController;
         
         // 控制界面的状态栏颜色
