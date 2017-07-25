@@ -521,6 +521,12 @@ static QMUIModalPresentationViewController *appearance;
     return self.supportedOrientationMask;
 }
 
+#pragma mark - 状态栏
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+}
+
 @end
 
 @implementation QMUIModalPresentationViewController (Manager)
