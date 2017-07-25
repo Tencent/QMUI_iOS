@@ -41,6 +41,7 @@
 @required
 
 /// 是否需要将状态栏改为浅色文字，默认为宏StatusbarStyleLightInitially的值
+/// @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请使用系统提供的 - preferredStatusBarStyle 方法
 - (BOOL)shouldSetStatusBarStyleLight;
 
 /// 设置每个界面导航栏的显示/隐藏，为了减少对项目的侵入性，默认不开启这个接口的功能，只有当 shouldCustomNavigationBarTransitionIfBarHiddenable 返回 YES 时才会开启此功能。如果需要全局开启，那么就在 Controller 基类里面返回 YES；如果是老项目并不想全局使用此功能，那么则可以在单独的界面里面开启。
