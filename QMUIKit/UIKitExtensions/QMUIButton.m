@@ -130,6 +130,22 @@
     return resultSize;
 }
 
+- (CGSize)intrinsicContentSize {
+    CGSize size = [super intrinsicContentSize];
+    BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
+    BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
+    // 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
+    CGFloat spacingBetweenImageAndTitle = isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0;
+    if (self.imagePosition == QMUIButtonImagePositionTop ||
+        self.imagePosition == QMUIButtonImagePositionBottom) {
+        size.height += spacingBetweenImageAndTitle;
+    }else {
+        size.width += spacingBetweenImageAndTitle;
+    }
+    
+    return size;
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
     
