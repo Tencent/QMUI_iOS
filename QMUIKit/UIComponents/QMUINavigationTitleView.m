@@ -13,20 +13,20 @@
 #import "UIActivityIndicatorView+QMUI.h"
 #import "UIView+QMUI.h"
 
-@interface UINavigationBar (QMUI)
+@interface UINavigationBar (TitleView)
 
 @end
 
-@implementation UINavigationBar (QMUI)
+@implementation UINavigationBar (TitleView)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(layoutSubviews), @selector(qmui_navigationBarLayoutSubviews));
+        ReplaceMethod([self class], @selector(layoutSubviews), @selector(titleView_navigationBarLayoutSubviews));
     });
 }
 
-- (void)qmui_navigationBarLayoutSubviews {
+- (void)titleView_navigationBarLayoutSubviews {
     QMUINavigationTitleView *titleView = (QMUINavigationTitleView *)self.topItem.titleView;
     
     if ([titleView isKindOfClass:[QMUINavigationTitleView class]]) {
@@ -41,11 +41,18 @@
             titleView.frame = CGRectMake(CGRectGetMinX(titleView.frame), titleViewMinY, fminf(titleViewMaximumWidth, titleViewSize.width), titleViewSize.height);
 //            NSLog(@"【%@】修正布局后\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
         }
+        
+        // iOS 11 之后 titleView 的布局发生了一些变化，如果不主动设置宽度，titleView 里的内容就可能无法完整展示
+        if (IOS_VERSION >= 11.0) {
+            if (CGRectGetWidth(titleView.bounds) != titleViewSize.width) {
+                titleView.frame = CGRectSetWidth(titleView.frame, titleViewSize.width);
+            }
+        }
     } else {
         titleView = nil;
     }
     
-    [self qmui_navigationBarLayoutSubviews];
+    [self titleView_navigationBarLayoutSubviews];
     
     if (titleView) {
 //        NSLog(@"【%@】系统布局后\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
@@ -118,8 +125,24 @@
 #pragma mark - 布局
 
 - (void)refreshLayout {
-    [self.superview setNeedsLayout];
+    UINavigationBar *navigationBar = [self navigationBarSuperviewForSubview:self];
+    if (navigationBar) {
+        [navigationBar setNeedsLayout];
+    }
     [self setNeedsLayout];
+}
+
+// 找到 titleView 所在的 navigationBar（iOS 11 及以后，titleView.superview.superview == navigationBar，iOS 10 及以前，titleView.superview == navigationBar）
+- (UINavigationBar *)navigationBarSuperviewForSubview:(UIView *)subview {
+    if (!subview.superview) {
+        return nil;
+    }
+    
+    if ([subview.superview isKindOfClass:[UINavigationBar class]]) {
+        return (UINavigationBar *)subview.superview;
+    }
+    
+    return [self navigationBarSuperviewForSubview:subview.superview];
 }
 
 - (void)updateTitleLabelSize {
@@ -419,16 +442,21 @@
     if (!self.accessoryTypeView) {
         self.accessoryTypeView = [[UIImageView alloc] init];
         self.accessoryTypeView.contentMode = UIViewContentModeCenter;
-        [self addSubview:self.accessoryTypeView];
     }
     
-    UIImage *accessoryImage;
+    UIImage *accessoryImage = nil;
     if (accessoryType == QMUINavigationTitleViewAccessoryTypeDisclosureIndicator) {
         accessoryImage = [NavBarAccessoryViewTypeDisclosureIndicatorImage qmui_imageWithOrientation:UIImageOrientationUp];
     }
     
     self.accessoryTypeView.image = accessoryImage;
     [self.accessoryTypeView sizeToFit];
+    
+    // 经过上面的 setImage 和 sizeToFit 之后再 addSubview，因为 addSubview 会触发系统来询问你的 sizeThatFits:
+    if (self.accessoryTypeView.superview != self) {
+        [self addSubview:self.accessoryTypeView];
+    }
+    
     [self refreshLayout];
 }
 
