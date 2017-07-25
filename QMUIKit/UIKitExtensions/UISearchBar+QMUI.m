@@ -19,11 +19,26 @@
     });
 }
 
+- (void)qmui_setPlaceholder:(NSString *)placeholder {
+    [self qmui_setPlaceholder:placeholder];
+    if (self.qmui_placeholderColor || self.qmui_font) {
+        NSMutableDictionary<NSString *, id> *attributes = [[NSMutableDictionary alloc] init];
+        if (self.qmui_placeholderColor) {
+            attributes[NSForegroundColorAttributeName] = self.qmui_placeholderColor;
+        }
+        if (self.qmui_font) {
+            attributes[NSFontAttributeName] = self.qmui_font;
+        }
+        self.qmui_textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:attributes];
+    }
+}
+
 static char kAssociatedObjectKey_PlaceholderColor;
 - (void)setQmui_placeholderColor:(UIColor *)qmui_placeholderColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_PlaceholderColor, qmui_placeholderColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.placeholder && qmui_placeholderColor) {
-        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:self.placeholder attributes:@{NSForegroundColorAttributeName: qmui_placeholderColor}];
+    if (self.placeholder) {
+        // 触发 setPlaceholder 里更新 placeholder 样式的逻辑
+        self.placeholder = self.placeholder;
     }
 }
 
@@ -31,27 +46,53 @@ static char kAssociatedObjectKey_PlaceholderColor;
     return (UIColor *)objc_getAssociatedObject(self, &kAssociatedObjectKey_PlaceholderColor);
 }
 
-- (void)qmui_setPlaceholder:(NSString *)placeholder {
-    [self qmui_setPlaceholder:placeholder];
-    // placeholder的颜色
-    if (self.qmui_placeholderColor) {
-        self.textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:@{NSForegroundColorAttributeName: self.qmui_placeholderColor}];
-    }
-}
-
 static char kAssociatedObjectKey_TextColor;
 - (void)setQmui_textColor:(UIColor *)qmui_textColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_TextColor, qmui_textColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    self.textField.textColor = qmui_textColor;
+    self.qmui_textField.textColor = qmui_textColor;
 }
 
 - (UIColor *)qmui_textColor {
     return (UIColor *)objc_getAssociatedObject(self, &kAssociatedObjectKey_TextColor);
 }
 
+static char kAssociatedObjectKey_font;
+- (void)setQmui_font:(UIFont *)qmui_font {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_font, qmui_font, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (self.placeholder) {
+        // 触发 setPlaceholder 里更新 placeholder 样式的逻辑
+        self.placeholder = self.placeholder;
+    }
+}
+
+- (UIFont *)qmui_font {
+    return (UIFont *)objc_getAssociatedObject(self, &kAssociatedObjectKey_font);
+}
+
+- (UITextField *)qmui_textField {
+    UITextField *textField = [self valueForKey:@"searchField"];
+    return textField;
+}
+
 - (void)qmui_styledAsQMUISearchBar {
-    self.qmui_textColor = SearchBarTextColor;
-    self.qmui_placeholderColor = SearchBarPlaceholderColor;
+    // 搜索框的字号及 placeholder 的字号
+    UIFont *font = SearchBarFont;
+    if (font) {
+        self.qmui_font = font;
+    }
+    
+    // 搜索框的文字颜色
+    UIColor *textColor = SearchBarTextColor;
+    if (textColor) {
+        self.qmui_textColor = SearchBarTextColor;
+    }
+    
+    // placeholder 的文字颜色
+    UIColor *placeholderColor = SearchBarPlaceholderColor;
+    if (placeholderColor) {
+        self.qmui_placeholderColor = SearchBarPlaceholderColor;
+    }
+    
     self.placeholder = @"搜索";
     self.autocorrectionType = UITextAutocorrectionTypeNo;
     self.autocapitalizationType = UITextAutocapitalizationTypeNone;
@@ -88,11 +129,6 @@ static char kAssociatedObjectKey_TextColor;
         UIImage *backgroundImage = [[[UIImage qmui_imageWithColor:SearchBarBarTintColor size:CGSizeMake(10, 10) cornerRadius:0] qmui_imageWithBorderColor:SearchBarBottomBorderColor borderWidth:PixelOne borderPosition:QMUIImageBorderPositionBottom] resizableImageWithCapInsets:UIEdgeInsetsMake(1, 1, 1, 1)];
         [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
     }
-}
-
-- (UITextField *)textField {
-    UITextField *textField = [self valueForKey:@"searchField"];
-    return textField;
 }
 
 @end

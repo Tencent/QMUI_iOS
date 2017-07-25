@@ -102,20 +102,20 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
     CGFloat                     _keyboardHeight;
 }
 
-@property(nonatomic, weak) id<QMUIModalPresentationViewControllerDelegate> delegate;
+@property(nonatomic, weak) IBOutlet id<QMUIModalPresentationViewControllerDelegate> delegate;
 
 /**
  *  要被弹出的浮层
  *  @warning 当设置了`contentView`时，不要再设置`contentViewController`
  */
-@property(nonatomic, strong) UIView *contentView;
+@property(nonatomic, strong) IBOutlet UIView *contentView;
 
 /**
  *  要被弹出的浮层，适用于浮层以UIViewController的形式来管理的情况。
  *  @warning 当设置了`contentViewController`时，`contentViewController.view`会被当成`contentView`使用，因此不要再自行设置`contentView`
  *  @warning 注意`contentViewController`是强引用，容易导致循环引用，使用时请注意
  */
-@property(nonatomic, strong) UIViewController<QMUIModalPresentationContentViewControllerProtocol> *contentViewController;
+@property(nonatomic, strong) IBOutlet UIViewController<QMUIModalPresentationContentViewControllerProtocol> *contentViewController;
 
 /**
  *  设置`contentView`布局时与外容器的间距，默认为(20, 20, 20, 20)
@@ -134,7 +134,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *
  *  `QMUIModalPresentationViewController`会自动给自定义的`dimmingView`添加手势以实现点击遮罩隐藏浮层。
  */
-@property(nonatomic, strong) UIView *dimmingView;
+@property(nonatomic, strong) IBOutlet UIView *dimmingView;
 
 /**
  *  由于点击遮罩导致浮层被隐藏时的回调（区分于`hideWithAnimated:completion:`里的completion，这里是特地用于点击遮罩的情况）

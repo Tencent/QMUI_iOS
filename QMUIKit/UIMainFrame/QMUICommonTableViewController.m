@@ -345,10 +345,12 @@ EndIgnoreDeprecatedWarning
 @implementation QMUICommonTableViewController (QMUISubclassingHooks)
 
 - (void)initTableView {
-    _tableView = [[QMUITableView alloc] initWithFrame:self.view.bounds style:self.style];
-    self.tableView.delegate = self;
-    self.tableView.dataSource = self;
-    [self.view addSubview:self.tableView];
+    if (!_tableView) {
+        _tableView = [[QMUITableView alloc] initWithFrame:self.view.bounds style:self.style];
+        self.tableView.delegate = self;
+        self.tableView.dataSource = self;
+        [self.view addSubview:self.tableView];
+    }
 }
 
 - (BOOL)shouldHideTableHeaderViewInitial {

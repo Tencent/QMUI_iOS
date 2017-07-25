@@ -9,6 +9,27 @@
 #import "UINavigationController+QMUI.h"
 #import "QMUICore.h"
 
+@interface UINavigationController (BackButtonHandlerProtocol)
+
+// `UINavigationControllerBackButtonHandlerProtocol`的`canPopViewController`功能里面，当 A canPop = NO，B canPop = YES，那么从 B 手势返回到 A，也会触发需求 A 的 `canPopViewController` 方法，这是因为手势返回会去询问`gestureRecognizerShouldBegin:`和`qmui_navigationBar:shouldPopItem:`，而这两个方法里面的 self.topViewController 是不同的对象，所以导致这个问题。所以通过 tmp_topViewController 来记录 self.topViewController 从而保证两个地方的值是相等的。
+
+- (nullable UIViewController *)tmp_topViewController;
+
+@end
+
+@implementation UINavigationController (BackButtonHandlerProtocol)
+
+- (UIViewController *)tmp_topViewController {
+    return objc_getAssociatedObject(self, _cmd);
+}
+
+- (void)setTmp_topViewController:(UIViewController *)viewController {
+    objc_setAssociatedObject(self, @selector(tmp_topViewController), viewController, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+@end
+
+
 @implementation UINavigationController (QMUI)
 
 + (void)load {
@@ -45,17 +66,18 @@ static char originGestureDelegateKey;
 
 - (BOOL)qmui_navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
     
-    UIViewController *viewController = [self topViewController];
-    
-    //item == viewController.navigationItem to fix: 如果前后2个controller都需要hold时的BUG.
-    BOOL canPopViewController = [self canPopViewController:viewController] && item == viewController.navigationItem;
-    
     // 如果nav的vc栈中有两个vc，第一个是root，第二个是second。这是second页面如果点击系统的返回按钮，topViewController获取的栈顶vc是second，而如果是直接代码写的pop操作，则获取的栈顶vc是root。也就是说只要代码写了pop操作，则系统会直接将顶层vc也就是second出栈，然后才回调的，所以这时我们获取到的顶层vc就是root了。然而不管哪种方式，参数中的item都是second的item。
-    // 综上所述，使用item != viewController.navigationItem来判断就是为了解决这个问题。
-    if (canPopViewController || item != viewController.navigationItem) {
+    BOOL isPopedByCoding = item != [self topViewController].navigationItem;
+    
+    // !isPopedByCoding 要放在前面，这样当 !isPopedByCoding 不满足的时候就不会去询问 canPopViewController 了，可以避免额外调用 canPopViewController 里面的逻辑导致
+    BOOL canPopViewController = !isPopedByCoding && [self canPopViewController:self.tmp_topViewController ?: [self topViewController]];
+    
+    if (canPopViewController || isPopedByCoding) {
+        self.tmp_topViewController = nil;
         return [self qmui_navigationBar:navigationBar shouldPopItem:item];
     } else {
         [self resetSubviewsInNavBar:navigationBar];
+        self.tmp_topViewController = nil;
     }
     
     return NO;
@@ -74,8 +96,8 @@ static char originGestureDelegateKey;
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
     if (gestureRecognizer == self.interactivePopGestureRecognizer) {
-        BOOL canPopViewController = [self canPopViewController:self.topViewController];
-        
+        self.tmp_topViewController = self.topViewController;
+        BOOL canPopViewController = [self canPopViewController:self.tmp_topViewController];
         if (canPopViewController) {
             id<UIGestureRecognizerDelegate>originGestureDelegate = objc_getAssociatedObject(self, &originGestureDelegateKey);
             if ([originGestureDelegate respondsToSelector:@selector(gestureRecognizerShouldBegin:)]) {

@@ -90,6 +90,14 @@ static QMUIModalPresentationViewController *appearance;
     [self initDefaultDimmingViewWithoutAddToView];
 }
 
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    if (self.contentViewController) {
+        // 在 IB 里设置了 contentViewController 的话，通过这个调用去触发 contentView 的更新
+        self.contentViewController = self.contentViewController;
+    }
+}
+
 - (void)dealloc {
     self.containerWindow = nil;
 }

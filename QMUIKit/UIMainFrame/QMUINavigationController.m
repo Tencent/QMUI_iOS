@@ -14,6 +14,47 @@
 #import "UIViewController+QMUI.h"
 #import "UINavigationController+QMUI.h"
 
+
+@interface UIViewController (QMUINavigationController)
+
+@property(nonatomic, assign) BOOL qmui_isViewWillAppeare;
+
+@end
+
+@implementation UIViewController (QMUINavigationController)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        Class cls = [self class];
+        ReplaceMethod(cls, @selector(viewWillAppear:), @selector(observe_viewWillAppear:));
+        ReplaceMethod(cls, @selector(viewDidDisappear:), @selector(observe_viewDidDisappear:));
+    });
+}
+
+- (void)observe_viewWillAppear:(BOOL)animated {
+    [self observe_viewWillAppear:animated];
+    self.qmui_isViewWillAppeare = YES;
+}
+
+- (void)observe_viewDidDisappear:(BOOL)animated {
+    [self observe_viewDidDisappear:animated];
+    self.qmui_isViewWillAppeare = NO;
+}
+
+- (BOOL)qmui_isViewWillAppeare {
+    return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)setQmui_isViewWillAppeare:(BOOL)qmui_isViewWillAppeare {
+    [self willChangeValueForKey:@"qmui_isViewWillAppeare"];
+    objc_setAssociatedObject(self, @selector(qmui_isViewWillAppeare), [[NSNumber alloc] initWithBool:qmui_isViewWillAppeare], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self didChangeValueForKey:@"qmui_isViewWillAppeare"];
+}
+
+@end
+
+
 @interface QMUINavigationController () <UIGestureRecognizerDelegate>
 
 /// 记录当前是否正在 push/pop 界面的动画过程，如果动画尚未结束，不应该继续 push/pop 其他界面
@@ -69,12 +110,12 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self willShowViewController:self.topViewController];
+    [self willShowViewController:self.topViewController animated:animated];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    [self didShowViewController:self.topViewController];
+    [self didShowViewController:self.topViewController animated:animated];
 }
 
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated {
@@ -258,90 +299,29 @@
 
 #pragma mark - 自定义方法
 
-// 根据当前的viewController，统一处理导航栏底部的分隔线、状态栏的颜色
-- (void)renderStyleInNavigationController:(UINavigationController *)navigationController currentViewController:(UIViewController *)viewController {
-    if ([[viewController class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)viewController;
-        
-        // 控制界面的状态栏颜色
-        if ([vc shouldSetStatusBarStyleLight]) {
-            if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleLight];
-            }
+// 接管系统手势返回的回调
+- (void)handleInteractivePopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
+    UIGestureRecognizerState state = gestureRecognizer.state;
+    if (state == UIGestureRecognizerStateBegan) {
+        [self.viewControllerPopping addObserver:self forKeyPath:@"qmui_isViewWillAppeare" options:NSKeyValueObservingOptionNew context:nil];
+    } else if (state == UIGestureRecognizerStateEnded) {
+        if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
+            // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
+            QMUILog(@"手势返回放弃了");
         } else {
-            if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleDark];
-            }
-        }
-        
-        // 显示/隐藏 导航栏
-        if (NavigationBarHiddenStateUsable) {
-            QMUINavigationBarHiddenState navigationBarHiddenOption = [vc preferredNavigationBarHiddenState];
-            BOOL hidden = NO;
-            BOOL animated = YES;
-            if (navigationBarHiddenOption == QMUINavigationBarHiddenStateHideWithAnimated || navigationBarHiddenOption == QMUINavigationBarHiddenStateHideWithoutAnimated) {
-                hidden = YES;
-            }
-            if (navigationBarHiddenOption == QMUINavigationBarHiddenStateShowWithoutAnimated || navigationBarHiddenOption == QMUINavigationBarHiddenStateHideWithoutAnimated) {
-                animated = NO;
-            }
-            if (hidden && !self.navigationBarHidden) {
-                [self setNavigationBarHidden:YES animated:animated];
-            }
-            if (!hidden && self.navigationBarHidden) {
-                [self setNavigationBarHidden:NO animated:animated];
-            }
-        }
-        
-        // 导航栏的背景
-        if ([vc respondsToSelector:@selector(navigationBarBackgroundImage)]) {
-            UIImage *backgroundImage = [vc navigationBarBackgroundImage];
-            [self.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
-        } else {
-            [self.navigationBar setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-        }
-        
-        // 导航栏底部的分隔线
-        if ([vc respondsToSelector:@selector(navigationBarShadowImage)]) {
-            UIImage *shadowImage = [vc navigationBarShadowImage];
-            [self.navigationBar setShadowImage:shadowImage];
-        } else {
-            [self.navigationBar setShadowImage:NavBarShadowImage];
-        }
-        
-        // 导航栏上控件的主题色
-        if ([vc respondsToSelector:@selector(navigationBarTintColor)]) {
-            UIColor *tintColor = [vc navigationBarTintColor];
-            self.navigationBar.tintColor = tintColor;
-        } else {
-            self.navigationBar.tintColor = NavBarTintColor;
-        }
-        
-        // 导航栏title的颜色
-        if ([vc isKindOfClass:[QMUICommonViewController class]]) {
-            QMUICommonViewController *qmuiVC = (QMUICommonViewController *)vc;
-            if ([qmuiVC respondsToSelector:@selector(titleViewTintColor)]) {
-                UIColor *tintColor = [qmuiVC titleViewTintColor];
-                qmuiVC.titleView.tintColor = tintColor;
-            } else {
-                qmuiVC.titleView.tintColor = NavBarTitleColor;
-            }
+            QMUILog(@"执行手势返回");
         }
     }
 }
 
-// 接管系统手势返回的回调
-- (void)handleInteractivePopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
-    UIGestureRecognizerState state = gestureRecognizer.state;
-    if (state == UIGestureRecognizerStateEnded) {
-        if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
-            // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
+    if ([keyPath isEqualToString:@"qmui_isViewWillAppeare"]) {
+        [self.viewControllerPopping removeObserver:self forKeyPath:@"qmui_isViewWillAppeare"];
+        NSNumber *newValue = change[NSKeyValueChangeNewKey];
+        if (newValue.boolValue) {
             [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];
             self.viewControllerPopping = nil;
             self.isViewControllerTransiting = NO;
-            QMUILog(@"手势返回放弃了");
-        } else {
-            QMUILog(@"执行手势返回");
         }
     }
 }
@@ -351,7 +331,7 @@
 // 注意如果实现了某一个navigationController的delegate方法，必须同时检查并且调用delegateProxy相对应的方法
 
 - (void)navigationController:(UINavigationController *)navigationController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    [self willShowViewController:viewController];
+    [self willShowViewController:viewController animated:animated];
     if ([self.delegateProxy respondsToSelector:_cmd]) {
         [self.delegateProxy navigationController:navigationController willShowViewController:viewController animated:animated];
     }
@@ -360,7 +340,7 @@
 - (void)navigationController:(UINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     self.viewControllerPopping = nil;
     self.isViewControllerTransiting = NO;
-    [self didShowViewController:viewController];
+    [self didShowViewController:viewController animated:animated];
     if ([self.delegateProxy respondsToSelector:_cmd]) {
         [self.delegateProxy navigationController:navigationController didShowViewController:viewController animated:animated];
     }
@@ -401,12 +381,11 @@
 
 @implementation QMUINavigationController (UISubclassingHooks)
 
-- (void)willShowViewController:(UIViewController *)viewController {
+- (void)willShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     // 子类可以重写
-    [self renderStyleInNavigationController:self currentViewController:viewController];
 }
 
-- (void)didShowViewController:(UIViewController *)viewController {
+- (void)didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     // 子类可以重写
 }
 

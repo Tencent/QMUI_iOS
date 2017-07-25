@@ -136,7 +136,6 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.alertSeperatorColor = UIColorMake(211, 211, 219);
         alertControllerAppearance.alertTitleAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
         alertControllerAppearance.alertMessageAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
-        alertControllerAppearance.alertContentCornerRadius = (IOS_VERSION >= 9.0 ? 13 : 6);
         alertControllerAppearance.alertButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
         alertControllerAppearance.alertButtonDisabledAttributes = @{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
         alertControllerAppearance.alertCancelButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(17),NSKernAttributeName:@(0)};
@@ -158,9 +157,9 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.sheetButtonDisabledAttributes = @{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetCancelButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetDestructiveButtonAttributes = @{NSForegroundColorAttributeName:UIColorRed,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)};
+        alertControllerAppearance.sheetCancelButtonMarginTop = 8;
         alertControllerAppearance.sheetContentCornerRadius = (IOS_VERSION >= 9.0 ? 13 : 6);
         alertControllerAppearance.sheetButtonHeight = (IOS_VERSION >= 9.0 ? 57 : 44);
-        alertControllerAppearance.sheetCancelButtonMarginTop = 8;
         alertControllerAppearance.sheetHeaderBackgroundColor = (IOS_VERSION < 8.0) ? UIColorWhite : UIColorMakeWithRGBA(247, 247, 247, 1);
         alertControllerAppearance.sheetButtonBackgroundColor = alertControllerAppearance.sheetHeaderBackgroundColor;
         alertControllerAppearance.sheetButtonHighlightBackgroundColor = UIColorMake(232, 232, 232);
@@ -980,25 +979,53 @@ static QMUIAlertController *alertControllerAppearance;
 }
 
 - (void)updateAction {
+    
     for (QMUIAlertAction *alertAction in self.alertActions) {
         
         UIColor *backgroundColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertButtonBackgroundColor : self.sheetButtonBackgroundColor;
         UIColor *highlightBackgroundColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertButtonHighlightBackgroundColor : self.sheetButtonHighlightBackgroundColor;
+        
         alertAction.buttonWrapView.clipsToBounds = alertAction.style == QMUIAlertActionStyleCancel;
         alertAction.button.backgroundColor = backgroundColor;
         alertAction.button.highlightedBackgroundColor = highlightBackgroundColor;
         
         NSAttributedString *attributeString = nil;
         if (alertAction.style == QMUIAlertActionStyleCancel) {
-            attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertCancelButtonAttributes : self.sheetCancelButtonAttributes];
+            
+            NSDictionary *attributes = (self.preferredStyle == QMUIAlertControllerStyleAlert) ? self.alertCancelButtonAttributes : self.sheetCancelButtonAttributes;
+            if (alertAction.buttonAttributes) {
+                attributes = alertAction.buttonAttributes;
+            }
+            
+            attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:attributes];
+            
         } else if (alertAction.style == QMUIAlertActionStyleDestructive) {
-            attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertDestructiveButtonAttributes : self.sheetDestructiveButtonAttributes];
+            
+            NSDictionary *attributes = (self.preferredStyle == QMUIAlertControllerStyleAlert) ? self.alertDestructiveButtonAttributes : self.sheetDestructiveButtonAttributes;
+            if (alertAction.buttonAttributes) {
+                attributes = alertAction.buttonAttributes;
+            }
+            
+            attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:attributes];
+            
         } else {
-            attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertButtonAttributes : self.sheetButtonAttributes];
+            
+            NSDictionary *attributes = (self.preferredStyle == QMUIAlertControllerStyleAlert) ? self.alertButtonAttributes : self.sheetButtonAttributes;
+            if (alertAction.buttonAttributes) {
+                attributes = alertAction.buttonAttributes;
+            }
+            
+            attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:attributes];
         }
+        
         [alertAction.button setAttributedTitle:attributeString forState:UIControlStateNormal];
         
-        attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertButtonDisabledAttributes : self.sheetButtonDisabledAttributes];
+        NSDictionary *attributes = (self.preferredStyle == QMUIAlertControllerStyleAlert) ? self.alertButtonDisabledAttributes : self.sheetButtonDisabledAttributes;
+        if (alertAction.buttonDisabledAttributes) {
+            attributes = alertAction.buttonDisabledAttributes;
+        }
+        
+        attributeString = [[NSAttributedString alloc] initWithString:alertAction.title attributes:attributes];
         [alertAction.button setAttributedTitle:attributeString forState:UIControlStateDisabled];
         
         if ([alertAction.button imageForState:UIControlStateNormal]) {
