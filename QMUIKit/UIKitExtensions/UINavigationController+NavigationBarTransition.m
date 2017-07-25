@@ -494,7 +494,7 @@
         [disappearingViewController addTransitionNavigationBarIfNeeded];
         disappearingViewController.prefersNavigationBarBackgroundViewHidden = YES;
     }
-
+    
     return [self NavigationBarTransition_pushViewController:viewController animated:animated];
 }
 

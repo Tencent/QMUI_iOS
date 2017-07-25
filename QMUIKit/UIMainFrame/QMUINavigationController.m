@@ -120,10 +120,10 @@
 
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated {
     // 从横屏界面pop 到竖屏界面，系统会调用两次 popViewController，如果这里加这个 if 判断，会误拦第二次 pop，导致错误
-//    if (self.isViewControllerTransiting) {
-//        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
-//        return nil;
-//    }
+    //    if (self.isViewControllerTransiting) {
+    //        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
+    //        return nil;
+    //    }
     
     if (self.viewControllers.count < 2) {
         // 只剩 1 个 viewController 或者不存在 viewController 时，调用 popViewControllerAnimated: 后不会有任何变化，所以不需要触发 willPop / didPop
@@ -148,10 +148,10 @@
 
 - (NSArray<UIViewController *> *)popToViewController:(UIViewController *)viewController animated:(BOOL)animated {
     // 从横屏界面pop 到竖屏界面，系统会调用两次 popViewController，如果这里加这个 if 判断，会误拦第二次 pop，导致错误
-//    if (self.isViewControllerTransiting) {
-//        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
-//        return nil;
-//    }
+    //    if (self.isViewControllerTransiting) {
+    //        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
+    //        return nil;
+    //    }
     
     if (!viewController || self.topViewController == viewController) {
         // 当要被 pop 到的 viewController 已经处于最顶层时，调用 super 默认也是什么都不做，所以直接 return 掉
@@ -193,10 +193,10 @@
 
 - (NSArray<UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated {
     // 从横屏界面pop 到竖屏界面，系统会调用两次 popViewController，如果这里加这个 if 判断，会误拦第二次 pop，导致错误
-//    if (self.isViewControllerTransiting) {
-//        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
-//        return nil;
-//    }
+    //    if (self.isViewControllerTransiting) {
+    //        NSAssert(NO, @"isViewControllerTransiting = YES, %s, self.viewControllers = %@", __func__, self.viewControllers);
+    //        return nil;
+    //    }
     
     // 在配合 tabBarItem 使用的情况下，快速重复点击相同 item 可能会重复调用 popToRootViewControllerAnimated:，而此时其实已经处于 rootViewController 了，就没必要继续走后续的流程，否则一些变量会得不到重置。
     if (self.topViewController == self.qmui_rootViewController) {
@@ -326,7 +326,7 @@
     }
 }
 
-#pragma mark - <UINavigationControllerDelegate> 
+#pragma mark - <UINavigationControllerDelegate>
 
 // 注意如果实现了某一个navigationController的delegate方法，必须同时检查并且调用delegateProxy相对应的方法
 
