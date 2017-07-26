@@ -44,7 +44,7 @@ static NSArray<QMUIEmotion *> *QQEmotionArray;
                 // 在输入框文字的结尾插入表情
                 inputText = [inputText stringByAppendingString:emotion.displayName];
                 weakSelf.boundInputView.text = inputText;
-                selectedRange = NSMakeRange(inputText.length, 0);
+                selectedRange = NSMakeRange(weakSelf.boundInputView.text.length, 0);// 始终都应该从 boundInputView.text 获取最终的文字，因为可能在 setText: 时受 maximumTextLength 的限制导致文字截断
             }
             weakSelf.selectedRangeForBoundTextInput = selectedRange;
         };
