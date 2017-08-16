@@ -188,8 +188,6 @@
     self.tableViewSectionFooterFont = UIFontBoldMake(12);
     self.tableViewSectionHeaderTextColor = self.grayDarkenColor;
     self.tableViewSectionFooterTextColor = self.grayColor;
-    self.tableViewSectionHeaderHeight = 20;
-    self.tableViewSectionFooterHeight = 0;
     self.tableViewSectionHeaderContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
     self.tableViewSectionFooterContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
     
@@ -197,8 +195,8 @@
     self.tableViewGroupedSectionFooterFont = UIFontMake(12);
     self.tableViewGroupedSectionHeaderTextColor = self.grayDarkenColor;
     self.tableViewGroupedSectionFooterTextColor = self.grayColor;
-    self.tableViewGroupedSectionHeaderHeight = 15;
-    self.tableViewGroupedSectionFooterHeight = 1;
+    self.tableViewGroupedSectionHeaderDefaultHeight = UITableViewAutomaticDimension;
+    self.tableViewGroupedSectionFooterDefaultHeight = UITableViewAutomaticDimension;
     self.tableViewGroupedSectionHeaderContentInset = UIEdgeInsetsMake(16, 15, 8, 15);
     self.tableViewGroupedSectionFooterContentInset = UIEdgeInsetsMake(8, 15, 2, 15);
     
@@ -214,6 +212,16 @@
     self.needsBackBarButtonItemTitle = NO;
     self.hidesBottomBarWhenPushedInitially = NO;
     self.navigationBarHiddenInitially = NO;
+}
+
+- (void)setNavBarButtonFont:(UIFont *)navBarButtonFont {
+    _navBarButtonFont = navBarButtonFont;
+    // by molice 2017-08-04 只要用 appearence 的方式修改 UIBarButtonItem 的 font，就会导致界面切换时 UIBarButtonItem 抖动，系统的问题，所以暂时不修改 appearance。
+//    if (navBarButtonFont) {
+//        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil];
+//        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: navBarButtonFont} forState:UIControlStateNormal];
+//        [barButtonItemAppearance setTitleTextAttributes:[barButtonItemAppearance titleTextAttributesForState:UIControlStateNormal] forState:UIControlStateHighlighted];
+//    }
 }
 
 - (void)setNavBarTintColor:(UIColor *)navBarTintColor {

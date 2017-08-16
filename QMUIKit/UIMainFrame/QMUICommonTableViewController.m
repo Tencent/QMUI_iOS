@@ -280,33 +280,28 @@ EndIgnoreDeprecatedWarning
     return headerFooterView;
 }
 
-/**
- * iOS5之前的版本，如果viewForHeaderInSection返回的是nil，那么heightForHeaderInSection会自动计算数值为0，iOS5以及之后的版本，则不会自动计算，需要手动来计算heightForHeaderInSection。
- *
- * Apple Document: Prior to iOS 5.0, table views would automatically resize the heights of headers to 0 for sections where tableView:viewForHeaderInSection: returned a nil view. In iOS 5.0 and later, you must return the actual height for each section header in this method.
- * @see https://developer.apple.com/library/ios/DOCUMENTATION/UIKit/Reference/UITableViewDelegate_Protocol/Reference/Reference.html#//apple_ref/occ/intfm/UITableViewDelegate/tableView%3aheightForHeaderInSection%3a
- */
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     if ([tableView.delegate respondsToSelector:@selector(tableView:viewForHeaderInSection:)]) {
         UIView *view = [tableView.delegate tableView:tableView viewForHeaderInSection:section];
         if (view) {
             CGFloat height = [view sizeThatFits:CGSizeMake(CGRectGetWidth(tableView.bounds), CGFLOAT_MAX)].height;
-            return fmax(height, tableView.style == UITableViewStylePlain ? TableViewSectionHeaderHeight : TableViewGroupedSectionHeaderHeight);
+            return height;
         }
     }
-    // 默认 plain 类型直接设置为 0，TableViewSectionHeaderHeight 是在需要重写 headerHeight 的时候才用的
-    return tableView.style == UITableViewStylePlain ? 0 : TableViewGroupedSectionHeaderHeight;
+    // 分别测试过 iOS 11 前后的系统版本，最终总结，对于 Plain 类型的 tableView 而言，要去掉 header / footer 请使用 0，对于 Grouped 类型的 tableView 而言，要去掉 header / footer 请使用 CGFLOAT_MIN
+    return tableView.style == UITableViewStylePlain ? 0 : TableViewGroupedSectionHeaderDefaultHeight;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
     if ([tableView.delegate respondsToSelector:@selector(tableView:viewForFooterInSection:)]) {
         UIView *view = [tableView.delegate tableView:tableView viewForFooterInSection:section];
         if (view) {
-            return MAX(CGRectGetHeight(view.bounds), tableView.style == UITableViewStylePlain ? TableViewSectionFooterHeight : TableViewGroupedSectionFooterHeight);
+            CGFloat height = [view sizeThatFits:CGSizeMake(CGRectGetWidth(tableView.bounds), CGFLOAT_MAX)].height;
+            return height;
         }
     }
-    // 默认 plain 类型直接设置为 0，TableViewSectionFooterHeight 是在需要重写 footerHeight 的时候才用的
-    return tableView.style == UITableViewStylePlain ? 0 : TableViewGroupedSectionFooterHeight;
+    // 分别测试过 iOS 11 前后的系统版本，最终总结，对于 Plain 类型的 tableView 而言，要去掉 header / footer 请使用 0，对于 Grouped 类型的 tableView 而言，要去掉 header / footer 请使用 CGFLOAT_MIN
+    return tableView.style == UITableViewStylePlain ? 0 : TableViewGroupedSectionFooterDefaultHeight;
 }
 
 // 是否有定义某个section的header title

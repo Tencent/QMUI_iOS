@@ -16,6 +16,7 @@
     UIColor *backgroundColor = nil;
     if (self.style == UITableViewStylePlain) {
         backgroundColor = TableViewBackgroundColor;
+        self.tableFooterView = [[UIView alloc] init]; // 去掉空白的cell
     } else {
         backgroundColor = TableViewGroupedBackgroundColor;
     }
@@ -23,8 +24,7 @@
         self.backgroundColor = backgroundColor;
     }
     self.separatorColor = TableViewSeparatorColor;
-    self.tableFooterView = [[UIView alloc] init];// 去掉尾部空cell
-    self.backgroundView = [[UIView alloc] init];// 设置一个空的backgroundView，去掉系统的，以使backgroundColor生效
+    self.backgroundView = [[UIView alloc] init]; // 设置一个空的 backgroundView，去掉系统的，以使 backgroundColor 生效
     
     self.sectionIndexColor = TableSectionIndexColor;
     self.sectionIndexTrackingBackgroundColor = TableSectionIndexTrackingBackgroundColor;
@@ -32,11 +32,16 @@
 }
 
 - (NSIndexPath *)qmui_indexPathForRowAtView:(UIView *)view {
-    if (view && [view isKindOfClass:[UIView class]]) {
-        CGPoint origin = [self convertPoint:view.frame.origin fromView:view.superview];
-        return [self indexPathForRowAtPoint:origin];
+    if (!view || !view.superview) {
+        return nil;
     }
-    return nil;
+    
+    if ([view isKindOfClass:[UITableViewCell class]] && ([NSStringFromClass(view.superview.class) isEqualToString:@"UITableViewWrapperView"] ? view.superview.superview : view.superview) == self) {
+        // iOS 11 下，cell.superview 是 UITableView，iOS 11 以前，cell.superview 是 UITableViewWrapperView
+        return [self indexPathForCell:(UITableViewCell *)view];
+    }
+    
+    return [self qmui_indexPathForRowAtView:view.superview];
 }
 
 - (NSInteger)qmui_indexForSectionHeaderAtView:(UIView *)view {

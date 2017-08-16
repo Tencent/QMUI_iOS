@@ -165,8 +165,6 @@
 #define TableViewSectionFooterFont                 [QMUICMI tableViewSectionFooterFont]
 #define TableViewSectionHeaderTextColor            [QMUICMI tableViewSectionHeaderTextColor]
 #define TableViewSectionFooterTextColor            [QMUICMI tableViewSectionFooterTextColor]
-#define TableViewSectionHeaderHeight               [QMUICMI tableViewSectionHeaderHeight]               // 列表sectionheader的高度
-#define TableViewSectionFooterHeight               [QMUICMI tableViewSectionFooterHeight]               // 列表sectionheader的高度
 #define TableViewSectionHeaderContentInset         [QMUICMI tableViewSectionHeaderContentInset]
 #define TableViewSectionFooterContentInset         [QMUICMI tableViewSectionFooterContentInset]
 
@@ -174,8 +172,8 @@
 #define TableViewGroupedSectionFooterFont          [QMUICMI tableViewGroupedSectionFooterFont]
 #define TableViewGroupedSectionHeaderTextColor     [QMUICMI tableViewGroupedSectionHeaderTextColor]
 #define TableViewGroupedSectionFooterTextColor     [QMUICMI tableViewGroupedSectionFooterTextColor]
-#define TableViewGroupedSectionHeaderHeight        [QMUICMI tableViewGroupedSectionHeaderHeight]
-#define TableViewGroupedSectionFooterHeight        [QMUICMI tableViewGroupedSectionFooterHeight]
+#define TableViewGroupedSectionHeaderDefaultHeight [QMUICMI tableViewGroupedSectionHeaderDefaultHeight]
+#define TableViewGroupedSectionFooterDefaultHeight [QMUICMI tableViewGroupedSectionFooterDefaultHeight]
 #define TableViewGroupedSectionHeaderContentInset  [QMUICMI tableViewGroupedSectionHeaderContentInset]
 #define TableViewGroupedSectionFooterContentInset  [QMUICMI tableViewGroupedSectionFooterContentInset]
 
