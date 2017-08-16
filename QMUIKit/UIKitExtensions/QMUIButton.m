@@ -130,6 +130,10 @@
     return resultSize;
 }
 
+- (CGSize)intrinsicContentSize {
+    return [self sizeThatFits:self.bounds.size];
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
     
