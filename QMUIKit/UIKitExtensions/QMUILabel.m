@@ -22,6 +22,11 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)setContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets {
+    _contentEdgeInsets = contentEdgeInsets;
+    [self setNeedsDisplay];
+}
+
 - (CGSize)sizeThatFits:(CGSize)size {
     size = [super sizeThatFits:CGSizeMake(size.width - UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets), size.height - UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets))];
     size.width += UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets);
