@@ -264,7 +264,7 @@
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     if (self.isViewControllerTransiting || !viewController) {
-        NSAssert(NO, @"%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@",  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
+        QMUILog(@"%@, 上一次界面切换的动画尚未结束就试图进行新的 push 操作，为了避免产生 bug，拦截了这次 push。\n%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@", NSStringFromClass(self.class),  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
         return;
     }
     

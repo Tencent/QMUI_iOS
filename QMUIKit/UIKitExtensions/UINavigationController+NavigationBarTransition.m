@@ -25,7 +25,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     if (IOS_VERSION >= 11.0) {
-        // iOS 11 以前，自己 init 的 navigationBar，它的 backgroundView 默认会一直保持与 navigationBar 的高度相等，但 iOS 11 Beta1 里，自己 init 的 navigationBar.backgroundView.height 默认一直是 44，所以才加上这个兼容
+        // iOS 11 以前，自己 init 的 navigationBar，它的 backgroundView 默认会一直保持与 navigationBar 的高度相等，但 iOS 11 Beta 1-5 里，自己 init 的 navigationBar.backgroundView.height 默认一直是 44，所以才加上这个兼容
         UIView *backgroundView = [self valueForKey:@"backgroundView"];
         backgroundView.frame = self.bounds;
     }

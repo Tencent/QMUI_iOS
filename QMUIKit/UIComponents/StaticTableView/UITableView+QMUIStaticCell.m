@@ -34,9 +34,19 @@ static char kAssociatedObjectKey_staticCellDataSource;
     return (QMUIStaticTableViewCellDataSource *)objc_getAssociatedObject(self, &kAssociatedObjectKey_staticCellDataSource);
 }
 
+// 把那些已经手动 addMethod 过的 class 存起来，避免每次都触发 QMUILog，打了一堆重复的信息
+static NSMutableSet<NSString *> *QMUI_staticTableViewAddedClass;
+
 - (void)addSelector:(SEL)selector withImplementation:(IMP)implementation types:(const char *)types forObject:(NSObject *)object {
     if (!class_addMethod(object.class, selector, implementation, types)) {
-        QMUILog(@"%@, 尝试为 %@ 添加方法 %@ 失败，可能该类里已经实现了这个方法", NSStringFromClass(self.class), NSStringFromClass(object.class), NSStringFromSelector(selector));
+        if (!QMUI_staticTableViewAddedClass) {
+            QMUI_staticTableViewAddedClass = [[NSMutableSet alloc] init];
+        }
+        NSString *identifier = [NSString stringWithFormat:@"%@%@", NSStringFromClass(object.class), NSStringFromSelector(selector)];
+        if (![QMUI_staticTableViewAddedClass containsObject:identifier]) {
+            QMUILog(@"%@, 尝试为 %@ 添加方法 %@ 失败，可能该类里已经实现了这个方法", NSStringFromClass(self.class), NSStringFromClass(object.class), NSStringFromSelector(selector));
+            [QMUI_staticTableViewAddedClass addObject:identifier];
+        }
     }
 }
 

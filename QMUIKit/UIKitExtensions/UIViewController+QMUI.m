@@ -213,6 +213,42 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     return self.isViewLoaded && self.view.window;
 }
 
+- (CGFloat)qmui_navigationBarMaxYInViewCoordinator {
+    if (!self.isViewLoaded) {
+        return 0;
+    }
+    if (!self.navigationController.navigationBar || self.navigationController.navigationBarHidden) {
+        return 0;
+    }
+    CGRect navigationBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.navigationController.navigationBar.frame fromView:self.navigationController.navigationBar.superview]);
+    CGFloat result = CGRectGetMaxY(navigationBarFrame);
+    return result;
+}
+
+- (CGFloat)qmui_toolbarSpacingInViewCoordinator {
+    if (!self.isViewLoaded) {
+        return 0;
+    }
+    if (!self.navigationController.toolbar || self.navigationController.toolbarHidden) {
+        return 0;
+    }
+    CGRect toolbarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.navigationController.toolbar.frame fromView:self.navigationController.toolbar.superview]);
+    CGFloat result = CGRectGetHeight(self.view.bounds) - CGRectGetMinY(toolbarFrame);
+    return result;
+}
+
+- (CGFloat)qmui_tabBarSpacingInViewCoordinator {
+    if (!self.isViewLoaded) {
+        return 0;
+    }
+    if (!self.tabBarController.tabBar || self.tabBarController.tabBar.hidden) {
+        return 0;
+    }
+    CGRect tabBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.tabBarController.tabBar.frame fromView:self.tabBarController.tabBar.superview]);
+    CGFloat result = CGRectGetHeight(self.view.bounds) - CGRectGetMinY(tabBarFrame);
+    return result;
+}
+
 @end
 
 @interface UIViewController ()

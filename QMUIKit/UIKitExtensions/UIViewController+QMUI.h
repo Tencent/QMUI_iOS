@@ -42,6 +42,24 @@
  */
 - (BOOL)qmui_isViewLoadedAndVisible;
 
+/**
+ *   UINavigationBar 在 self.view 坐标系里的 maxY，一般用于 self.view.subviews 布局时参考用
+ *  @warning 如果不存在 UINavigationBar，则为 0
+ */
+@property(nonatomic, assign, readonly) CGFloat qmui_navigationBarMaxYInViewCoordinator;
+
+/**
+ *  底部 UIToolbar 在 self.view 坐标系里的占位高度，一般用于 self.view.subviews 布局时参考用
+ *  @warning 如果不存在 UIToolbar，则为 0
+ */
+@property(nonatomic, assign, readonly) CGFloat qmui_toolbarSpacingInViewCoordinator;
+
+/**
+ *  底部 UITabBar 在 self.view 坐标系里的占位高度，一般用于 self.view.subviews 布局时参考用
+ *  @warning 如果不存在 UITabBar，则为 0
+ */
+@property(nonatomic, assign, readonly) CGFloat qmui_tabBarSpacingInViewCoordinator;
+
 @end
 
 /**
