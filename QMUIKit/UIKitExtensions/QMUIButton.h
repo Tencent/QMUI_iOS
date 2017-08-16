@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /// 控制图片在UIButton里的位置，默认为QMUIButtonImagePositionLeft
 typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
     QMUIButtonImagePositionTop,             // imageView在titleLabel上面
@@ -76,6 +78,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 @property(nonatomic, assign) IBInspectable BOOL adjustsImageTintColorAutomatically;
 
 /**
+ *  等价于 adjustsTitleTintColorAutomatically = YES & adjustsImageTintColorAutomatically = YES & tintColor = xxx
+ *  @note 一般只使用这个属性的 setter，而 getter 永远返回 self.tintColor
+ *  @warning 不支持传 nil
+ */
+@property(nonatomic, strong) IBInspectable UIColor *tintColorAdjustsTitleAndImage;
+
+/**
  * 是否自动调整highlighted时的按钮样式，默认为YES。<br/>
  * 当值为YES时，按钮highlighted时会改变自身的alpha属性为<b>ButtonHighlightedAlpha</b>
  */
@@ -92,14 +101,14 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  * @warning 不支持带透明度的背景颜色。当设置highlightedBackgroundColor时，会强制把adjustsButtonWhenHighlighted设为NO，避免两者效果冲突。
  * @see adjustsButtonWhenHighlighted
  */
-@property(nonatomic, strong) IBInspectable UIColor *highlightedBackgroundColor;
+@property(nonatomic, strong, nullable) IBInspectable UIColor *highlightedBackgroundColor;
 
 /**
  * 设置按钮点击时的边框颜色，默认为nil。
  * @warning 当设置highlightedBorderColor时，会强制把adjustsButtonWhenHighlighted设为NO，避免两者效果冲突。
  * @see adjustsButtonWhenHighlighted
  */
-@property(nonatomic, strong) IBInspectable UIColor *highlightedBorderColor;
+@property(nonatomic, strong, nullable) IBInspectable UIColor *highlightedBorderColor;
 
 /**
  * 设置按钮里图标和文字的相对位置，默认为QMUIButtonImagePositionLeft<br/>
@@ -141,7 +150,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param type 按钮类型
  *  @param title 按钮的title
  */
-- (instancetype)initWithType:(QMUINavigationButtonType)type title:(NSString *)title;
+- (instancetype)initWithType:(QMUINavigationButtonType)type title:(nullable NSString *)title;
 
 /**
  *  导航栏按钮的初始化函数
@@ -153,7 +162,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  导航栏按钮的初始化函数
  *  @param image 按钮的image
  */
-- (instancetype)initWithImage:(UIImage *)image;
+- (instancetype)initWithImage:(nullable UIImage *)image;
 
 /** 
  *  创建一个 type 为 QMUINavigationButtonTypeBack 的 button 并作为 customView 用于生成一个 UIBarButtonItem，返回按钮的图片由配置表里的宏 NavBarBackIndicatorImage 决定。
@@ -161,14 +170,14 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param selector 按钮点击事件的方法
  *  @param tintColor 按钮要显示的颜色，如果为 nil，则表示跟随当前 UINavigationBar 的 tintColor
  */
-+ (UIBarButtonItem *)backBarButtonItemWithTarget:(id)target action:(SEL)selector tintColor:(UIColor *)tintColor;
++ (nullable UIBarButtonItem *)backBarButtonItemWithTarget:(nullable id)target action:(nullable SEL)selector tintColor:(nullable UIColor *)tintColor;
 
 /**
  *  创建一个 type 为 QMUINavigationButtonTypeBack 的 button 并作为 customView 用于生成一个 UIBarButtonItem，返回按钮的图片由配置表里的宏 NavBarBackIndicatorImage 决定，按钮颜色跟随 UINavigationBar 的 tintColor。
  *  @param target 按钮点击事件的接收者
  *  @param selector 按钮点击事件的方法
  */
-+ (UIBarButtonItem *)backBarButtonItemWithTarget:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)backBarButtonItemWithTarget:(nullable id)target action:(nullable SEL)selector;
 
 /**
  *  创建一个以 “×” 为图标的关闭按钮，图片由配置表里的宏 NavBarCloseButtonImage 决定。
@@ -176,14 +185,14 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param selector 按钮点击事件的方法
  *  @param tintColor 按钮要显示的颜色，如果为 nil，则表示跟随当前 UINavigationBar 的 tintColor
  */
-+ (UIBarButtonItem *)closeBarButtonItemWithTarget:(id)target action:(SEL)selector tintColor:(UIColor *)tintColor;
++ (UIBarButtonItem *)closeBarButtonItemWithTarget:(nullable id)target action:(nullable SEL)selector tintColor:(nullable UIColor *)tintColor;
 
 /**
  *  创建一个以 “×” 为图标的关闭按钮，图片由配置表里的宏 NavBarCloseButtonImage 决定，图片颜色跟随 UINavigationBar.tintColor。
  *  @param target 按钮点击事件的接收者
  *  @param selector 按钮点击事件的方法
  */
-+ (UIBarButtonItem *)closeBarButtonItemWithTarget:(id)target action:(SEL)selector;
++ (UIBarButtonItem *)closeBarButtonItemWithTarget:(nullable id)target action:(nullable SEL)selector;
 
 /**
  *  创建一个 UIBarButtonItem
@@ -194,7 +203,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param target 按钮点击事件的接收者
  *  @param selector 按钮点击事件的方法
  */
-+ (UIBarButtonItem *)barButtonItemWithType:(QMUINavigationButtonType)type title:(NSString *)title tintColor:(UIColor *)tintColor position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithType:(QMUINavigationButtonType)type title:(nullable NSString *)title tintColor:(nullable UIColor *)tintColor position:(QMUINavigationButtonPosition)position target:(nullable id)target action:(nullable SEL)selector;
 
 /**
  *  创建一个 UIBarButtonItem
@@ -204,7 +213,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param target 按钮点击事件的接收者
  *  @param selector 按钮点击事件的方法
  */
-+ (UIBarButtonItem *)barButtonItemWithType:(QMUINavigationButtonType)type title:(NSString *)title position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithType:(QMUINavigationButtonType)type title:(nullable NSString *)title position:(QMUINavigationButtonPosition)position target:(nullable id)target action:(nullable SEL)selector;
 
 /**
  *  将参数传进来的 button 作为 customView 用于生成一个 UIBarButtonItem。
@@ -216,7 +225,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *
  *  @note tintColor、position、target、selector 等参数不需要对 QMUINavigationButton 设置，通过参数传进来就可以了，就算设置了也会在这个方法里被覆盖。
  */
-+ (UIBarButtonItem *)barButtonItemWithNavigationButton:(QMUINavigationButton *)button tintColor:(UIColor *)tintColor position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithNavigationButton:(QMUINavigationButton *)button tintColor:(nullable UIColor *)tintColor position:(QMUINavigationButtonPosition)position target:(nullable id)target action:(nullable SEL)selector;
 
 /**
  *  将参数传进来的 button 作为 customView 用于生成一个 UIBarButtonItem。
@@ -227,7 +236,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *
  *  @note position、target、selector 等参数不需要对 QMUINavigationButton 设置，通过参数传进来就可以了，就算设置了也会在这个方法里被覆盖。
  */
-+ (UIBarButtonItem *)barButtonItemWithNavigationButton:(QMUINavigationButton *)button position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithNavigationButton:(QMUINavigationButton *)button position:(QMUINavigationButtonPosition)position target:(nullable id)target action:(nullable SEL)selector;
 
 /**
  *  创建一个图片类型的 UIBarButtonItem
@@ -237,7 +246,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param target 按钮点击事件的接收者
  *  @param selector 按钮点击事件的方法
  */
-+ (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image tintColor:(UIColor *)tintColor position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithImage:(nullable UIImage *)image tintColor:(nullable UIColor *)tintColor position:(QMUINavigationButtonPosition)position target:(nullable id)target action:(nullable SEL)selector;
 
 /**
  *  创建一个图片类型的 UIBarButtonItem
@@ -246,7 +255,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param target 按钮点击事件的接收者
  *  @param selector 按钮点击事件的方法
  */
-+ (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image position:(QMUINavigationButtonPosition)position target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithImage:(nullable UIImage *)image position:(QMUINavigationButtonPosition)position target:(nullable id)target action:(nullable SEL)selector;
 
 @end
 
@@ -270,7 +279,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  *  @param type 按钮类型
  *  @param title 按钮的title
  */
-- (instancetype)initWithType:(QMUIToolbarButtonType)type title:(NSString *)title;
+- (instancetype)initWithType:(QMUIToolbarButtonType)type title:(nullable NSString *)title;
 
 /**
  *  工具栏按钮的初始化函数
@@ -279,13 +288,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 - (instancetype)initWithImage:(UIImage *)image;
 
 /// 在原有的QMUIToolbarButton上创建一个UIBarButtonItem
-+ (UIBarButtonItem *)barButtonItemWithToolbarButton:(QMUIToolbarButton *)button target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithToolbarButton:(QMUIToolbarButton *)button target:(nullable id)target action:(nullable SEL)selector;
 
 /// 创建一个特定type的UIBarButtonItem
-+ (UIBarButtonItem *)barButtonItemWithType:(QMUIToolbarButtonType)type title:(NSString *)title target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithType:(QMUIToolbarButtonType)type title:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)selector;
 
 /// 创建一个图标类型的UIBarButtonItem
-+ (UIBarButtonItem *)barButtonItemWithImage:(UIImage *)image target:(id)target action:(SEL)selector;
++ (nullable UIBarButtonItem *)barButtonItemWithImage:(nullable UIImage *)image target:(nullable id)target action:(nullable SEL)selector;
 
 @end
 
@@ -302,7 +311,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 @property(nonatomic, assign) IBInspectable CGFloat underlineWidth;
 
 /// 控制下划线颜色，若设置为nil，则使用当前按钮的titleColor的颜色作为下划线的颜色。默认为 nil。
-@property(nonatomic, strong) IBInspectable UIColor *underlineColor;
+@property(nonatomic, strong, nullable) IBInspectable UIColor *underlineColor;
 
 /// 下划线的位置是基于 titleLabel 的位置来计算的，默认x、width均和titleLabel一致，而可以通过这个属性来调整下划线的偏移值。默认为UIEdgeInsetsZero。
 @property(nonatomic, assign) UIEdgeInsets underlineInsets;
@@ -323,7 +332,7 @@ extern const CGFloat QMUIGhostButtonCornerRadiusAdjustsBounds;
  */
 @interface QMUIGhostButton : QMUIButton
 
-@property(nonatomic, strong) IBInspectable UIColor *ghostColor;    // 默认为 GhostButtonColorBlue
+@property(nonatomic, strong, nullable) IBInspectable UIColor *ghostColor;    // 默认为 GhostButtonColorBlue
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;    // 默认为 1pt
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;   // 默认为 QMUIGhostButtonCornerRadiusAdjustsBounds，也即固定保持按钮高度的一半。
 
@@ -333,7 +342,7 @@ extern const CGFloat QMUIGhostButtonCornerRadiusAdjustsBounds;
 @property(nonatomic, assign) BOOL adjustsImageWithGhostColor UI_APPEARANCE_SELECTOR;
 
 - (instancetype)initWithGhostType:(QMUIGhostButtonColor)ghostType;
-- (instancetype)initWithGhostColor:(UIColor *)ghostColor;
+- (instancetype)initWithGhostColor:(nullable UIColor *)ghostColor;
 
 @end
 
@@ -349,8 +358,8 @@ extern const CGFloat QMUIFillButtonCornerRadiusAdjustsBounds;
  */
 @interface QMUIFillButton : QMUIButton
 
-@property(nonatomic, strong) IBInspectable UIColor *fillColor; // 默认为 FillButtonColorBlue
-@property(nonatomic, strong) IBInspectable UIColor *titleTextColor; // 默认为 UIColorWhite
+@property(nonatomic, strong, nullable) IBInspectable UIColor *fillColor; // 默认为 FillButtonColorBlue
+@property(nonatomic, strong, nullable) IBInspectable UIColor *titleTextColor; // 默认为 UIColorWhite
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;// 默认为 QMUIFillButtonCornerRadiusAdjustsBounds，也即固定保持按钮高度的一半。
 
 /**
@@ -360,8 +369,9 @@ extern const CGFloat QMUIFillButtonCornerRadiusAdjustsBounds;
 
 - (instancetype)initWithFillType:(QMUIFillButtonColor)fillType;
 - (instancetype)initWithFillType:(QMUIFillButtonColor)fillType frame:(CGRect)frame;
-- (instancetype)initWithFillColor:(UIColor *)fillColor titleTextColor:(UIColor *)textColor;
-- (instancetype)initWithFillColor:(UIColor *)fillColor titleTextColor:(UIColor *)textColor frame:(CGRect)frame;
+- (instancetype)initWithFillColor:(nullable UIColor *)fillColor titleTextColor:(nullable UIColor *)textColor;
+- (instancetype)initWithFillColor:(nullable UIColor *)fillColor titleTextColor:(nullable UIColor *)textColor frame:(CGRect)frame;
 
 @end
 
+NS_ASSUME_NONNULL_END
