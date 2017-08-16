@@ -42,7 +42,7 @@
 //            NSLog(@"【%@】修正布局后\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
         }
         
-        // iOS 11 之后 titleView 的布局发生了一些变化，如果不主动设置宽度，titleView 里的内容就可能无法完整展示
+        // iOS 11 之后（iOS 11 Beta 5 测试过） titleView 的布局发生了一些变化，如果不主动设置宽度，titleView 里的内容就可能无法完整展示
         if (IOS_VERSION >= 11.0) {
             if (CGRectGetWidth(titleView.bounds) != titleViewSize.width) {
                 titleView.frame = CGRectSetWidth(titleView.frame, titleViewSize.width);
