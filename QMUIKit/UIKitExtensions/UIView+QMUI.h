@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 @interface UIView (QMUI)
 
@@ -14,46 +15,6 @@
  *  相当于 initWithFrame:CGRectMake(0, 0, size.width, size.height)
  */
 - (instancetype)qmui_initWithSize:(CGSize)size;
-
-/**
- * 设置view的width和height
- */
-- (void)qmui_setWidth:(CGFloat)width height:(CGFloat)height;
-
-/**
- * 设置view的width
- */
-- (void)qmui_setWidth:(CGFloat)width;
-
-/**
- * 设置view的height
- */
-- (void)qmui_setHeight:(CGFloat)height;
-
-/**
- * 设置view的x和y
- */
-- (void)qmui_setOriginX:(CGFloat)x y:(CGFloat)y;
-
-/**
- * 设置view的x
- */
-- (void)qmui_setOriginX:(CGFloat)x;
-
-/**
- * 设置view的y
- */
-- (void)qmui_setOriginY:(CGFloat)y;
-
-/**
- * 获取当前view在superview内的水平居中时的minX
- */
-- (CGFloat)qmui_minXWhenCenterInSuperview;
-
-/**
- * 获取当前view在superview内的垂直居中时的minX
- */
-- (CGFloat)qmui_minYWhenCenterInSuperview;
 
 - (void)qmui_removeAllSubviews;
 
@@ -119,6 +80,49 @@ typedef NS_OPTIONS(NSUInteger, QMUIBorderViewPosition) {
 
 /// border的layer
 @property(nonatomic, strong, readonly) CAShapeLayer *qmui_borderLayer;
+
+@end
+
+/**
+ *  对 view.frame 操作的简便封装，注意 view 与 view 之间互相计算时，需要保证处于同一个坐标系内。
+ */
+@interface UIView (QMUI_Layout)
+
+/// 等价于 CGRectGetMinY(frame)
+@property(nonatomic, assign) CGFloat qmui_top;
+
+/// 等价于 CGRectGetMinX(frame)
+@property(nonatomic, assign) CGFloat qmui_left;
+
+/// 等价于 CGRectGetMaxY(frame)
+@property(nonatomic, assign) CGFloat qmui_bottom;
+
+/// 等价于 CGRectGetMaxX(frame)
+@property(nonatomic, assign) CGFloat qmui_right;
+
+/// 等价于 CGRectGetWidth(frame)
+@property(nonatomic, assign) CGFloat qmui_width;
+
+/// 等价于 CGRectGetHeight(frame)
+@property(nonatomic, assign) CGFloat qmui_height;
+
+/// 保持其他三个边缘的位置不变的情况下，将顶边缘拓展到某个指定的位置，注意高度会跟随变化。
+@property(nonatomic, assign) CGFloat qmui_extendToTop;
+
+/// 保持其他三个边缘的位置不变的情况下，将左边缘拓展到某个指定的位置，注意宽度会跟随变化。
+@property(nonatomic, assign) CGFloat qmui_extendToLeft;
+
+/// 保持其他三个边缘的位置不变的情况下，将底边缘拓展到某个指定的位置，注意高度会跟随变化。
+@property(nonatomic, assign) CGFloat qmui_extendToBottom;
+
+/// 保持其他三个边缘的位置不变的情况下，将右边缘拓展到某个指定的位置，注意宽度会跟随变化。
+@property(nonatomic, assign) CGFloat qmui_extendToRight;
+
+/// 获取当前 view 在 superview 内水平居中时的 left
+@property(nonatomic, assign, readonly) CGFloat qmui_leftWhenCenterInSuperview;
+
+/// 获取当前 view 在 superview 内垂直居中时的 top
+@property(nonatomic, assign, readonly) CGFloat qmui_topWhenCenterInSuperview;
 
 @end
 

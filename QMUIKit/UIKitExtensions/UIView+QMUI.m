@@ -12,6 +12,7 @@
 #import "UIColor+QMUI.h"
 #import "NSObject+QMUI.h"
 #import "UIImage+QMUI.h"
+#import <objc/runtime.h>
 
 @interface UIView ()
 
@@ -27,52 +28,6 @@
 
 - (instancetype)qmui_initWithSize:(CGSize)size {
     return [self initWithFrame:CGRectMakeWithSize(size)];
-}
-
-- (void)qmui_setWidth:(CGFloat)width height:(CGFloat)height {
-    CGRect frame = self.frame;
-    frame.size.height = height;
-    frame.size.width = width;
-    self.frame = frame;
-}
-
-- (void)qmui_setWidth:(CGFloat)width {
-    CGRect frame = self.frame;
-    frame.size.width = width;
-    self.frame = frame;
-}
-
-- (void)qmui_setHeight:(CGFloat)height {
-    CGRect frame = self.frame;
-    frame.size.height = height;
-    self.frame = frame;
-}
-
-- (void)qmui_setOriginX:(CGFloat)x y:(CGFloat)y {
-    CGRect frame = self.frame;
-    frame.origin.x = x;
-    frame.origin.y = y;
-    self.frame = frame;
-}
-
-- (void)qmui_setOriginX:(CGFloat)x {
-    CGRect frame = self.frame;
-    frame.origin.x = x;
-    self.frame = frame;
-}
-
-- (void)qmui_setOriginY:(CGFloat)y {
-    CGRect frame = self.frame;
-    frame.origin.y = y;
-    self.frame = frame;
-}
-
-- (CGFloat)qmui_minXWhenCenterInSuperview {
-    return CGFloatGetCenter(CGRectGetWidth(self.superview.bounds), CGRectGetWidth(self.frame));
-}
-
-- (CGFloat)qmui_minYWhenCenterInSuperview {
-    return CGFloatGetCenter(CGRectGetHeight(self.superview.bounds), CGRectGetHeight(self.frame));
 }
 
 - (void)qmui_removeAllSubviews {
@@ -177,9 +132,9 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(layoutSubviews), @selector(qmui_layoutSubviews));
-        ReplaceMethod([self class], @selector(addSubview:), @selector(qmui_addSubview:));
-        ReplaceMethod([self class], @selector(becomeFirstResponder), @selector(qmui_becomeFirstResponder));
+        ReplaceMethod([self class], @selector(layoutSubviews), @selector(qmui_debug_layoutSubviews));
+        ReplaceMethod([self class], @selector(addSubview:), @selector(qmui_debug_addSubview:));
+        ReplaceMethod([self class], @selector(becomeFirstResponder), @selector(qmui_debug_becomeFirstResponder));
     });
 }
 
@@ -213,8 +168,8 @@ static char kAssociatedObjectKey_hasDebugColor;
     return flag;
 }
 
-- (void)qmui_layoutSubviews {
-    [self qmui_layoutSubviews];
+- (void)qmui_debug_layoutSubviews {
+    [self qmui_debug_layoutSubviews];
     if (self.qmui_shouldShowDebugColor) {
         self.qmui_hasDebugColor = YES;
         self.backgroundColor = [self debugColor];
@@ -243,18 +198,18 @@ static char kAssociatedObjectKey_hasDebugColor;
     }
 }
 
-- (void)qmui_addSubview:(UIView *)view {
+- (void)qmui_debug_addSubview:(UIView *)view {
     if (view == self) {
         NSAssert(NO, @"把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]);
     }
-    [self qmui_addSubview:view];
+    [self qmui_debug_addSubview:view];
 }
 
-- (BOOL)qmui_becomeFirstResponder {
+- (BOOL)qmui_debug_becomeFirstResponder {
     if (IS_SIMULATOR && ![self isKindOfClass:[UIWindow class]] && self.window && !self.window.keyWindow) {
         [self QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
     }
-    return [self qmui_becomeFirstResponder];
+    return [self qmui_debug_becomeFirstResponder];
 }
 
 - (void)QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow {
@@ -410,6 +365,103 @@ static char kAssociatedObjectKey_borderLayer;
 
 - (CAShapeLayer *)qmui_borderLayer {
     return (CAShapeLayer *)objc_getAssociatedObject(self, &kAssociatedObjectKey_borderLayer);
+}
+
+@end
+
+
+@implementation UIView (QMUI_Layout)
+
+- (CGFloat)qmui_top {
+    return CGRectGetMinY(self.frame);
+}
+
+- (void)setQmui_top:(CGFloat)top {
+    self.frame = CGRectSetY(self.frame, top);
+}
+
+- (CGFloat)qmui_left {
+    return CGRectGetMinX(self.frame);
+}
+
+- (void)setQmui_left:(CGFloat)left {
+    self.frame = CGRectSetX(self.frame, left);
+}
+
+- (CGFloat)qmui_bottom {
+    return CGRectGetMaxY(self.frame);
+}
+
+- (void)setQmui_bottom:(CGFloat)bottom {
+    self.frame = CGRectSetY(self.frame, bottom - CGRectGetHeight(self.frame));
+}
+
+- (CGFloat)qmui_right {
+    return CGRectGetMaxX(self.frame);
+}
+
+- (void)setQmui_right:(CGFloat)right {
+    self.frame = CGRectSetX(self.frame, right - CGRectGetWidth(self.frame));
+}
+
+- (CGFloat)qmui_width {
+    return CGRectGetWidth(self.frame);
+}
+
+- (void)setQmui_width:(CGFloat)width {
+    self.frame = CGRectSetWidth(self.frame, width);
+}
+
+- (CGFloat)qmui_height {
+    return CGRectGetHeight(self.frame);
+}
+
+- (void)setQmui_height:(CGFloat)height {
+    self.frame = CGRectSetHeight(self.frame, height);
+}
+
+- (CGFloat)qmui_extendToTop {
+    return self.qmui_top;
+}
+
+- (void)setQmui_extendToTop:(CGFloat)qmui_extendToTop {
+    self.qmui_height = self.qmui_bottom - qmui_extendToTop;
+    self.qmui_top = qmui_extendToTop;
+}
+
+- (CGFloat)qmui_extendToLeft {
+    return self.qmui_left;
+}
+
+- (void)setQmui_extendToLeft:(CGFloat)qmui_extendToLeft {
+    self.qmui_width = self.qmui_right - qmui_extendToLeft;
+    self.qmui_left = qmui_extendToLeft;
+}
+
+- (CGFloat)qmui_extendToBottom {
+    return self.qmui_bottom;
+}
+
+- (void)setQmui_extendToBottom:(CGFloat)qmui_extendToBottom {
+    self.qmui_height = qmui_extendToBottom - self.qmui_top;
+    self.qmui_bottom = qmui_extendToBottom;
+}
+
+- (CGFloat)qmui_extendToRight {
+    return self.qmui_right;
+}
+
+- (void)setQmui_extendToRight:(CGFloat)qmui_extendToRight {
+    self.qmui_width = qmui_extendToRight - self.qmui_left;
+    self.qmui_right = qmui_extendToRight;
+}
+
+- (CGFloat)qmui_leftWhenCenterInSuperview {
+    return CGFloatGetCenter(CGRectGetWidth(self.superview.bounds), CGRectGetWidth(self.frame));
+}
+
+- (CGFloat)qmui_topWhenCenterInSuperview {
+    return CGFloatGetCenter(CGRectGetHeight(self.superview.bounds), CGRectGetHeight(self.frame));
 }
 
 @end
