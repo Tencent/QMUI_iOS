@@ -113,6 +113,9 @@
 // 是否Retina
 #define IS_RETINASCREEN ([[UIScreen mainScreen] scale] >= 2.0)
 
+// 是否放大模式
+#define IS_ZOOMEDMODE ([[UIScreen mainScreen] respondsToSelector:@selector(nativeScale)] ? ([UIScreen mainScreen].nativeScale > [[UIScreen mainScreen] scale]) : NO)
+
 
 #pragma mark - 变量-布局相关
 
@@ -135,13 +138,10 @@
 
 #define TabBarHeight 49
 
-// 除去navigationBar和toolbar后的中间内容区域
-#define NavigationContentHeight(viewController) (CGRectGetHeight(viewController.view.frame) - NavigationBarHeight - StatusBarHeight - (viewController.navigationController.toolbarHidden ? 0 : CGRectGetHeight(viewController.navigationController.toolbar.frame)))
-
-// 兼容controller.view的subView的top值在不同iOS版本下的差异
-#define NavigationContentTop (StatusBarHeight + NavigationBarHeight)// 这是动态获取的
-#define NavigationContentStaticTop (20 + NavigationBarHeight) // 不动态从状态栏获取高度，避免来电模式下多算了20pt（来电模式下系统会把UIViewController.view的frame往下移动20pt）
-#define NavigationContentOriginY(y) (NavigationContentTop + y)
+// 获取顶部导航栏占位高度，从而在布局 subviews 时可以当成 minY 参考
+// 注意，以下两个宏已废弃，请尽量使用 UIViewController (QMUI) qmui_navigationBarMaxYInViewCoordinator 代替
+#define NavigationContentTop (StatusBarHeight + NavigationBarHeight)
+#define NavigationContentStaticTop NavigationContentTop
 
 // 获取一个像素
 #define PixelOne [QMUIHelper pixelOne]
