@@ -190,6 +190,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         self.placeholderLabel.textColor = self.placeholderColor;
     }
     [self sendSubviewToBack:self.placeholderLabel];
+    [self setNeedsLayout];
 }
 
 - (void)setPlaceholderColor:(UIColor *)placeholderColor {
