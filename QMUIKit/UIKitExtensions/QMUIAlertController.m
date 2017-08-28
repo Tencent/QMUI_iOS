@@ -814,14 +814,16 @@ static QMUIAlertController *alertControllerAppearance;
     if (_needsUpdateMessage) {
         [self updateMessageLabel];
     }
+    
     [self initModalPresentationController];
-    if (animated) {
-        [self.modalPresentationViewController showWithAnimated:YES completion:NULL];
-    } else {
-        __weak __typeof(self)weakSelf = self;
-        if ([weakSelf.delegate respondsToSelector:@selector(willShowAlertController:)]) {
-            [weakSelf.delegate willShowAlertController:weakSelf];
-        }
+    
+    if ([self.delegate respondsToSelector:@selector(willShowAlertController:)]) {
+        [self.delegate willShowAlertController:self];
+    }
+    
+    __weak __typeof(self)weakSelf = self;
+    
+    [self.modalPresentationViewController showWithAnimated:animated completion:^(BOOL finished) {
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
             weakSelf.maskView.alpha = 1;
             weakSelf.isShowing = YES;
@@ -832,7 +834,7 @@ static QMUIAlertController *alertControllerAppearance;
         if ([weakSelf.delegate respondsToSelector:@selector(didShowAlertController:)]) {
             [weakSelf.delegate didShowAlertController:weakSelf];
         }
-    }
+    }];
     
     // 增加alertController计数
     alertControllerCount++;
@@ -842,15 +844,15 @@ static QMUIAlertController *alertControllerAppearance;
     if (!self.isShowing) {
         return;
     }
+    
+    if ([self.delegate respondsToSelector:@selector(willHideAlertController:)]) {
+        [self.delegate willHideAlertController:self];
+    }
+    
     __weak __typeof(self)weakSelf = self;
-    if (animated) {
-        [self.modalPresentationViewController hideWithAnimated:YES completion:^(BOOL finished) {
-            weakSelf.modalPresentationViewController = nil;
-        }];
-    } else {
-        if ([weakSelf.delegate respondsToSelector:@selector(willHideAlertController:)]) {
-            [weakSelf.delegate willHideAlertController:weakSelf];
-        }
+    
+    [self.modalPresentationViewController hideWithAnimated:animated completion:^(BOOL finished) {
+        weakSelf.modalPresentationViewController = nil;
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
             weakSelf.isShowing = NO;
             weakSelf.maskView.alpha = 0;
@@ -863,7 +865,7 @@ static QMUIAlertController *alertControllerAppearance;
         if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
             [weakSelf.delegate didHideAlertController:weakSelf];
         }
-    }
+    }];
     
     // 减少alertController计数
     alertControllerCount--;
