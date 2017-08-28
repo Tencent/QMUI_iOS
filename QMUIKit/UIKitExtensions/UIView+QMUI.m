@@ -213,8 +213,7 @@ static char kAssociatedObjectKey_hasDebugColor;
 }
 
 - (void)QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow {
-    NSLog(@"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类错误", NSStringFromClass(self.class), NSStringFromSelector(_cmd));
-    NSLog(@"%@", [NSThread callStackSymbols]);
+    QMUILog(@"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，可能导致界面显示异常，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
 }
 
 @end
@@ -355,7 +354,7 @@ static char kAssociatedObjectKey_dashPattern;
 }
 
 - (NSArray *)qmui_dashPattern {
-    return (NSArray *)objc_getAssociatedObject(self, &kAssociatedObjectKey_dashPattern);
+    return (NSArray<NSNumber *> *)objc_getAssociatedObject(self, &kAssociatedObjectKey_dashPattern);
 }
 
 static char kAssociatedObjectKey_borderLayer;

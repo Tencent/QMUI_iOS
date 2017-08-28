@@ -80,6 +80,40 @@
     self.actions = actions;
 }
 
++ (CAShapeLayer *)qmui_seperatorDashLayerWithLineLength:(NSInteger)lineLength
+                                            lineSpacing:(NSInteger)lineSpacing
+                                              lineWidth:(CGFloat)lineWidth
+                                              lineColor:(CGColorRef)lineColor
+                                           isHorizontal:(BOOL)isHorizontal {
+    CAShapeLayer *layer = [CAShapeLayer layer];
+    layer.fillColor = UIColorClear.CGColor;
+    layer.strokeColor = lineColor;
+    layer.lineWidth = lineWidth;
+    layer.lineDashPattern = [NSArray arrayWithObjects:[NSNumber numberWithInteger:lineLength], [NSNumber numberWithInteger:lineSpacing], nil];
+    layer.masksToBounds = YES;
+    
+    CGMutablePathRef path = CGPathCreateMutable();
+    if (isHorizontal) {
+        CGPathMoveToPoint(path, NULL, 0, lineWidth / 2);
+        CGPathAddLineToPoint(path, NULL, SCREEN_WIDTH, lineWidth / 2);
+    } else {
+        CGPathMoveToPoint(path, NULL, lineWidth / 2, 0);
+        CGPathAddLineToPoint(path, NULL, lineWidth / 2, SCREEN_HEIGHT);
+    }
+    layer.path = path;
+    CGPathRelease(path);
+    
+    return layer;
+}
++ (CAShapeLayer *)qmui_seperatorDashLayerInHorizontal {
+    CAShapeLayer *layer = [CAShapeLayer qmui_seperatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:YES];
+    return layer;
+}
++ (CAShapeLayer *)qmui_seperatorDashLayerInVertical {
+    CAShapeLayer *layer = [CAShapeLayer qmui_seperatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:NO];
+    return layer;
+}
+
 + (CALayer *)qmui_separatorLayer {
     CALayer *layer = [CALayer layer];
     [layer qmui_removeDefaultAnimations];

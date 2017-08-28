@@ -75,8 +75,9 @@ typedef NS_OPTIONS(NSUInteger, QMUIBorderViewPosition) {
 @property(nonatomic, strong) IBInspectable UIColor *qmui_borderColor;
 
 /// 虚线 : dashPhase默认是0，且当dashPattern设置了才有效
+/// qmui_dashPhase 表示虚线起始的偏移，qmui_dashPattern 可以传一个数组，表示“lineWidth，lineSpacing，lineWidth，lineSpacing...”的顺序，至少传 2 个。
 @property(nonatomic, assign) CGFloat qmui_dashPhase;
-@property(nonatomic, copy) NSArray <NSNumber *> *qmui_dashPattern;
+@property(nonatomic, copy)   NSArray <NSNumber *> *qmui_dashPattern;
 
 /// border的layer
 @property(nonatomic, strong, readonly) CAShapeLayer *qmui_borderLayer;
