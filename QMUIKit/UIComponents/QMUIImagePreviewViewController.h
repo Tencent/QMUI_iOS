@@ -36,8 +36,14 @@
 /**
  *  从指定 rect 的位置以动画的形式进入预览
  *  @param rect 在当前屏幕坐标系里的 rect，注意传进来的 rect 要做坐标系转换，例如：[view.superview convertRect:view.frame toView:nil]
+ *  @param cornerRadius 做打开动画时是否要从某个圆角渐变到 0
  */
-- (void)startPreviewFromRectInScreen:(CGRect)rect;
+- (void)startPreviewFromRectInScreen:(CGRect)rect cornerRadius:(CGFloat)cornerRadius;
+
+/**
+ *  从指定 rect 的位置以动画的形式进入预览，不考虑圆角
+ *  @param rect 在当前屏幕坐标系里的 rect，注意传进来的 rect 要做坐标系转换，例如：[view.superview convertRect:view.frame toView:nil]
+ */- (void)startPreviewFromRectInScreen:(CGRect)rect;
 
 /**
  *  将当前图片缩放到指定 rect 的位置，然后退出预览

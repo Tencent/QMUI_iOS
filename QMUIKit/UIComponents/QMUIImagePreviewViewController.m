@@ -37,6 +37,7 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 @property(nonatomic, strong) UIWindow *previewWindow;
 @property(nonatomic, assign) BOOL shouldStartWithFading;
 @property(nonatomic, assign) CGRect previewFromRect;
+@property(nonatomic, assign) CGFloat transitionCornerRadius;
 @property(nonatomic, strong) UIImageView *transitionImageView;
 @property(nonatomic, strong) UIColor *backgroundColorTemporarily;
 @end
@@ -121,10 +122,13 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
         self.transitionImageView.contentMode = zoomImageView.imageView.contentMode;
         self.transitionImageView.image = zoomImageView.imageView.image;
         self.transitionImageView.frame = transitionFromRect;
+        self.transitionImageView.clipsToBounds = YES;
+        self.transitionImageView.layer.cornerRadius = self.transitionCornerRadius;
         [self.view addSubview:self.transitionImageView];
         
         [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.transitionImageView.frame = transitionToRect;
+            self.transitionImageView.layer.cornerRadius = 0;
             self.view.backgroundColor = self.backgroundColorTemporarily;
         } completion:^(BOOL finished) {
             [self.transitionImageView removeFromSuperview];
@@ -138,20 +142,28 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 
 @implementation QMUIImagePreviewViewController (UIWindow)
 
-- (void)startPreviewFromRectInScreen:(CGRect)rect {
+- (void)startPreviewFromRectInScreen:(CGRect)rect cornerRadius:(CGFloat)cornerRadius {
+    self.transitionCornerRadius = cornerRadius;
     [self startPreviewWithFadingAnimation:NO orFromRect:rect];
+}
+
+- (void)startPreviewFromRectInScreen:(CGRect)rect {
+    [self startPreviewFromRectInScreen:rect cornerRadius:0];
 }
 
 - (void)endPreviewToRectInScreen:(CGRect)rect {
     [self endPreviewWithFadingAnimation:NO orToRect:rect];
+    self.transitionCornerRadius = 0;
 }
 
 - (void)startPreviewFading {
+    self.transitionCornerRadius = 0;
     [self startPreviewWithFadingAnimation:YES orFromRect:CGRectZero];
 }
 
 - (void)endPreviewFading {
     [self endPreviewWithFadingAnimation:YES orToRect:CGRectZero];
+    self.transitionCornerRadius = 0;
 }
 
 #pragma mark - 动画
@@ -221,6 +233,7 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
     
     [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
         self.transitionImageView.frame = transitionToRect;
+        self.transitionImageView.layer.cornerRadius = self.transitionCornerRadius;
         self.view.backgroundColor = UIColorClear;
     } completion:^(BOOL finished) {
         [self removePreviewWindow];
