@@ -13,6 +13,11 @@
 #import "QMUICore.h"
 #import "NSObject+QMUI.h"
 
+@interface UIViewController ()
+
+@property(nonatomic, assign) BOOL qmui_isViewDidAppear;
+@end
+
 @implementation UIViewController (QMUI)
 
 void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
@@ -249,11 +254,6 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     return result;
 }
 
-@end
-
-@interface UIViewController ()
-
-@property(nonatomic, assign) BOOL qmui_isViewDidAppear;
 @end
 
 @implementation UIViewController (Data)

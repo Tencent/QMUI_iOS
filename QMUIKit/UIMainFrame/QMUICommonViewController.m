@@ -11,9 +11,22 @@
 #import "QMUINavigationTitleView.h"
 #import "QMUIEmptyView.h"
 #import "NSString+QMUI.h"
+#import "NSObject+QMUI.h"
 #import "UIViewController+QMUI.h"
+#import "UIGestureRecognizer+QMUI.h"
 
-@interface QMUICommonViewController ()
+@interface QMUIViewControllerHideKeyboardDelegateObject : NSObject <UIGestureRecognizerDelegate, QMUIKeyboardManagerDelegate>
+
+@property(nonatomic, weak) QMUICommonViewController *viewController;
+
+- (instancetype)initWithViewController:(QMUICommonViewController *)viewController;
+@end
+
+@interface QMUICommonViewController () {
+    UITapGestureRecognizer *_hideKeyboardTapGestureRecognizer;
+    QMUIKeyboardManager *_hideKeyboardManager;
+    QMUIViewControllerHideKeyboardDelegateObject *_hideKeyboadDelegateObject;
+}
 
 @property(nonatomic,strong,readwrite) QMUINavigationTitleView *titleView;
 @end
@@ -64,6 +77,18 @@
             self.view.backgroundColor = backgroundColor;
         }
     }
+    
+    // 点击空白区域降下键盘 QMUICommonViewController (QMUIKeyboard)
+    
+    _hideKeyboadDelegateObject = [[QMUIViewControllerHideKeyboardDelegateObject alloc] initWithViewController:self];
+    
+    _hideKeyboardTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:nil action:NULL];
+    self.hideKeyboardTapGestureRecognizer.delegate = _hideKeyboadDelegateObject;
+    self.hideKeyboardTapGestureRecognizer.enabled = NO;
+    [self.view addGestureRecognizer:self.hideKeyboardTapGestureRecognizer];
+    
+    _hideKeyboardManager = [[QMUIKeyboardManager alloc] initWithDelegate:_hideKeyboadDelegateObject];
+    
     [self initSubviews];
 }
 
@@ -167,6 +192,8 @@
     return self.supportedOrientationMask;
 }
 
+#pragma mark - 键盘交互
+
 #pragma mark - <QMUINavigationControllerDelegate>
 
 - (BOOL)shouldSetStatusBarStyleLight {
@@ -210,6 +237,70 @@
 
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification {
     // 子类重写
+}
+
+@end
+
+@implementation QMUICommonViewController (QMUIKeyboard)
+
+- (UITapGestureRecognizer *)hideKeyboardTapGestureRecognizer {
+    return _hideKeyboardTapGestureRecognizer;
+}
+
+- (QMUIKeyboardManager *)hideKeyboardManager {
+    return _hideKeyboardManager;
+}
+
+- (BOOL)shouldHideKeyboardWhenTouchInView:(UIView *)view {
+    // 子类重写，默认返回 NO，也即不主动干预键盘的状态
+    return NO;
+}
+
+@end
+
+@implementation QMUIViewControllerHideKeyboardDelegateObject
+
+- (instancetype)initWithViewController:(QMUICommonViewController *)viewController {
+    if (self = [super init]) {
+        self.viewController = viewController;
+    }
+    return self;
+}
+
+#pragma mark - <UIGestureRecognizerDelegate>
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer != self.viewController.hideKeyboardTapGestureRecognizer) {
+        return YES;
+    }
+    
+    if (![QMUIKeyboardManager isKeyboardVisible]) {
+        return NO;
+    }
+    
+    UIView *targetView = gestureRecognizer.qmui_targetView;
+    
+    // 点击了本身就是输入框的 view，就不要降下键盘了
+    if ([targetView isKindOfClass:[UITextField class]] || [targetView isKindOfClass:[UITextView class]]) {
+        return NO;
+    }
+    
+    if ([self.viewController shouldHideKeyboardWhenTouchInView:targetView]) {
+        [self.viewController.view endEditing:YES];
+    }
+    return NO;
+}
+
+#pragma mark - <QMUIKeyboardManagerDelegate>
+
+- (void)keyboardWillShowWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
+    if (![self.viewController qmui_isViewLoadedAndVisible]) return;
+    BOOL hasOverrideMethod = [self.viewController qmui_hasOverrideMethod:@selector(shouldHideKeyboardWhenTouchInView:) ofSuperclass:[QMUICommonViewController class]];
+    self.viewController.hideKeyboardTapGestureRecognizer.enabled = hasOverrideMethod;
+}
+
+- (void)keyboardWillHideWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
+    self.viewController.hideKeyboardTapGestureRecognizer.enabled = NO;
 }
 
 @end

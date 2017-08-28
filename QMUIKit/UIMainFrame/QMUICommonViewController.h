@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "QMUINavigationController.h"
+#import "QMUIKeyboardManager.h"
 
 @class QMUINavigationTitleView;
 @class QMUIEmptyView;
@@ -150,5 +151,27 @@
  *  @param notification test
  */
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification;
+
+@end
+
+/**
+ *  为了方便实现“点击空白区域降下键盘”的需求，QMUICommonViewController 内部集成一个 tap 手势对象并添加到 self.view 上，而业务只需要通过重写 -shouldHideKeyboardWhenTouchInView: 方法并根据当前被点击的 view 返回一个 BOOL 来控制键盘的显隐即可。
+ *  @note 为了避免不必要的事件拦截，集成的手势 hideKeyboardTapGestureRecognizer：
+ *  1. 默认的 enabled = NO。
+ *  2. 如果当前 viewController 或其父类（非 QMUICommonViewController 那个层级的父类）没重写 -shouldHideKeyboardWhenTouchInView:，则永远 enabled = NO。
+ *  3. 在键盘升起时，并且当前 viewController 重写了 -shouldHideKeyboardWhenTouchInView: 且处于可视状态下，此时手势的 enabled 才会被修改为 YES，并且在键盘消失时置为 NO。
+ */
+@interface QMUICommonViewController (QMUIKeyboard)
+
+/// 在 viewDidLoad 内初始化，并且 gestureRecognizerShouldBegin: 必定返回 NO。
+@property(nonatomic, strong, readonly) UITapGestureRecognizer *hideKeyboardTapGestureRecognizer;
+@property(nonatomic, strong, readonly) QMUIKeyboardManager *hideKeyboardManager;
+
+/**
+ *  当用户点击界面上某个 view 时，如果此时键盘处于升起状态，则可通过重写这个方法并返回一个 YES 来达到“点击空白区域自动降下键盘”的需求。默认返回 NO，也即不处理键盘。
+ *  @warning 注意如果被点击的 view 本身消耗了事件（iOS 11 下测试得到这种类型的所有系统的 view 仅有 UIButton 和 UISwitch），则这个方法并不会被触发。
+ *  @warning 有可能参数传进去的 view 是某个 subview 的 subview，所以建议用 isDescendantOfView: 来判断是否点到了某个目标 subview
+ */
+- (BOOL) :(UIView *)view;
 
 @end

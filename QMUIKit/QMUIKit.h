@@ -55,6 +55,7 @@
 #import "UINavigationController+QMUI.h"
 #import "UINavigationBar+Transition.h"
 #import "UINavigationController+NavigationBarTransition.h"
+#import "UIGestureRecognizer+QMUI.h"
 
 /// UIComponents
 #import "QMUIKeyboardManager.h"

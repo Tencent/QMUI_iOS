@@ -254,6 +254,9 @@
 		CDD495171E60151500829B7D /* QMUIPopupMenuView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD495151E60151500829B7D /* QMUIPopupMenuView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDD495181E60151500829B7D /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD495161E60151500829B7D /* QMUIPopupMenuView.m */; };
 		CDD495191E60151500829B7D /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD495161E60151500829B7D /* QMUIPopupMenuView.m */; };
+		CDEA6D081F4B07E700F627AF /* UIGestureRecognizer+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDEA6D061F4B07E700F627AF /* UIGestureRecognizer+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CDEA6D091F4B07E700F627AF /* UIGestureRecognizer+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDEA6D071F4B07E700F627AF /* UIGestureRecognizer+QMUI.m */; };
+		CDEA6D0A1F4B07E700F627AF /* UIGestureRecognizer+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDEA6D071F4B07E700F627AF /* UIGestureRecognizer+QMUI.m */; };
 		FE1FBCA91E8BA61300C6C01A /* UITextField+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		FE1FBCAA1E8BA61300C6C01A /* UITextField+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */; };
 		FE1FBCAC1E8BA73000C6C01A /* UITextField+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */; };
@@ -464,6 +467,8 @@
 		CDBCD53F1DFAA286009EFEF5 /* QMUITableViewProtocols.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUITableViewProtocols.h; sourceTree = "<group>"; };
 		CDD495151E60151500829B7D /* QMUIPopupMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuView.h; sourceTree = "<group>"; };
 		CDD495161E60151500829B7D /* QMUIPopupMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupMenuView.m; sourceTree = "<group>"; };
+		CDEA6D061F4B07E700F627AF /* UIGestureRecognizer+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+QMUI.h"; sourceTree = "<group>"; };
+		CDEA6D071F4B07E700F627AF /* UIGestureRecognizer+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIGestureRecognizer+QMUI.m"; sourceTree = "<group>"; };
 		FE0AFAD11D82B9D8000D21D9 /* QMUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = QMUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITextField+QMUI.h"; sourceTree = "<group>"; };
 		FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITextField+QMUI.m"; sourceTree = "<group>"; };
@@ -741,6 +746,8 @@
 				CDB8CAA51DCC870700769DF0 /* UIControl+QMUI.m */,
 				CDB8CAA61DCC870700769DF0 /* UIFont+QMUI.h */,
 				CDB8CAA71DCC870700769DF0 /* UIFont+QMUI.m */,
+				CDEA6D061F4B07E700F627AF /* UIGestureRecognizer+QMUI.h */,
+				CDEA6D071F4B07E700F627AF /* UIGestureRecognizer+QMUI.m */,
 				CDB8CAA81DCC870700769DF0 /* UIImage+QMUI.h */,
 				CDB8CAA91DCC870700769DF0 /* UIImage+QMUI.m */,
 				CDB8CAAA1DCC870700769DF0 /* UIImageView+QMUI.h */,
@@ -808,6 +815,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDEA6D081F4B07E700F627AF /* UIGestureRecognizer+QMUI.h in Headers */,
 				CD6CC6431EF9123000602EDD /* UITableView+QMUIStaticCell.h in Headers */,
 				CD6CC63E1EF911E000602EDD /* QMUIStaticTableViewCellDataSource.h in Headers */,
 				CD6CC63B1EF911E000602EDD /* QMUIStaticTableViewCellData.h in Headers */,
@@ -1030,6 +1038,7 @@
 				CDB8CBD31DCC870800769DF0 /* UITabBarItem+QMUI.m in Sources */,
 				CDB8CAE71DCC870700769DF0 /* QMUIAsset.m in Sources */,
 				CDB8CB1B1DCC870700769DF0 /* QMUIMoreOperationController.m in Sources */,
+				CDEA6D091F4B07E700F627AF /* UIGestureRecognizer+QMUI.m in Sources */,
 				CDB8CBBF1DCC870800769DF0 /* UILabel+QMUI.m in Sources */,
 				CDB8CB2B1DCC870700769DF0 /* QMUIPopupContainerView.m in Sources */,
 				CDB8CBB31DCC870800769DF0 /* UIFont+QMUI.m in Sources */,
@@ -1120,6 +1129,7 @@
 				CDB8CB1C1DCC870700769DF0 /* QMUIMoreOperationController.m in Sources */,
 				16F6B6501DFD9ADD00E58171 /* QMUIToastContentView.m in Sources */,
 				CDB8CBC01DCC870800769DF0 /* UILabel+QMUI.m in Sources */,
+				CDEA6D0A1F4B07E700F627AF /* UIGestureRecognizer+QMUI.m in Sources */,
 				CDB8CB2C1DCC870700769DF0 /* QMUIPopupContainerView.m in Sources */,
 				CDB8CBB41DCC870800769DF0 /* UIFont+QMUI.m in Sources */,
 				CDB8CB501DCC870700769DF0 /* QMUIZoomImageView.m in Sources */,
