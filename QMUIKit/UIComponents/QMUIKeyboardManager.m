@@ -244,6 +244,8 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 @property(nonatomic, strong) QMUIKeyboardUserInfo *keyboardMoveUserInfo;
 @property(nonatomic, assign) CGRect keyboardMoveBeginRect;
 
+@property(nonatomic, assign) BOOL debug;
+
 @end
 
 static UIResponder *kCurrentResponder = nil;
@@ -343,8 +345,10 @@ static UIResponder *kCurrentResponder = nil;
 
 - (void)keyboardWillShowNotification:(NSNotification *)notification {
     
-    NSLog(@"keyboardWillShowNotification - %@", self);
-    NSLog(@"\n");
+    if (self.debug) {
+        NSLog(@"keyboardWillShowNotification - %@", self);
+        NSLog(@"\n");
+    }
     
     if (![self shouldReceiveShowNotification]) {
         return;
@@ -366,8 +370,10 @@ static UIResponder *kCurrentResponder = nil;
 
 - (void)keyboardDidShowNotification:(NSNotification *)notification {
     
-    NSLog(@"keyboardDidShowNotification - %@", self);
-    NSLog(@"\n");
+    if (self.debug) {
+        NSLog(@"keyboardDidShowNotification - %@", self);
+        NSLog(@"\n");
+    }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     userInfo.targetResponder = kCurrentResponder ?: nil;
@@ -378,7 +384,7 @@ static UIResponder *kCurrentResponder = nil;
     if (shouldReceiveDidShowNotification) {
         
         if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardDidShowWithUserInfo:)]) {
-            [self.delegate keyboardDidShowWithUserInfo:nil];
+            [self.delegate keyboardDidShowWithUserInfo:userInfo];
         }
         
         // 额外处理iPad浮动键盘
@@ -391,8 +397,10 @@ static UIResponder *kCurrentResponder = nil;
 
 - (void)keyboardWillHideNotification:(NSNotification *)notification {
     
-    NSLog(@"keyboardWillHideNotification - %@", self);
-    NSLog(@"\n");
+    if (self.debug) {
+        NSLog(@"keyboardWillHideNotification - %@", self);
+        NSLog(@"\n");
+    }
     
     if (![self shouldReceiveHideNotification]) {
         return;
@@ -414,8 +422,10 @@ static UIResponder *kCurrentResponder = nil;
 
 - (void)keyboardDidHideNotification:(NSNotification *)notification {
     
-    NSLog(@"keyboardDidHideNotification - %@", self);
-    NSLog(@"\n");
+    if (self.debug) {
+        NSLog(@"keyboardDidHideNotification - %@", self);
+        NSLog(@"\n");
+    }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     userInfo.targetResponder = kCurrentResponder ?: nil;
@@ -443,8 +453,10 @@ static UIResponder *kCurrentResponder = nil;
 
 - (void)keyboardWillChangeFrameNotification:(NSNotification *)notification {
     
-    NSLog(@"keyboardWillChangeFrameNotification - %@", self);
-    NSLog(@"\n");
+    if (self.debug) {
+        NSLog(@"keyboardWillChangeFrameNotification - %@", self);
+        NSLog(@"\n");
+    }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     
@@ -469,8 +481,10 @@ static UIResponder *kCurrentResponder = nil;
 
 - (void)keyboardDidChangeFrameNotification:(NSNotification *)notification {
     
-    NSLog(@"keyboardDidChangeFrameNotification - %@", self);
-    NSLog(@"\n");
+    if (self.debug) {
+        NSLog(@"keyboardDidChangeFrameNotification - %@", self);
+        NSLog(@"\n");
+    }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     
@@ -579,8 +593,10 @@ static UIResponder *kCurrentResponder = nil;
         keyboardMoveUserInfo.beginFrame = self.keyboardMoveBeginRect;
         keyboardMoveUserInfo.endFrame = endFrame;
         
-        NSLog(@"keyboardDidMoveNotification - %@", self);
-        NSLog(@"\n");
+        if (self.debug) {
+            NSLog(@"keyboardDidMoveNotification - %@", self);
+            NSLog(@"\n");
+        }
         
         [self.delegate keyboardWillChangeFrameWithUserInfo:keyboardMoveUserInfo];
         
