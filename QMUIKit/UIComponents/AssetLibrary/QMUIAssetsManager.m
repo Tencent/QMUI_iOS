@@ -333,6 +333,19 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
             }
         }
     }
+    
+    // 获取从 macOS 设备同步过来的相册，同步过来的相册不允许删除照片，因此不会为空
+    PHFetchResult *macCollections = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
+    // 循环从 macOS 设备同步过来的相册
+    for (NSInteger i = 0; i < macCollections.count; i++) {
+        // 获取一个相册
+        PHCollection *collection = macCollections[i];
+        if ([collection isKindOfClass:[PHAssetCollection class]]) {
+            PHAssetCollection *assetCollection = (PHAssetCollection *)collection;
+            [tempAlbumsArray addObject:assetCollection];
+        }
+    }
+    
     NSArray *resultAlbumsArray = [tempAlbumsArray copy];
     return resultAlbumsArray;
 }
