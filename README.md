@@ -30,6 +30,7 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 
 ## 支持 iOS 版本
 QMUI iOS 2.0 支持 iOS 8+。
+
 QMUI iOS 1.7.6 及以前版本支持 iOS 7+。
 
 ## 使用方法
