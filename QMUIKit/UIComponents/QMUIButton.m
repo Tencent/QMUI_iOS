@@ -8,8 +8,6 @@
 
 #import "QMUIButton.h"
 #import "QMUICore.h"
-#import "QMUICommonViewController.h"
-#import "QMUINavigationController.h"
 #import "UIImage+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "CALayer+QMUI.h"

@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+#define UIColorMakeWithHex(hex) [UIColor qmui_colorWithHexString:hex]
+
 @interface UIColor (QMUI)
 
 /**

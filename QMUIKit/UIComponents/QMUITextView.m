@@ -256,7 +256,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         CGFloat limitWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentInset) - UIEdgeInsetsGetHorizontalValue(labelMargins);
         CGFloat limitHeight = CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.contentInset) - UIEdgeInsetsGetVerticalValue(labelMargins);
         CGSize labelSize = [self.placeholderLabel sizeThatFits:CGSizeMake(limitWidth, limitHeight)];
-        labelSize.height = fminf(limitHeight, labelSize.height);
+        labelSize.height = fmin(limitHeight, labelSize.height);
         self.placeholderLabel.frame = CGRectFlatMake(labelMargins.left, labelMargins.top, limitWidth, labelSize.height);
     }
 }

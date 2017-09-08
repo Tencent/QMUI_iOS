@@ -34,20 +34,31 @@
         self.lineBreakMode = NSLineBreakByClipping;
         self.clipsToBounds = YES;// 显示非英文字符时，滚动的时候字符会稍微露出两端，所以这里直接裁剪掉
         
-        self.speed = .5;
-        self.pauseDurationWhenMoveToEdge = 2.5;
-        self.spacingBetweenHeadToTail = 40;
-        self.automaticallyValidateVisibleFrame = YES;
-        self.fadeWidth = 20;
-        self.fadeStartColor = UIColorMakeWithRGBA(255, 255, 255, 1);
-        self.fadeEndColor = UIColorMakeWithRGBA(255, 255, 255, 0);
-        self.shouldFadeAtEdge = YES;
-        self.textStartAfterFade = NO;
-        
-        self.isFirstDisplay = YES;
-        self.textRepeatCount = 2;
+        [self didInitialized];
     }
     return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialized];
+    }
+    return self;
+}
+
+- (void)didInitialized {
+    self.speed = .5;
+    self.pauseDurationWhenMoveToEdge = 2.5;
+    self.spacingBetweenHeadToTail = 40;
+    self.automaticallyValidateVisibleFrame = YES;
+    self.fadeWidth = 20;
+    self.fadeStartColor = UIColorMakeWithRGBA(255, 255, 255, 1);
+    self.fadeEndColor = UIColorMakeWithRGBA(255, 255, 255, 0);
+    self.shouldFadeAtEdge = YES;
+    self.textStartAfterFade = NO;
+    
+    self.isFirstDisplay = YES;
+    self.textRepeatCount = 2;
 }
 
 - (void)dealloc {

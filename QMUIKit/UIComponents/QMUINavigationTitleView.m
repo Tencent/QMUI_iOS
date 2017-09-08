@@ -8,6 +8,7 @@
 
 #import "QMUINavigationTitleView.h"
 #import "QMUICore.h"
+#import "UIFont+QMUI.h"
 #import "UIImage+QMUI.h"
 #import "UILabel+QMUI.h"
 #import "UIActivityIndicatorView+QMUI.h"
@@ -38,7 +39,7 @@
         if (CGRectGetHeight(titleView.bounds) != titleViewSize.height) {
 //            NSLog(@"【%@】修正布局前\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
             CGFloat titleViewMinY = flat(CGRectGetMinY(titleView.frame) - ((titleViewSize.height - CGRectGetHeight(titleView.bounds)) / 2.0));// 系统对titleView的y值布局是flat，注意，不能改，改了要测试
-            titleView.frame = CGRectMake(CGRectGetMinX(titleView.frame), titleViewMinY, fminf(titleViewMaximumWidth, titleViewSize.width), titleViewSize.height);
+            titleView.frame = CGRectMake(CGRectGetMinX(titleView.frame), titleViewMinY, fmin(titleViewMaximumWidth, titleViewSize.width), titleViewSize.height);
 //            NSLog(@"【%@】修正布局后\ntitleView = %@", NSStringFromClass(titleView.class), titleView);
         }
         
@@ -205,7 +206,7 @@
         
         CGFloat secondLineWidth = self.subtitleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
         
-        size.width = fmaxf(firstLineWidth, secondLineWidth);
+        size.width = fmax(firstLineWidth, secondLineWidth);
         
         size.height = self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsetsIfShowingTitleLabel) + self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
         return CGSizeFlatted(size);
@@ -213,9 +214,9 @@
         CGSize size = CGSizeZero;
         size.width = self.titleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.titleEdgeInsetsIfShowingTitleLabel) + self.subtitleLabelSize.width + UIEdgeInsetsGetHorizontalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel);
         size.width += [self loadingViewSpacingSizeIfNeedsPlaceholder].width + [self accessorySpacingSizeIfNeedesPlaceholder].width;
-        size.height = fmaxf(self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsetsIfShowingTitleLabel), self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel));
-        size.height = fmaxf(size.height, [self loadingViewSpacingSizeIfNeedsPlaceholder].height);
-        size.height = fmaxf(size.height, [self accessorySpacingSizeIfNeedesPlaceholder].height);
+        size.height = fmax(self.titleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.titleEdgeInsetsIfShowingTitleLabel), self.subtitleLabelSize.height + UIEdgeInsetsGetVerticalValue(self.subtitleEdgeInsetsIfShowingSubtitleLabel));
+        size.height = fmax(size.height, [self loadingViewSpacingSizeIfNeedsPlaceholder].height);
+        size.height = fmax(size.height, [self accessorySpacingSizeIfNeedesPlaceholder].height);
         return CGSizeFlatted(size);
     }
 }
@@ -246,8 +247,8 @@
     
     // 实际内容的size，小于等于maxSize
     CGSize contentSize = [self contentSize];
-    contentSize.width = fminf(maxSize.width, contentSize.width);
-    contentSize.height = fminf(maxSize.height, contentSize.height);
+    contentSize.width = fmin(maxSize.width, contentSize.width);
+    contentSize.height = fmin(maxSize.height, contentSize.height);
     
     // 计算左右两边的偏移值
     CGFloat offsetLeft = 0;

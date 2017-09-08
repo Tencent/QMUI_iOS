@@ -63,7 +63,7 @@
 @property(nonatomic, copy) void (^didSelectEmotionBlock)(NSInteger index, QMUIEmotion *emotion);
 
 /// 删除按钮的点击事件回调
-@property(nonatomic, copy) void (^didSelectDeleteButtonBlock)();
+@property(nonatomic, copy) void (^didSelectDeleteButtonBlock)(void);
 
 /// 用于展示表情面板的横向滚动collectionView，布局撑满整个控件
 @property(nonatomic, strong, readonly) UICollectionView *collectionView;

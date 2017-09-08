@@ -359,7 +359,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     NSInteger maxItemCountInScrollView = MAX(self.importantShowingItems.count, self.normalShowingItems.count);
     NSInteger itemCountForTotallyVisibleItem = isLargeSreen ? 4 : 3;
     
-    CGFloat itemWidth = flat((contentWidth - fmaxf(UIEdgeInsetsGetHorizontalValue(importantScrollViewInsets), UIEdgeInsetsGetHorizontalValue(normaltScrollViewInsets))) / itemCountForTotallyVisibleItem) - (maxItemCountInScrollView > itemCountForTotallyVisibleItem ? 11 : 0);
+    CGFloat itemWidth = flat((contentWidth - fmax(UIEdgeInsetsGetHorizontalValue(importantScrollViewInsets), UIEdgeInsetsGetHorizontalValue(normaltScrollViewInsets))) / itemCountForTotallyVisibleItem) - (maxItemCountInScrollView > itemCountForTotallyVisibleItem ? 11 : 0);
     
     CGFloat itemMaxHeight = 0;
     CGFloat itemMaxX = 0;

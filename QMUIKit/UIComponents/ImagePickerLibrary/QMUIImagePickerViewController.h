@@ -6,8 +6,8 @@
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
-#import "QMUICommonViewController.h"
 #import <UIKit/UIKit.h>
+#import "QMUICommonViewController.h"
 #import "QMUIImagePickerPreviewViewController.h"
 #import "QMUIAsset.h"
 #import "QMUIAssetsGroup.h"

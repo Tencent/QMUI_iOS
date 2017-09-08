@@ -432,3 +432,115 @@ BeginIgnoreDeprecatedWarning
 @end
 
 EndIgnoreDeprecatedWarning
+
+@implementation QMUICommonTableViewController (Search)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ReplaceMethod(self.class, @selector(initSubviews), @selector(search_initSubviews));
+        ReplaceMethod(self.class, @selector(viewWillAppear:), @selector(search_viewWillAppear:));
+        ReplaceMethod(self.class, @selector(showEmptyView), @selector(search_showEmptyView));
+        ReplaceMethod(self.class, @selector(hideEmptyView), @selector(search_hideEmptyView));
+    });
+}
+
+- (void)search_initSubviews {
+    [self search_initSubviews];
+    [self initSearchController];
+}
+
+- (void)search_viewWillAppear:(BOOL)animated {
+    [self search_viewWillAppear:animated];
+    [self.searchController.tableView qmui_clearsSelection];
+}
+
+- (void)search_showEmptyView {
+    [self search_showEmptyView];
+    if ([self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == self.searchBar) {
+        self.tableView.tableHeaderView = nil;
+    }
+}
+
+- (void)search_hideEmptyView {
+    [self search_hideEmptyView];
+    if (self.shouldShowSearchBar && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
+        [self initSearchController];
+        // 隐藏 emptyView 后重新设置 tableHeaderView，会导致原先 shouldHideTableHeaderViewInitial 隐藏头部的操作被重置，所以下面的 force 参数要传 YES
+        // https://github.com/QMUI/QMUI_iOS/issues/128
+        self.tableView.tableHeaderView = self.searchBar;
+        [self hideTableHeaderViewInitialIfCanWithAnimated:NO force:YES];
+    }
+}
+
+static char kAssociatedObjectKey_shouldShowSearchBar;
+- (void)setShouldShowSearchBar:(BOOL)shouldShowSearchBar {
+    BOOL isValueChanged = self.shouldShowSearchBar != shouldShowSearchBar;
+    if (!isValueChanged) {
+        return;
+    }
+    
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_shouldShowSearchBar, @(shouldShowSearchBar), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    if (shouldShowSearchBar) {
+        [self initSearchController];
+    } else {
+        if (self.searchBar) {
+            if (self.tableView.tableHeaderView == self.searchBar) {
+                self.tableView.tableHeaderView = nil;
+            }
+            [self.searchBar removeFromSuperview];
+            self.searchBar = nil;
+        }
+        if (self.searchController) {
+            self.searchController.searchResultsDelegate = nil;
+            self.searchController = nil;
+        }
+    }
+}
+
+- (BOOL)shouldShowSearchBar {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_shouldShowSearchBar)) boolValue];
+}
+
+static char kAssociatedObjectKey_searchController;
+- (void)setSearchController:(QMUISearchController *)searchController {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_searchController, searchController, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (QMUISearchController *)searchController {
+    return (QMUISearchController *)objc_getAssociatedObject(self, &kAssociatedObjectKey_searchController);
+}
+
+static char kAssociatedObjectKey_searchBar;
+- (void)setSearchBar:(UISearchBar *)searchBar {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_searchBar, searchBar, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (UISearchBar *)searchBar {
+    return (QMUISearchBar *)objc_getAssociatedObject(self, &kAssociatedObjectKey_searchBar);
+}
+
+- (void)initSearchController {
+    BeginIgnoreDeprecatedWarning
+    if ([self isViewLoaded] && self.shouldShowSearchBar && !self.searchController) {
+        EndIgnoreDeprecatedWarning
+        self.searchController = [[QMUISearchController alloc] initWithContentsViewController:self];
+        self.searchController.searchResultsDelegate = self;
+        self.searchController.searchBar.placeholder = @"搜索";
+        self.tableView.tableHeaderView = self.searchController.searchBar;
+        self.searchBar = self.searchController.searchBar;
+    }
+}
+
+- (BOOL)shouldHideSearchBarWhenEmptyViewShowing {
+    return NO;
+}
+
+#pragma mark - <QMUISearchControllerDelegate>
+
+- (void)searchController:(QMUISearchController *)searchController updateResultsForSearchString:(NSString *)searchString {
+    
+}
+
+@end

@@ -39,6 +39,42 @@
 - (id)qmui_performSelectorToSuperclass:(SEL)aSelector withObject:(id)object;
 
 /**
+ *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
+ *  这个方法用于无参数无返回值的 selector 调用。
+ *  @param selector 要被调用的方法名
+ */
+- (void)qmui_performSelector:(SEL)selector;
+
+/**
+ *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
+ *  @param selector 要被调用的方法名
+ *  @param returnValue selector 的返回值的指针地址
+ */
+- (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue;
+
+/**
+ *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
+ *  @param selector 要被调用的方法名
+ *  @param firstArgument 调用 selector 时要传的第一个参数的指针地址
+ */
+- (void)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ...;
+
+/**
+ *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
+ *
+ *  使用示例：
+ *  CGFloat result;
+ *  CGFloat arg1, arg2;
+ *  [self qmui_performSelector:xxx withReturnValue:&result arguments:&arg1, &arg2, nil];
+ *  // 到这里 result 已经被赋值为 selector 的 return 值
+ *
+ *  @param selector 要被调用的方法名
+ *  @param returnValue selector 的返回值的指针地址
+ *  @param firstArgument 调用 selector 时要传的第一个参数的指针地址
+ */
+- (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue arguments:(void *)firstArgument, ...;
+
+/**
  使用 block 遍历当前实例的所有方法，父类的方法不包含在内
  */
 - (void)qmui_enumrateInstanceMethodsUsingBlock:(void (^)(SEL selector))block;

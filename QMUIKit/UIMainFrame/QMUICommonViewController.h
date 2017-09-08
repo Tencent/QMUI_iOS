@@ -172,6 +172,6 @@
  *  @warning 注意如果被点击的 view 本身消耗了事件（iOS 11 下测试得到这种类型的所有系统的 view 仅有 UIButton 和 UISwitch），则这个方法并不会被触发。
  *  @warning 有可能参数传进去的 view 是某个 subview 的 subview，所以建议用 isDescendantOfView: 来判断是否点到了某个目标 subview
  */
-- (BOOL) :(UIView *)view;
+- (BOOL)shouldHideKeyboardWhenTouchInView:(UIView *)view;
 
 @end

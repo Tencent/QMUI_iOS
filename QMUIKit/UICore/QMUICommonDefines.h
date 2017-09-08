@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import "QMUIHelper.h"
-#import "UIFont+QMUI.h"
 
 #pragma mark - 变量-编译相关
 
@@ -165,24 +164,15 @@ EndIgnoreAvailabilityWarning
 #define UIImageMakeWithFile(name) UIImageMakeWithFileAndSuffix(name, @"png")
 #define UIImageMakeWithFileAndSuffix(name, suffix) [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@.%@", [[NSBundle mainBundle] resourcePath], name, suffix]]
 
-// 字体相关创建器，包括动态字体的支持
+// 字体相关的宏，用于快速创建一个字体对象，更多创建宏可查看 UIFont+QMUI.h
 #define UIFontMake(size) [UIFont systemFontOfSize:size]
 #define UIFontItalicMake(size) [UIFont italicSystemFontOfSize:size] // 斜体只对数字和字母有效，中文无效
 #define UIFontBoldMake(size) [UIFont boldSystemFontOfSize:size]
 #define UIFontBoldWithFont(_font) [UIFont boldSystemFontOfSize:_font.pointSize]
-#define UIFontLightMake(size) [UIFont qmui_lightSystemFontOfSize:size]
-#define UIFontLightWithFont(_font) [UIFont qmui_lightSystemFontOfSize:_font.pointSize]
-#define UIDynamicFontMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightNormal italic:NO]
-#define UIDynamicFontMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightNormal italic:NO]
-#define UIDynamicFontBoldMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightBold italic:NO]
-#define UIDynamicFontBoldMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightBold italic:NO]
-#define UIDynamicFontLightMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightLight italic:NO]
-#define UIDynamicFontLightMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightLight italic:NO]
 
-// UIColor相关创建器
+// UIColor 相关的宏，用于快速创建一个 UIColor 对象，更多创建的宏可查看 UIColor+QMUI.h
 #define UIColorMake(r, g, b) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:1]
 #define UIColorMakeWithRGBA(r, g, b, a) [UIColor colorWithRed:r/255.0 green:g/255.0 blue:b/255.0 alpha:a/1.0]
-#define UIColorMakeWithHex(hex) [UIColor qmui_colorWithHexString:hex]
 
 
 #pragma mark - 数学计算

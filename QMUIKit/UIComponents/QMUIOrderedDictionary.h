@@ -6,6 +6,7 @@
 //  Copyright © 2016年 QMUI Team. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
 @interface QMUIOrderedDictionary : NSObject

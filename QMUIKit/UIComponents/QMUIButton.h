@@ -121,7 +121,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
  * 系统默认实现需要同时设置 titleEdgeInsets 和 imageEdgeInsets，同时还需考虑 contentEdgeInsets 的增加（否则不会影响布局，可能会让图标或文字溢出或挤压），使用该属性可以避免以上情况。<br/>
  * @warning 会与 imageEdgeInsets、 imageEdgeInsets、 contentEdgeInsets 共同作用。
  */
-@property(nonatomic, assign) CGFloat spacingBetweenImageAndTitle;
+@property(nonatomic, assign) IBInspectable CGFloat spacingBetweenImageAndTitle;
 
 @end
 

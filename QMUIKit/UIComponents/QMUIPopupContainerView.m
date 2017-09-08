@@ -9,6 +9,7 @@
 #import "QMUIPopupContainerView.h"
 #import "QMUICore.h"
 #import "QMUICommonViewController.h"
+#import "UIViewController+QMUI.h"
 
 @interface QMUIPopupContainerViewWindow : UIWindow
 

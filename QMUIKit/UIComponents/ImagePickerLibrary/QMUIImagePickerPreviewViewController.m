@@ -252,15 +252,14 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 
 #pragma mark - 按钮点击回调
 
-- (void)handleCancelPreviewImage:(id)sender {
+- (void)handleCancelPreviewImage:(QMUIButton *)button {
     [self.navigationController popViewControllerAnimated:YES];
     if (self.delegate && [self.delegate respondsToSelector:@selector(imagePickerPreviewViewControllerDidCancel:)]) {
         [self.delegate imagePickerPreviewViewControllerDidCancel:self];
     }
 }
 
-- (void)handleCheckButtonClick:(id)sender {
-    QMUINavigationButton *button = sender;
+- (void)handleCheckButtonClick:(QMUIButton *)button {
     [QMUIImagePickerHelper removeSpringAnimationOfImageCheckedWithCheckboxButton:button];
     
     if (button.selected) {
@@ -336,11 +335,11 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
                     [self.progressView setProgress:0 animated:NO];
                 }
                 // 拉取资源的初期，会有一段时间没有进度，猜测是发出网络请求以及与 iCloud 建立连接的耗时，这时预先给个 0.02 的进度值，看上去好看些
-                float targetProgress = fmaxf(0.02, progress);
+                float targetProgress = fmax(0.02, progress);
                 if ( targetProgress < self.progressView.progress ) {
                     [self.progressView setProgress:targetProgress animated:NO];
                 } else {
-                    self.progressView.progress = fmaxf(0.02, progress);
+                    self.progressView.progress = fmax(0.02, progress);
                 }
                 if (error) {
                     QMUILog(@"Download iCloud image Failed, current progress is: %f", progress);

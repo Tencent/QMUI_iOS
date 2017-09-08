@@ -18,13 +18,9 @@
 @required
 
 - (void)showWithCompletion:(void (^)(BOOL finished))completion;
-
 - (void)hideWithCompletion:(void (^)(BOOL finished))completion;
-
 - (BOOL)isShowing;
-
 - (BOOL)isAnimating;
-
 @end
 
 

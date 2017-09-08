@@ -8,8 +8,8 @@
 
 #import "UILabel+QMUI.h"
 #import "QMUICore.h"
-#import "QMUILabel.h"
 #import "NSParagraphStyle+QMUI.h"
+#import "NSObject+QMUI.h"
 
 @implementation UILabel (QMUI)
 
@@ -165,8 +165,10 @@ static char kAssociatedObjectKey_lineHeight;
     self.backgroundColor = label.backgroundColor;
     self.lineBreakMode = label.lineBreakMode;
     self.textAlignment = label.textAlignment;
-    if ([self respondsToSelector:@selector(contentEdgeInsets)] && [label respondsToSelector:@selector(contentEdgeInsets)]) {
-        ((QMUILabel *)self).contentEdgeInsets = ((QMUILabel *)label).contentEdgeInsets;
+    if ([self respondsToSelector:@selector(setContentEdgeInsets:)] && [label respondsToSelector:@selector(contentEdgeInsets)]) {
+        UIEdgeInsets contentEdgeInsets;
+        [label qmui_performSelector:@selector(contentEdgeInsets) withReturnValue:&contentEdgeInsets];
+        [self qmui_performSelector:@selector(setContentEdgeInsets:) withArguments:&contentEdgeInsets, nil];
     }
 }
 

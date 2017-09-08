@@ -6,6 +6,7 @@
 //  Copyright © 2017年 QMUI Team. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import "QMUIPopupContainerView.h"
 
 @class QMUIPopupMenuItem;
@@ -49,7 +50,7 @@
 @property(nonatomic, strong) UIImage *image;
 @property(nonatomic, copy) NSString *title;
 @property(nonatomic, strong, readonly) QMUIButton *button;
-@property(nonatomic, copy) void (^handler)();
+@property(nonatomic, copy) void (^handler)(void);
 
-+ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)())handler;
++ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)(void))handler;
 @end

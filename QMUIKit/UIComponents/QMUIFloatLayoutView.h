@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
+/// 用于属性 maximumItemSize，是它的默认值。表示 item 的最大宽高会自动根据当前 floatLayoutView 的内容大小来调整，从而避免 item 内容过多时可能溢出 floatLayoutView。
+extern const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize;
+
 /**
  *  做类似 CSS 里的 float:left 的布局，自行使用 addSubview: 将子 View 添加进来即可。
  *
@@ -26,7 +29,7 @@
 @property(nonatomic, assign) IBInspectable CGSize minimumItemSize;
 
 /**
- *  item 的最大宽高，默认为 CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)，也即不限制
+ *  item 的最大宽高，默认为 QMUIFloatLayoutViewAutomaticalMaximumItemSize，也即不超过 floatLayoutView 自身最大内容宽高。
  */
 @property(nonatomic, assign) IBInspectable CGSize maximumItemSize;
 

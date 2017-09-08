@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "QMUICommonViewController.h"
+#import "QMUICommonTableViewController.h"
 
 @class QMUIEmptyView;
 @class QMUISearchController;
@@ -78,4 +79,51 @@
 
 /// 进入搜索状态时是否要把原界面的 navigationBar 推走，默认为 YES，仅在 iOS 8 及以后有效
 @property(nonatomic, assign) BOOL hidesNavigationBarDuringPresentation;
+@end
+
+
+
+@interface QMUICommonTableViewController (Search) <QMUISearchControllerDelegate>
+
+/**
+ *  控制列表里是否需要搜索框，如果为 YES，则会在 viewDidLoad 之后创建一个 searchBar 作为 tableHeaderView；如果为 NO，则会移除已有的 searchBar 和 searchController。
+ *  默认为 NO。
+ *  @note 若在 viewDidLoad 之前设置为 YES，也会等到 viewDidLoad 时才去创建搜索框。
+ */
+@property(nonatomic, assign) BOOL shouldShowSearchBar;
+
+/**
+ *  获取当前的 searchController，注意只有当 `shouldShowSearchBar` 为 `YES` 时才有用
+ *
+ *  默认为 `nil`
+ *
+ *  @see QMUITableViewDelegate
+ */
+@property(nonatomic, strong, readonly) QMUISearchController *searchController;
+
+/**
+ *  获取当前的 searchBar，注意只有当 `shouldShowSearchBar` 为 `YES` 时才有用
+ *
+ *  默认为 `nil`
+ *
+ *  @see QMUITableViewDelegate
+ */
+@property(nonatomic, strong, readonly) UISearchBar *searchBar;
+
+/**
+ *  是否应该在显示空界面时自动隐藏搜索框
+ *
+ *  默认为 `NO`
+ */
+- (BOOL)shouldHideSearchBarWhenEmptyViewShowing;
+
+/**
+ *  初始化searchController和searchBar，在initSubViews的时候被自动调用。
+ *
+ *  会询问 `self.shouldShowSearchBar`，若返回 `YES`，则创建 searchBar 并将其以 `tableHeaderView` 的形式呈现在界面里；若返回 `NO`，则将 `tableHeaderView` 置为nil。
+ *
+ *  @warning `self.shouldShowSearchBar` 默认为 NO，需要 searchBar 的界面必须手动将其置为 `YES`。
+ */
+- (void)initSearchController;
+
 @end

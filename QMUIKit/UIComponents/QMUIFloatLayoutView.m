@@ -11,6 +11,8 @@
 
 #define ValueSwitchAlignLeftOrRight(valueLeft, valueRight) ([self shouldAlignRight] ? valueRight : valueLeft)
 
+const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize = {-1, -1};
+
 @implementation QMUIFloatLayoutView
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -31,7 +33,7 @@
 - (void)didInitialized {
     self.contentMode = UIViewContentModeLeft;
     self.minimumItemSize = CGSizeZero;
-    self.maximumItemSize = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
+    self.maximumItemSize = QMUIFloatLayoutViewAutomaticalMaximumItemSize;
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -53,13 +55,16 @@
     // 如果是左对齐，则代表 item 左上角的坐标，如果是右对齐，则代表 item 右上角的坐标
     CGPoint itemViewOrigin = CGPointMake(ValueSwitchAlignLeftOrRight(self.padding.left, size.width - self.padding.right), self.padding.top);
     CGFloat currentRowMaxY = itemViewOrigin.y;
+    CGSize maximumItemSize = CGSizeEqualToSize(self.maximumItemSize, QMUIFloatLayoutViewAutomaticalMaximumItemSize) ? CGSizeMake(size.width - UIEdgeInsetsGetHorizontalValue(self.padding), size.height - UIEdgeInsetsGetVerticalValue(self.padding)) : self.maximumItemSize;
     
     for (NSInteger i = 0, l = visibleItemViews.count; i < l; i ++) {
         UIView *itemView = visibleItemViews[i];
         
-        CGSize itemViewSize = [itemView sizeThatFits:CGSizeMake(self.maximumItemSize.width, self.maximumItemSize.height)];
-        itemViewSize.width = fmaxf(self.minimumItemSize.width, itemViewSize.width);
-        itemViewSize.height = fmaxf(self.minimumItemSize.height, itemViewSize.height);
+        CGSize itemViewSize = [itemView sizeThatFits:maximumItemSize];
+        itemViewSize.width = fmax(self.minimumItemSize.width, itemViewSize.width);
+        itemViewSize.height = fmax(self.minimumItemSize.height, itemViewSize.height);
+        itemViewSize.width = fmin(maximumItemSize.width, itemViewSize.width);
+        itemViewSize.height = fmin(maximumItemSize.height, itemViewSize.height);
         
         BOOL shouldBreakline = i == 0 ? YES : ValueSwitchAlignLeftOrRight(itemViewOrigin.x + self.itemMargins.left + itemViewSize.width + self.padding.right > size.width,
                                                            itemViewOrigin.x - self.itemMargins.right - itemViewSize.width - self.padding.left < 0);
@@ -81,7 +86,7 @@
                                                            itemViewOrigin.x - itemViewSize.width - UIEdgeInsetsGetHorizontalValue(self.itemMargins));
         }
         
-        currentRowMaxY = fmaxf(currentRowMaxY, itemViewOrigin.y + UIEdgeInsetsGetVerticalValue(self.itemMargins) + itemViewSize.height);
+        currentRowMaxY = fmax(currentRowMaxY, itemViewOrigin.y + UIEdgeInsetsGetVerticalValue(self.itemMargins) + itemViewSize.height);
     }
     
     // 最后一行不需要考虑 itemMarins.bottom，所以这里减掉

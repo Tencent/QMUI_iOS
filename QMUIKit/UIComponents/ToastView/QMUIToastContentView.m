@@ -88,19 +88,19 @@
     CGFloat maxContentHeight = size.height - UIEdgeInsetsGetVerticalValue(self.insets);
     
     if (hasCustomView) {
-        width = fmaxf(width, CGRectGetWidth(self.customView.bounds));
+        width = fmax(width, CGRectGetWidth(self.customView.bounds));
         height += (CGRectGetHeight(self.customView.bounds) + ((hasTextLabel || hasDetailTextLabel) ? self.customViewMarginBottom : 0));
     }
     
     if (hasTextLabel) {
         CGSize textLabelSize = [self.textLabel sizeThatFits:CGSizeMake(maxContentWidth, maxContentHeight)];
-        width = fmaxf(width, textLabelSize.width);
+        width = fmax(width, textLabelSize.width);
         height += (textLabelSize.height + (hasDetailTextLabel ? self.textLabelMarginBottom : 0));
     }
     
     if (hasDetailTextLabel) {
         CGSize detailTextLabelSize = [self.detailTextLabel sizeThatFits:CGSizeMake(maxContentWidth, maxContentHeight)];
-        width = fmaxf(width, detailTextLabelSize.width);
+        width = fmax(width, detailTextLabelSize.width);
         height += (detailTextLabelSize.height + self.detailTextLabelMarginBottom);
     }
     
@@ -108,11 +108,11 @@
     height += UIEdgeInsetsGetVerticalValue(self.insets);
     
     if (!CGSizeEqualToSize(self.minimumSize, CGSizeZero)) {
-        width = fmaxf(width, self.minimumSize.width);
-        height = fmaxf(height, self.minimumSize.height);
+        width = fmax(width, self.minimumSize.width);
+        height = fmax(height, self.minimumSize.height);
     }
     
-    return CGSizeMake(fminf(size.width, width), fminf(size.height, height));
+    return CGSizeMake(fmin(size.width, width), fmin(size.height, height));
 }
 
 - (void)layoutSubviews {

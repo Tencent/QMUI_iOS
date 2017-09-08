@@ -60,7 +60,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
 }
 
 - (CGFloat)validatedRotationRatio:(CGFloat)rotationRatio {
-    return fmaxf(0.0, fminf(1.0, rotationRatio));
+    return fmax(0.0, fmin(1.0, rotationRatio));
 }
 
 @end

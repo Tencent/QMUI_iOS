@@ -6,6 +6,7 @@
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import "QMUITableViewProtocols.h"
 
 @interface QMUITableView : UITableView

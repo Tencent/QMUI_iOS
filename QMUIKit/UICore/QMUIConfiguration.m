@@ -9,10 +9,8 @@
 #import "QMUIConfiguration.h"
 #import "QMUICore.h"
 #import "UIImage+QMUI.h"
-#import "QMUIButton.h"
 #import "NSString+QMUI.h"
-#import "QMUITabBarViewController.h"
-#import "QMUINavigationController.h"
+#import "UIViewController+QMUI.h"
 
 @implementation QMUIConfiguration
 

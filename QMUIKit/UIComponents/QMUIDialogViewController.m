@@ -12,7 +12,6 @@
 #import "QMUITextField.h"
 #import "QMUITableViewCell.h"
 #import "QMUINavigationTitleView.h"
-#import "QMUIModalPresentationViewController.h"
 #import "CALayer+QMUI.h"
 #import "UITableView+QMUI.h"
 #import "NSString+QMUI.h"
@@ -240,7 +239,7 @@ EndIgnoreClangWarning
     CGFloat headerViewPaddingHorizontal = 16;
     CGFloat headerViewContentWidth = CGRectGetWidth(self.headerView.bounds) - headerViewPaddingHorizontal * 2;
     CGSize titleViewSize = [self.titleView sizeThatFits:CGSizeMake(headerViewContentWidth, CGFLOAT_MAX)];
-    CGFloat titleViewWidth = fminf(titleViewSize.width, headerViewContentWidth);
+    CGFloat titleViewWidth = fmin(titleViewSize.width, headerViewContentWidth);
     self.titleView.frame = CGRectMake(CGFloatGetCenter(CGRectGetWidth(self.headerView.bounds), titleViewWidth), CGFloatGetCenter(CGRectGetHeight(self.headerView.bounds), titleViewSize.height), titleViewWidth, titleViewSize.height);
     
     if (isFooterViewShowing) {
@@ -379,7 +378,7 @@ EndIgnoreClangWarning
     CGSize contentViewLimitSize = CGSizeMake(limitSize.width, limitSize.height - self.headerViewHeight - footerViewHeight);
     CGSize contentViewSize = [self.contentView sizeThatFits:contentViewLimitSize];
     
-    CGSize finalSize = CGSizeMake(fminf(limitSize.width, contentViewSize.width), fminf(limitSize.height, self.headerViewHeight + contentViewSize.height + footerViewHeight));
+    CGSize finalSize = CGSizeMake(fmin(limitSize.width, contentViewSize.width), fmin(limitSize.height, self.headerViewHeight + contentViewSize.height + footerViewHeight));
     return finalSize;
 }
 
@@ -549,7 +548,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     CGFloat footerViewHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0;
     CGFloat tableViewLimitHeight = limitSize.height - CGRectGetHeight(self.headerView.frame) - footerViewHeight;
     CGSize tableViewSize = [self.tableView sizeThatFits:CGSizeMake(limitSize.width, tableViewLimitHeight)];
-    CGFloat finalTableViewHeight = fminf(tableViewSize.height, tableViewLimitHeight);
+    CGFloat finalTableViewHeight = fmin(tableViewSize.height, tableViewLimitHeight);
     return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + finalTableViewHeight + footerViewHeight);
 }
 

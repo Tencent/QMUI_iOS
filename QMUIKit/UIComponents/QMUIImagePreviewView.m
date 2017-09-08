@@ -9,7 +9,6 @@
 #import "QMUIImagePreviewView.h"
 #import "QMUICore.h"
 #import "QMUICollectionViewPagingLayout.h"
-#import "QMUIZoomImageView.h"
 #import "NSObject+QMUI.h"
 #import "UICollectionView+QMUI.h"
 #import "QMUIEmptyView.h"

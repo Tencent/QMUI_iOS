@@ -7,9 +7,7 @@
 //
 
 #import "UIViewController+QMUI.h"
-#import "QMUINavigationController.h"
 #import "UINavigationController+QMUI.h"
-#import <objc/runtime.h>
 #import "QMUICore.h"
 #import "NSObject+QMUI.h"
 
@@ -210,10 +208,6 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     }
 }
 
-- (BOOL)qmui_respondQMUINavigationControllerDelegate {
-    return [[self class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)];
-}
-
 - (BOOL)qmui_isViewLoadedAndVisible {
     return self.isViewLoaded && self.view.window;
 }
@@ -284,12 +278,12 @@ static char kAssociatedObjectKey_isViewDidAppear;
 }
 
 static char kAssociatedObjectKey_didAppearAndLoadDataBlock;
-- (void)setQmui_didAppearAndLoadDataBlock:(void (^)())qmui_didAppearAndLoadDataBlock {
+- (void)setQmui_didAppearAndLoadDataBlock:(void (^)(void))qmui_didAppearAndLoadDataBlock {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock, qmui_didAppearAndLoadDataBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
-- (void (^)())qmui_didAppearAndLoadDataBlock {
-    return (void (^)())objc_getAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock);
+- (void (^)(void))qmui_didAppearAndLoadDataBlock {
+    return (void (^)(void))objc_getAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock);
 }
 
 static char kAssociatedObjectKey_dataLoaded;
@@ -335,6 +329,16 @@ static char kAssociatedObjectKey_dataLoaded;
         }
     }
     return NO;
+}
+
+@end
+
+@implementation QMUIHelper (ViewController)
+
++ (nullable UIViewController *)visibleViewController {
+    UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    UIViewController *visibleViewController = [rootViewController qmui_visibleViewControllerIfExist];
+    return visibleViewController;
 }
 
 @end

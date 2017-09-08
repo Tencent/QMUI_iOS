@@ -169,16 +169,6 @@ extern NSString *const _Nonnull QMUIResourcesQQEmotionBundleName;
 + (CGAffineTransform)transformWithInterfaceOrientation:(UIInterfaceOrientation)orientation;
 @end
 
-@interface QMUIHelper (ViewController)
-
-/**
- * 获取当前应用里最顶层的可见viewController
- * @warning 注意返回值可能为nil，要做好保护
- */
-+ (nullable UIViewController *)visibleViewController;
-
-@end
-
 @interface QMUIHelper (UIApplication)
 
 /**

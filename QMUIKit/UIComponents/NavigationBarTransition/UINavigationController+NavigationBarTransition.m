@@ -57,6 +57,10 @@
 /// .m文件里自己赋值和使用。因为有些特殊情况下viewDidAppear之后，有可能还会调用到viewWillLayoutSubviews，导致原始的navBar隐藏，所以用这个属性做个保护。
 @property (nonatomic, assign) BOOL lockTransitionNavigationBar;
 
+
+/** 是否响应 QMUINavigationControllerDelegate */
+- (BOOL)qmui_respondQMUINavigationControllerDelegate;
+
 @end
 
 
@@ -205,6 +209,10 @@
 }
 
 #pragma mark - 工具方法
+
+- (BOOL)qmui_respondQMUINavigationControllerDelegate {
+    return [[self class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)];
+}
 
 // 根据当前的viewController，统一处理导航栏底部的分隔线、状态栏的颜色
 - (void)renderNavigationStyleInViewController:(UIViewController *)viewController animated:(BOOL)animated {

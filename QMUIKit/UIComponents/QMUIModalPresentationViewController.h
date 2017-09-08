@@ -139,7 +139,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 /**
  *  由于点击遮罩导致浮层被隐藏时的回调（区分于`hideWithAnimated:completion:`里的completion，这里是特地用于点击遮罩的情况）
  */
-@property(nonatomic, copy) void (^didHideByDimmingViewTappedBlock)();
+@property(nonatomic, copy) void (^didHideByDimmingViewTappedBlock)(void);
 
 /**
  *  控制当前是否以模态的形式存在。如果以模态的形式存在，则点击空白区域不会隐藏浮层。

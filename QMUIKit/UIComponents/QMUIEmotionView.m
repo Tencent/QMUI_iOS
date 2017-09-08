@@ -147,7 +147,7 @@
     CGFloat horizontalRatio = CGRectGetWidth(contextRect) / imageSize.width;
     CGFloat verticalRatio = CGRectGetHeight(contextRect) / imageSize.height;
     // 表情图片按UIViewContentModeScaleAspectFit的方式来绘制
-    CGFloat ratio = fminf(horizontalRatio, verticalRatio);
+    CGFloat ratio = fmin(horizontalRatio, verticalRatio);
     CGRect drawingRect = CGRectZero;
     drawingRect.size.width = imageSize.width * ratio;
     drawingRect.size.height = imageSize.height * ratio;

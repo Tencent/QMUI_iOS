@@ -106,7 +106,7 @@
     for (NSArray<QMUIPopupMenuItem *> *section in self.itemSections) {
         height += section.count * self.itemHeight;
     }
-    size.height = fminf(height, size.height);
+    size.height = fmin(height, size.height);
     return size;
 }
 
@@ -172,7 +172,7 @@
 
 @implementation QMUIPopupMenuItem
 
-+ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)())handler {
++ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)(void))handler {
     QMUIPopupMenuItem *item = [[QMUIPopupMenuItem alloc] init];
     item.image = image;
     item.title = title;

@@ -124,22 +124,22 @@
             imageViewFrame.origin.y += self.imageEdgeInsets.top - self.imageEdgeInsets.bottom;
             
             textLabelFrame.origin.x += self.imageEdgeInsets.left;
-            textLabelFrame.size.width = fminf(CGRectGetWidth(textLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(textLabelFrame));
+            textLabelFrame.size.width = fmin(CGRectGetWidth(textLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(textLabelFrame));
             
             if (shouldChangeDetailTextLabelFrame) {
                 detailTextLabelFrame.origin.x += self.imageEdgeInsets.left;
-                detailTextLabelFrame.size.width = fminf(CGRectGetWidth(detailTextLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(detailTextLabelFrame));
+                detailTextLabelFrame.size.width = fmin(CGRectGetWidth(detailTextLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(detailTextLabelFrame));
             }
         }
         if (hasCustomTextLabelEdgeInsets) {
             textLabelFrame.origin.x += self.textLabelEdgeInsets.left - self.imageEdgeInsets.right;
             textLabelFrame.origin.y += self.textLabelEdgeInsets.top - self.textLabelEdgeInsets.bottom;
-            textLabelFrame.size.width = fminf(CGRectGetWidth(textLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(textLabelFrame));
+            textLabelFrame.size.width = fmin(CGRectGetWidth(textLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(textLabelFrame));
         }
         if (hasCustomDetailLabelEdgeInsets) {
             detailTextLabelFrame.origin.x += self.detailTextLabelEdgeInsets.left - self.detailTextLabelEdgeInsets.right;
             detailTextLabelFrame.origin.y += self.detailTextLabelEdgeInsets.top - self.detailTextLabelEdgeInsets.bottom;
-            detailTextLabelFrame.size.width = fminf(CGRectGetWidth(detailTextLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(detailTextLabelFrame));
+            detailTextLabelFrame.size.width = fmin(CGRectGetWidth(detailTextLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(detailTextLabelFrame));
         }
         
         self.imageView.frame = imageViewFrame;

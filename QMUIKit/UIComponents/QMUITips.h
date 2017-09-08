@@ -6,6 +6,7 @@
 //  Copyright © 2015年 QMUI Team. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import "QMUIToastView.h"
 
 /**

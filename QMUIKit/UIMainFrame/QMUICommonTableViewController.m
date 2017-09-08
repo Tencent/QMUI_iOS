@@ -18,15 +18,11 @@
 const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet = {-1, -1, -1, -1};
 const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
-@interface QMUICommonTableViewController () {
-    BOOL                    _shouldShowSearchBar;
-    QMUISearchController    *_searchController;
-    UISearchBar             *_searchBar;
-}
+@interface QMUICommonTableViewController ()
 
-@property(nonatomic,strong,readwrite) QMUITableView *tableView;
-@property(nonatomic,assign) BOOL hasSetInitialContentInset;
-@property(nonatomic,assign) BOOL hasHideTableHeaderViewInitial;
+@property(nonatomic, strong, readwrite) QMUITableView *tableView;
+@property(nonatomic, assign) BOOL hasSetInitialContentInset;
+@property(nonatomic, assign) BOOL hasHideTableHeaderViewInitial;
 
 @end
 
@@ -105,13 +101,11 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 - (void)initSubviews {
     [super initSubviews];
     [self initTableView];
-    [self initSearchController];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.tableView qmui_clearsSelection];
-    [self.searchController.tableView qmui_clearsSelection];
 }
 
 - (void)viewDidLayoutSubviews {
@@ -188,22 +182,10 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
     }
     [self.tableView addSubview:self.emptyView];
     [self layoutEmptyView];
-    if ([self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == self.searchBar) {
-        self.tableView.tableHeaderView = nil;
-    }
 }
 
 - (void)hideEmptyView {
     [self.emptyView removeFromSuperview];
-BeginIgnoreDeprecatedWarning
-    if (self.shouldShowSearchBar && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
-EndIgnoreDeprecatedWarning
-        [self initSearchController];
-        // 隐藏 emptyView 后重新设置 tableHeaderView，会导致原先 shouldHideTableHeaderViewInitial 隐藏头部的操作被重置，所以下面的 force 参数要传 YES
-        // https://github.com/QMUI/QMUI_iOS/issues/128
-        self.tableView.tableHeaderView = self.searchBar;
-        [self hideTableHeaderViewInitialIfCanWithAnimated:NO force:YES];
-    }
 }
 
 - (BOOL)layoutEmptyView {
@@ -350,70 +332,6 @@ EndIgnoreDeprecatedWarning
 
 - (BOOL)shouldHideTableHeaderViewInitial {
     return NO;
-}
-
-@end
-
-
-@implementation QMUICommonTableViewController (Search)
-
-- (BOOL)shouldShowSearchBar {
-    return _shouldShowSearchBar;
-}
-
-- (void)setShouldShowSearchBar:(BOOL)shouldShowSearchBar {
-    BOOL isValueChanged = _shouldShowSearchBar != shouldShowSearchBar;
-    if (!isValueChanged) {
-        return;
-    }
-    
-    _shouldShowSearchBar = shouldShowSearchBar;
-    
-    if (shouldShowSearchBar) {
-        [self initSearchController];
-    } else {
-        if (self.searchBar) {
-            if (self.tableView.tableHeaderView == self.searchBar) {
-                self.tableView.tableHeaderView = nil;
-            }
-            [self.searchBar removeFromSuperview];
-            _searchBar = nil;
-        }
-        if (self.searchController) {
-            self.searchController.searchResultsDelegate = nil;
-            _searchController = nil;
-        }
-    }
-}
-
-- (QMUISearchController *)searchController {
-    return _searchController;
-}
-
-- (UISearchBar *)searchBar {
-    return _searchBar;
-}
-
-- (void)initSearchController {
-BeginIgnoreDeprecatedWarning
-    if ([self isViewLoaded] && self.shouldShowSearchBar && !self.searchController) {
-EndIgnoreDeprecatedWarning
-        _searchController = [[QMUISearchController alloc] initWithContentsViewController:self];
-        self.searchController.searchResultsDelegate = self;
-        self.searchController.searchBar.placeholder = @"搜索";
-        self.tableView.tableHeaderView = self.searchController.searchBar;
-        _searchBar = self.searchController.searchBar;
-    }
-}
-
-- (BOOL)shouldHideSearchBarWhenEmptyViewShowing {
-    return NO;
-}
-
-#pragma mark - <QMUISearchControllerDelegate>
-
-- (void)searchController:(QMUISearchController *)searchController updateResultsForSearchString:(NSString *)searchString {
-    
 }
 
 @end

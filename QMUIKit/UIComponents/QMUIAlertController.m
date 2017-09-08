@@ -553,8 +553,8 @@ static QMUIAlertController *alertControllerAppearance;
         CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds);
         if (contentHeight > screenSpaceHeight - 20) {
             screenSpaceHeight -= 20;
-            CGFloat contentH = fminf(CGRectGetHeight(self.headerScrollView.bounds), screenSpaceHeight / 2);
-            CGFloat buttonH = fminf(CGRectGetHeight(self.buttonScrollView.bounds), screenSpaceHeight / 2);
+            CGFloat contentH = fmin(CGRectGetHeight(self.headerScrollView.bounds), screenSpaceHeight / 2);
+            CGFloat buttonH = fmin(CGRectGetHeight(self.buttonScrollView.bounds), screenSpaceHeight / 2);
             if (contentH >= screenSpaceHeight / 2 && buttonH >= screenSpaceHeight / 2) {
                 self.headerScrollView.frame = CGRectSetHeight(self.headerScrollView.frame, screenSpaceHeight / 2);
                 self.buttonScrollView.frame = CGRectSetY(self.buttonScrollView.frame, CGRectGetMaxY(self.headerScrollView.frame));

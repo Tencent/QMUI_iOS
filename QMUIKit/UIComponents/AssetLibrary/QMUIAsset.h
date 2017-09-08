@@ -6,6 +6,7 @@
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
+#import <UIKit/UIKit.h>
 #import <Photos/PHImageManager.h>
 
 /// Asset 的类型

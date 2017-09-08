@@ -251,14 +251,14 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     CGFloat scaleX = CGRectGetWidth(viewport) / mediaSize.width;
     CGFloat scaleY = CGRectGetHeight(viewport) / mediaSize.height;
     if (self.contentMode == UIViewContentModeScaleAspectFit) {
-        minScale = fminf(scaleX, scaleY);
+        minScale = fmin(scaleX, scaleY);
     } else if (self.contentMode == UIViewContentModeScaleAspectFill) {
-        minScale = fmaxf(scaleX, scaleY);
+        minScale = fmax(scaleX, scaleY);
     } else if (self.contentMode == UIViewContentModeCenter) {
         if (scaleX >= 1 && scaleY >= 1) {
             minScale = 1;
         } else {
-            minScale = fminf(scaleX, scaleY);
+            minScale = fmin(scaleX, scaleY);
         }
     }
     return minScale;
@@ -272,7 +272,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     BOOL enabledZoomImageView = [self enabledZoomImageView];
     CGFloat minimumZoomScale = [self minimumZoomScale];
     CGFloat maximumZoomScale = enabledZoomImageView ? self.maximumZoomScale : minimumZoomScale;
-    maximumZoomScale = fmaxf(minimumZoomScale, maximumZoomScale);// 可能外部通过 contentMode = UIViewContentModeScaleAspectFit 的方式来让小图片撑满当前的 zoomImageView，所以算出来 minimumZoomScale 会很大（至少比 maximumZoomScale 大），所以这里要做一个保护
+    maximumZoomScale = fmax(minimumZoomScale, maximumZoomScale);// 可能外部通过 contentMode = UIViewContentModeScaleAspectFit 的方式来让小图片撑满当前的 zoomImageView，所以算出来 minimumZoomScale 会很大（至少比 maximumZoomScale 大），所以这里要做一个保护
     CGFloat zoomScale = minimumZoomScale;
     BOOL shouldFireDidZoomingManual = zoomScale == self.scrollView.zoomScale;
     self.scrollView.panGestureRecognizer.enabled = enabledZoomImageView;

@@ -129,8 +129,8 @@
     if (self.contentView) {
         
         CGSize contentViewSize = [self.contentView sizeThatFits:CGSizeMake(limitWidth, limitHeight)];
-        CGFloat contentViewX = fmaxf(self.marginInsets.left, (contentWidth - contentViewSize.width) / 2) + self.offset.x;
-        CGFloat contentViewY = fmaxf(self.marginInsets.top, (contentHeight - contentViewSize.height) / 2) + self.offset.y;
+        CGFloat contentViewX = fmax(self.marginInsets.left, (contentWidth - contentViewSize.width) / 2) + self.offset.x;
+        CGFloat contentViewY = fmax(self.marginInsets.top, (contentHeight - contentViewSize.height) / 2) + self.offset.y;
         
         if (self.toastPosition == QMUIToastViewPositionTop) {
             contentViewY = self.marginInsets.top + self.offset.y;

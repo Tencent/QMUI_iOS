@@ -8,9 +8,7 @@
 
 #import "QMUIHelper.h"
 #import "QMUICore.h"
-#import "UIViewController+QMUI.h"
 #import <AVFoundation/AVFoundation.h>
-#import "NSString+QMUI.h"
 
 
 NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
@@ -297,7 +295,8 @@ static NSInteger isIPadPro = -1;
 static NSInteger isIPod = -1;
 + (BOOL)isIPod {
     if (isIPod < 0) {
-        isIPod = [[[UIDevice currentDevice] model] qmui_includesString:@"iPod touch"] ? 1 : 0;
+        NSString *string = [[UIDevice currentDevice] model];
+        isIPod = [string rangeOfString:@"iPod touch"].location != NSNotFound ? 1 : 0;
     }
     return isIPod > 0;
 }
@@ -305,7 +304,8 @@ static NSInteger isIPod = -1;
 static NSInteger isIPhone = -1;
 + (BOOL)isIPhone {
     if (isIPhone < 0) {
-        isIPhone = [[[UIDevice currentDevice] model] qmui_includesString:@"iPhone"] ? 1 : 0;
+        NSString *string = [[UIDevice currentDevice] model];
+        isIPhone = [string rangeOfString:@"iPhone"].location != NSNotFound ? 1 : 0;
     }
     return isIPhone > 0;
 }
@@ -433,16 +433,6 @@ static char kAssociatedObjectKey_orientationBeforeChangedByHelper;
 + (CGAffineTransform)transformWithInterfaceOrientation:(UIInterfaceOrientation)orientation {
     CGFloat angle = [QMUIHelper angleForTransformWithInterfaceOrientation:orientation];
     return CGAffineTransformMakeRotation(angle);
-}
-
-@end
-
-@implementation QMUIHelper (ViewController)
-
-+ (nullable UIViewController *)visibleViewController {
-    UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
-    UIViewController *visibleViewController = [rootViewController qmui_visibleViewControllerIfExist];
-    return visibleViewController;
 }
 
 @end

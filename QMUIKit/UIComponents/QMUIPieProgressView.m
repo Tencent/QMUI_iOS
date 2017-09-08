@@ -108,7 +108,7 @@
 }
 
 - (void)setProgress:(float)progress animated:(BOOL)animated {
-    _progress = fmaxf(0.0, fminf(1.0, progress));
+    _progress = fmax(0.0, fmin(1.0, progress));
     QMUIPieProgressLayer *layer = (QMUIPieProgressLayer *)self.layer;
     layer.shouldChangeProgressWithAnimation = animated;
     layer.progress = _progress;
