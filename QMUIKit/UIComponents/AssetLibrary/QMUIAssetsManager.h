@@ -17,7 +17,7 @@
 #import <Photos/PHImageManager.h>
 #import "QMUIAssetsGroup.h"
 
-#define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 下也使用 ALAssetsLibrary，用于调试
+#define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 以上也使用 ALAssetsLibrary，用于调试
 
 @class PHCachingImageManager;
 @class QMUIAsset;
