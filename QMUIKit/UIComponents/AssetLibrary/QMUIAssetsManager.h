@@ -17,7 +17,7 @@
 #import <Photos/PHImageManager.h>
 #import "QMUIAssetsGroup.h"
 
-#define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 下也使用 ALAssetLibrary，用于调试
+#define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 以上也使用 ALAssetsLibrary，用于调试
 
 @class PHCachingImageManager;
 @class QMUIAsset;
@@ -33,10 +33,13 @@ typedef NS_ENUM(NSUInteger, QMUIAssetAuthorizationStatus) {
 typedef void (^QMUIWriteAssetCompletionBlock)(QMUIAsset *asset, NSError *error);
 
 
-/// 保存图片到指定相册，该方法是一个 C 方法，与系统 ALAssetLibrary 保存图片的 C 方法 UIImageWriteToSavedPhotosAlbum 对应，方便调用
+/// 保存图片到指定相册，该方法是一个 C 方法，与系统 ALAssetsLibrary 保存图片的 C 方法 UIImageWriteToSavedPhotosAlbum 对应，方便调用
 extern void QMUIImageWriteToSavedPhotosAlbumWithAlbumAssetsGroup(UIImage *image, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);
 
-/// 保存视频到指定相册，该方法是一个 C 方法，与系统 ALAssetLibrary 保存图片的 C 方法 UISaveVideoAtPathToSavedPhotosAlbum 对应，方便调用
+/// 保存图片到指定相册，该方法是一个 C 方法，方便调用
+extern void QMUIImageAtPathWriteToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *imagePath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);
+
+/// 保存视频到指定相册，该方法是一个 C 方法，与系统 ALAssetsLibrary 保存图片的 C 方法 UISaveVideoAtPathToSavedPhotosAlbum 对应，方便调用
 extern void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);
 
 /**
@@ -91,9 +94,11 @@ extern void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *
  */
 - (void)saveImageWithImageRef:(CGImageRef)imageRef albumAssetsGroup:(QMUIAssetsGroup *)albumAssetsGroup orientation:(UIImageOrientation)orientation completionBlock:(QMUIWriteAssetCompletionBlock)completionBlock;
 
+- (void)saveImageWithImagePathURL:(NSURL *)imagePathURL albumAssetsGroup:(QMUIAssetsGroup *)albumAssetsGroup completionBlock:(QMUIWriteAssetCompletionBlock)completionBlock;
+
 - (void)saveVideoWithVideoPathURL:(NSURL *)videoPathURL albumAssetsGroup:(QMUIAssetsGroup *)albumAssetsGroup completionBlock:(QMUIWriteAssetCompletionBlock)completionBlock;
 
-/// 强制刷新单例中的 ALAssetLibrary，但你的相册资源发生改变时（创建或删除相册）可以手工调用该方法及时更新
+/// 强制刷新单例中的 ALAssetsLibrary，但你的相册资源发生改变时（创建或删除相册）可以手工调用该方法及时更新
 - (void)refreshAssetsLibrary;
 
 /// 获取一个 ALAssetsLibrary 的实例
@@ -139,6 +144,8 @@ extern void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *
  */
 - (void)addImageToAlbum:(CGImageRef)imageRef albumAssetCollection:(PHAssetCollection *)albumAssetCollection orientation:(UIImageOrientation)orientation completionHandler:(void(^)(BOOL success, NSDate *creationDate, NSError *error))completionHandler;
 
+- (void)addImageToAlbum:(NSURL *)imagePathURL albumAssetCollection:(PHAssetCollection *)albumAssetCollection completionHandler:(void(^)(BOOL success, NSDate *creationDate, NSError *error))completionHandler;
+
 - (void)addVideoToAlbum:(NSURL *)videoPathURL albumAssetCollection:(PHAssetCollection *)albumAssetCollection completionHandler:(void(^)(BOOL success, NSDate *creationDate, NSError *error))completionHandler;
 
 @end
@@ -163,6 +170,8 @@ extern void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *
  *           如果直接调用该接口保存图片或视频到“相机胶卷”中，并不会产生重复保存。
  */
 - (void)writeImageToSavedPhotosAlbum:(CGImageRef)imageRef albumAssetsGroup:(ALAssetsGroup *)albumAssetsGroup orientation:(UIImageOrientation)orientation completionBlock:(ALAssetsLibraryWriteImageCompletionBlock)completionBlock;
+
+- (void)writeImageAtPathToSavedPhotosAlbum:(NSURL *)imagePathURL albumAssetsGroup:(ALAssetsGroup *)albumAssetsGroup completionBlock:(ALAssetsLibraryWriteImageCompletionBlock)completionBlock;
 
 - (void)writeVideoAtPathToSavedPhotosAlbum:(NSURL *)videoPathURL albumAssetsGroup:(ALAssetsGroup *)albumAssetsGroup completionBlock:(ALAssetsLibraryWriteImageCompletionBlock)completionBlock;
 
