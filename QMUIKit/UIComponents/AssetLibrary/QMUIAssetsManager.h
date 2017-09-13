@@ -17,7 +17,7 @@
 #import <Photos/PHImageManager.h>
 #import "QMUIAssetsGroup.h"
 
-#define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 以上也使用 ALAssetsLibrary，用于调试
+#define EnforceUseAssetsLibraryForTest NO // 强制在 iOS 8.0 及以上版本中也使用 ALAssetsLibrary，用于调试
 
 @class PHCachingImageManager;
 @class QMUIAsset;
@@ -33,11 +33,11 @@ typedef NS_ENUM(NSUInteger, QMUIAssetAuthorizationStatus) {
 typedef void (^QMUIWriteAssetCompletionBlock)(QMUIAsset *asset, NSError *error);
 
 
-/// 保存图片到指定相册，该方法是一个 C 方法，与系统 ALAssetsLibrary 保存图片的 C 方法 UIImageWriteToSavedPhotosAlbum 对应，方便调用
+/// 保存图片到指定相册（传入 UIImage），该方法是一个 C 方法，与系统 ALAssetsLibrary 保存图片的 C 方法 UIImageWriteToSavedPhotosAlbum 对应，方便调用
 extern void QMUIImageWriteToSavedPhotosAlbumWithAlbumAssetsGroup(UIImage *image, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);
 
-/// 保存图片到指定相册，该方法是一个 C 方法，方便调用
-extern void QMUIImageAtPathWriteToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *imagePath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);
+/// 保存图片到指定相册（传入图片路径），该方法是一个 C 方法
+extern void QMUISaveImageAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *imagePath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);
 
 /// 保存视频到指定相册，该方法是一个 C 方法，与系统 ALAssetsLibrary 保存图片的 C 方法 UISaveVideoAtPathToSavedPhotosAlbum 对应，方便调用
 extern void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock);

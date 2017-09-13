@@ -14,7 +14,7 @@ void QMUIImageWriteToSavedPhotosAlbumWithAlbumAssetsGroup(UIImage *image, QMUIAs
     [[QMUIAssetsManager sharedInstance] saveImageWithImageRef:image.CGImage albumAssetsGroup:albumAssetsGroup orientation:image.imageOrientation completionBlock:completionBlock];
 }
 
-void QMUIImageAtPathWriteToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *imagePath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock) {
+void QMUISaveImageAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *imagePath, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock) {
     [[QMUIAssetsManager sharedInstance] saveImageWithImagePathURL:[NSURL fileURLWithPath:imagePath] albumAssetsGroup:albumAssetsGroup completionBlock:completionBlock];
 }
 
@@ -182,19 +182,19 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
     } else {
         ALAssetsGroup *assetGroup = albumAssetsGroup.alAssetsGroup;
         [_alAssetsLibrary writeImageToSavedPhotosAlbum:imageRef
-                                    albumAssetsGroup:assetGroup
-                                         orientation:orientation
-                                     completionBlock:^ (NSURL *assetURL, NSError *error) {
-                                         [_alAssetsLibrary assetForURL:assetURL
-                                                         resultBlock:^(ALAsset *asset) {
-                                                             QMUIAsset *resultAsset = [[QMUIAsset alloc] initWithALAsset:asset];
-                                                             completionBlock(resultAsset, error);
-                                                         } failureBlock:^(NSError *error) {
-                                                             QMUILog(@"Get ALAsset of image error : %@", error);
-                                                             completionBlock(nil, error);
-                                                         }];
-                                     }];
-    
+                                      albumAssetsGroup:assetGroup
+                                           orientation:orientation
+                                       completionBlock:^ (NSURL *assetURL, NSError *error) {
+                                           [_alAssetsLibrary assetForURL:assetURL
+                                                             resultBlock:^(ALAsset *asset) {
+                                                                 QMUIAsset *resultAsset = [[QMUIAsset alloc] initWithALAsset:asset];
+                                                                 completionBlock(resultAsset, error);
+                                                             } failureBlock:^(NSError *error) {
+                                                                 QMUILog(@"Get ALAsset of image error : %@", error);
+                                                                 completionBlock(nil, error);
+                                                             }];
+                                       }];
+        
     }
 }
 
@@ -256,17 +256,17 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
         ALAssetsGroup *assetsGroup = albumAssetsGroup.alAssetsGroup;
         
         [_alAssetsLibrary writeVideoAtPathToSavedPhotosAlbum:videoPathURL
-                                          albumAssetsGroup:assetsGroup
-                                           completionBlock:^ (NSURL *assetURL, NSError *error) {
-                                               [_alAssetsLibrary assetForURL:assetURL
-                                                               resultBlock:^(ALAsset *asset) {
-                                                                   QMUIAsset *resultAsset = [[QMUIAsset alloc] initWithALAsset:asset];
-                                                                   completionBlock(resultAsset, error);
-                                                               } failureBlock:^(NSError *error) {
-                                                                   QMUILog(@"Get ALAsset of video error: %@", error);
-                                                                   completionBlock(nil, error);
-                                                               }];
-                                           }];
+                                            albumAssetsGroup:assetsGroup
+                                             completionBlock:^ (NSURL *assetURL, NSError *error) {
+                                                 [_alAssetsLibrary assetForURL:assetURL
+                                                                   resultBlock:^(ALAsset *asset) {
+                                                                       QMUIAsset *resultAsset = [[QMUIAsset alloc] initWithALAsset:asset];
+                                                                       completionBlock(resultAsset, error);
+                                                                   } failureBlock:^(NSError *error) {
+                                                                       QMUILog(@"Get ALAsset of video error: %@", error);
+                                                                       completionBlock(nil, error);
+                                                                   }];
+                                             }];
         
     }
 }
@@ -401,11 +401,27 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
 
 - (void)addImageToAlbum:(CGImageRef)imageRef albumAssetCollection:(PHAssetCollection *)albumAssetCollection orientation:(UIImageOrientation)orientation completionHandler:(void(^)(BOOL success, NSDate *creationDate, NSError *error))completionHandler {
     UIImage *targetImage = [UIImage imageWithCGImage:imageRef scale:ScreenScale orientation:orientation];
+    [[PHPhotoLibrary sharedPhotoLibrary] addImageToAlbum:targetImage imagePathURL:nil albumAssetCollection:albumAssetCollection completionHandler:completionHandler];
+}
+
+- (void)addImageToAlbum:(NSURL *)imagePathURL albumAssetCollection:(PHAssetCollection *)albumAssetCollection completionHandler:(void (^)(BOOL success, NSDate *creationDate, NSError *error))completionHandler {
+    [[PHPhotoLibrary sharedPhotoLibrary] addImageToAlbum:nil imagePathURL:imagePathURL albumAssetCollection:albumAssetCollection completionHandler:completionHandler];
+}
+
+- (void)addImageToAlbum:(UIImage *)image imagePathURL:(NSURL *)imagePathURL albumAssetCollection:(PHAssetCollection *)albumAssetCollection completionHandler:(void(^)(BOOL success, NSDate *creationDate, NSError *error))completionHandler {
     __block NSDate *creationDate = nil;
     [self performChanges:^{
         // 创建一个以图片生成新的 PHAsset，这时图片已经被添加到“相机胶卷”
         
-        PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:targetImage];
+        PHAssetChangeRequest *assetChangeRequest;
+        if (image) {
+            assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImage:image];
+        } else if (imagePathURL) {
+            assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImageAtFileURL:imagePathURL];
+        } else {
+            QMUILog(@"Creating asset with empty data");
+            return;
+        }
         assetChangeRequest.creationDate = [NSDate date];
         creationDate = assetChangeRequest.creationDate;
         
@@ -432,49 +448,13 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
              *  为了避免这种情况，这里该 block 主动放到主线程执行。
              */
             dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(success, creationDate, error);
+                BOOL creatingSuccess = success && creationDate; // 若创建时间为 nil，则说明 performChanges 中传入的资源为空，因此需要同时判断 performChanges 是否执行成功以及资源是否有创建时间。
+                completionHandler(creatingSuccess, creationDate, error);
             });
         }
     }];
 }
 
-- (void)addImageToAlbum:(NSURL *)imagePathURL albumAssetCollection:(PHAssetCollection *)albumAssetCollection completionHandler:(void (^)(BOOL, NSDate *, NSError *))completionHandler {
-    __block NSDate *creationDate = nil;
-    [self performChanges:^{
-        // 创建一个以图片生成新的 PHAsset，这时图片已经被添加到“相机胶卷”
-        
-        PHAssetChangeRequest *assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImageAtFileURL:imagePathURL];
-        assetChangeRequest.creationDate = [NSDate date];
-        creationDate = assetChangeRequest.creationDate;
-        
-        if (albumAssetCollection.assetCollectionType == PHAssetCollectionTypeAlbum) {
-            // 如果传入的相册类型为标准的相册（非“智能相册”和“时刻”），则把刚刚创建的 Asset 添加到传入的相册中。
-            
-            // 创建一个改变 PHAssetCollection 的请求，并指定相册对应的 PHAssetCollection
-            PHAssetCollectionChangeRequest *assetCollectionChangeRequest = [PHAssetCollectionChangeRequest changeRequestForAssetCollection:albumAssetCollection];
-            /**
-             *  把 PHAsset 加入到对应的 PHAssetCollection 中，系统推荐的方法是调用 placeholderForCreatedAsset ，
-             *  返回一个的 placeholder 来代替刚创建的 PHAsset 的引用，并把该引用加入到一个 PHAssetCollectionChangeRequest 中。
-             */
-            [assetCollectionChangeRequest addAssets:@[[assetChangeRequest placeholderForCreatedAsset]]];
-        }
-        
-    } completionHandler:^(BOOL success, NSError *error) {
-        if (!success) {
-            QMUILog(@"Creating asset of image error : %@", error);
-        }
-        
-        if (completionHandler) {
-            /**
-             *  performChanges:completionHandler 不在主线程执行，若用户在该 block 中操作 UI 时会产生一些问题，
-             *  为了避免这种情况，这里该 block 主动放到主线程执行。
-             */
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(success, creationDate, error);
-            });
-        }
-    }];
-}
 
 - (void)addVideoToAlbum:(NSURL *)videoPathURL albumAssetCollection:(PHAssetCollection *)albumAssetCollection completionHandler:(void(^)(BOOL success, NSDate *creationDate, NSError *error))completionHandler {
     __block NSDate *creationDate = nil;
@@ -567,10 +547,10 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
                                [self addAssetURL:assetURL
                                 albumAssetsGroup:albumAssetsGroup
                                  completionBlock:^(NSError *error) {
-                                    if (completionBlock) {
-                                        completionBlock(assetURL, error);
-                                    }
-                                }];
+                                     if (completionBlock) {
+                                         completionBlock(assetURL, error);
+                                     }
+                                 }];
                            }
                        }];
 }
@@ -606,7 +586,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
         } else {
             // 把获取到的 ALAsset 添加到用户指定的相册中
             [self addAssetURL:assetURL
-                    albumAssetsGroup:albumAssetsGroup
+             albumAssetsGroup:albumAssetsGroup
               completionBlock:^(NSError *error) {
                   if (completionBlock) {
                       completionBlock(assetURL, error);
