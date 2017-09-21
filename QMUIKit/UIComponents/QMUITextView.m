@@ -241,6 +241,12 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         }
         
         self.shouldRejectSystemScroll = YES;
+        
+        // 如果支持textView自动修改Size，同时不需要滑动，则不对原有偏移作修改
+        if(!self.scrollEnabled && self.autoResizable){
+            return ;
+        }
+        
         // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             self.shouldRejectSystemScroll = NO;
