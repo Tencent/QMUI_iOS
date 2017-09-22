@@ -62,7 +62,7 @@ static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLa
     NSString *contentTypeOflastAlbumKey = [NSString stringWithFormat:@"%@%@", kContentTypeOfLastAlbumKeyPrefix, userIdentify];
     
     __block QMUIAssetsGroup *assetsGroup;
-    BOOL usePhotoKit = IOS_VERSION >= 8.0 ? YES : NO;
+    BOOL usePhotoKit = YES;
     
     QMUIAlbumContentType albumContentType = (QMUIAlbumContentType)[userDefaults integerForKey:contentTypeOflastAlbumKey];
     

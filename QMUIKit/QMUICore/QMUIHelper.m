@@ -322,6 +322,14 @@ static NSInteger isSimulator = -1;
     return isSimulator > 0;
 }
 
+static NSInteger is58InchScreen = -1;
++ (BOOL)is58InchScreen {
+    if (is58InchScreen < 0) {
+        is58InchScreen = (DEVICE_WIDTH == self.screenSizeFor58Inch.width && DEVICE_HEIGHT == self.screenSizeFor58Inch.height) ? 1 : 0;
+    }
+    return is58InchScreen > 0;
+}
+
 static NSInteger is55InchScreen = -1;
 + (BOOL)is55InchScreen {
     if (is55InchScreen < 0) {
@@ -354,6 +362,10 @@ static NSInteger is35InchScreen = -1;
     return is35InchScreen > 0;
 }
 
++ (CGSize)screenSizeFor58Inch {
+    return CGSizeMake(375, 812);
+}
+
 + (CGSize)screenSizeFor55Inch {
     return CGSizeMake(414, 736);
 }
@@ -373,7 +385,7 @@ static NSInteger is35InchScreen = -1;
 static NSInteger isHighPerformanceDevice = -1;
 + (BOOL)isHighPerformanceDevice {
     if (isHighPerformanceDevice < 0) {
-        isHighPerformanceDevice = (IOS_VERSION >= 8.0 && PreferredVarForUniversalDevices(YES, YES, YES, NO, NO)) ? 1 : 0;
+        isHighPerformanceDevice = PreferredVarForUniversalDevices(1, 1, 1, 0, 0);
     }
     return isHighPerformanceDevice > 0;
 }

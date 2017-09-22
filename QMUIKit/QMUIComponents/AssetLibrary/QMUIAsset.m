@@ -346,8 +346,11 @@ static NSString * const kAssetInfoSize = @"size";
 }
 
 - (void)requestPhAssetInfo:(void (^)(NSDictionary *))completion {
-    if (!_phAsset && completion) {
-        completion(nil);
+    if (!_phAsset) {
+        if (completion) {
+            completion(nil);
+        }
+        return;
     }
     
     if (self.assetType == QMUIAssetTypeVideo) {

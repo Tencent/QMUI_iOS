@@ -130,11 +130,13 @@ extern NSString *const _Nonnull QMUIResourcesQQEmotionBundleName;
 + (BOOL)isIPhone;
 + (BOOL)isSimulator;
 
++ (BOOL)is58InchScreen;
 + (BOOL)is55InchScreen;
 + (BOOL)is47InchScreen;
 + (BOOL)is40InchScreen;
 + (BOOL)is35InchScreen;
 
++ (CGSize)screenSizeFor58Inch;
 + (CGSize)screenSizeFor55Inch;
 + (CGSize)screenSizeFor47Inch;
 + (CGSize)screenSizeFor40Inch;

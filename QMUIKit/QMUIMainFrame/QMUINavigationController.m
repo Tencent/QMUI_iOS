@@ -16,7 +16,7 @@
 
 @interface UIViewController (QMUINavigationController)
 
-@property(nonatomic, assign) BOOL qmui_isViewWillAppeare;
+@property(nonatomic, assign) BOOL qmui_isViewWillAppear;
 
 @end
 
@@ -33,22 +33,22 @@
 
 - (void)observe_viewWillAppear:(BOOL)animated {
     [self observe_viewWillAppear:animated];
-    self.qmui_isViewWillAppeare = YES;
+    self.qmui_isViewWillAppear = YES;
 }
 
 - (void)observe_viewDidDisappear:(BOOL)animated {
     [self observe_viewDidDisappear:animated];
-    self.qmui_isViewWillAppeare = NO;
+    self.qmui_isViewWillAppear = NO;
 }
 
-- (BOOL)qmui_isViewWillAppeare {
+- (BOOL)qmui_isViewWillAppear {
     return [objc_getAssociatedObject(self, _cmd) boolValue];
 }
 
-- (void)setQmui_isViewWillAppeare:(BOOL)qmui_isViewWillAppeare {
-    [self willChangeValueForKey:@"qmui_isViewWillAppeare"];
-    objc_setAssociatedObject(self, @selector(qmui_isViewWillAppeare), [[NSNumber alloc] initWithBool:qmui_isViewWillAppeare], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    [self didChangeValueForKey:@"qmui_isViewWillAppeare"];
+- (void)setQmui_isViewWillAppear:(BOOL)qmui_isViewWillAppear {
+    [self willChangeValueForKey:@"qmui_isViewWillAppear"];
+    objc_setAssociatedObject(self, @selector(qmui_isViewWillAppear), [[NSNumber alloc] initWithBool:qmui_isViewWillAppear], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self didChangeValueForKey:@"qmui_isViewWillAppear"];
 }
 
 @end
@@ -302,7 +302,7 @@
 - (void)handleInteractivePopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
     UIGestureRecognizerState state = gestureRecognizer.state;
     if (state == UIGestureRecognizerStateBegan) {
-        [self.viewControllerPopping addObserver:self forKeyPath:@"qmui_isViewWillAppeare" options:NSKeyValueObservingOptionNew context:nil];
+        [self.viewControllerPopping addObserver:self forKeyPath:@"qmui_isViewWillAppear" options:NSKeyValueObservingOptionNew context:nil];
     } else if (state == UIGestureRecognizerStateEnded) {
         if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
             // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
@@ -314,8 +314,8 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"qmui_isViewWillAppeare"]) {
-        [self.viewControllerPopping removeObserver:self forKeyPath:@"qmui_isViewWillAppeare"];
+    if ([keyPath isEqualToString:@"qmui_isViewWillAppear"]) {
+        [self.viewControllerPopping removeObserver:self forKeyPath:@"qmui_isViewWillAppear"];
         NSNumber *newValue = change[NSKeyValueChangeNewKey];
         if (newValue.boolValue) {
             [self navigationController:self willShowViewController:self.viewControllerPopping animated:YES];

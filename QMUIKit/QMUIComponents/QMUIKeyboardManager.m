@@ -767,28 +767,18 @@ static UIResponder *kCurrentResponder = nil;
         }
     }
     
-    if (IOS_VERSION < 8) {
-        for (UIView *view in window.subviews) {
-            NSString *viewName = NSStringFromClass(view.class);
-            if (![viewName isEqualToString:@"UIPeripheralHostView"]) {
-                continue;
-            }
-            return view;
+    for (UIView *view in window.subviews) {
+        NSString *viewName = NSStringFromClass(view.class);
+        if (![viewName isEqualToString:@"UIInputSetContainerView"]) {
+            continue;
         }
-    } else {
-        for (UIView *view in window.subviews) {
-            NSString *viewName = NSStringFromClass(view.class);
-            if (![viewName isEqualToString:@"UIInputSetContainerView"]) {
+        
+        for (UIView *subView in view.subviews) {
+            NSString *subViewName = NSStringFromClass(subView.class);
+            if (![subViewName isEqualToString:@"UIInputSetHostView"]) {
                 continue;
             }
-            
-            for (UIView *subView in view.subviews) {
-                NSString *subViewName = NSStringFromClass(subView.class);
-                if (![subViewName isEqualToString:@"UIInputSetHostView"]) {
-                    continue;
-                }
-                return subView;
-            }
+            return subView;
         }
     }
     

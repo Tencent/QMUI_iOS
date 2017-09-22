@@ -179,11 +179,9 @@ static char kAssociatedObjectKey_lineHeight;
 }
 
 - (void)qmui_avoidBlendedLayersIfShowingChineseWithBackgroundColor:(UIColor *)color {
-    self.opaque = YES;// 本来默认就是YES，这里还是明确写一下，表意清晰
+    self.opaque = YES;// 本来默认就是YES，这里还是明确写一下
     self.backgroundColor = color;
-    if (IOS_VERSION >= 8.0) {
-        self.clipsToBounds = YES;// 只clip不适用cornerRadius就不会触发offscreen render
-    }
+    self.clipsToBounds = YES;// 只 clip 不使用 cornerRadius就不会触发offscreen render
 }
 
 @end

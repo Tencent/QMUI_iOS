@@ -111,7 +111,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// alert按钮高度，默认44pt
 @property(nonatomic, assign) CGFloat alertButtonHeight UI_APPEARANCE_SELECTOR;
 
-/// alert头部（非按钮部分）背景色，默认值是：(IOS_VERSION < 8.0) ? UIColorWhite : UIColorMakeWithRGBA(247, 247, 247, 1)
+/// alert头部（非按钮部分）背景色，默认值是：UIColorMakeWithRGBA(247, 247, 247, 1)
 @property(nonatomic, strong) UIColor *alertHeaderBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// alert按钮背景色，默认值同`alertHeaderBackgroundColor`
@@ -163,7 +163,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// sheet按钮高度，默认值是：(IOS_VERSION >= 9.0 ? 57 : 44)，以保持与系统默认样式一致
 @property(nonatomic, assign) CGFloat sheetButtonHeight UI_APPEARANCE_SELECTOR;
 
-/// sheet头部（非按钮部分）背景色，默认值是：(IOS_VERSION < 8.0) ? UIColorWhite : UIColorMakeWithRGBA(247, 247, 247, 1)
+/// sheet头部（非按钮部分）背景色，默认值是：UIColorMakeWithRGBA(247, 247, 247, 1)
 @property(nonatomic, strong) UIColor *sheetHeaderBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// sheet按钮背景色，默认值同`sheetHeaderBackgroundColor`

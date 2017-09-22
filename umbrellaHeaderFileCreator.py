@@ -1,4 +1,5 @@
-#!python
+#!/usr/bin/python
+#coding:utf-8
 
 import os
 
@@ -24,11 +25,20 @@ for filename in onlyfiles:
 
 ''' % (filename, filename)
 
-print 'umbrella creator: umbrellaFileContent = ' + umbrellaFileContent
+umbrellaFileContent = umbrellaFileContent.strip()
 
 f = open(umbrellaHeaderFilePath, 'r+')
 f.seek(0)
-f.write(umbrellaFileContent)
-f.truncate()
+oldFileContent = f.read().strip()
+if oldFileContent == umbrellaFileContent:
+  print 'umbrella creator: ' + umbrellaHeaderFileName + '的内容没有变化，不需要重写'
+else:
+  print 'umbrella creator: ' + umbrellaHeaderFileName + '的内容发生变化，开始重写'
+  print 'umbrella creator: umbrellaFileContent = ' + umbrellaFileContent
+
+  f.seek(0)
+  f.write(umbrellaFileContent)
+  f.truncate()
+
 f.close()
 

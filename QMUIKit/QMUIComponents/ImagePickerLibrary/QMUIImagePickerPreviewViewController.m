@@ -59,7 +59,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.maximumSelectImageCount = INT_MAX;
         self.minimumSelectImageCount = 0;
-        _usePhotoKit = EnforceUseAssetsLibraryForTest ? NO : ((IOS_VERSION >= 8.0) ? YES : NO);
+        _usePhotoKit = !EnforceUseAssetsLibraryForTest;
         
         if (imagePickerPreviewViewControllerAppearance) {
             // 避免 imagePickerPreviewViewControllerAppearance init 时走到这里来，导致死循环

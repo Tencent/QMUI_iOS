@@ -192,11 +192,19 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
     if (!self.emptyView || !self.emptyView.superview) {
         return NO;
     }
+    
+    UIEdgeInsets insets = self.tableView.contentInset;
+    if (@available(ios 11, *)) {
+        if (self.tableView.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
+            insets = self.tableView.adjustedContentInset;
+        }
+    }
+    
     // 当存在 tableHeaderView 时，emptyView 的高度为 tableView 的高度减去 headerView 的高度
     if (self.tableView.tableHeaderView) {
-        self.emptyView.frame = CGRectMake(0, CGRectGetMaxY(self.tableView.tableHeaderView.frame), CGRectGetWidth(self.tableView.bounds) - UIEdgeInsetsGetHorizontalValue(self.tableView.contentInset), CGRectGetHeight(self.tableView.bounds) - UIEdgeInsetsGetVerticalValue(self.tableView.contentInset) - CGRectGetMaxY(self.tableView.tableHeaderView.frame));
+        self.emptyView.frame = CGRectMake(0, CGRectGetMaxY(self.tableView.tableHeaderView.frame), CGRectGetWidth(self.tableView.bounds) - UIEdgeInsetsGetHorizontalValue(insets), CGRectGetHeight(self.tableView.bounds) - UIEdgeInsetsGetVerticalValue(insets) - CGRectGetMaxY(self.tableView.tableHeaderView.frame));
     } else {
-        self.emptyView.frame = CGRectMake(0, 0, CGRectGetWidth(self.tableView.bounds) - UIEdgeInsetsGetHorizontalValue(self.tableView.contentInset), CGRectGetHeight(self.tableView.bounds) - UIEdgeInsetsGetVerticalValue(self.tableView.contentInset));
+        self.emptyView.frame = CGRectMake(0, 0, CGRectGetWidth(self.tableView.bounds) - UIEdgeInsetsGetHorizontalValue(insets), CGRectGetHeight(self.tableView.bounds) - UIEdgeInsetsGetVerticalValue(insets));
     }
     return YES;
 }

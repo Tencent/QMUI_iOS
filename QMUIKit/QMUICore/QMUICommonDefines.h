@@ -19,35 +19,29 @@
 #define IS_DEBUG NO
 #endif
 
-/// 使用iOS7 API时要加`ifdef IOS7_SDK_ALLOWED`的判断
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 70000
-#define IOS7_SDK_ALLOWED YES
-#endif
-
-
-/// 使用iOS8 API时要加`ifdef IOS8_SDK_ALLOWED`的判断
+/// 判断当前编译使用的 Base SDK 版本是否为 iOS 8.0 及以上
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
 #define IOS8_SDK_ALLOWED YES
 #endif
 
 
-/// 使用iOS9 API时要加`ifdef IOS9_SDK_ALLOWED`的判断
+/// 判断当前编译使用的 Base SDK 版本是否为 iOS 9.0 及以上
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 90000
 #define IOS9_SDK_ALLOWED YES
 #endif
 
 
-/// 使用iOS10 API时要加`ifdef IOS10_SDK_ALLOWED`的判断
+/// 判断当前编译使用的 Base SDK 版本是否为 iOS 10.0 及以上
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
 #define IOS10_SDK_ALLOWED YES
 #endif
 
 
-/// 使用iOS11 API时要加`ifdef IOS11_SDK_ALLOWED`的判断
+/// 判断当前编译使用的 Base SDK 版本是否为 iOS 11.0 及以上
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
 #define IOS11_SDK_ALLOWED YES
@@ -58,7 +52,7 @@
 #define ArgumentToString(macro) #macro
 #define ClangWarningConcat(warning_name) ArgumentToString(clang diagnostic ignored warning_name)
 
-// 参数可直接传入 clang 的 warning 名，warning 列表参考：http://fuckingclangwarnings.com/
+// 参数可直接传入 clang 的 warning 名，warning 列表参考：https://clang.llvm.org/docs/DiagnosticsReference.html
 #define BeginIgnoreClangWarning(warningName) _Pragma("clang diagnostic push") _Pragma(ClangWarningConcat(#warningName))
 #define EndIgnoreClangWarning _Pragma("clang diagnostic pop")
 
@@ -92,18 +86,19 @@
 
 
 // 屏幕宽度，会根据横竖屏的变化而变化
-#define SCREEN_WIDTH (IOS_VERSION >= 8.0 ? [[UIScreen mainScreen] bounds].size.width : (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.height : [[UIScreen mainScreen] bounds].size.width))
+#define SCREEN_WIDTH ([[UIScreen mainScreen] bounds].size.width)
 
 // 屏幕宽度，跟横竖屏无关
-#define DEVICE_WIDTH (IOS_VERSION >= 8.0 ? (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.height : [[UIScreen mainScreen] bounds].size.width) : [[UIScreen mainScreen] bounds].size.width)
+#define DEVICE_WIDTH (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.height : [[UIScreen mainScreen] bounds].size.width)
 
 // 屏幕高度，会根据横竖屏的变化而变化
-#define SCREEN_HEIGHT (IOS_VERSION >= 8.0 ? [[UIScreen mainScreen] bounds].size.height : (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height))
+#define SCREEN_HEIGHT ([[UIScreen mainScreen] bounds].size.height)
 
 // 屏幕高度，跟横竖屏无关
-#define DEVICE_HEIGHT (IOS_VERSION >= 8.0 ? (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height) : [[UIScreen mainScreen] bounds].size.height)
+#define DEVICE_HEIGHT (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height)
 
 // 设备屏幕尺寸
+#define IS_58INCH_SCREEN [QMUIHelper is58InchScreen]
 #define IS_55INCH_SCREEN [QMUIHelper is55InchScreen]
 #define IS_47INCH_SCREEN [QMUIHelper is47InchScreen]
 #define IS_40INCH_SCREEN [QMUIHelper is40InchScreen]
@@ -120,14 +115,14 @@
 
 // bounds && nativeBounds / scale && nativeScale
 #define ScreenBoundsSize ([[UIScreen mainScreen] bounds].size)
-#define ScreenNativeBoundsSize (IOS_VERSION >= 8.0 ? ([[UIScreen mainScreen] nativeBounds].size) : ScreenBoundsSize)
+#define ScreenNativeBoundsSize ([[UIScreen mainScreen] nativeBounds].size)
 #define ScreenScale ([[UIScreen mainScreen] scale])
-#define ScreenNativeScale (IOS_VERSION >= 8.0 ? ([[UIScreen mainScreen] nativeScale]) : ScreenScale)
+#define ScreenNativeScale ([[UIScreen mainScreen] nativeScale])
 // 区分设备是否处于放大模式（iPhone 6及以上的设备支持放大模式）
 #define ScreenInDisplayZoomMode (ScreenNativeScale > ScreenScale)
 
 // 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算)
-#define StatusBarHeight (IOS_VERSION >= 8.0 ? ([[UIApplication sharedApplication] statusBarFrame].size.height) : (IS_LANDSCAPE ? ([[UIApplication sharedApplication] statusBarFrame].size.width) : ([[UIApplication sharedApplication] statusBarFrame].size.height)))
+#define StatusBarHeight ([[UIApplication sharedApplication] statusBarFrame].size.height)
 
 // navigationBar相关frame
 #define NavigationBarHeight (IS_LANDSCAPE ? PreferredVarForDevices(44, 32, 32, 32) : 44)
@@ -145,20 +140,18 @@
 // 获取一个像素
 #define PixelOne [QMUIHelper pixelOne]
 
-// 获取最合适的适配值，默认以varFor55Inch为准，也即偏向大屏
-#define PreferredVarForDevices(varFor55Inch, varFor47Inch, varFor40Inch, varFor35Inch) (IS_35INCH_SCREEN ? varFor35Inch : (IS_40INCH_SCREEN ? varFor40Inch : (IS_47INCH_SCREEN ? varFor47Inch : varFor55Inch)))
+// 获取最合适的适配值，默认以varFor55Inch为准，也即偏向大屏，特殊的，iPhone X 虽然英寸值更大，但由于宽度与 47inch 相等，因此布局上使用与 47inch 一样的值
+#define PreferredVarForDevices(varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch) PreferredVarForUniversalDevices(varFor55Inch, varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch)
 
 // 同上，加多一个iPad的参数
-#define PreferredVarForUniversalDevices(varForPad, varFor55Inch, varFor47Inch, varFor40Inch, varFor35Inch) (IS_IPAD ? varForPad :(IS_55INCH_SCREEN ? varFor55Inch : (IS_47INCH_SCREEN ? varFor47Inch : (IS_40INCH_SCREEN ? varFor40Inch : varFor35Inch))))
+#define PreferredVarForUniversalDevices(varForPad, varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch) (IS_IPAD ? varForPad : (IS_35INCH_SCREEN ? varFor35Inch : (IS_40INCH_SCREEN ? varFor40Inch : (IS_47INCH_SCREEN || IS_58INCH_SCREEN ? varFor47or58Inch : varFor55Inch))))
 
 
 #pragma mark - 方法-创建器
 
 // 使用文件名(不带后缀名)创建一个UIImage对象，会被系统缓存，适用于大量复用的小资源图
-#define UIImageMake(img) \
-BeginIgnoreAvailabilityWarning \
-(IOS_VERSION >= 8.0 ? [UIImage imageNamed:img inBundle:nil compatibleWithTraitCollection:nil] : [UIImage imageNamed:img]) \
-EndIgnoreAvailabilityWarning
+// 使用这个 API 而不是 imageNamed: 是因为后者在 iOS 8 下反而存在性能问题（by molice 不确定 iOS 9 及以后的版本是否还有这个问题）
+#define UIImageMake(img) [UIImage imageNamed:img inBundle:nil compatibleWithTraitCollection:nil]
 
 // 使用文件名(不带后缀名，仅限png)创建一个UIImage对象，不会被系统缓存，用于不被复用的图片，特别是大图
 #define UIImageMakeWithFile(name) UIImageMakeWithFileAndSuffix(name, @"png")
@@ -209,12 +202,22 @@ ReplaceMethod(Class _class, SEL _originSelector, SEL _newSelector) {
 #pragma mark - CGFloat
 
 /**
+ *  某些地方可能会将 CGFLOAT_MIN 作为一个数值参与计算（但其实 CGFLOAT_MIN 更应该被视为一个标志位而不是数值），可能导致一些精度问题，所以提供这个方法快速将 CGFLOAT_MIN 转换为 0
+ *  issue: https://github.com/QMUI/QMUI_iOS/issues/203
+ */
+CG_INLINE CGFloat
+removeFloatMin(CGFloat floatValue) {
+    return floatValue == CGFLOAT_MIN ? 0 : floatValue;
+}
+
+/**
  *  基于指定的倍数，对传进来的 floatValue 进行像素取整。若指定倍数为0，则表示以当前设备的屏幕倍数为准。
  *
  *  例如传进来 “2.1”，在 2x 倍数下会返回 2.5（0.5pt 对应 1px），在 3x 倍数下会返回 2.333（0.333pt 对应 1px）。
  */
 CG_INLINE CGFloat
 flatSpecificScale(CGFloat floatValue, CGFloat scale) {
+    floatValue = removeFloatMin(floatValue);
     scale = scale == 0 ? ScreenScale : scale;
     CGFloat flattedValue = ceil(floatValue * scale) / scale;
     return flattedValue;
@@ -235,6 +238,7 @@ flat(CGFloat floatValue) {
  */
 CG_INLINE CGFloat
 floorInPixel(CGFloat floatValue) {
+    floatValue = removeFloatMin(floatValue);
     CGFloat resultValue = floor(floatValue * ScreenScale) / ScreenScale;
     return resultValue;
 }
@@ -299,6 +303,12 @@ CGPointToFixed(CGPoint point, NSUInteger precision) {
     return result;
 }
 
+CG_INLINE CGPoint
+CGPointRemoveFloatMin(CGPoint point) {
+    CGPoint result = CGPointMake(removeFloatMin(point.x), removeFloatMin(point.y));
+    return result;
+}
+
 #pragma mark - UIEdgeInsets
 
 /// 获取UIEdgeInsets在水平方向上的值
@@ -352,6 +362,12 @@ UIEdgeInsetsToFixed(UIEdgeInsets insets, NSUInteger precision) {
     return result;
 }
 
+CG_INLINE UIEdgeInsets
+UIEdgeInsetsRemoveFloatMin(UIEdgeInsets insets) {
+    UIEdgeInsets result = UIEdgeInsetsMake(removeFloatMin(insets.top), removeFloatMin(insets.left), removeFloatMin(insets.bottom), removeFloatMin(insets.right));
+    return result;
+}
+
 #pragma mark - CGSize
 
 /// 判断一个size是否为空（宽或高为0）
@@ -381,6 +397,12 @@ CGSizeFloor(CGSize size) {
 CG_INLINE CGSize
 CGSizeToFixed(CGSize size, NSUInteger precision) {
     CGSize result = CGSizeMake(CGFloatToFixed(size.width, precision), CGFloatToFixed(size.height, precision));
+    return result;
+}
+
+CG_INLINE CGSize
+CGSizeRemoveFloatMin(CGSize size) {
+    CGSize result = CGSizeMake(removeFloatMin(size.width), removeFloatMin(size.height));
     return result;
 }
 
@@ -549,5 +571,14 @@ CGRectToFixed(CGRect rect, NSUInteger precision) {
                                CGFloatToFixed(CGRectGetMinY(rect), precision),
                                CGFloatToFixed(CGRectGetWidth(rect), precision),
                                CGFloatToFixed(CGRectGetHeight(rect), precision));
+    return result;
+}
+
+CG_INLINE CGRect
+CGRectRemoveFloatMin(CGRect rect) {
+    CGRect result = CGRectMake(removeFloatMin(CGRectGetMinX(rect)),
+                               removeFloatMin(CGRectGetMinY(rect)),
+                               removeFloatMin(CGRectGetWidth(rect)),
+                               removeFloatMin(CGRectGetHeight(rect)));
     return result;
 }

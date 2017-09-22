@@ -11,6 +11,7 @@
 #import "QMUIToastAnimator.h"
 #import "QMUIToastContentView.h"
 #import "QMUIToastBackgroundView.h"
+#import "QMUIKeyboardManager.h"
 
 @interface QMUIToastView ()
 
@@ -121,9 +122,12 @@
     CGFloat limitWidth = contentWidth - UIEdgeInsetsGetHorizontalValue(self.marginInsets);
     CGFloat limitHeight = contentHeight - UIEdgeInsetsGetVerticalValue(self.marginInsets);
     
-    if ([QMUIHelper isKeyboardVisible]) {
-        // 处理键盘相关逻辑
-        contentHeight -= [QMUIHelper lastKeyboardHeightInApplicationWindowWhenVisible];
+    if ([QMUIKeyboardManager isKeyboardVisible]) {
+        // 处理键盘相关逻辑，当键盘在显示的时候，内容高度会减去键盘的高度以使 Toast 居中
+        CGRect keyboardFrame = [QMUIKeyboardManager currentKeyboardFrame];
+        CGRect parentViewRect = [[QMUIKeyboardManager keyboardWindow] convertRect:self.parentView.frame fromView:self.parentView.superview];
+        CGRect overlapRect = CGRectFlatted(CGRectIntersection(keyboardFrame, parentViewRect));
+        contentHeight -= CGRectGetHeight(overlapRect);
     }
     
     if (self.contentView) {

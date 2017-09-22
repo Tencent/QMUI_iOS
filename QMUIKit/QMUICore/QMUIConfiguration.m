@@ -224,25 +224,33 @@
 
 - (void)setNavBarTintColor:(UIColor *)navBarTintColor {
     _navBarTintColor = navBarTintColor;
-    [QMUIHelper visibleViewController].navigationController.navigationBar.tintColor = _navBarTintColor;
+    if (navBarTintColor) {
+        [QMUIHelper visibleViewController].navigationController.navigationBar.tintColor = _navBarTintColor;
+    }
 }
 
 - (void)setNavBarBarTintColor:(UIColor *)navBarBarTintColor {
     _navBarBarTintColor = navBarBarTintColor;
-    [UINavigationBar appearance].barTintColor = _navBarBarTintColor;
-    [QMUIHelper visibleViewController].navigationController.navigationBar.barTintColor = _navBarBarTintColor;
+    if (navBarBarTintColor) {
+        [UINavigationBar appearance].barTintColor = _navBarBarTintColor;
+        [QMUIHelper visibleViewController].navigationController.navigationBar.barTintColor = _navBarBarTintColor;
+    }
 }
 
 - (void)setNavBarShadowImage:(UIImage *)navBarShadowImage {
     _navBarShadowImage = navBarShadowImage;
-    [UINavigationBar appearance].shadowImage = _navBarShadowImage;
-    [QMUIHelper visibleViewController].navigationController.navigationBar.shadowImage = _navBarShadowImage;
+    if (navBarShadowImage) {
+        [UINavigationBar appearance].shadowImage = _navBarShadowImage;
+        [QMUIHelper visibleViewController].navigationController.navigationBar.shadowImage = _navBarShadowImage;
+    }
 }
 
 - (void)setNavBarBackgroundImage:(UIImage *)navBarBackgroundImage {
     _navBarBackgroundImage = navBarBackgroundImage;
-    [[UINavigationBar appearance] setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-    [[QMUIHelper visibleViewController].navigationController.navigationBar setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+    if (navBarBackgroundImage) {
+        [[UINavigationBar appearance] setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+        [[QMUIHelper visibleViewController].navigationController.navigationBar setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+    }
 }
 
 - (void)setNavBarTitleFont:(UIFont *)navBarTitleFont {
@@ -312,19 +320,25 @@
 
 - (void)setToolBarTintColor:(UIColor *)toolBarTintColor {
     _toolBarTintColor = toolBarTintColor;
-    [QMUIHelper visibleViewController].navigationController.toolbar.tintColor = _toolBarTintColor;
+    if (toolBarTintColor) {
+        [QMUIHelper visibleViewController].navigationController.toolbar.tintColor = _toolBarTintColor;
+    }
 }
 
 - (void)setToolBarBarTintColor:(UIColor *)toolBarBarTintColor {
     _toolBarBarTintColor = toolBarBarTintColor;
-    [UIToolbar appearance].barTintColor = _toolBarBarTintColor;
-    [QMUIHelper visibleViewController].navigationController.toolbar.barTintColor = _toolBarBarTintColor;
+    if (toolBarBarTintColor) {
+        [UIToolbar appearance].barTintColor = _toolBarBarTintColor;
+        [QMUIHelper visibleViewController].navigationController.toolbar.barTintColor = _toolBarBarTintColor;
+    }
 }
 
 - (void)setToolBarBackgroundImage:(UIImage *)toolBarBackgroundImage {
     _toolBarBackgroundImage = toolBarBackgroundImage;
-    [[UIToolbar appearance] setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-    [[QMUIHelper visibleViewController].navigationController.toolbar setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+    if (toolBarBackgroundImage) {
+        [[UIToolbar appearance] setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+        [[QMUIHelper visibleViewController].navigationController.toolbar setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+    }
 }
 
 - (void)setToolBarShadowImageColor:(UIColor *)toolBarShadowImageColor {
@@ -338,19 +352,25 @@
 
 - (void)setTabBarTintColor:(UIColor *)tabBarTintColor {
     _tabBarTintColor = tabBarTintColor;
-    [QMUIHelper visibleViewController].tabBarController.tabBar.tintColor = _tabBarTintColor;
+    if (tabBarTintColor) {
+        [QMUIHelper visibleViewController].tabBarController.tabBar.tintColor = _tabBarTintColor;
+    }
 }
 
 - (void)setTabBarBarTintColor:(UIColor *)tabBarBarTintColor {
     _tabBarBarTintColor = tabBarBarTintColor;
-    [UITabBar appearance].barTintColor = _tabBarBarTintColor;
-    [QMUIHelper visibleViewController].tabBarController.tabBar.barTintColor = _tabBarBarTintColor;
+    if (tabBarBarTintColor) {
+        [UITabBar appearance].barTintColor = _tabBarBarTintColor;
+        [QMUIHelper visibleViewController].tabBarController.tabBar.barTintColor = _tabBarBarTintColor;
+    }
 }
 
 - (void)setTabBarBackgroundImage:(UIImage *)tabBarBackgroundImage {
     _tabBarBackgroundImage = tabBarBackgroundImage;
-    [UITabBar appearance].backgroundImage = _tabBarBackgroundImage;
-    [QMUIHelper visibleViewController].tabBarController.tabBar.backgroundImage = _tabBarBackgroundImage;
+    if (tabBarBackgroundImage) {
+        [UITabBar appearance].backgroundImage = _tabBarBackgroundImage;
+        [QMUIHelper visibleViewController].tabBarController.tabBar.backgroundImage = _tabBarBackgroundImage;
+    }
 }
 
 - (void)setTabBarShadowImageColor:(UIColor *)tabBarShadowImageColor {

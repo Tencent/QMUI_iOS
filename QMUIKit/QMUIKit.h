@@ -353,4 +353,3 @@
 #if __has_include("UIWindow+QMUI.h")
 #import "UIWindow+QMUI.h"
 #endif
-

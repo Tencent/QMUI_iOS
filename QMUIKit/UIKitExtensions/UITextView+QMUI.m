@@ -35,6 +35,12 @@
     }
     
     CGRect caretRect = [self caretRectForPosition:self.selectedTextRange.end];
+    
+    // scrollEnabled 为 NO 时可能产生不合法的 rect 值 https://github.com/QMUI/QMUI_iOS/issues/205
+    if (isinf(CGRectGetMinX(caretRect)) || isinf(CGRectGetMinY(caretRect))) {
+        return;
+    }
+    
     CGFloat contentOffsetY = self.contentOffset.y;
     
     if (CGRectGetMinY(caretRect) == self.contentOffset.y + self.textContainerInset.top) {

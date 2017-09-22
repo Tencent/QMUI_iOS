@@ -130,7 +130,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
 
 - (void)didInitialized {
     [super didInitialized];
-    _usePhotoKit = IOS_VERSION >= 8.0;
+    _usePhotoKit = YES;
     _shouldShowDefaultLoadingView = YES;
     if (albumViewControllerAppearance) {
         // 避免 albumViewControllerAppearance init 时走到这里来，导致死循环

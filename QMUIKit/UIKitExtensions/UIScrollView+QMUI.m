@@ -58,17 +58,13 @@
 
 - (void)qmui_scrollToTopForce:(BOOL)force animated:(BOOL)animated {
     if (force || (!force && [self qmui_canScroll])) {
-#ifdef IOS11_SDK_ALLOWED
-BeginIgnoreAvailabilityWarning
-        if (![self respondsToSelector:@selector(contentInsetAdjustmentBehavior)] || self.contentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentNever) {
-            [self setContentOffset:CGPointMake(-self.contentInset.left, -self.contentInset.top) animated:animated];
-        } else {
-            [self setContentOffset:CGPointMake(-self.adjustedContentInset.left, -self.adjustedContentInset.top) animated:animated];
+        CGPoint contentOffset = CGPointMake(-self.contentInset.left, -self.contentInset.top);
+        if (@available(ios 11, *)) {
+            if (self.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
+                contentOffset = CGPointMake(-self.adjustedContentInset.left, -self.adjustedContentInset.top);
+            }
         }
-EndIgnoreAvailabilityWarning
-#else
-        [self setContentOffset:CGPointMake(-self.contentInset.left, -self.contentInset.top) animated:animated];
-#endif
+        [self setContentOffset:contentOffset animated:animated];
     }
 }
 

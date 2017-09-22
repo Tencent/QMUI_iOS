@@ -49,7 +49,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
 
 - (instancetype)init {
     if (self = [super init]) {
-        _usePhotoKit = EnforceUseAssetsLibraryForTest ? NO : ((IOS_VERSION >= 8.0) ? YES : NO);
+        _usePhotoKit = !EnforceUseAssetsLibraryForTest;
         if (!_usePhotoKit) {
             _alAssetsLibrary = [[ALAssetsLibrary alloc] init];
         }
