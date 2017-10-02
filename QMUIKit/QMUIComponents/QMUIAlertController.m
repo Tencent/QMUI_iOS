@@ -99,10 +99,10 @@ static NSUInteger alertControllerCount = 0;
     if (self.delegate && [self.delegate respondsToSelector:@selector(didClickAlertAction:)]) {
         [self.delegate didClickAlertAction:self];
     }
-    // 再调block回调
-    if (self.handler) {
-        self.handler(self);
-    }
+//     // 再调block回调
+//     if (self.handler) {
+//         self.handler(self);
+//     }
 }
 
 @end
