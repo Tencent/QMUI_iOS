@@ -1057,8 +1057,10 @@ static QMUIAlertController *alertControllerAppearance;
 
 - (void)didClickAlertAction:(QMUIAlertAction *)alertAction {
     [self hideWithAnimated:YES completion:^{
-        alertAction.handler(alertAction);
-        alertAction.handler = nil;
+        if (alertAction.handler) {
+            alertAction.handler(alertAction);
+            alertAction.handler = nil;
+        }
     }];
 }
 
