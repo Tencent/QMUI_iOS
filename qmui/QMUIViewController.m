@@ -39,7 +39,7 @@
     CGFloat paddingHorizontal = 20;
     CGFloat homeLabelLimitWidth = CGRectGetWidth(self.view.bounds) - paddingHorizontal * 2;
     CGSize homeLabelSize = [_homeLabel sizeThatFits:CGSizeMake(homeLabelLimitWidth, CGFLOAT_MAX)];
-    _homeLabel.frame = CGRectMake(paddingHorizontal, NavigationContentTop + 50, homeLabelLimitWidth, homeLabelSize.height);
+    _homeLabel.frame = CGRectMake(paddingHorizontal, self.qmui_navigationBarMaxYInViewCoordinator + 50, homeLabelLimitWidth, homeLabelSize.height);
 }
 
 - (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {

@@ -58,7 +58,13 @@
 
 - (void)qmui_scrollToTopForce:(BOOL)force animated:(BOOL)animated {
     if (force || (!force && [self qmui_canScroll])) {
-        [self setContentOffset:CGPointMake(-self.contentInset.left, -self.contentInset.top) animated:animated];
+        CGPoint contentOffset = CGPointMake(-self.contentInset.left, -self.contentInset.top);
+        if (@available(ios 11, *)) {
+            if (self.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
+                contentOffset = CGPointMake(-self.adjustedContentInset.left, -self.adjustedContentInset.top);
+            }
+        }
+        [self setContentOffset:contentOffset animated:animated];
     }
 }
 

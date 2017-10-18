@@ -29,7 +29,9 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 提供高效的工具方法，包括设备信息、动态字体、键盘管理、状态栏管理等，可以解决各种常见场景并大幅度提升开发效率。
 
 ## 支持 iOS 版本
-QMUI iOS 支持 iOS 7+。
+QMUI iOS 2.0 支持 iOS 8+。
+
+QMUI iOS 1.7.6 及以前版本支持 iOS 7+。
 
 ## 使用方法
 请查看官网的[开始使用](http://qmuiteam.com/ios/page/start.html)。

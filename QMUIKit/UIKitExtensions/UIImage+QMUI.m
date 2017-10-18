@@ -196,10 +196,10 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         CGFloat verticalRatio = size.height / imageSize.height;
         CGFloat ratio = 0;
         if (contentMode == UIViewContentModeScaleAspectFill) {
-            ratio = fmaxf(horizontalRatio, verticalRatio);
+            ratio = fmax(horizontalRatio, verticalRatio);
         } else {
             // 默认按 UIViewContentModeScaleAspectFit
-            ratio = fminf(horizontalRatio, verticalRatio);
+            ratio = fmin(horizontalRatio, verticalRatio);
         }
         drawingRect.size.width = flatSpecificScale(imageSize.width * ratio, scale);
         drawingRect.size.height = flatSpecificScale(imageSize.height * ratio, scale);

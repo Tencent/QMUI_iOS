@@ -9,9 +9,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@class QMUIKeyboardManager;
-@class QMUIKeyboardUserInfo;
-
 @interface UITextView (QMUI)
 
 /**
@@ -33,16 +30,5 @@
  *  [UITextView scrollRangeToVisible:] 并不会考虑 textContainerInset.bottom，所以使用这个方法来代替
  */
 - (void)qmui_scrollCaretVisibleAnimated:(BOOL)animated;
-
-/// 键盘相关block，搭配QMUIKeyboardManager一起使用
-
-@property(nonatomic, copy) void (^qmui_keyboardWillShowNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
-@property(nonatomic, copy) void (^qmui_keyboardWillHideNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
-@property(nonatomic, copy) void (^qmui_keyboardWillChangeFrameNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
-@property(nonatomic, copy) void (^qmui_keyboardDidShowNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
-@property(nonatomic, copy) void (^qmui_keyboardDidHideNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
-@property(nonatomic, copy) void (^qmui_keyboardDidChangeFrameNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
-
-@property(nonatomic, strong, readonly) QMUIKeyboardManager *qmui_keyboardManager;
 
 @end
