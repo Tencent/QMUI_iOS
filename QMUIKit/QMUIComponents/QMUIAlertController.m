@@ -99,10 +99,6 @@ static NSUInteger alertControllerCount = 0;
     if (self.delegate && [self.delegate respondsToSelector:@selector(didClickAlertAction:)]) {
         [self.delegate didClickAlertAction:self];
     }
-//     // 再调block回调
-//     if (self.handler) {
-//         self.handler(self);
-//     }
 }
 
 @end
@@ -725,9 +721,6 @@ static QMUIAlertController *alertControllerAppearance;
     
     self.modalPresentationViewController.showingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewFrame, void(^completion)(BOOL finished)) {
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
-            //            if ([weakSelf.delegate respondsToSelector:@selector(willShowAlertController:)]) {
-            //                [weakSelf.delegate willShowAlertController:weakSelf];
-            //            }
             weakSelf.containerView.alpha = 0;
             weakSelf.containerView.layer.transform = CATransform3DMakeScale(1.2, 1.2, 1.0);
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
@@ -736,26 +729,17 @@ static QMUIAlertController *alertControllerAppearance;
                 weakSelf.containerView.layer.transform = CATransform3DMakeScale(1.0, 1.0, 1.0);
             } completion:^(BOOL finished) {
                 weakSelf.isShowing = YES;
-                //                if ([weakSelf.delegate respondsToSelector:@selector(didShowAlertController:)]) {
-                //                    [weakSelf.delegate didShowAlertController:weakSelf];
-                //                }
                 if (completion) {
                     completion(finished);
                 }
             }];
         } else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
-            //            if ([weakSelf.delegate respondsToSelector:@selector(willShowAlertController:)]) {
-            //                [weakSelf.delegate willShowAlertController:weakSelf];
-            //            }
             weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.containerView.bounds), 0);
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
                 weakSelf.maskView.alpha = 1;
                 weakSelf.containerView.layer.transform = CATransform3DIdentity;
             } completion:^(BOOL finished) {
                 weakSelf.isShowing = YES;
-                //                if ([weakSelf.delegate respondsToSelector:@selector(didShowAlertController:)]) {
-                //                    [weakSelf.delegate didShowAlertController:weakSelf];
-                //                }
                 if (completion) {
                     completion(finished);
                 }
@@ -764,9 +748,6 @@ static QMUIAlertController *alertControllerAppearance;
     };
     
     self.modalPresentationViewController.hidingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished)) {
-        //        if ([weakSelf.delegate respondsToSelector:@selector(willHideAlertController:)]) {
-        //            [weakSelf.delegate willHideAlertController:weakSelf];
-        //        }
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
                 weakSelf.maskView.alpha = 0;
@@ -774,9 +755,6 @@ static QMUIAlertController *alertControllerAppearance;
             } completion:^(BOOL finished) {
                 weakSelf.isShowing = NO;
                 weakSelf.containerView.alpha = 1;
-                //                if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
-                //                    [weakSelf.delegate didHideAlertController:weakSelf];
-                //                }
                 if (completion) {
                     completion(finished);
                 }
@@ -787,9 +765,6 @@ static QMUIAlertController *alertControllerAppearance;
                 weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.containerView.bounds), 0);
             } completion:^(BOOL finished) {
                 weakSelf.isShowing = NO;
-                //                if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
-                //                    [weakSelf.delegate didHideAlertController:weakSelf];
-                //                }
                 if (completion) {
                     completion(finished);
                 }
@@ -839,10 +814,12 @@ static QMUIAlertController *alertControllerAppearance;
     // 增加alertController计数
     alertControllerCount++;
 }
-- (void)hideWithAnimated:(BOOL)animated{
+
+- (void)hideWithAnimated:(BOOL)animated {
     [self hideWithAnimated:animated completion:nil];
 }
-- (void)hideWithAnimated:(BOOL)animated completion:(void (^)(void))completion{
+
+- (void)hideWithAnimated:(BOOL)animated completion:(void (^)(void))completion {
     if (!self.isShowing) {
         return;
     }
