@@ -219,7 +219,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if (!self.navigationController.navigationBar || self.navigationController.navigationBarHidden) {
         return 0;
     }
-    CGRect navigationBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.navigationController.navigationBar.frame fromView:self.navigationController.navigationBar.superview]);
+    CGRect navigationBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.navigationController.navigationBar.frame fromView:nil]);
     CGFloat result = CGRectGetMaxY(navigationBarFrame);
     return result;
 }
@@ -243,7 +243,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if (!self.tabBarController.tabBar || self.tabBarController.tabBar.hidden) {
         return 0;
     }
-    CGRect tabBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.tabBarController.tabBar.frame fromView:self.tabBarController.tabBar.superview]);
+    CGRect tabBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.tabBarController.tabBar.frame fromView:nil]);
     CGFloat result = CGRectGetHeight(self.view.bounds) - CGRectGetMinY(tabBarFrame);
     return result;
 }
