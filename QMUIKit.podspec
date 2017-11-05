@@ -17,21 +17,24 @@ Pod::Spec.new do |s|
   s.platform         = :ios, '8.0'
   s.frameworks       = 'Foundation', 'UIKit', 'CoreGraphics', 'Photos'
   s.preserve_paths   = 'QMUIConfigurationTemplate/*'
-  s.resource         = 'QMUIKit/**/*.bundle'
   s.source_files     = 'QMUIKit/QMUIKit.h'
 
-  s.subspec 'QMUICore' do |sss|
-    sss.source_files = 'QMUIKit/QMUIKit.h', 'QMUIKit/UICore', 'QMUIKit/UIKitExtensions'
+  s.subspec 'QMUICore' do |ss|
+    ss.source_files = 'QMUIKit/QMUIKit.h', 'QMUIKit/QMUICore', 'QMUIKit/UIKitExtensions'
   end
 
-  s.subspec 'QMUIMainFrame' do |sss|
-    sss.source_files = 'QMUIKit/UIMainFrame'
-    sss.dependency 'QMUIKit/QMUICore'
-    sss.dependency 'QMUIKit/QMUIComponents/QMUINavigationTitleView'
-    sss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
-    sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
-    sss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
-    sss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
+  s.subspec 'QMUIResources' do |ss|
+    ss.resource = 'QMUIKit/QMUIResources/*.bundle'
+  end
+
+  s.subspec 'QMUIMainFrame' do |ss|
+    ss.source_files = 'QMUIKit/QMUIMainFrame'
+    ss.dependency 'QMUIKit/QMUICore'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUINavigationTitleView'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
   end
 
   s.subspec 'QMUIComponents' do |ss|
@@ -39,55 +42,55 @@ Pod::Spec.new do |s|
     ss.dependency 'QMUIKit/QMUICore'
 
     ss.subspec 'QMUINavigationTitleView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUINavigationTitleView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUINavigationTitleView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
     end
 
     ss.subspec 'QMUIButton' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIButton.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton.{h,m}'
     end
 
     ss.subspec 'QMUITableView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUITableView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITableView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewProtocols'
     end
 
     ss.subspec 'QMUITableViewProtocols' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUITableViewProtocols.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITableViewProtocols.{h,m}'
     end
 
     ss.subspec 'QMUIEmptyView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIEmptyView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIEmptyView.{h,m}'
     end
 
     ss.subspec 'QMUILabel' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUILabel.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUILabel.{h,m}'
     end
 
     ss.subspec 'QMUIKeyboardManager' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIKeyboardManager.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIKeyboardManager.{h,m}'
     end
 
     # 从这里开始就是非必须的组件
     
     ss.subspec 'QMUIAlertController' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIAlertController.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIAlertController.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUITextField'
     end
 
     ss.subspec 'QMUICellHeightCache' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUICellHeightCache.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUICellHeightCache.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewProtocols'
     end
 
     ss.subspec 'QMUICollectionViewPagingLayout' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUICollectionViewPagingLayout.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUICollectionViewPagingLayout.{h,m}'
     end
 
     ss.subspec 'QMUIDialogViewController' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIDialogViewController.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIDialogViewController.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
@@ -98,129 +101,132 @@ Pod::Spec.new do |s|
     end
 
     ss.subspec 'QMUIEmotionView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIEmotionView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIEmotionView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+      sss.dependency 'QMUIKit/QMUIResources'
     end
 
     ss.subspec 'QMUIFloatLayoutView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIFloatLayoutView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIFloatLayoutView.{h,m}'
     end
 
     ss.subspec 'QMUIGridView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIGridView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIGridView.{h,m}'
     end
 
     ss.subspec 'QMUIImagePreviewView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIImagePreviewView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIImagePreviewView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIZoomImageView'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUICollectionViewPagingLayout'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
     end
 
     ss.subspec 'QMUIImagePreviewViewController' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIImagePreviewViewController.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIImagePreviewViewController.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIImagePreviewView'
     end
 
     ss.subspec 'QMUIMarqueeLabel' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIMarqueeLabel.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIMarqueeLabel.{h,m}'
     end
 
     ss.subspec 'QMUIModalPresentationViewController' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIModalPresentationViewController.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController.{h,m}'
     end
 
     ss.subspec 'QMUIMoreOperationController' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIMoreOperationController.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIMoreOperationController.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
     end
 
     ss.subspec 'QMUIOrderedDictionary' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIOrderedDictionary.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIOrderedDictionary.{h,m}'
     end
 
     ss.subspec 'QMUIPieProgressView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIPieProgressView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIPieProgressView.{h,m}'
     end
 
     ss.subspec 'QMUIPopupContainerView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIPopupContainerView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIPopupContainerView.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
     end
 
     ss.subspec 'QMUIPopupMenuView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIPopupMenuView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIPopupMenuView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIPopupContainerView'
     end
 
     ss.subspec 'QMUIQQEmotionManager' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIQQEmotionManager.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIQQEmotionManager.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmotionView'
     end
 
     ss.subspec 'QMUISearchBar' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUISearchBar.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUISearchBar.{h,m}'
     end
 
     ss.subspec 'QMUISearchController' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUISearchController.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUISearchController.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
       sss.dependency 'QMUIKit/QMUIComponents/QMUISearchBar'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
     end
 
     ss.subspec 'QMUISegmentedControl' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUISegmentedControl.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUISegmentedControl.{h,m}'
     end
 
     ss.subspec 'QMUISlider' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUISlider.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUISlider.{h,m}'
     end
 
     ss.subspec 'QMUITableViewCell' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUITableViewCell.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITableViewCell.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
     end
 
     ss.subspec 'QMUITestView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUITestView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITestView.{h,m}'
     end
 
     ss.subspec 'QMUITextField' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUITextField.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITextField.{h,m}'
     end
 
     ss.subspec 'QMUITextView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUITextView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITextView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
     end
 
     ss.subspec 'QMUITips' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUITips.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITips.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIToastView'
+      sss.dependency 'QMUIKit/QMUIResources'
     end
 
     ss.subspec 'QMUIVisualEffectView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIVisualEffectView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIVisualEffectView.{h,m}'
     end
 
     ss.subspec 'QMUIZoomImageView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/QMUIZoomImageView.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIZoomImageView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUISlider'
     end
 
     ss.subspec 'QMUIAssetLibrary' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/AssetLibrary/*.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/AssetLibrary/*.{h,m}'
     end
 
     ss.subspec 'QMUIImagePickerLibrary' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/ImagePickerLibrary/*.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/ImagePickerLibrary/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
+      sss.dependency 'QMUIKit/QMUIResources'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIImagePreviewViewController'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
@@ -232,17 +238,18 @@ Pod::Spec.new do |s|
     end
 
     ss.subspec 'NavigationBarTransition' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/NavigationBarTransition/*.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/NavigationBarTransition/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
       sss.dependency 'QMUIKit/QMUIComponents/QMUINavigationTitleView'
     end
 
     ss.subspec 'QMUIToastView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/ToastView/*.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/ToastView/*.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
     end
 
     ss.subspec 'QMUIStaticTableView' do |sss|
-      sss.source_files = 'QMUIKit/UIComponents/StaticTableView/*.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/StaticTableView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
     end
 
