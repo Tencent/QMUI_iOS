@@ -219,10 +219,22 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if (!self.navigationController.navigationBar || self.navigationController.navigationBarHidden) {
         return 0;
     }
-    CGRect navigationBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.navigationController.navigationBar.frame fromView:nil]);
+    CGRect navigationBarFrameInView = [self.view convertRect:self.navigationController.navigationBar.frame fromView:self.navigationController.navigationBar.superview];
+    if (IOS_VERSION < 9.0) {
+        // iOS 8 用上面的方法转换得到的 x = 1408（iPad 横屏下），不知道为什么，暂时认为是系统的 bug，所以这时候先改为转换到 window 坐标系里
+        navigationBarFrameInView = [self.view convertRect:self.navigationController.navigationBar.frame fromView:nil];
+    }
+    CGRect navigationBarFrame = CGRectIntersection(self.view.bounds, navigationBarFrameInView);
+    
+    // 两个 rect 如果不存在交集，CGRectIntersection 计算结果可能为非法的 rect，所以这里做个保护
+    if (!CGRectIsValidated(navigationBarFrame)) {
+        return 0;
+    }
+    
     CGFloat result = CGRectGetMaxY(navigationBarFrame);
     return result;
 }
+
 
 - (CGFloat)qmui_toolbarSpacingInViewCoordinator {
     if (!self.isViewLoaded) {
@@ -232,6 +244,12 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
         return 0;
     }
     CGRect toolbarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.navigationController.toolbar.frame fromView:self.navigationController.toolbar.superview]);
+    
+    // 两个 rect 如果不存在交集，CGRectIntersection 计算结果可能为非法的 rect，所以这里做个保护
+    if (!CGRectIsValidated(toolbarFrame)) {
+        return 0;
+    }
+    
     CGFloat result = CGRectGetHeight(self.view.bounds) - CGRectGetMinY(toolbarFrame);
     return result;
 }

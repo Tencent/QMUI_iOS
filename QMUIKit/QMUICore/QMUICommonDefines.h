@@ -414,10 +414,16 @@ CGRectIsNaN(CGRect rect) {
     return isnan(rect.origin.x) || isnan(rect.origin.y) || isnan(rect.size.width) || isnan(rect.size.height);
 }
 
-/// 判断一个 CGRect 是否合法（例如不带无穷大的值、不带非法数字、不为空）
+/// 系统提供的 CGRectIsInfinite 接口只能判断 CGRectInfinite 的情况，而该接口可以用于判断 INFINITY 的值
+CG_INLINE BOOL
+CGRectIsInf(CGRect rect) {
+    return isinf(rect.origin.x) || isinf(rect.origin.y) || isinf(rect.size.width) || isinf(rect.size.height);
+}
+
+/// 判断一个 CGRect 是否合法（例如不带无穷大的值、不带非法数字）
 CG_INLINE BOOL
 CGRectIsValidated(CGRect rect) {
-    return !CGRectIsNull(rect) && !CGRectIsEmpty(rect) && !CGRectIsInfinite(rect) && !CGRectIsNaN(rect);
+    return !CGRectIsNull(rect) && !CGRectIsInfinite(rect) && !CGRectIsNaN(rect) && !CGRectIsInf(rect);
 }
 
 /// 创建一个像素对齐的CGRect
