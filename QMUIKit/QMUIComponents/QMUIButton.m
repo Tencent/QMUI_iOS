@@ -128,6 +128,10 @@
     return resultSize;
 }
 
+- (CGSize)intrinsicContentSize {
+    return [self sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
     

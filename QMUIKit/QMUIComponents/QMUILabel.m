@@ -34,6 +34,14 @@
     return size;
 }
 
+- (CGSize)intrinsicContentSize {
+    CGFloat preferredMaxLayoutWidth = self.preferredMaxLayoutWidth;
+    if (preferredMaxLayoutWidth <= 0) {
+        preferredMaxLayoutWidth = CGFLOAT_MAX;
+    }
+    return [self sizeThatFits:CGSizeMake(preferredMaxLayoutWidth, CGFLOAT_MAX)];
+}
+
 - (void)drawTextInRect:(CGRect)rect {
     return [super drawTextInRect:UIEdgeInsetsInsetRect(rect, self.contentEdgeInsets)];
 }
