@@ -2,7 +2,7 @@
 //  QMUINavigationTitleView.m
 //  qmui
 //
-//  Created by QQMail on 14-7-2.
+//  Created by QMUI Team on 14-7-2.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -64,10 +64,10 @@
 
 @interface QMUINavigationTitleView ()
 
-@property(nonatomic, assign) BOOL accessoryViewAnimating;
 @property(nonatomic, assign) CGSize titleLabelSize;
 @property(nonatomic, assign) CGSize subtitleLabelSize;
 @property(nonatomic, strong) UIImageView *accessoryTypeView;
+
 @end
 
 @implementation QMUINavigationTitleView
@@ -229,11 +229,6 @@
 - (void)layoutSubviews {
     
     if (CGSizeIsEmpty(self.bounds.size)) {
-        NSLog(@"%@, layoutSubviews, size = %@", NSStringFromClass([self class]), NSStringFromCGSize(self.bounds.size));
-        return;
-    }
-    
-    if (self.accessoryViewAnimating) {
         return;
     }
     
@@ -508,19 +503,15 @@
         [self.delegate didChangedActive:active forTitleView:self];
     }
     if (self.accessoryType == QMUINavigationTitleViewAccessoryTypeDisclosureIndicator) {
-        // 目前只对默认的accessoryView添加动画
-        self.accessoryViewAnimating = YES;
         if (active) {
             [UIView animateWithDuration:.25f delay:0 options:QMUIViewAnimationOptionsCurveIn animations:^(void){
                 self.accessoryTypeView.transform = CGAffineTransformMakeRotation(AngleWithDegrees(-180));
             } completion:^(BOOL finished) {
-                self.accessoryViewAnimating = NO;
             }];
         } else {
             [UIView animateWithDuration:.25f delay:0 options:QMUIViewAnimationOptionsCurveIn animations:^(void){
                 self.accessoryTypeView.transform = CGAffineTransformMakeRotation(AngleWithDegrees(0.1));
             } completion:^(BOOL finished) {
-                self.accessoryViewAnimating = NO;
             }];
         }
     }

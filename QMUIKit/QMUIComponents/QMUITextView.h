@@ -2,7 +2,7 @@
 //  QMUITextView.h
 //  qmui
 //
-//  Created by QQMail on 14-8-5.
+//  Created by QMUI Team on 14-8-5.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -88,5 +88,20 @@
  *  @see textView:newHeightAfterTextChanged:
  */
 @property(nonatomic, assign) BOOL autoResizable;
+
+/**
+ *  控制输入框是否要出现“粘贴”menu
+ *  @param sender 触发这次询问事件的来源
+ *  @param superReturnValue [super canPerformAction:withSender:] 的返回值，当你不需要控制这个 block 的返回值时，可以返回 superReturnValue
+ *  @return 控制是否要出现“粘贴”menu，YES 表示出现，NO 表示不出现。当你想要返回系统默认的结果时，请返回参数 superReturnValue
+ */
+@property(nonatomic, copy) BOOL (^canPerformPasteActionBlock)(id sender, BOOL superReturnValue);
+
+/**
+ *  当输入框的“粘贴”事件被触发时，可通过这个 block 去接管事件的响应。
+ *  @param sender “粘贴”事件触发的来源，例如可能是一个 UIMenuController
+ *  @return 返回值用于控制是否要调用系统默认的 paste: 实现，YES 表示执行完 block 后继续调用系统默认实现，NO 表示执行完 block 后就结束了，不调用 super。
+ */
+@property(nonatomic, copy) BOOL (^pasteBlock)(id sender);
 
 @end

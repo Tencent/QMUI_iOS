@@ -26,8 +26,26 @@
 
 @implementation UIView (QMUI)
 
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
+        ReplaceMethod([self class], @selector(convertPoint:toView:), @selector(qmui_convertPoint:toView:));
+        ReplaceMethod([self class], @selector(convertPoint:fromView:), @selector(qmui_convertPoint:fromView:));
+        ReplaceMethod([self class], @selector(convertRect:toView:), @selector(qmui_convertRect:toView:));
+        ReplaceMethod([self class], @selector(convertRect:fromView:), @selector(qmui_convertRect:fromView:));
+    });
+}
+
 - (instancetype)qmui_initWithSize:(CGSize)size {
     return [self initWithFrame:CGRectMakeWithSize(size)];
+}
+
+- (UIEdgeInsets)qmui_safeAreaInsets {
+    if (@available(iOS 11.0, *)) {
+        return self.safeAreaInsets;
+    }
+    return UIEdgeInsetsZero;
 }
 
 - (void)qmui_removeAllSubviews {
@@ -68,6 +86,58 @@
             animations();
         }
     }
+}
+
+- (BOOL)hasSharedAncestorViewWithView:(UIView *)view {
+    UIView *sharedAncestorView = self;
+    if (!view) {
+        return YES;
+    }
+    while (sharedAncestorView && ![view isDescendantOfView:sharedAncestorView]) {
+        sharedAncestorView = sharedAncestorView.superview;
+    }
+    return !!sharedAncestorView;
+}
+
+- (BOOL)isUIKitPrivateView {
+    // 系统有些东西本身也存在不合理，但我们不关心这种，所以过滤掉
+    if ([self isKindOfClass:[UIWindow class]]) return YES;
+    
+    __block BOOL isPrivate = NO;
+    NSString *classString = NSStringFromClass(self.class);
+    [@[@"LayoutContainer", @"NavigationItemButton", @"NavigationItemView", @"SelectionGrabber", @"InputViewContent"] enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (([classString hasPrefix:@"UI"] || [classString hasPrefix:@"_UI"]) && [classString containsString:obj]) {
+            isPrivate = YES;
+            *stop = YES;
+        }
+    }];
+    return isPrivate;
+}
+
+- (void)alertConvertValueWithView:(UIView *)view {
+    if (IS_DEBUG && ![self isUIKitPrivateView] && ![self hasSharedAncestorViewWithView:view]) {
+        QMUILogWarn(@"进行坐标系转换运算的 %@ 和 %@ 不存在共同的父 view，可能导致运算结果不准确（特别是在横屏状态下）", self, view);
+    }
+}
+
+- (CGPoint)qmui_convertPoint:(CGPoint)point toView:(nullable UIView *)view {
+    [self alertConvertValueWithView:view];
+    return [self qmui_convertPoint:point toView:view];
+}
+
+- (CGPoint)qmui_convertPoint:(CGPoint)point fromView:(nullable UIView *)view {
+    [self alertConvertValueWithView:view];
+    return [self qmui_convertPoint:point fromView:view];
+}
+
+- (CGRect)qmui_convertRect:(CGRect)rect toView:(nullable UIView *)view {
+    [self alertConvertValueWithView:view];
+    return [self qmui_convertRect:rect toView:view];
+}
+
+- (CGRect)qmui_convertRect:(CGRect)rect fromView:(nullable UIView *)view {
+    [self alertConvertValueWithView:view];
+    return [self qmui_convertRect:rect fromView:view];
 }
 
 @end

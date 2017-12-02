@@ -195,6 +195,11 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nonatomic, copy) void (^hidingAnimation)(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished));
 
 /**
+ *  请求重新计算浮层的布局
+ */
+- (void)updateLayout;
+
+/**
  *  将浮层以 UIWindow 的方式显示出来
  *  @param animated    是否以动画的形式显示
  *  @param completion  显示动画结束后的回调
@@ -261,7 +266,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @interface UIViewController (QMUIModalPresentationViewController)
 
 /**
- *  获取弹出当前vieController的QMUIModalPresentationViewController
+ *  获取弹出当前 vieController 的 QMUIModalPresentationViewController
  */
-@property(nonatomic, weak, readonly) QMUIModalPresentationViewController *modalPresentedViewController;
+@property(nonatomic, weak, readonly) QMUIModalPresentationViewController *qmui_modalPresentationViewController;
 @end

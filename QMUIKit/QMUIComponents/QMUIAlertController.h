@@ -2,7 +2,7 @@
 //  QMUIAlertController.h
 //  qmui
 //
-//  Created by QQMail on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
@@ -191,6 +191,9 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// 增加一个按钮
 - (void)addAction:(QMUIAlertAction *)action;
 
+// 增加一个“取消”按钮，点击后 alertController 会被 hide
+- (void)addCancelAction;
+
 /// 增加一个输入框
 - (void)addTextFieldWithConfigurationHandler:(void (^)(UITextField *textField))configurationHandler;
 
@@ -233,6 +236,10 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 
 /// maskView是否响应点击，alert默认为NO，sheet默认为YES
 @property(nonatomic, assign) BOOL shouldRespondMaskViewTouch;
+
+/// 在 iPhoneX 机器上是否延伸底部背景色。因为在 iPhoneX 上我们会把整个面板往上移动 safeArea 的距离，如果你的面板本来就配置成撑满全屏的样式，那么就会露出底部的空隙，isExtendBottomLayout 可以帮助你把空暇填补上。默认为NO。
+/// @warning: 只对 sheet 类型有效
+@property(nonatomic, assign) BOOL isExtendBottomLayout UI_APPEARANCE_SELECTOR;
 
 @end
 

@@ -6,6 +6,10 @@
 #import "CALayer+QMUI.h"
 #endif
 
+#if __has_include("NSArray+QMUI.h")
+#import "NSArray+QMUI.h"
+#endif
+
 #if __has_include("NSAttributedString+QMUI.h")
 #import "NSAttributedString+QMUI.h"
 #endif

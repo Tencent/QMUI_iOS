@@ -2,7 +2,7 @@
 //  UIViewController+QMUI.h
 //  qmui
 //
-//  Created by QQMail on 16/1/12.
+//  Created by QMUI Team on 16/1/12.
 //  Copyright © 2016年 QMUI Team. All rights reserved.
 //
 
@@ -41,20 +41,23 @@
 - (BOOL)qmui_isViewLoadedAndVisible;
 
 /**
- *   UINavigationBar 在 self.view 坐标系里的 maxY，一般用于 self.view.subviews 布局时参考用
- *  @warning 如果不存在 UINavigationBar，则为 0
+ *  UINavigationBar 在 self.view 坐标系里的 maxY，一般用于 self.view.subviews 布局时参考用
+ *  @warning 注意由于使用了坐标系转换的计算，所以要求在 self.view.window 存在的情况下使用才可以，因此请勿在 viewDidLoad 内使用，建议在 viewDidLayoutSubviews、viewWillAppear: 里使用。
+ *  @warning 如果不存在 UINavigationBar，则返回 0
  */
 @property(nonatomic, assign, readonly) CGFloat qmui_navigationBarMaxYInViewCoordinator;
 
 /**
  *  底部 UIToolbar 在 self.view 坐标系里的占位高度，一般用于 self.view.subviews 布局时参考用
- *  @warning 如果不存在 UIToolbar，则为 0
+ *  @warning 注意由于使用了坐标系转换的计算，所以要求在 self.view.window 存在的情况下使用才可以，因此请勿在 viewDidLoad 内使用，建议在 viewDidLayoutSubviews、viewWillAppear: 里使用。
+ *  @warning 如果不存在 UIToolbar，则返回 0
  */
 @property(nonatomic, assign, readonly) CGFloat qmui_toolbarSpacingInViewCoordinator;
 
 /**
  *  底部 UITabBar 在 self.view 坐标系里的占位高度，一般用于 self.view.subviews 布局时参考用
- *  @warning 如果不存在 UITabBar，则为 0
+ *  @warning 注意由于使用了坐标系转换的计算，所以要求在 self.view.window 存在的情况下使用才可以，因此请勿在 viewDidLoad 内使用，建议在 viewDidLayoutSubviews、viewWillAppear: 里使用。
+ *  @warning 如果不存在 UITabBar，则返回 0
  */
 @property(nonatomic, assign, readonly) CGFloat qmui_tabBarSpacingInViewCoordinator;
 

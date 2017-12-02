@@ -80,6 +80,9 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     self.collectionView.scrollsToTop = NO;
     self.collectionView.delaysContentTouches = NO;
     self.collectionView.decelerationRate = UIScrollViewDecelerationRateFast;
+    if (@available(iOS 11, *)) {
+        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
     [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
     [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
     [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kLivePhotoCellIdentifier];
@@ -113,8 +116,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     if (currentImageIndex < [self.collectionView numberOfItemsInSection:0]) {
         [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:currentImageIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:animated];
     } else {
-        // dataSource 里的图片数量和当前 View 层的图片数量不匹配
-        QMUILog(@"%@ %s，collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", NSStringFromClass([self class]), __func__, @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource numberOfSectionsInCollectionView:self.collectionView]), @(_currentImageIndex));
+        QMUILog(@"dataSource 里的图片数量和当前显示出来的图片数量不匹配, collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource numberOfSectionsInCollectionView:self.collectionView]), @(_currentImageIndex));
     }
 }
 

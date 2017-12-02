@@ -123,16 +123,25 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 - (BOOL)isShowing;
 
 /**
+ *  即将显示时的回调
+ *  注：如果需要使用例如 didShowBlock 的时机，请使用 @showWithAnimated:completion: 的 completion 参数来实现。
+ *  @argv animated 是否需要动画
+ */
+@property(nonatomic, copy) void (^willShowBlock)(BOOL animated);
+
+/**
  *  即将隐藏时的回调
  *  @argv hidesByUserTap 用于区分此次隐藏是否因为用户手动点击空白区域导致浮层被隐藏
+ *  @argv animated 是否需要动画
  */
-@property(nonatomic, copy) void (^willHideBlock)(BOOL hidesByUserTap);
+@property(nonatomic, copy) void (^willHideBlock)(BOOL hidesByUserTap, BOOL animated);
 
 /**
  *  已经隐藏后的回调
  *  @argv hidesByUserTap 用于区分此次隐藏是否因为用户手动点击空白区域导致浮层被隐藏
  */
 @property(nonatomic, copy) void (^didHideBlock)(BOOL hidesByUserTap);
+
 @end
 
 @interface QMUIPopupContainerView (UISubclassingHooks)

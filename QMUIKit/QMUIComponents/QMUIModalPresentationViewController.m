@@ -12,7 +12,7 @@
 
 @interface UIViewController ()
 
-@property(nonatomic, weak, readwrite) QMUIModalPresentationViewController *modalPresentedViewController;
+@property(nonatomic, weak, readwrite) QMUIModalPresentationViewController *qmui_modalPresentationViewController;
 @end
 
 @implementation QMUIModalPresentationViewController (UIAppearance)
@@ -139,7 +139,7 @@ static QMUIModalPresentationViewController *appearance;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleKeyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     
     if (self.contentViewController) {
-        self.contentViewController.modalPresentedViewController = self;
+        self.contentViewController.qmui_modalPresentationViewController = self;
         [self.contentViewController beginAppearanceTransition:YES animated:animated];
     }
     
@@ -239,7 +239,7 @@ static QMUIModalPresentationViewController *appearance;
         }
         
         if (self.contentViewController) {
-            self.contentViewController.modalPresentedViewController = nil;
+            self.contentViewController.qmui_modalPresentationViewController = nil;
             self.contentViewController = nil;
         }
         
@@ -265,6 +265,12 @@ static QMUIModalPresentationViewController *appearance;
         }
     } else {
         didHiddenCompletion(YES);
+    }
+}
+
+- (void)updateLayout {
+    if ([self isViewLoaded]) {
+        [self.view setNeedsLayout];
     }
 }
 
@@ -590,11 +596,11 @@ static QMUIModalPresentationViewController *appearance;
 @implementation UIViewController (QMUIModalPresentationViewController)
 
 static char kAssociatedObjectKey_ModalPresentationViewController;
-- (void)setModalPresentedViewController:(QMUIModalPresentationViewController *)modalPresentedViewController {
+- (void)setQmui_modalPresentationViewController:(QMUIModalPresentationViewController *)modalPresentedViewController {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_ModalPresentationViewController, modalPresentedViewController, OBJC_ASSOCIATION_ASSIGN);
 }
 
-- (QMUIModalPresentationViewController *)modalPresentedViewController {
+- (QMUIModalPresentationViewController *)qmui_modalPresentationViewController {
     return (QMUIModalPresentationViewController *)objc_getAssociatedObject(self, &kAssociatedObjectKey_ModalPresentationViewController);
 }
 

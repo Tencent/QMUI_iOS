@@ -2,7 +2,7 @@
 //  QMUIHelper.h
 //  qmui
 //
-//  Created by QQMail on 14/10/25.
+//  Created by QMUI Team on 14/10/25.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -38,6 +38,12 @@ extern NSString *const _Nonnull QMUIResourcesQQEmotionBundleName;
 + (nullable UIImage *)imageInBundle:(nullable NSBundle *)bundle withName:(nullable NSString *)name;
 @end
 
+@interface QMUIHelper (SystemVersion)
+
++ (NSComparisonResult)compareSystemVersion:(nonnull NSString *)currentVersion toVersion:(nonnull NSString *)targetVersion;
++ (BOOL)isCurrentSystemAtLeastVersion:(nonnull NSString *)targetVersion;
++ (BOOL)isCurrentSystemLowerThanVersion:(nonnull NSString *)targetVersion;
+@end
 
 @interface QMUIHelper (DynamicType)
 
@@ -142,8 +148,12 @@ extern NSString *const _Nonnull QMUIResourcesQQEmotionBundleName;
 + (CGSize)screenSizeFor40Inch;
 + (CGSize)screenSizeFor35Inch;
 
+// 用于获取 iPhoneX 安全区域的 insets
++ (UIEdgeInsets)safeAreaInsetsForIPhoneX;
+
 /// 判断当前设备是否高性能设备，只会判断一次，以后都直接读取结果，所以没有性能问题
 + (BOOL)isHighPerformanceDevice;
+
 @end
 
 @interface QMUIHelper (Orientation)
@@ -207,8 +217,14 @@ extern NSString * __nonnull const QMUISpringAnimationKey;
 
 @end
 
+typedef NS_ENUM(NSUInteger, QMUILogLevel) {
+    QMUILogLevelDefault,    // 当使用 QMUILog() 时使用的等级
+    QMUILogLevelInfo,       // 当使用 QMUILogInfo() 时使用的等级，比 QMUILogLevelDefault 要轻量，适用于一些无关紧要的信息
+    QMUILogLevelWarn        // 当使用 QMUILogWarn() 时使用的等级，最重，适用于一些异常或者严重错误的场景
+};
+
 @interface QMUIHelper (Log)
 
-- (void)printLogWithCalledFunction:(nonnull const char *)func log:(nonnull NSString *)log, ... NS_FORMAT_FUNCTION(2,3);
+- (void)printLogWithCalledFunction:(nonnull const char *)func level:(QMUILogLevel)level log:(nonnull NSString *)log, ... NS_FORMAT_FUNCTION(3, 4);
 
 @end

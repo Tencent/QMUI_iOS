@@ -2,7 +2,7 @@
 //  QMUIHelper.m
 //  qmui
 //
-//  Created by QQMail on 14/10/25.
+//  Created by QMUI Team on 14/10/25.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -382,6 +382,30 @@ static NSInteger is35InchScreen = -1;
     return CGSizeMake(320, 480);
 }
 
++ (UIEdgeInsets)safeAreaInsetsForIPhoneX {
+    if (![self is58InchScreen]) {
+        return UIEdgeInsetsZero;
+    }
+    
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait:
+            return UIEdgeInsetsMake(44, 0, 34, 0);
+        
+        case UIInterfaceOrientationPortraitUpsideDown:
+            return UIEdgeInsetsMake(34, 0, 44, 0);
+            
+        case UIInterfaceOrientationLandscapeLeft:
+        case UIInterfaceOrientationLandscapeRight:
+            return UIEdgeInsetsMake(0, 44, 21, 44);
+            
+        case UIInterfaceOrientationUnknown:
+        default:
+            return UIEdgeInsetsMake(44, 0, 34, 0);
+    }
+}
+
 static NSInteger isHighPerformanceDevice = -1;
 + (BOOL)isHighPerformanceDevice {
     if (isHighPerformanceDevice < 0) {
@@ -490,16 +514,56 @@ NSString *const QMUISpringAnimationKey = @"QMUISpringAnimationKey";
 
 @implementation QMUIHelper (Log)
 
-- (void)printLogWithCalledFunction:(nonnull const char *)func log:(nonnull NSString *)log, ... {
+- (void)printLogWithCalledFunction:(nonnull const char *)func level:(QMUILogLevel)level log:(nonnull NSString *)log, ... {
+    // 不同级别的 log 可通过配置表的开关来控制是否要输出
+    if (level == QMUILogLevelDefault && !ShouldPrintDefaultLog) return;
+    if (level == QMUILogLevelInfo && !ShouldPrintInfoLog) return;
+    if (level == QMUILogLevelWarn && !ShouldPrintWarnLog) return;
+    
     va_list args;
     va_start(args, log);
+    NSString *levelString = @[@"QMUILogLevelDefault", @"QMUILogLevelInfo", @"QMUILogLevelWarn"][level];
     NSString *logString = [[NSString alloc] initWithFormat:log arguments:args];
+    logString = [NSString stringWithFormat:@"[%@] %s, %@", levelString, func, logString];
     if ([self.helperDelegate respondsToSelector:@selector(QMUIHelperPrintLog:)]) {
-        [self.helperDelegate QMUIHelperPrintLog:[NSString stringWithFormat:@"QMUI - %@. Called By %s", logString, func]];
+        [self.helperDelegate QMUIHelperPrintLog:logString];
     } else {
-        NSLog(@"QMUI - %@. Called By %s", logString, func);
+        NSLog(@"%@", logString);
     }
     va_end(args);
+}
+
+@end
+
+@implementation QMUIHelper (SystemVersion)
+
++ (NSComparisonResult)compareSystemVersion:(NSString *)currentVersion toVersion:(NSString *)targetVersion {
+    NSArray *currentVersionArr = [currentVersion componentsSeparatedByString:@"."];
+    NSArray *targetVersionArr = [targetVersion componentsSeparatedByString:@"."];
+    
+    NSInteger pos = 0;
+    
+    while ([currentVersionArr count] > pos || [targetVersionArr count] > pos) {
+        NSInteger v1 = [currentVersionArr count] > pos ? [[currentVersionArr objectAtIndex:pos] integerValue] : 0;
+        NSInteger v2 = [targetVersionArr count] > pos ? [[targetVersionArr objectAtIndex:pos] integerValue] : 0;
+        if (v1 < v2) {
+            return NSOrderedAscending;
+        }
+        else if (v1 > v2) {
+            return NSOrderedDescending;
+        }
+        pos++;
+    }
+    
+    return NSOrderedSame;
+}
+
++ (BOOL)isCurrentSystemAtLeastVersion:(NSString *)targetVersion {
+    return [QMUIHelper compareSystemVersion:[[UIDevice currentDevice] systemVersion] toVersion:targetVersion] == NSOrderedSame || [QMUIHelper compareSystemVersion:[[UIDevice currentDevice] systemVersion] toVersion:targetVersion] == NSOrderedDescending;
+}
+
++ (BOOL)isCurrentSystemLowerThanVersion:(NSString *)targetVersion {
+    return [QMUIHelper compareSystemVersion:[[UIDevice currentDevice] systemVersion] toVersion:targetVersion] == NSOrderedAscending;
 }
 
 @end

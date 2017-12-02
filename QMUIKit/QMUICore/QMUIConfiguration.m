@@ -2,7 +2,7 @@
 //  QMUIConfiguration.m
 //  qmui
 //
-//  Created by QQMail on 15/3/29.
+//  Created by QMUI Team on 15/3/29.
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
@@ -23,7 +23,7 @@
 //    BOOL shouldCheckCallStack = NO;
 //    if (shouldCheckCallStack) {
 //        for (NSString *symbol in [NSThread callStackSymbols]) {
-//            if ([symbol qmui_includesString:@" load]"]) {
+//            if ([symbol containsString:@" load]"]) {
 //                NSAssert(NO, @"不应该在 + load 方法里调用 %s", __func__);
 //                return nil;
 //            }
@@ -162,6 +162,8 @@
     
     #pragma mark - TableView / TableViewCell
     
+    self.tableViewEstimatedHeightEnabled = YES;
+    
     self.tableViewBackgroundColor = nil;
     self.tableViewGroupedBackgroundColor = nil;
     self.tableSectionIndexColor = nil;
@@ -202,6 +204,11 @@
     self.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;
     self.windowLevelQMUIImagePreviewView = UIWindowLevelStatusBar + 1;
     
+    #pragma mark - QMUILog
+    self.shouldPrintDefaultLog = YES;
+    self.shouldPrintInfoLog = YES;
+    self.shouldPrintWarnLog = YES;
+    
     #pragma mark - Others
     
     self.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;
@@ -210,6 +217,7 @@
     self.needsBackBarButtonItemTitle = NO;
     self.hidesBottomBarWhenPushedInitially = NO;
     self.navigationBarHiddenInitially = NO;
+    self.shouldFixTabBarTransitionBugInIPhoneX = NO;
 }
 
 - (void)setNavBarButtonFont:(UIFont *)navBarButtonFont {

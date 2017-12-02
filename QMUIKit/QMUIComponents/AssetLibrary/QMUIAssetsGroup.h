@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import <AssetsLibrary/AssetsLibrary.h>
 #import <Photos/PHAsset.h>
 #import <Photos/PHFetchOptions.h>
 #import <Photos/PHCollection.h>
@@ -18,10 +17,10 @@
 
 /// 相册展示内容的类型
 typedef NS_ENUM(NSUInteger, QMUIAlbumContentType) {
-    QMUIAlbumContentTypeAll,                                  // 展示所有资源（照片和视频）
+    QMUIAlbumContentTypeAll,                                  // 展示所有资源
     QMUIAlbumContentTypeOnlyPhoto,                            // 只展示照片
     QMUIAlbumContentTypeOnlyVideo,                            // 只展示视频
-    QMUIAlbumContentTypeOnlyAudio  NS_ENUM_AVAILABLE_IOS(8_0) // 只展示音频
+    QMUIAlbumContentTypeOnlyAudio                             // 只展示音频
 };
 
 /// 相册展示内容按日期排序的方式
@@ -33,14 +32,9 @@ typedef NS_ENUM(NSUInteger, QMUIAlbumSortType) {
 
 @interface QMUIAssetsGroup : NSObject
 
-- (instancetype)initWithALAssetsGroup:(ALAssetsGroup *)alAssetsGroup;
-
 - (instancetype)initWithPHCollection:(PHAssetCollection *)phAssetCollection;
 
 - (instancetype)initWithPHCollection:(PHAssetCollection *)phAssetCollection fetchAssetsOptions:(PHFetchOptions *)pHFetchOptions;
-
-/// 仅能通过 initWithALAssetsGroup 方法修改 alAssetsGroup 的值
-@property(nonatomic, strong, readonly) ALAssetsGroup *alAssetsGroup;
 
 /// 仅能通过 initWithPHCollection 和 initWithPHCollection:fetchAssetsOption 方法修改 phAssetCollection 的值
 @property(nonatomic, strong, readonly) PHAssetCollection *phAssetCollection;
@@ -56,8 +50,6 @@ typedef NS_ENUM(NSUInteger, QMUIAlbumSortType) {
 
 /**
  *  相册的缩略图，即系统接口中的相册海报（Poster Image）
- *
- *  @param size 缩略图的 size，仅在 iOS 8.0 及以上的版本有效，其他版本则调用 ALAsset 的接口由系统返回一个固定大小的缩略图
  *
  *  @return 相册的缩略图
  */

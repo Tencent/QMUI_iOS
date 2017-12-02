@@ -9,6 +9,8 @@
 #import "QMUICellHeightCache.h"
 #import "QMUITableViewProtocols.h"
 #import "QMUICore.h"
+#import "UIScrollView+QMUI.h"
+#import "UIView+QMUI.h"
 
 @implementation QMUICellHeightCache
 
@@ -210,17 +212,25 @@
     for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); ++index) {
         SEL originalSelector = selectors[index];
         SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-        Method originalMethod = class_getInstanceMethod(self, originalSelector);
-        Method swizzledMethod = class_getInstanceMethod(self, swizzledSelector);
-        method_exchangeImplementations(originalMethod, swizzledMethod);
+        ReplaceMethod([self class], originalSelector, swizzledSelector);
     }
+    
+    if (@available(iOS 11, *)) {
+        ReplaceMethod([self class], @selector(safeAreaInsetsDidChange), @selector(qmui_safeAreaInsetsDidChange));
+    }
+}
+
+// iOS 11 里，横竖屏带来的 safeAreaInsets 变化时机晚于计算 cell 高度，所以在计算 cell 高度时是获取不到准确的 safeAreaInsets，所以需要在 safeAreaInsetsDidChange 里重新计算
+- (void)qmui_safeAreaInsetsDidChange {
+    [self qmui_safeAreaInsetsDidChange];
+    [self.qmui_keyedHeightCache invalidateAllHeightCache];
+    [self.qmui_indexPathHeightCache invalidateAllHeightCache];
+    [self qmui_reloadData];
 }
 
 - (void)qmui_reloadData {
     if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
-            [heightsBySection removeAllObjects];
-        }];
+        [self.qmui_indexPathHeightCache invalidateAllHeightCache];
     }
     [self qmui_reloadData];
 }
@@ -362,7 +372,6 @@
         }
         templateCell.contentView.translatesAutoresizingMaskIntoConstraints = NO;
         templateCellsByIdentifiers[identifier] = templateCell;
-        NSLog(@"layout cell created - %@", identifier);
     }
     return templateCell;
 }
@@ -374,7 +383,7 @@
     UITableViewCell *cell = [self templateCellForReuseIdentifier:identifier];
     [cell prepareForReuse];
     if (configuration) { configuration(cell); }
-    CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentInset);
+    CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets);
     CGSize fitSize = CGSizeZero;
     if (cell && contentWidth > 0) {
         SEL selector = @selector(sizeThatFits:);
@@ -467,17 +476,13 @@
     for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); ++index) {
         SEL originalSelector = selectors[index];
         SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-        Method originalMethod = class_getInstanceMethod(self, originalSelector);
-        Method swizzledMethod = class_getInstanceMethod(self, swizzledSelector);
-        method_exchangeImplementations(originalMethod, swizzledMethod);
+        ReplaceMethod([self class], originalSelector, swizzledSelector);
     }
 }
 
 - (void)qmui_reloadData {
     if (self.qmui_indexPathHeightCache.automaticallyInvalidateEnabled) {
-        [self.qmui_indexPathHeightCache enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
-            [heightsBySection removeAllObjects];
-        }];
+        [self.qmui_indexPathHeightCache invalidateAllHeightCache];
     }
     [self qmui_reloadData];
 }
@@ -616,7 +621,6 @@
     }
     templateCell.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     templateCellsByIdentifiers[identifier] = templateCell;
-    NSLog(@"layout cell created - %@", identifier);
     return templateCell;
 }
 

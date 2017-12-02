@@ -2,7 +2,7 @@
 //  QMUIAlertController.m
 //  qmui
 //
-//  Created by QQMail on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
@@ -15,6 +15,7 @@
 #import "UIControl+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
 #import "UIImage+QMUI.h"
+#import "CALayer+QMUI.h"
 
 static NSUInteger alertControllerCount = 0;
 
@@ -161,6 +162,7 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.sheetButtonHighlightBackgroundColor = UIColorMake(232, 232, 232);
         alertControllerAppearance.sheetHeaderInsets = UIEdgeInsetsMake(16, 16, 16, 16);
         alertControllerAppearance.sheetTitleMessageSpacing = 8;
+        alertControllerAppearance.isExtendBottomLayout = NO;
     }
 }
 
@@ -175,6 +177,7 @@ static QMUIAlertController *alertControllerAppearance;
 @property(nonatomic, strong, readwrite) QMUIModalPresentationViewController *modalPresentationViewController;
 
 @property(nonatomic, strong) UIView *containerView;
+
 @property(nonatomic, strong) UIControl *maskView;
 
 @property(nonatomic, strong) UIView *scrollWrapView;
@@ -183,6 +186,8 @@ static QMUIAlertController *alertControllerAppearance;
 
 @property(nonatomic, strong) UIView *headerEffectView;
 @property(nonatomic, strong) UIView *cancelButtoneEffectView;
+
+@property(nonatomic, strong) CALayer *extendLayer;
 
 @property(nonatomic, strong) UILabel *titleLabel;
 @property(nonatomic, strong) UILabel *messageLabel;
@@ -258,6 +263,7 @@ static QMUIAlertController *alertControllerAppearance;
         self.sheetButtonHighlightBackgroundColor = [QMUIAlertController appearance].sheetButtonHighlightBackgroundColor;
         self.sheetHeaderInsets = [QMUIAlertController appearance].sheetHeaderInsets;
         self.sheetTitleMessageSpacing = [QMUIAlertController appearance].sheetTitleMessageSpacing;
+        self.isExtendBottomLayout = [QMUIAlertController appearance].isExtendBottomLayout;
     }
 }
 
@@ -308,6 +314,7 @@ static QMUIAlertController *alertControllerAppearance;
 
 - (void)setSheetButtonBackgroundColor:(UIColor *)sheetButtonBackgroundColor {
     _sheetButtonBackgroundColor = sheetButtonBackgroundColor;
+    [self updateExtendLayerAppearance];
     _needsUpdateAction = YES;
 }
 
@@ -389,6 +396,22 @@ static QMUIAlertController *alertControllerAppearance;
     [self updateCornerRadius];
 }
 
+- (void)setIsExtendBottomLayout:(BOOL)isExtendBottomLayout {
+    _isExtendBottomLayout = isExtendBottomLayout;
+    if (isExtendBottomLayout) {
+        self.extendLayer.hidden = NO;
+        [self updateExtendLayerAppearance];
+    } else {
+        self.extendLayer.hidden = YES;
+    }
+}
+
+- (void)updateExtendLayerAppearance {
+    if (self.extendLayer) {
+        self.extendLayer.backgroundColor = self.sheetButtonBackgroundColor.CGColor;
+    }
+}
+
 - (void)updateCornerRadius {
     if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
         if (self.containerView) { self.containerView.layer.cornerRadius = self.alertContentCornerRadius; self.containerView.clipsToBounds = YES; }
@@ -412,7 +435,7 @@ static QMUIAlertController *alertControllerAppearance;
 - (instancetype)initWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     self = [self init];
     if (self) {
-        
+    
         self.isShowing = NO;
         self.shouldRespondMaskViewTouch = preferredStyle == QMUIAlertControllerStyleActionSheet;
         
@@ -433,6 +456,10 @@ static QMUIAlertController *alertControllerAppearance;
         self.headerScrollView = [[UIScrollView alloc] init];
         self.buttonScrollView = [[UIScrollView alloc] init];
         
+        self.extendLayer = [CALayer layer];
+        self.extendLayer.hidden = !self.isExtendBottomLayout;
+        [self.extendLayer qmui_removeDefaultAnimations];
+        
         self.title = title;
         self.message = message;
         self.preferredStyle = preferredStyle;
@@ -440,6 +467,7 @@ static QMUIAlertController *alertControllerAppearance;
         [self updateHeaderBackgrondColor];
         [self updateEffectBackgroundColor];
         [self updateCornerRadius];
+        [self updateExtendLayerAppearance];
         
     }
     return self;
@@ -457,14 +485,15 @@ static QMUIAlertController *alertControllerAppearance;
     [self.scrollWrapView addSubview:self.headerEffectView];
     [self.scrollWrapView addSubview:self.headerScrollView];
     [self.scrollWrapView addSubview:self.buttonScrollView];
+    [self.containerView.layer addSublayer:self.extendLayer];
 }
 
 - (void)viewDidLayoutSubviews {
     
     [super viewDidLayoutSubviews];
     
-    BOOL hasTitle = (self.titleLabel.text && ![self.titleLabel.text isEqualToString:@""] && !self.titleLabel.hidden);
-    BOOL hasMessage = (self.messageLabel.text && ![self.messageLabel.text isEqualToString:@""] && !self.messageLabel.hidden);
+    BOOL hasTitle = (self.titleLabel.text.length > 0 && !self.titleLabel.hidden);
+    BOOL hasMessage = (self.messageLabel.text.length > 0 && !self.messageLabel.hidden);
     BOOL hasTextField = self.alertTextFields.count > 0;
     BOOL hasCustomView = !!_customView;
     CGFloat contentOriginY = 0;
@@ -673,8 +702,10 @@ static QMUIAlertController *alertControllerAppearance;
             contentHeight -= self.sheetContentMargin.top;
         }
         
-        CGRect containerRect = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.bounds)) / 2, screenSpaceHeight - contentHeight, CGRectGetWidth(self.containerView.bounds), contentHeight);
+        CGRect containerRect = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.bounds)) / 2, screenSpaceHeight - contentHeight - IPhoneXSafeAreaInsets.bottom, CGRectGetWidth(self.containerView.bounds), contentHeight + (self.isExtendBottomLayout ? IPhoneXSafeAreaInsets.bottom : 0));
         self.containerView.frame = CGRectFlatted(CGRectApplyAffineTransform(containerRect, self.containerView.transform));
+        
+        self.extendLayer.frame = CGRectFlatMake(0, CGRectGetHeight(self.containerView.bounds) - IPhoneXSafeAreaInsets.bottom - 1, CGRectGetWidth(self.containerView.bounds), IPhoneXSafeAreaInsets.bottom + 1);
     }
 }
 
@@ -1062,3 +1093,4 @@ static QMUIAlertController *alertControllerAppearance;
 }
 
 @end
+

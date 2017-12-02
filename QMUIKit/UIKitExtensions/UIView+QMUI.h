@@ -2,7 +2,7 @@
 //  UIView+QMUI.h
 //  qmui
 //
-//  Created by QQMail on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
@@ -15,6 +15,9 @@
  *  相当于 initWithFrame:CGRectMake(0, 0, size.width, size.height)
  */
 - (instancetype)qmui_initWithSize:(CGSize)size;
+
+// 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
+@property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
 
 - (void)qmui_removeAllSubviews;
 
@@ -65,7 +68,7 @@ typedef NS_OPTIONS(NSUInteger, QMUIBorderViewPosition) {
  */
 @interface UIView (QMUI_Border)
 
-/// 设置边框类型，支持组合，例如：`borderType = QMUIBorderViewTypeTop|QMUIBorderViewTypeBottom`
+/// 设置边框类型，支持组合，例如：`borderPosition = QMUIBorderViewPositionTop|QMUIBorderViewPositionBottom`
 @property(nonatomic, assign) QMUIBorderViewPosition qmui_borderPosition;
 
 /// 边框的大小，默认为PixelOne

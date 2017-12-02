@@ -2,7 +2,7 @@
 //  QMUITableViewCell.m
 //  qmui
 //
-//  Created by QQMail on 14-7-7.
+//  Created by QMUI Team on 14-7-7.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 

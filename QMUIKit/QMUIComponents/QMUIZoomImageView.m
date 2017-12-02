@@ -78,6 +78,9 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         self.scrollView.minimumZoomScale = 0;
         self.scrollView.maximumZoomScale = self.maximumZoomScale;
         self.scrollView.delegate = self;
+        if (@available(iOS 11, *)) {
+            self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
         [self addSubview:self.scrollView];
         
         _emptyView = [[QMUIEmptyView alloc] init];

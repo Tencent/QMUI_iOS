@@ -10,7 +10,38 @@
 #import "QMUICore.h"
 #import "UIScrollView+QMUI.h"
 
+const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
+
 @implementation UITableView (QMUI)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ReplaceMethod([self class], @selector(sizeThatFits:), @selector(qmui_sizeThatFits:));
+        ReplaceMethod([self class], @selector(didMoveToSuperview), @selector(qmui_didMoveToSuperview));
+    });
+}
+
+- (CGSize)qmui_sizeThatFits:(CGSize)size {
+    [self alertEstimatedHeightUsageIfDetected];
+    CGSize result = [self qmui_sizeThatFits:size];
+    return result;
+}
+
+- (void)qmui_didMoveToSuperview {
+    [self qmui_didMoveToSuperview];
+    
+    // iOS 11 之后 estimatedRowHeight 默认值变成 UITableViewAutomaticDimension 了，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地禁掉所有 UITableView 的 estimatedXxxHeight
+    if (!TableViewEstimatedHeightEnabled) {
+        self.estimatedRowHeight = 0;
+        self.estimatedSectionHeaderHeight = 0;
+        self.estimatedSectionFooterHeight = 0;
+    } else {
+        self.estimatedRowHeight = UITableViewAutomaticDimension;
+        self.estimatedSectionHeaderHeight = UITableViewAutomaticDimension;
+        self.estimatedSectionFooterHeight = UITableViewAutomaticDimension;
+    }
+}
 
 - (void)qmui_styledAsQMUITableView {
     UIColor *backgroundColor = nil;
@@ -45,27 +76,88 @@
 }
 
 - (NSInteger)qmui_indexForSectionHeaderAtView:(UIView *)view {
+    [self alertEstimatedHeightUsageIfDetected];
+    
     if (!view || ![view isKindOfClass:[UIView class]]) {
         return -1;
     }
     
     CGPoint origin = [self convertPoint:view.frame.origin fromView:view.superview];
-    origin = CGPointToFixed(origin, 4);
+    origin = CGPointToFixed(origin, kFloatValuePrecision);// 避免一些浮点数精度问题导致的计算错误
     
     NSUInteger numberOfSection = [self numberOfSections];
-    for (NSInteger i = numberOfSection - 1; i >= 0; i--) {
-        CGRect rectForHeader = [self rectForHeaderInSection:i];// 这个接口获取到的 rect 是在 contentSize 里的 rect，而不是实际看到的 rect，所以要自行区分 headerView 是否被停靠在顶部
-        BOOL isHeaderViewPinToTop = self.style == UITableViewStylePlain && (CGRectGetMinY(rectForHeader) - self.contentOffset.y < self.contentInset.top);
-        if (isHeaderViewPinToTop) {
-            rectForHeader = CGRectSetY(rectForHeader, CGRectGetMinY(rectForHeader) + (self.contentInset.top - CGRectGetMinY(rectForHeader) + self.contentOffset.y));
-        }
-        
-        rectForHeader = CGRectToFixed(rectForHeader, 4);
-        if (CGRectContainsPoint(rectForHeader, origin)) {
+    // TODO: molice 针对 section 特别多的场景，优化一下这里的遍历查找
+    for (NSInteger i = 0; i < numberOfSection; i++) {
+        CGRect rectForSection = [self rectForSection:i];// TODO: 这里的判断用整个 section 的 rect，可能需要加上“view 是否在 sectionHeader 上的判断”
+        rectForSection = CGRectToFixed(rectForSection, kFloatValuePrecision);
+        if (CGRectContainsPoint(rectForSection, origin)) {
             return i;
         }
     }
     return -1;
+}
+
+- (NSArray<NSNumber *> *)qmui_indexForVisibleSectionHeaders {
+    NSArray<NSIndexPath *> *visibleCellIndexPaths = [self indexPathsForVisibleRows];
+    NSMutableArray<NSNumber *> *visibleSections = [[NSMutableArray alloc] init];
+    NSMutableArray<NSNumber *> *result = [[NSMutableArray alloc] init];
+    for (NSInteger i = 0; i < visibleCellIndexPaths.count; i++) {
+        if (visibleSections.count == 0 || visibleCellIndexPaths[i].section != visibleSections.lastObject.integerValue) {
+            [visibleSections addObject:@(visibleCellIndexPaths[i].section)];
+        }
+    }
+    for (NSInteger i = 0; i < visibleSections.count; i++) {
+        NSInteger section = visibleSections[i].integerValue;
+        if ([self qmui_isHeaderVisibleForSection:section]) {
+            [result addObject:visibleSections[i]];
+        }
+    }
+    if (result.count == 0) {
+        result = nil;
+    }
+    return result;
+}
+
+- (NSInteger)qmui_indexOfPinnedSectionHeader {
+    NSArray<NSNumber *> *visibleSectionIndex = [self qmui_indexForVisibleSectionHeaders];
+    for (NSInteger i = 0; i < visibleSectionIndex.count; i++) {
+        NSInteger section = visibleSectionIndex[i].integerValue;
+        if ([self qmui_isHeaderPinnedForSection:section]) {
+            return section;
+        } else {
+            continue;
+        }
+    }
+    return -1;
+}
+
+- (BOOL)qmui_isHeaderPinnedForSection:(NSInteger)section {
+    if (self.style != UITableViewStylePlain) return NO;
+    if (section >= [self numberOfSections]) return NO;
+    
+    // 系统这两个接口获取到的 rect 是在 contentSize 里的 rect，而不是实际看到的 rect
+    CGRect rectForSection = [self rectForSection:section];
+    CGRect rectForHeader = [self rectForHeaderInSection:section];
+    BOOL isSectionScrollIntoContentInsetTop = self.contentOffset.y + self.qmui_contentInset.top > CGRectGetMinY(rectForSection);// 表示这个 section 已经往上滚动，超过 contentInset.top 那条线了
+    BOOL isSectionStayInContentInsetTop = self.contentOffset.y + self.qmui_contentInset.top <= CGRectGetMaxY(rectForSection) - CGRectGetHeight(rectForHeader);// 表示这个 section 还没被完全滚走
+    BOOL isPinned = isSectionScrollIntoContentInsetTop && isSectionStayInContentInsetTop;
+    return isPinned;
+}
+
+- (BOOL)qmui_isHeaderVisibleForSection:(NSInteger)section {
+    if (self.style != UITableViewStylePlain) return NO;
+    if (section >= [self numberOfSections]) return NO;
+    
+    // 不存在 header 就不用判断
+    CGRect rectForSectionHeader = [self rectForHeaderInSection:section];
+    if (CGRectGetHeight(rectForSectionHeader) <= 0) return NO;
+    
+    // 系统这个接口获取到的 rect 是在 contentSize 里的 rect，而不是实际看到的 rect
+    CGRect rectForSection = [self rectForSection:section];
+    BOOL isSectionScrollIntoBounds = CGRectGetMinY(rectForSection) < self.contentOffset.y + CGRectGetHeight(self.bounds);
+    BOOL isSectionStayInContentInsetTop = self.contentOffset.y + self.qmui_contentInset.top < CGRectGetMaxY(rectForSection);// 表示这个 section 还没被完全滚走
+    BOOL isVisible = isSectionScrollIntoBounds && isSectionStayInContentInsetTop;
+    return isVisible;
 }
 
 - (QMUITableViewCellPosition)qmui_positionForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -83,7 +175,7 @@
 }
 
 - (BOOL)qmui_cellVisibleAtIndexPath:(NSIndexPath *)indexPath {
-    NSArray *visibleCellIndexPaths = self.indexPathsForVisibleRows;
+    NSArray<NSIndexPath *> *visibleCellIndexPaths = self.indexPathsForVisibleRows;
     for (NSIndexPath *visibleIndexPath in visibleCellIndexPaths) {
         if ([indexPath isEqual:visibleIndexPath]) {
             return YES;
@@ -93,13 +185,15 @@
 }
 
 - (void)qmui_clearsSelection {
-    NSArray *selectedIndexPaths = [self indexPathsForSelectedRows];
+    NSArray<NSIndexPath *> *selectedIndexPaths = [self indexPathsForSelectedRows];
     for (NSIndexPath *indexPath in selectedIndexPaths) {
         [self deselectRowAtIndexPath:indexPath animated:YES];
     }
 }
 
 - (void)qmui_scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated {
+    [self alertEstimatedHeightUsageIfDetected];
+    
     if (![self qmui_canScroll]) {
         return;
     }
@@ -116,6 +210,8 @@
 }
 
 - (CGSize)qmui_realContentSize {
+    [self alertEstimatedHeightUsageIfDetected];
+    
     if (!self.dataSource || !self.delegate) {
         return CGSizeZero;
     }
@@ -142,11 +238,25 @@
     }
     
     if ([self.tableHeaderView isKindOfClass:[UISearchBar class]]) {
-        BOOL canScroll = self.qmui_realContentSize.height + UIEdgeInsetsGetVerticalValue(self.contentInset) > CGRectGetHeight(self.bounds);
+        BOOL canScroll = self.qmui_realContentSize.height + UIEdgeInsetsGetVerticalValue(self.qmui_contentInset) > CGRectGetHeight(self.bounds);
         return canScroll;
     } else {
         return [super qmui_canScroll];
     }
+}
+
+- (void)alertEstimatedHeightUsageIfDetected {
+    BOOL usingEstimatedRowHeight = self.estimatedRowHeight == UITableViewAutomaticDimension;
+    BOOL usingEstimatedSectionHeaderHeight = self.estimatedSectionHeaderHeight == UITableViewAutomaticDimension;
+    BOOL usingEstimatedSectionFooterHeight = self.estimatedSectionFooterHeight == UITableViewAutomaticDimension;
+    
+    if (usingEstimatedRowHeight || usingEstimatedSectionHeaderHeight || usingEstimatedSectionFooterHeight) {
+        [self QMUISymbolicUsingTableViewEstimatedHeightMakeWarning];
+    }
+}
+
+- (void)QMUISymbolicUsingTableViewEstimatedHeightMakeWarning {
+    QMUILogWarn(@"UITableView 的 estimatedRow(SectionHeader / SectionFooter)Height 属性会影响 contentSize、sizeThatFits:、rectForXxx 等方法的计算，导致计算结果不准确，建议重新考虑是否要使用 estimated。可添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
 }
 
 @end

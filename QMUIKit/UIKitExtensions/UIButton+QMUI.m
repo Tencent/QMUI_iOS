@@ -19,8 +19,8 @@
     });
 }
 
-- (instancetype)initWithImage:(UIImage *)image title:(NSString *)title {
-    if (self = [super init]) {
+- (instancetype)qmui_initWithImage:(UIImage *)image title:(NSString *)title {
+    if ([super init]) {
         [self setImage:image forState:UIControlStateNormal];
         [self setTitle:title forState:UIControlStateNormal];
     }

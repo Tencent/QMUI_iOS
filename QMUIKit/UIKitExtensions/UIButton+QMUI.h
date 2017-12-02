@@ -10,7 +10,7 @@
 
 @interface UIButton (QMUI)
 
-- (instancetype)initWithImage:(UIImage *)image title:(NSString *)title;
+- (instancetype)qmui_initWithImage:(UIImage *)image title:(NSString *)title;
 
 /**
  * 在UIButton的样式（如字体）设置完后，将button的text设置为一个测试字符，再调用sizeToFit，从而令button的高度适应字体

@@ -2,7 +2,7 @@
 //  QMUICommonDefines.h
 //  qmui
 //
-//  Created by QQMail on 14-6-23.
+//  Created by QMUI Team on 14-6-23.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -75,15 +75,14 @@
 #define IS_IPHONE [QMUIHelper isIPhone]
 #define IS_SIMULATOR [QMUIHelper isSimulator]
 
-// 操作系统版本号
-#define IOS_VERSION ([[[UIDevice currentDevice] systemVersion] floatValue])
+// 操作系统版本号，只获取第二级的版本号，例如 10.3.1 只会得到 10.3
+#define IOS_VERSION ([[[UIDevice currentDevice] systemVersion] doubleValue])
 
 // 是否横竖屏
 // 用户界面横屏了才会返回YES
 #define IS_LANDSCAPE UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation])
 // 无论支不支持横屏，只要设备横屏了，就会返回YES
 #define IS_DEVICE_LANDSCAPE UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation])
-
 
 // 屏幕宽度，会根据横竖屏的变化而变化
 #define SCREEN_WIDTH ([[UIScreen mainScreen] bounds].size.width)
@@ -107,9 +106,8 @@
 // 是否Retina
 #define IS_RETINASCREEN ([[UIScreen mainScreen] scale] >= 2.0)
 
-// 是否放大模式
-#define IS_ZOOMEDMODE ([[UIScreen mainScreen] respondsToSelector:@selector(nativeScale)] ? ([UIScreen mainScreen].nativeScale > [[UIScreen mainScreen] scale]) : NO)
-
+// 是否放大模式（iPhone 6及以上的设备支持放大模式）
+#define IS_ZOOMEDMODE ([[UIScreen mainScreen] respondsToSelector:@selector(nativeScale)] ? (ScreenNativeScale > ScreenScale) : NO)
 
 #pragma mark - 变量-布局相关
 
@@ -118,8 +116,6 @@
 #define ScreenNativeBoundsSize ([[UIScreen mainScreen] nativeBounds].size)
 #define ScreenScale ([[UIScreen mainScreen] scale])
 #define ScreenNativeScale ([[UIScreen mainScreen] nativeScale])
-// 区分设备是否处于放大模式（iPhone 6及以上的设备支持放大模式）
-#define ScreenInDisplayZoomMode (ScreenNativeScale > ScreenScale)
 
 // 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算)
 #define StatusBarHeight ([[UIApplication sharedApplication] statusBarFrame].size.height)
@@ -127,10 +123,14 @@
 // navigationBar相关frame
 #define NavigationBarHeight (IS_LANDSCAPE ? PreferredVarForDevices(44, 32, 32, 32) : 44)
 
-// toolBar的相关frame
-#define ToolBarHeight (IS_LANDSCAPE ? PreferredVarForDevices(44, 32, 32, 32) : 44)
+// toolBar相关frame
+#define ToolBarHeight (IS_LANDSCAPE ? PreferredVarForUniversalDevicesIncludingIPhoneX(44, 44, 53, 32, 32, 32) : PreferredVarForUniversalDevicesIncludingIPhoneX(44, 44, 83, 44, 44, 44))
 
-#define TabBarHeight 49
+// tabBar相关frame
+#define TabBarHeight (IS_LANDSCAPE ? PreferredVarForUniversalDevicesIncludingIPhoneX(49, 49, 53, 32, 32, 32) : PreferredVarForUniversalDevicesIncludingIPhoneX(49, 49, 83, 49, 49, 49))
+
+// 保护 iPhoneX 安全区域的 insets
+#define IPhoneXSafeAreaInsets [QMUIHelper safeAreaInsetsForIPhoneX]
 
 // 获取顶部导航栏占位高度，从而在布局 subviews 时可以当成 minY 参考
 // 注意，以下两个宏已废弃，请尽量使用 UIViewController (QMUI) qmui_navigationBarMaxYInViewCoordinator 代替
@@ -144,8 +144,10 @@
 #define PreferredVarForDevices(varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch) PreferredVarForUniversalDevices(varFor55Inch, varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch)
 
 // 同上，加多一个iPad的参数
-#define PreferredVarForUniversalDevices(varForPad, varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch) (IS_IPAD ? varForPad : (IS_35INCH_SCREEN ? varFor35Inch : (IS_40INCH_SCREEN ? varFor40Inch : (IS_47INCH_SCREEN || IS_58INCH_SCREEN ? varFor47or58Inch : varFor55Inch))))
+#define PreferredVarForUniversalDevices(varForPad, varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch) PreferredVarForUniversalDevicesIncludingIPhoneX(varForPad, varFor55Inch, varFor47or58Inch, varFor47or58Inch, varFor40Inch, varFor35Inch)
 
+// 同上，包含 iPhoneX
+#define PreferredVarForUniversalDevicesIncludingIPhoneX(varForPad, varFor55Inch, varFor58Inch, varFor47Inch, varFor40Inch, varFor35Inch) (IS_IPAD ? varForPad : (IS_35INCH_SCREEN ? varFor35Inch : (IS_40INCH_SCREEN ? varFor40Inch : (IS_47INCH_SCREEN ? varFor47Inch : (IS_55INCH_SCREEN ? varFor55Inch : varFor58Inch)))))
 
 #pragma mark - 方法-创建器
 
@@ -183,20 +185,30 @@
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")
 
-#define QMUILog(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ log:__VA_ARGS__]
+/// 以下是 QMUI 提供的打 log 的方法，仅用于 QMUI 项目内，业务项目可通过 QMUIHelperDelegate 来自定义 log 的输出方式（例如 Release 可将 log 记录到自己的日志文件里）
+/// 按照重要程度从低到高排列是：info、default、warn，每一个级别都可以通过修改配置表的开关来控制这个级别的 log 是否要输出
+/// QMUILog 默认会自动将当前打 log 的方法名记录下来，所以你的 log 内容可以不需要包含这部分的内容
+#define QMUILog(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ level:QMUILogLevelDefault log:__VA_ARGS__]
+#define QMUILogInfo(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ level:QMUILogLevelInfo log:__VA_ARGS__]
+#define QMUILogWarn(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ level:QMUILogLevelWarn log:__VA_ARGS__]
 
 #pragma mark - 方法-C对象、结构操作
 
-CG_INLINE void
+CG_INLINE BOOL
 ReplaceMethod(Class _class, SEL _originSelector, SEL _newSelector) {
     Method oriMethod = class_getInstanceMethod(_class, _originSelector);
     Method newMethod = class_getInstanceMethod(_class, _newSelector);
+    if (!newMethod) {
+        // class 里不存在该方法的实现
+        return NO;
+    }
     BOOL isAddedMethod = class_addMethod(_class, _originSelector, method_getImplementation(newMethod), method_getTypeEncoding(newMethod));
     if (isAddedMethod) {
         class_replaceMethod(_class, _newSelector, method_getImplementation(oriMethod), method_getTypeEncoding(oriMethod));
     } else {
         method_exchangeImplementations(oriMethod, newMethod);
     }
+    return YES;
 }
 
 #pragma mark - CGFloat

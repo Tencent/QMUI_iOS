@@ -15,13 +15,13 @@
 #import "CALayer+QMUI.h"
 
 // checkbox 的 margin 默认值
-const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins = {2, 0, 0, 2};
+const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins = {6, 0, 0, 6};
 const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMargins = {0, 8, 8, 0};
 
 
 @interface QMUIImagePickerCollectionViewCell ()
 
-@property(nonatomic, strong, readwrite) UIButton *checkboxButton;
+@property(nonatomic, strong, readwrite) QMUIButton *checkboxButton;
 
 @end
 
@@ -72,7 +72,8 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     self.contentImageView.clipsToBounds = YES;
     [self.contentView addSubview:self.contentImageView];
     
-    self.checkboxButton = [[UIButton alloc] init];
+    self.checkboxButton = [[QMUIButton alloc] init];
+    self.checkboxButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     self.checkboxButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     self.checkboxButton.hidden = YES;
     [self.contentView addSubview:self.checkboxButton];
@@ -81,7 +82,7 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     self.progressView.hidden = YES;
     [self.contentView addSubview:self.progressView];
     
-    _downloadRetryButton = [[UIButton alloc] init];
+    _downloadRetryButton = [[QMUIButton alloc] init];
     self.downloadRetryButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     self.downloadRetryButton.hidden = YES;
     [self.contentView addSubview:self.downloadRetryButton];
@@ -93,7 +94,6 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
         [_videoBottomShadowLayer qmui_removeDefaultAnimations];
         _videoBottomShadowLayer.colors = @[(id)UIColorMakeWithRGBA(0, 0, 0, 0).CGColor, (id)UIColorMakeWithRGBA(0, 0, 0, .6).CGColor];
         [self.contentView.layer addSublayer:_videoBottomShadowLayer];
-        
         [self setNeedsLayout];
     }
 }
@@ -106,7 +106,6 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     [_videoMarkImageView setImage:self.videoMarkImage];
     [_videoMarkImageView sizeToFit];
     [self.contentView addSubview:_videoMarkImageView];
-    
     [self setNeedsLayout];
 }
 
@@ -118,7 +117,6 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     _videoDurationLabel.font = self.videoDurationLabelFont;
     _videoDurationLabel.textColor = self.videoDurationLabelTextColor;
     [self.contentView addSubview:_videoDurationLabel];
-    
     [self setNeedsLayout];
 }
 
@@ -132,28 +130,28 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     [super layoutSubviews];
     self.contentImageView.frame = self.contentView.bounds;
     if (_editing) {
-        self.checkboxButton.frame = CGRectFlatted(CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.contentView.bounds) - self.checkboxButtonMargins.right - CGRectGetWidth(self.checkboxButton.frame), self.checkboxButtonMargins.top));
+        self.checkboxButton.frame = CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.contentView.bounds) - self.checkboxButtonMargins.right - CGRectGetWidth(self.checkboxButton.bounds), self.checkboxButtonMargins.top);
     }
     
     /* 理论上 downloadRetryButton 应该在 setImage 后 sizeToFit 计算大小，
      * 但因为当图片小于某个高度时， UIButton sizeToFit 时会自动改写 height 值，
      * 因此，这里 downloadRetryButton 直接拿 downloadRetryButton 的 image 图片尺寸作为 frame size
      */
-    self.downloadRetryButton.frame = CGRectFlatted(CGRectMake(CGRectGetWidth(self.contentView.bounds) - self.checkboxButtonMargins.right - _downloadRetryImage.size.width, self.checkboxButtonMargins.top, _downloadRetryImage.size.width, _downloadRetryImage.size.height));
-    self.progressView.frame = CGRectMake(CGRectGetMinX(self.downloadRetryButton.frame), CGRectGetMinY(self.downloadRetryButton.frame) + self.downloadRetryButton.contentEdgeInsets.top, CGRectGetWidth(self.downloadRetryButton.frame), CGRectGetHeight(self.downloadRetryButton.frame));
+    self.downloadRetryButton.frame = CGRectFlatMake(CGRectGetWidth(self.contentView.bounds) - self.checkboxButtonMargins.right - _downloadRetryImage.size.width, self.checkboxButtonMargins.top, _downloadRetryImage.size.width, _downloadRetryImage.size.height);
+    self.progressView.frame = CGRectFlatMake(CGRectGetMinX(self.downloadRetryButton.frame), CGRectGetMinY(self.downloadRetryButton.frame) + self.downloadRetryButton.contentEdgeInsets.top, CGRectGetWidth(self.downloadRetryButton.bounds), CGRectGetHeight(self.downloadRetryButton.bounds));
     
     if (_videoBottomShadowLayer && _videoMarkImageView && _videoDurationLabel) {
-        _videoMarkImageView.frame = CGRectFlatted(CGRectSetXY(_videoMarkImageView.frame, self.videoMarkImageViewMargins.left, CGRectGetHeight(self.contentView.bounds) - CGRectGetHeight(_videoMarkImageView.frame) - self.videoMarkImageViewMargins.bottom));
+        _videoMarkImageView.frame = CGRectSetXY(_videoMarkImageView.frame, self.videoMarkImageViewMargins.left, CGRectGetHeight(self.contentView.bounds) - CGRectGetHeight(_videoMarkImageView.bounds) - self.videoMarkImageViewMargins.bottom);
 
         [_videoDurationLabel sizeToFit];
         _videoDurationLabel.frame = ({
-            CGFloat minX = CGRectGetWidth(self.contentView.bounds) - self.videoDurationLabelMargins.right - CGRectGetWidth(_videoDurationLabel.frame);
-            CGFloat minY = CGRectGetHeight(self.contentView.bounds) - self.videoDurationLabelMargins.bottom - CGRectGetHeight(_videoDurationLabel.frame);
-            CGRectFlatted(CGRectSetXY(_videoDurationLabel.frame, minX, minY));
+            CGFloat minX = CGRectGetWidth(self.contentView.bounds) - self.videoDurationLabelMargins.right - CGRectGetWidth(_videoDurationLabel.bounds);
+            CGFloat minY = CGRectGetHeight(self.contentView.bounds) - self.videoDurationLabelMargins.bottom - CGRectGetHeight(_videoDurationLabel.bounds);
+            CGRectSetXY(_videoDurationLabel.frame, minX, minY);
         });
         
         CGFloat videoBottomShadowLayerHeight = CGRectGetHeight(self.contentView.bounds) - CGRectGetMinY(_videoMarkImageView.frame) + self.videoMarkImageViewMargins.bottom;// 背景阴影遮罩的高度取决于（视频 icon 的高度 + 上下 margin）
-        _videoBottomShadowLayer.frame = CGRectMake(0, CGRectGetHeight(self.contentView.bounds) - videoBottomShadowLayerHeight, CGRectGetWidth(self.contentView.bounds), videoBottomShadowLayerHeight);
+        _videoBottomShadowLayer.frame = CGRectFlatMake(0, CGRectGetHeight(self.contentView.bounds) - videoBottomShadowLayerHeight, CGRectGetWidth(self.contentView.bounds), videoBottomShadowLayerHeight);
     }
 }
 

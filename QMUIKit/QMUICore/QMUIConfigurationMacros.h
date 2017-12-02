@@ -2,7 +2,7 @@
 //  QMUIConfigurationMacros.h
 //  qmui
 //
-//  Created by QQMail on 14-7-2.
+//  Created by QMUI Team on 14-7-2.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -143,6 +143,8 @@
 
 #pragma mark - TableView / TableViewCell
 
+#define TableViewEstimatedHeightEnabled            [QMUICMI tableViewEstimatedHeightEnabled]            // 是否要开启全局 UITableView 的 estimatedRow(Section/Footer)Height
+
 #define TableViewBackgroundColor                   [QMUICMI tableViewBackgroundColor]                   // 普通列表的背景色
 #define TableViewGroupedBackgroundColor            [QMUICMI tableViewGroupedBackgroundColor]            // Grouped类型的列表的背景色
 #define TableSectionIndexColor                     [QMUICMI tableSectionIndexColor]                     // 列表右边索引条的文字颜色，iOS6及以后生效
@@ -177,12 +179,17 @@
 #define TableViewGroupedSectionHeaderContentInset  [QMUICMI tableViewGroupedSectionHeaderContentInset]
 #define TableViewGroupedSectionFooterContentInset  [QMUICMI tableViewGroupedSectionFooterContentInset]
 
-#define TableViewCellTitleLabelColor               [QMUICMI tableViewCellTitleLabelColor]               //cell的title颜色
-#define TableViewCellDetailLabelColor              [QMUICMI tableViewCellDetailLabelColor]              //cell的detailTitle颜色
+#define TableViewCellTitleLabelColor               [QMUICMI tableViewCellTitleLabelColor]               // cell的title颜色
+#define TableViewCellDetailLabelColor              [QMUICMI tableViewCellDetailLabelColor]              // cell的detailTitle颜色
 
 #pragma mark - UIWindowLevel
 #define UIWindowLevelQMUIAlertView                  [QMUICMI windowLevelQMUIAlertView]
 #define UIWindowLevelQMUIImagePreviewView           [QMUICMI windowLevelQMUIImagePreviewView]
+
+#pragma mark - QMUILog
+#define ShouldPrintDefaultLog                       [QMUICMI shouldPrintDefaultLog]
+#define ShouldPrintInfoLog                          [QMUICMI shouldPrintInfoLog]
+#define ShouldPrintWarnLog                          [QMUICMI shouldPrintWarnLog]
 
 #pragma mark - Others
 
@@ -191,5 +198,6 @@
 #define StatusbarStyleLightInitially                    [QMUICMI statusbarStyleLightInitially]      // 默认的状态栏内容是否使用白色，默认为NO，也即黑色
 #define NeedsBackBarButtonItemTitle                     [QMUICMI needsBackBarButtonItemTitle]       // 全局是否需要返回按钮的title，不需要则只显示一个返回image
 #define HidesBottomBarWhenPushedInitially               [QMUICMI hidesBottomBarWhenPushedInitially] // QMUICommonViewController.hidesBottomBarWhenPushed 的初始值，默认为 NO，以保持与系统默认值一致，但通常建议改为 YES，因为一般只有 tabBar 首页那几个界面要求为 NO
-#define NavigationBarHiddenInitially                    [QMUICMI navigationBarHiddenInitially]      // NavigationBarHiddenInitially : preferredNavigationBarHidden 的初始值，默认为NO
+#define NavigationBarHiddenInitially                    [QMUICMI navigationBarHiddenInitially]      // preferredNavigationBarHidden 的初始值，默认为NO
+#define ShouldFixTabBarTransitionBugInIPhoneX           [QMUICMI shouldFixTabBarTransitionBugInIPhoneX] // 是否需要自动修复 iOS 11 下，iPhone X 的设备在 push 界面时，tabBar 会瞬间往上跳的 bug
 

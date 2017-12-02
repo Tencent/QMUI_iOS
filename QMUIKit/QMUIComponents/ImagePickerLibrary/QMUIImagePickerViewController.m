@@ -20,12 +20,11 @@
 #import "CALayer+QMUI.h"
 #import "UIView+QMUI.h"
 #import <MobileCoreServices/MobileCoreServices.h>
-#import <AssetsLibrary/AssetsLibrary.h>
 #import "NSString+QMUI.h"
 #import "QMUIEmptyView.h"
 
 // 底部工具栏
-#define OperationToolBarViewHeight 44
+#define OperationToolBarViewHeight (44 + IPhoneXSafeAreaInsets.bottom)
 #define OperationToolBarViewPaddingHorizontal 12
 #define ImageCountLabelSize CGSizeMake(18, 18)
 
@@ -67,17 +66,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 @interface QMUIImagePickerViewController ()
 
-@property(nonatomic, strong, readwrite) UICollectionViewFlowLayout *collectionViewLayout;
-@property(nonatomic, strong, readwrite) UICollectionView *collectionView;
-@property(nonatomic, strong, readwrite) UIView *operationToolBarView;
-@property(nonatomic, strong, readwrite) QMUIButton *previewButton;
-@property(nonatomic, strong, readwrite) QMUIButton *sendButton;
-@property(nonatomic, strong, readwrite) UILabel *imageCountLabel;
-
-@property(nonatomic, strong, readwrite) NSMutableArray<QMUIAsset *> *imagesAssetArray;
-@property(nonatomic, strong, readwrite) QMUIAssetsGroup *assetsGroup;
-
 @property(nonatomic, strong) QMUIImagePickerPreviewViewController *imagePickerPreviewViewController;
+@property(nonatomic, assign) BOOL isImagesAssetLoaded;// 这个属性的作用描述：https://github.com/QMUI/QMUI_iOS/issues/219
 @property(nonatomic, assign) BOOL hasScrollToInitialPosition;
 @property(nonatomic, assign) BOOL canScrollToInitialPosition;// 要等数据加载完才允许滚动
 @end
@@ -86,17 +76,14 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)didInitialized {
     [super didInitialized];
-    
     if (imagePickerViewControllerAppearance) {
         // 避免 imagePickerViewControllerAppearance init 时走到这里来，导致死循环
         self.minimumImageWidth = [QMUIImagePickerViewController appearance].minimumImageWidth;
     }
-    
     _allowsMultipleSelection = YES;
     _maximumSelectImageCount = INT_MAX;
     _minimumSelectImageCount = 0;
     _shouldShowDefaultLoadingView = YES;
-    
     // 为了让使用者可以在 init 完就可以直接改 UI 相关的 property，这里提前触发 loadView
     [self loadViewIfNeeded];
 }
@@ -109,15 +96,14 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 - (void)initSubviews {
     [super initSubviews];
     
-    self.collectionViewLayout = [[UICollectionViewFlowLayout alloc] init];
+    _collectionViewLayout = [[UICollectionViewFlowLayout alloc] init];
     self.collectionViewLayout.sectionInset = CollectionViewInset;
     self.collectionViewLayout.minimumLineSpacing = CollectionViewCellMargin;
     self.collectionViewLayout.minimumInteritemSpacing = CollectionViewCellMargin;
     
-    self.collectionView = [[UICollectionView alloc] initWithFrame:self.view.bounds collectionViewLayout:self.collectionViewLayout];
+    _collectionView = [[UICollectionView alloc] initWithFrame:self.view.bounds collectionViewLayout:self.collectionViewLayout];
     self.collectionView.delegate = self;
     self.collectionView.dataSource = self;
-    self.collectionView.delaysContentTouches = NO;
     self.collectionView.showsHorizontalScrollIndicator = NO;
     self.collectionView.alwaysBounceHorizontal = NO;
     self.collectionView.backgroundColor = UIColorClear;
@@ -127,33 +113,34 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     
     // 只有允许多选时，才显示底部工具
     if (self.allowsMultipleSelection) {
-        self.operationToolBarView = [[UIView alloc] init];
+        
+        _operationToolBarView = [[UIView alloc] init];
         self.operationToolBarView.backgroundColor = UIColorWhite;
         self.operationToolBarView.qmui_borderPosition = QMUIBorderViewPositionTop;
         [self.view addSubview:self.operationToolBarView];
         
-        self.sendButton = [[QMUIButton alloc] init];
+        _sendButton = [[QMUIButton alloc] init];
+        self.sendButton.enabled = NO;
         self.sendButton.titleLabel.font = UIFontMake(16);
         self.sendButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
         [self.sendButton setTitleColor:UIColorMake(124, 124, 124) forState:UIControlStateNormal];
         [self.sendButton setTitleColor:UIColorGray forState:UIControlStateDisabled];
         [self.sendButton setTitle:@"发送" forState:UIControlStateNormal];
         [self.sendButton sizeToFit];
-        self.sendButton.enabled = NO;
         [self.sendButton addTarget:self action:@selector(handleSendButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.operationToolBarView addSubview:self.sendButton];
     
-        self.previewButton = [[QMUIButton alloc] init];
+        _previewButton = [[QMUIButton alloc] init];
+        self.previewButton.enabled = NO;
         self.previewButton.titleLabel.font = self.sendButton.titleLabel.font;
         [self.previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateNormal] forState:UIControlStateNormal];
         [self.previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateDisabled] forState:UIControlStateDisabled];
         [self.previewButton setTitle:@"预览" forState:UIControlStateNormal];
         [self.previewButton sizeToFit];
-        self.previewButton.enabled = NO;
         [self.previewButton addTarget:self action:@selector(handlePreviewButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.operationToolBarView addSubview:self.previewButton];
         
-        self.imageCountLabel = [[UILabel alloc] init];
+        _imageCountLabel = [[UILabel alloc] init];
         self.imageCountLabel.backgroundColor = ButtonTintColor;
         self.imageCountLabel.textColor = UIColorWhite;
         self.imageCountLabel.font = UIFontMake(12);
@@ -203,25 +190,22 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)showEmptyView {
     [super showEmptyView];
-    self.emptyView.backgroundColor = self.view.backgroundColor;// 为了盖住背后的 collectionView，这里加个背景色（不盖住的话会看到 collectionView 先滚到列表顶部然后跳到列表底部）
+    self.emptyView.backgroundColor = self.view.backgroundColor; // 为了盖住背后的 collectionView，这里加个背景色（不盖住的话会看到 collectionView 先滚到列表顶部然后跳到列表底部）
 }
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    
     if (!CGSizeEqualToSize(self.collectionView.frame.size, self.view.bounds.size)) {
         self.collectionView.frame = self.view.bounds;
     }
-    
     CGFloat operationToolBarViewHeight = 0;
     if (self.allowsMultipleSelection) {
         self.operationToolBarView.frame = CGRectMake(0, CGRectGetHeight(self.view.bounds) - OperationToolBarViewHeight, CGRectGetWidth(self.view.bounds), OperationToolBarViewHeight);
-        self.previewButton.frame = CGRectSetXY(self.previewButton.frame, OperationToolBarViewPaddingHorizontal, CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame), CGRectGetHeight(self.previewButton.frame)));
-        self.sendButton.frame = CGRectMake(CGRectGetWidth(self.operationToolBarView.frame) - OperationToolBarViewPaddingHorizontal - CGRectGetWidth(self.sendButton.frame), CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame), CGRectGetHeight(self.sendButton.frame)), CGRectGetWidth(self.sendButton.frame), CGRectGetHeight(self.sendButton.frame));
+        self.previewButton.frame = CGRectSetXY(self.previewButton.frame, OperationToolBarViewPaddingHorizontal, CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame) - IPhoneXSafeAreaInsets.bottom, CGRectGetHeight(self.previewButton.frame)));
+        self.sendButton.frame = CGRectMake(CGRectGetWidth(self.operationToolBarView.frame) - OperationToolBarViewPaddingHorizontal - CGRectGetWidth(self.sendButton.frame), CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame) - IPhoneXSafeAreaInsets.bottom, CGRectGetHeight(self.sendButton.frame)), CGRectGetWidth(self.sendButton.frame), CGRectGetHeight(self.sendButton.frame));
         self.imageCountLabel.frame = CGRectMake(CGRectGetMinX(self.sendButton.frame) - ImageCountLabelSize.width - 5, CGRectGetMinY(self.sendButton.frame) + CGFloatGetCenter(CGRectGetHeight(self.sendButton.frame), ImageCountLabelSize.height), ImageCountLabelSize.width, ImageCountLabelSize.height);
         operationToolBarViewHeight = CGRectGetHeight(self.operationToolBarView.frame);
     }
-    
     if (self.collectionView.contentInset.bottom != operationToolBarViewHeight) {
         self.collectionView.contentInset = UIEdgeInsetsSetBottom(self.collectionView.contentInset, operationToolBarViewHeight);
         self.collectionView.scrollIndicatorInsets = self.collectionView.contentInset;
@@ -231,14 +215,14 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 }
 
 - (void)refreshWithImagesArray:(NSMutableArray<QMUIAsset *> *)imagesArray {
-    self.imagesAssetArray = imagesArray;
+    _imagesAssetArray = imagesArray;
     [self.collectionView reloadData];
 }
 
 - (void)refreshWithAssetsGroup:(QMUIAssetsGroup *)assetsGroup {
-    self.assetsGroup = assetsGroup;
+    _assetsGroup = assetsGroup;
     if (!self.imagesAssetArray) {
-        self.imagesAssetArray = [[NSMutableArray alloc] init];
+        _imagesAssetArray = [[NSMutableArray alloc] init];
     } else {
         [self.imagesAssetArray removeAllObjects];
     }
@@ -248,35 +232,33 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (self.imagePickerViewControllerDelegate && [self.imagePickerViewControllerDelegate respondsToSelector:@selector(albumSortTypeForImagePickerViewController:)]) {
         albumSortType = [self.imagePickerViewControllerDelegate albumSortTypeForImagePickerViewController:self];
     }
-    
     // 遍历相册内的资源较为耗时，交给子线程去处理，因此这里需要显示 Loading
-    if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewControllerWillStartLoad:)]) {
-        [self.imagePickerViewControllerDelegate imagePickerViewControllerWillStartLoad:self];
+    if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewControllerWillStartLoading:)]) {
+        [self.imagePickerViewControllerDelegate imagePickerViewControllerWillStartLoading:self];
     }
     if (self.shouldShowDefaultLoadingView) {
         [self showEmptyViewWithLoading];
     }
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         [assetsGroup enumerateAssetsWithOptions:albumSortType usingBlock:^(QMUIAsset *resultAsset) {
+            // 这里需要对 UI 进行操作，因此放回主线程处理
             dispatch_async(dispatch_get_main_queue(), ^{
-                // 这里需要对 UI 进行操作，因此放回主线程处理
                 if (resultAsset) {
+                    self.isImagesAssetLoaded = NO;
                     [self.imagesAssetArray addObject:resultAsset];
-                } else { // result 为 nil，即遍历相片或视频完毕
+                } else {
+                    // result 为 nil，即遍历相片或视频完毕
+                    self.isImagesAssetLoaded = YES;// 这个属性的作用描述： https://github.com/QMUI/QMUI_iOS/issues/219
                     [self.collectionView reloadData];
-                    [self.collectionView performBatchUpdates:NULL
-                                                  completion:^(BOOL finished) {
-                                                      
-                                                      // 有时候如果这里很早就执行（比 viewWillAppear: 以及 self.view 被添加到 superview 上还早），那它实际上是不会滚动的，会等到 viewDidLayoutSubviews 里改完 contentInsets 后才滚
-                                                      [self scrollToInitialPositionIfNeeded];
-                                                      
-                                                      if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewControllerWillFinishLoad:)]) {
-                                                          [self.imagePickerViewControllerDelegate imagePickerViewControllerWillFinishLoad:self];
-                                                      }
-                                                      if (self.shouldShowDefaultLoadingView) {
-                                                          [self hideEmptyView];
-                                                      }
-                                                  }];
+                    [self.collectionView performBatchUpdates:NULL completion:^(BOOL finished) {
+                        [self scrollToInitialPositionIfNeeded];
+                        if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewControllerWillFinishLoading:)]) {
+                          [self.imagePickerViewControllerDelegate imagePickerViewControllerWillFinishLoading:self];
+                        }
+                        if (self.shouldShowDefaultLoadingView) {
+                          [self hideEmptyView];
+                        }
+                    }];
                 }
             });
         }];
@@ -312,14 +294,12 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 }
 
 - (void)scrollToInitialPositionIfNeeded {
-    BOOL hasDataLoaded = [self.collectionView numberOfItemsInSection:0] > 0;
-    if (self.collectionView.window && hasDataLoaded && !self.hasScrollToInitialPosition) {
+    if (self.collectionView.window && self.isImagesAssetLoaded && !self.hasScrollToInitialPosition) {
         if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(albumSortTypeForImagePickerViewController:)] && [self.imagePickerViewControllerDelegate albumSortTypeForImagePickerViewController:self] == QMUIAlbumSortTypeReverse) {
             [self.collectionView qmui_scrollToTop];
         } else {
             [self.collectionView qmui_scrollToBottom];
         }
-        
         self.hasScrollToInitialPosition = YES;
     }
 }
@@ -351,7 +331,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     }
     QMUIImagePickerCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
     
-    // 异步请求资源对应的缩略图（因系统接口限制，iOS 8.0 以下为实际上同步请求）
+    // 异步请求资源对应的缩略图
     [imageAsset requestThumbnailImageWithSize:[self referenceImageSize] completion:^(UIImage *result, NSDictionary *info) {
         if (!info || [[info objectForKey:PHImageResultIsDegradedKey] boolValue]) {
             // 模糊，此时为同步调用
@@ -384,7 +364,6 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (self.imagePickerViewControllerDelegate && [self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:didSelectImageWithImagesAsset:afterImagePickerPreviewViewControllerUpdate:)]) {
         [self.imagePickerViewControllerDelegate imagePickerViewController:self didSelectImageWithImagesAsset:imageAsset afterImagePickerPreviewViewControllerUpdate:self.imagePickerPreviewViewController];
     }
-    
     if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerPreviewViewControllerForImagePickerViewController:)]) {
         [self initPreviewViewControllerIfNeeded];
         if (!self.allowsMultipleSelection) {
@@ -467,7 +446,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         // 下载过程中点击，取消下载，理论上能点击 progressView 就肯定是下载中，这里只是做个保护
         QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
         [[QMUIAssetsManager sharedInstance].phCachingImageManager cancelImageRequest:(int32_t)imageAsset.requestID];
-        QMUILog(@"Cancel download asset image with request ID %@", [NSNumber numberWithInteger:imageAsset.requestID]);
+        QMUILogInfo(@"Cancel download asset image with request ID %@", [NSNumber numberWithInteger:imageAsset.requestID]);
         cell.downloadStatus = QMUIAssetDownloadStatusCanceled;
         [imageAsset updateDownloadStatusWithDownloadResult:NO];
     }
@@ -551,7 +530,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
              *  为了避免这种情况，这里该 block 主动放到主线程执行。
              */
             dispatch_async(dispatch_get_main_queue(), ^{
-                QMUILog(@"Download iCloud image, current progress is : %f", progress);
+                QMUILogInfo(@"Download iCloud image, current progress is : %f", progress);
                 
                 if (cell.downloadStatus != QMUIAssetDownloadStatusDownloading) {
                     cell.downloadStatus = QMUIAssetDownloadStatusDownloading;

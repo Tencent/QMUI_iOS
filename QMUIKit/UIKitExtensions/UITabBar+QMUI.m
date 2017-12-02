@@ -26,6 +26,7 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
     dispatch_once(&onceToken, ^{
         ReplaceMethod([self class], @selector(setItems:animated:), @selector(qmui_setItems:animated:));
         ReplaceMethod([self class], @selector(setSelectedItem:), @selector(qmui_setSelectedItem:));
+        ReplaceMethod([self class], @selector(setFrame:), @selector(qmui_setFrame:));
     });
 }
 
@@ -87,6 +88,18 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 - (void)revertTabBarItemTouch {
     self.lastTouchedTabBarItemViewIndex = kLastTouchedTabBarItemIndexNone;
     self.tabBarItemViewTouchCount = 0;
+}
+
+- (void)qmui_setFrame:(CGRect)frame {
+    if (IS_58INCH_SCREEN && ShouldFixTabBarTransitionBugInIPhoneX) {
+        if (CGRectGetHeight(frame) == TabBarHeight && CGRectGetMaxY(frame) < CGRectGetHeight(self.superview.bounds)) {
+            // iOS 11 在界面 push 的过程中 tabBar 会瞬间往上跳，所以做这个修复。这个 bug 在 iOS 11.0.3 里测试过依然存在。
+            // https://github.com/QMUI/QMUI_iOS/issues/217
+            frame = CGRectSetY(frame, CGRectGetHeight(self.superview.bounds) - CGRectGetHeight(frame));
+        }
+    }
+    
+    [self qmui_setFrame:frame];
 }
 
 #pragma mark - Swizzle Property Getter/Setter

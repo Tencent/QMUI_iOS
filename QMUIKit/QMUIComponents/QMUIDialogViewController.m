@@ -32,7 +32,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         if (!dialogViewControllerAppearance) {
             dialogViewControllerAppearance = [[QMUIDialogViewController alloc] init];
             dialogViewControllerAppearance.cornerRadius = 6;
-            dialogViewControllerAppearance.contentViewMargins = UIEdgeInsetsMake(20, 20, 20, 20);
+            dialogViewControllerAppearance.contentViewMargins = UIEdgeInsetsMake(20, 20, 20, 20);// 在实例的 didInitialized 里会适配 iPhone X 的 safeAreaInsets
             dialogViewControllerAppearance.titleTintColor = UIColorBlack;
             dialogViewControllerAppearance.titleLabelFont = UIFontMake(16);
             dialogViewControllerAppearance.titleLabelTextColor = UIColorMake(53, 60, 70);
@@ -67,7 +67,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     [super didInitialized];
     if (dialogViewControllerAppearance) {
         self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
-        self.contentViewMargins = [QMUIDialogViewController appearance].contentViewMargins;
+        self.contentViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].contentViewMargins, IPhoneXSafeAreaInsets);
         self.titleTintColor = [QMUIDialogViewController appearance].titleTintColor;
         self.titleLabelFont = [QMUIDialogViewController appearance].titleLabelFont;
         self.titleLabelTextColor = [QMUIDialogViewController appearance].titleLabelTextColor;
@@ -358,7 +358,7 @@ EndIgnoreClangWarning
 }
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    [self.modalPresentedViewController hideWithAnimated:animated completion:^(BOOL finished) {
+    [self.qmui_modalPresentationViewController hideWithAnimated:animated completion:^(BOOL finished) {
         if (completion) {
             completion(finished);
         }

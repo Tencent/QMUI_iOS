@@ -18,6 +18,20 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
     QMUITableViewCellPositionNormal,
 };
 
+/**
+ *  这个分类提供额外的功能包括：
+ *  1. 将给定的 UITableView 格式化为 QMUITableView 风格的样式
+ *  2. 计算给定的某个 view 处于哪个 indexPath 的 cell 上
+ *  3. 计算给定的某个 view 处于哪个 sectionHeader 上
+ *  4. 获取所有可视范围内的 sectionHeader 的 index
+ *  5. 获取正处于 pinned 状态（也即悬停在顶部）的 sectionHeader 的 index
+ *  6. 判断某个给定的 sectionHeader 是否处于 pinned 状态
+ *  7. 判断某个给定的 cell indexPath 是否处于可视范围内
+ *  8. 计算给定的 cell 的 indexPath 所对应的 QMUITableViewCellPosition
+ *  9. 清除当前列表的所有 selection（选中的背景灰色）
+ *  10. 在将 searchBar 作为 tableHeaderView 的情况下，获取列表真实的 contentSize
+ *  11. 在将 searchBar 作为 tableHeaderView 的情况下，判断列表内容是否足够多到可滚动
+ */
 @interface UITableView (QMUI)
 
 /// 将当前tableView按照QMUI统一定义的宏来渲染外观
@@ -31,26 +45,39 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
  *  @param view 要计算的 UIView
  *  @return view 所在的 indexPath，若不存在则返回 nil
  */
-- (NSIndexPath *)qmui_indexPathForRowAtView:(UIView *)view;
+- (nullable NSIndexPath *)qmui_indexPathForRowAtView:(nullable UIView *)view;
 
 /**
  *  计算某个 view 处于当前 tableView 里的哪个 sectionHeaderView 内
  *  @param view 要计算的 UIView
  *  @return view 所在的 sectionHeaderView 的 section，若不存在则返回 -1
  */
-- (NSInteger)qmui_indexForSectionHeaderAtView:(UIView *)view;
+- (NSInteger)qmui_indexForSectionHeaderAtView:(nullable UIView *)view;
+
+/// 获取可视范围内的所有 sectionHeader 的 index
+@property(nonatomic, readonly, nullable) NSArray<NSNumber *> *qmui_indexForVisibleSectionHeaders;
+
+/// 获取正处于 pinned（悬停在顶部）状态的 sectionHeader 的序号
+@property(nonatomic, readonly) NSInteger qmui_indexOfPinnedSectionHeader;
+
+/**
+ *  判断给定的 section 的 header 是否处于 pinned 状态
+ *  @param section 给定的 section 的序号
+ *  @note 当列表往上滚动的过程中，header1 处于将要离开 pinned 状态、header2 即将进入 pinned 状态的这个过程，header1 和 header2 均不处于 pinned 状态
+ */
+- (BOOL)qmui_isHeaderPinnedForSection:(NSInteger)section;
+
+/// 判断当前 indexPath 的 item 是否为可视的 item
+- (BOOL)qmui_cellVisibleAtIndexPath:(nullable NSIndexPath *)indexPath;
 
 /**
  * 根据给定的indexPath，配合dataSource得到对应的cell在当前section中所处的位置
  * @param indexPath cell所在的indexPath
  * @return 给定indexPath对应的cell在当前section中所处的位置
  */
-- (QMUITableViewCellPosition)qmui_positionForRowAtIndexPath:(NSIndexPath *)indexPath;
+- (QMUITableViewCellPosition)qmui_positionForRowAtIndexPath:(nullable NSIndexPath *)indexPath;
 
-/// 判断当前 indexPath 的 item 是否为可视的 item
-- (BOOL)qmui_cellVisibleAtIndexPath:(NSIndexPath *)indexPath;
-
-// 取消选择状态
+/// 取消选择状态
 - (void)qmui_clearsSelection;
 
 /**
@@ -59,7 +86,7 @@ typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
  * @param indexPath 要滚动的目标indexPath，请自行保证indexPath是合法的
  * @param animated 是否需要动画
  */
-- (void)qmui_scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(NSIndexPath *)indexPath animated:(BOOL)animated;
+- (void)qmui_scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(nonnull NSIndexPath *)indexPath animated:(BOOL)animated;
 
 /**
  *  当tableHeaderView为UISearchBar时，tableView为了实现searchbar滚到顶部自动吸附的效果，会强制让self.contentSize.height至少为frame.size.height那么高（这样才能滚动，否则不满一屏就无法滚动了），所以此时如果通过self.contentSize获取tableView的内容大小是不准确的，此时可以使用`qmui_realContentSize`替代。
