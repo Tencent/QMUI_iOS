@@ -31,8 +31,8 @@
 - (void)setFrame:(CGRect)frame {
     CGRect oldFrame = self.frame;
     BOOL isFrameChanged = CGRectEqualToRect(oldFrame, frame);
-    if (isFrameChanged) {
-        NSLog(@"frame发生变化, old is %@, new is %@", NSStringFromCGRect(oldFrame), NSStringFromCGRect(frame));
+    if (!isFrameChanged) {
+        NSLog(@"frame 发生变化, 旧的是 %@, 新的是 %@", NSStringFromCGRect(oldFrame), NSStringFromCGRect(frame));
     }
     [super setFrame:frame];
 }
