@@ -389,7 +389,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
             *stop = YES;
         }
     }];
-    return nil;
+    return result;
 }
 
 - (NSIndexPath *)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView {
