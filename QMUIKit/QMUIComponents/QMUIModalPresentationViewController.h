@@ -71,7 +71,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @endcode
  *
  *  2. 使用系统接口来显示，支持界面切换，**注意** 使用这种方法必定只能以动画的形式来显示浮层，无法以无动画的形式来显示，并且 `animated` 参数必须为 `NO`。可通过 `supportedOrientationMask` 支持横竖屏。
- *  可通过 shownInPresentMode 属性来判断是否在用这种方式显示。
+ *  可通过 shownInPresentedMode 属性来判断是否在用这种方式显示。
  *  @code
  *  [self presentViewController:modalPresentationViewController animated:NO completion:nil];
  *  @endcode
@@ -171,7 +171,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nonatomic, assign, readonly, getter=isShownInWindowMode) BOOL shownInWindowMode;
 
 /// 是否以系统 present 的方式显示，建议在显示之后才使用，否则可能不准确。
-@property(nonatomic, assign, readonly, getter=isShownInPresentMode) BOOL shownInPresentMode;
+@property(nonatomic, assign, readonly, getter=isShownInPresentedMode) BOOL shownInPresentedMode;
 
 /// 是否以 addSubview 的方式显示，建议在显示之后才使用，否则可能不准确。
 @property(nonatomic, assign, readonly, getter=isShownInSubviewMode) BOOL shownInSubviewMode;

@@ -327,7 +327,7 @@ static QMUIModalPresentationViewController *appearance;
                 weakSelf.didHideByDimmingViewTappedBlock();
             }
         }];
-    } else if (self.shownInPresentMode) {
+    } else if (self.shownInPresentedMode) {
         [self dismissViewControllerAnimated:YES completion:^{
             if (self.didHideByDimmingViewTappedBlock) {
                 self.didHideByDimmingViewTappedBlock();
@@ -495,12 +495,12 @@ static QMUIModalPresentationViewController *appearance;
     return !!self.containerWindow;
 }
 
-- (BOOL)isShownInPresentMode {
+- (BOOL)isShownInPresentedMode {
     return !self.shownInWindowMode && self.presentingViewController && self.presentingViewController.presentedViewController == self;
 }
 
 - (BOOL)isShownInSubviewMode {
-    return !self.shownInPresentMode && self.view.superview;
+    return !self.shownInPresentedMode && self.view.superview;
 }
 
 #pragma mark - Keyboard
