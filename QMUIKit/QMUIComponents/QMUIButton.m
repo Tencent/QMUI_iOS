@@ -517,14 +517,20 @@
 - (void)updateImageRenderingModeIfNeeded {
     if (self.currentImage) {
         NSArray<NSNumber *> *states = @[@(UIControlStateNormal), @(UIControlStateHighlighted), @(UIControlStateDisabled)];
+        
+        // 实际上对于 UIButton 而言如果设置了 UIControlStateNormal 的 image，则其他所有 state 下的 image 默认都会返回 normal 这张图，所以这个判断只对 UIControlStateNormal 做就行了
+        UIImage *normalImage = [self imageForState:UIControlStateNormal];
+        if (!normalImage) return;
+        
         for (NSNumber *number in states) {
-            UIImage *image = [self imageForState:[number unsignedIntegerValue]];
-            if (!image) {
+            UIImage *image = [self imageForState:number.unsignedIntegerValue];
+            if (number.unsignedIntegerValue > 0 && image == normalImage) {
+                // 这个 state 下的 image 如果指针和 normal 一样，说明并没有对这个 state 设置特别的 image，所以不用处理
                 continue;
             }
             
             if (self.adjustsImageTintColorAutomatically) {
-                // 这里的image不用做renderingMode的处理，而是放到重写的setImage:forState里去做
+                // 这里的 setImage: 操作不需要使用 renderingMode 对 image 重新处理，而是放到重写的 setImage:forState 里去做就行了
                 [self setImage:image forState:[number unsignedIntegerValue]];
             } else {
                 // 如果不需要用template的模式渲染，并且之前是使用template的，则把renderingMode改回Original
@@ -585,6 +591,7 @@
     if (self = [super initWithFrame:CGRectZero]) {
         _type = type;
         self.buttonPosition = QMUINavigationButtonPositionNone;
+        self.translatesAutoresizingMaskIntoConstraints = NO;
         self.useForBarButtonItem = YES;
         [self setTitle:title forState:UIControlStateNormal];
         [self renderButtonStyle];
@@ -666,7 +673,7 @@
             self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
             UIImage *backIndicatorImage = NavBarBackIndicatorImage;
             if (!backIndicatorImage) {
-                QMUILog(@"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
+                QMUILogWarn(@"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
                 return;
             }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];

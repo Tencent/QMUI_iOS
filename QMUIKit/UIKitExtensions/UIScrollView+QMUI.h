@@ -16,6 +16,9 @@
 /// 判断UIScrollView是否已经处于底部（当UIScrollView内容不够多不可滚动时，也认为是在底部）
 @property(nonatomic, assign, readonly) BOOL qmui_alreadyAtBottom;
 
+/// UIScrollView 的真正 inset，在 iOS11 以后需要用到 adjustedContentInset 而在 iOS11 以前只需要用 contentInset
+@property(nonatomic, assign, readonly) UIEdgeInsets qmui_contentInset;
+
 /**
  * 判断当前的scrollView内容是否足够滚动
  * @warning 避免与<i>scrollEnabled</i>混淆

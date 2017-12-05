@@ -64,17 +64,20 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *
  *  支持 3 种方式显示浮层：
  *
- *  1. **推荐** 新起一个 `UIWindow` 盖在当前界面上，将 `QMUIModalPresentationViewController` 以 `rootViewController` 的形式显示出来，可通过 `supportedOrientationMask` 支持横竖屏，不支持在浮层不消失的情况下做界面切换（因为 window 会把背后的 controller 盖住，看不到界面切换）
+ *  1. **推荐** 新起一个 `UIWindow` 盖在当前界面上，将 `QMUIModalPresentationViewController` 以 `rootViewController` 的形式显示出来，可通过 `supportedOrientationMask` 支持横竖屏，不支持在浮层不消失的情况下做界面切换（因为 window 会把背后的 controller 盖住，看不到界面切换）。
+ *  可通过 shownInWindowMode 属性来判断是否在用这种方式显示。
  *  @code
  *  [modalPresentationViewController showWithAnimated:YES completion:nil];
  *  @endcode
  *
  *  2. 使用系统接口来显示，支持界面切换，**注意** 使用这种方法必定只能以动画的形式来显示浮层，无法以无动画的形式来显示，并且 `animated` 参数必须为 `NO`。可通过 `supportedOrientationMask` 支持横竖屏。
+ *  可通过 shownInPresentedMode 属性来判断是否在用这种方式显示。
  *  @code
  *  [self presentViewController:modalPresentationViewController animated:NO completion:nil];
  *  @endcode
  *
  *  3. 将浮层作为一个 subview 添加到 `superview` 上，从而能够实现在浮层不消失的情况下进行界面切换，但需要 `superview` 自行管理浮层的大小和横竖屏旋转，而且 `QMUIModalPresentationViewController` 不能用局部变量来保存，会在显示后被释放，需要自行 retain。横竖屏跟随当前界面的设置。
+ *  可通过 shownInSubviewMode 属性来判断是否在用这种方式显示。
  *  @code
  *  self.modalPresentationViewController.view.frame = CGRectMake(50, 50, 100, 100);
  *  [self.view addSubview:self.modalPresentationViewController.view];
@@ -164,6 +167,15 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  */
 @property(nonatomic, assign) QMUIModalPresentationAnimationStyle animationStyle UI_APPEARANCE_SELECTOR;
 
+/// 是否以 UIWindow 的方式显示，建议在显示之后才使用，否则可能不准确。
+@property(nonatomic, assign, readonly, getter=isShownInWindowMode) BOOL shownInWindowMode;
+
+/// 是否以系统 present 的方式显示，建议在显示之后才使用，否则可能不准确。
+@property(nonatomic, assign, readonly, getter=isShownInPresentedMode) BOOL shownInPresentedMode;
+
+/// 是否以 addSubview 的方式显示，建议在显示之后才使用，否则可能不准确。
+@property(nonatomic, assign, readonly, getter=isShownInSubviewMode) BOOL shownInSubviewMode;
+
 /**
  *  管理自定义的浮层布局，将会在浮层显示前、控件的容器大小发生变化时（例如横竖屏、来电状态栏）被调用
  *  @arg  containerBounds         浮层所在的父容器的大小，也即`self.view.bounds`
@@ -193,6 +205,11 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @arg  completion          动画结束后给到modalController的回调，modalController会在这个回调里做一些清理工作，务必调用
  */
 @property(nonatomic, copy) void (^hidingAnimation)(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished));
+
+/**
+ *  请求重新计算浮层的布局
+ */
+- (void)updateLayout;
 
 /**
  *  将浮层以 UIWindow 的方式显示出来
@@ -261,7 +278,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @interface UIViewController (QMUIModalPresentationViewController)
 
 /**
- *  获取弹出当前vieController的QMUIModalPresentationViewController
+ *  获取弹出当前 vieController 的 QMUIModalPresentationViewController
  */
-@property(nonatomic, weak, readonly) QMUIModalPresentationViewController *modalPresentedViewController;
+@property(nonatomic, weak, readonly) QMUIModalPresentationViewController *qmui_modalPresentationViewController;
 @end

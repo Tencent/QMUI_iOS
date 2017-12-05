@@ -2,16 +2,31 @@
 //  QMUIMoreOperationController.m
 //  qmui
 //
-//  Created by QQMail on 15/1/28.
-//  Copyright (c) 2015年 QMUI Team. All rights reserved.
+//  Created by zhoon, MoLice on 17/11/15.
+//  Copyright (c) 2017年 QMUI Team. All rights reserved.
 //
 
 #import "QMUIMoreOperationController.h"
 #import "QMUICore.h"
 #import "CALayer+QMUI.h"
 #import "UIControl+QMUI.h"
+#import "UIView+QMUI.h"
+#import "NSArray+QMUI.h"
+#import "UIScrollView+QMUI.h"
 
-#define TagOffset 999
+static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
+
+@interface QMUIMoreOperationItemView () {
+    NSInteger _tag;
+}
+
+@property(nonatomic, weak) QMUIMoreOperationController *moreOperationController;
+@property(nonatomic, copy) void (^handler)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView);
+
+// 被添加到某个 QMUIMoreOperationController 时要调用，用于更新 itemView 的样式，以及 moreOperationController 属性的指针
+// @param moreOperationController 如果为空，则会自动使用 [QMUIMoreOperationController appearance]
+- (void)formatItemViewStyleWithMoreOperationController:(QMUIMoreOperationController *)moreOperationController;
+@end
 
 @implementation QMUIMoreOperationController (UIAppearance)
 
@@ -35,90 +50,47 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     if (!moreOperationViewControllerAppearance) {
         moreOperationViewControllerAppearance = [[QMUIMoreOperationController alloc] init];
         moreOperationViewControllerAppearance.contentBackgroundColor = UIColorWhite;
-        moreOperationViewControllerAppearance.contentSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
-        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorWhite;
-        moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
-        moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
-        moreOperationViewControllerAppearance.itemBackgroundColor = UIColorClear;
-        moreOperationViewControllerAppearance.itemTitleColor = UIColorGrayDarken;
-        moreOperationViewControllerAppearance.itemTitleFont = UIFontMake(11);
-        moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(17);
         moreOperationViewControllerAppearance.contentEdgeMargin = 10;
         moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - moreOperationViewControllerAppearance.contentEdgeMargin * 2;
         moreOperationViewControllerAppearance.contentCornerRadius = 10;
+        moreOperationViewControllerAppearance.contentPaddings = UIEdgeInsetsMake(10, 0, 5, 0);
+        
+        moreOperationViewControllerAppearance.scrollViewSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
+        moreOperationViewControllerAppearance.scrollViewContentInsets = UIEdgeInsetsMake(14, 8, 14, 8);
+        
+        moreOperationViewControllerAppearance.itemBackgroundColor = UIColorClear;
+        moreOperationViewControllerAppearance.itemTitleColor = UIColorGrayDarken;
+        moreOperationViewControllerAppearance.itemTitleFont = UIFontMake(11);
+        moreOperationViewControllerAppearance.itemPaddingHorizontal = 16;
         moreOperationViewControllerAppearance.itemTitleMarginTop = 9;
-        moreOperationViewControllerAppearance.topScrollViewInsets = UIEdgeInsetsMake(18, 14, 12, 14);
-        moreOperationViewControllerAppearance.bottomScrollViewInsets = UIEdgeInsetsMake(18, 14, 12, 14);
-        moreOperationViewControllerAppearance.cancelButtonHeight = 52.0;
+        moreOperationViewControllerAppearance.itemMinimumMarginHorizontal = 0;
+        
+        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorWhite;
+        moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
+        moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
+        moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(16);
+        moreOperationViewControllerAppearance.cancelButtonHeight = 56.0;
         moreOperationViewControllerAppearance.cancelButtonMarginTop = 0;
+        
+        moreOperationViewControllerAppearance.isExtendBottomLayout = NO;
     }
 }
 
 @end
-
-
-@interface QMUIMoreOperationItemView ()
-
-@property (nonatomic, assign, readwrite) QMUIMoreOperationItemType itemType;
-
-@end
-
-
-@implementation QMUIMoreOperationItemView {
-    NSInteger _tag;
-}
-
-- (instancetype)initWithFrame:(CGRect)frame {
-    self = [super initWithFrame:frame];
-    if (self) {
-        self.imagePosition = QMUIButtonImagePositionTop;
-        self.adjustsButtonWhenHighlighted = NO;
-        self.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
-        self.titleLabel.numberOfLines = 0;
-        self.titleLabel.textAlignment = NSTextAlignmentCenter;
-        self.imageView.contentMode = UIViewContentModeCenter;
-        self.imageView.backgroundColor = UIColorClear;
-    }
-    return self;
-}
-
-- (void)setHighlighted:(BOOL)highlighted {
-    [super setHighlighted:highlighted];
-    self.imageView.alpha = highlighted ? ButtonHighlightedAlpha : 1;
-}
-
-- (void)setTag:(NSInteger)tag {
-    _tag = tag + TagOffset;
-    [super setTag:_tag];
-}
-
-- (NSInteger)tag {
-    return _tag - TagOffset;
-}
-
-@end
-
 
 @interface QMUIMoreOperationController ()
 
-@property(nonatomic, strong) UIView *containerView;
-@property(nonatomic, strong) UIView *contentView;
-@property(nonatomic, strong) UIControl *maskView;
-@property(nonatomic, strong) UIScrollView *importantItemsScrollView;
-@property(nonatomic, strong) UIScrollView *normalItemsScrollView;
+@property(nonatomic, strong) UIView *contentView;// 放两个 UIScrollView 的容器
+@property(nonatomic, strong) CALayer *extendLayer;
+@property(nonatomic, strong) NSMutableArray<UIScrollView *> *scrollViews;
+@property(nonatomic, strong) NSMutableArray<NSMutableArray<QMUIMoreOperationItemView *> *> *mutableItems;
 
-@property(nonatomic, strong) CALayer *scrollViewDividingLayer;
-@property(nonatomic, strong) CALayer *cancelButtonDividingLayer;
-
-@property(nonatomic, strong) NSMutableArray *importantItems;
-@property(nonatomic, strong) NSMutableArray *normalItems;
-@property(nonatomic, strong) NSMutableArray *importantShowingItems;
-@property(nonatomic, strong) NSMutableArray *normalShowingItems;
-
-@property(nonatomic, assign, readwrite) BOOL showing;
-@property(nonatomic, assign, readwrite) BOOL animating;
+@property(nonatomic, assign, getter=isShowing, readwrite) BOOL showing;
+@property(nonatomic, assign, getter=isAnimating, readwrite) BOOL animating;
+@property(nonatomic, assign) BOOL hideByCancel;// 是否通过点击取消按钮或者遮罩来隐藏面板，默认为 NO
 
 @end
+
 @implementation QMUIMoreOperationController
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
@@ -138,288 +110,123 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 - (void)didInitialized {
     if (moreOperationViewControllerAppearance) {
         self.contentBackgroundColor = [QMUIMoreOperationController appearance].contentBackgroundColor;
-        self.contentSeparatorColor = [QMUIMoreOperationController appearance].contentSeparatorColor;
-        self.cancelButtonBackgroundColor = [QMUIMoreOperationController appearance].cancelButtonBackgroundColor;
-        self.cancelButtonTitleColor = [QMUIMoreOperationController appearance].cancelButtonTitleColor;
-        self.cancelButtonSeparatorColor = [QMUIMoreOperationController appearance].cancelButtonSeparatorColor;
-        self.itemBackgroundColor = [QMUIMoreOperationController appearance].itemBackgroundColor;
-        self.itemTitleColor = [QMUIMoreOperationController appearance].itemTitleColor;
-        self.itemTitleFont = [QMUIMoreOperationController appearance].itemTitleFont;
-        self.cancelButtonFont = [QMUIMoreOperationController appearance].cancelButtonFont;
         self.contentEdgeMargin = [QMUIMoreOperationController appearance].contentEdgeMargin;
         self.contentMaximumWidth = [QMUIMoreOperationController appearance].contentMaximumWidth;
         self.contentCornerRadius = [QMUIMoreOperationController appearance].contentCornerRadius;
+        self.contentPaddings = [QMUIMoreOperationController appearance].contentPaddings;
+        
+        self.scrollViewSeparatorColor = [QMUIMoreOperationController appearance].scrollViewSeparatorColor;
+        self.scrollViewContentInsets = [QMUIMoreOperationController appearance].scrollViewContentInsets;
+        
+        self.itemBackgroundColor = [QMUIMoreOperationController appearance].itemBackgroundColor;
+        self.itemTitleColor = [QMUIMoreOperationController appearance].itemTitleColor;
+        self.itemTitleFont = [QMUIMoreOperationController appearance].itemTitleFont;
+        self.itemPaddingHorizontal = [QMUIMoreOperationController appearance].itemPaddingHorizontal;
         self.itemTitleMarginTop = [QMUIMoreOperationController appearance].itemTitleMarginTop;
-        self.topScrollViewInsets = [QMUIMoreOperationController appearance].topScrollViewInsets;
-        self.bottomScrollViewInsets = [QMUIMoreOperationController appearance].bottomScrollViewInsets;
+        self.itemMinimumMarginHorizontal = [QMUIMoreOperationController appearance].itemMinimumMarginHorizontal;
+        
+        self.cancelButtonBackgroundColor = [QMUIMoreOperationController appearance].cancelButtonBackgroundColor;
+        self.cancelButtonTitleColor = [QMUIMoreOperationController appearance].cancelButtonTitleColor;
+        self.cancelButtonSeparatorColor = [QMUIMoreOperationController appearance].cancelButtonSeparatorColor;
+        self.cancelButtonFont = [QMUIMoreOperationController appearance].cancelButtonFont;
         self.cancelButtonHeight = [QMUIMoreOperationController appearance].cancelButtonHeight;
         self.cancelButtonMarginTop = [QMUIMoreOperationController appearance].cancelButtonMarginTop;
+        
+        self.isExtendBottomLayout = [QMUIMoreOperationController appearance].isExtendBottomLayout;
+        
+        self.scrollViews = [[NSMutableArray alloc] init];
+        self.mutableItems = [[NSMutableArray alloc] init];
     }
-    self.importantItems = [[NSMutableArray alloc] init];
-    self.normalItems = [[NSMutableArray alloc] init];
-    self.importantShowingItems = [[NSMutableArray alloc] init];
-    self.normalShowingItems = [[NSMutableArray alloc] init];
     
-    [self initSubviewsIfNeeded];
+    [self loadViewIfNeeded];
 }
 
-- (void)setContentBackgroundColor:(UIColor *)contentBackgroundColor {
-    _contentBackgroundColor = contentBackgroundColor;
-    if (self.contentView) {
-        self.contentView.backgroundColor = contentBackgroundColor;
-    }
-}
-
-- (void)setContentSeparatorColor:(UIColor *)contentSeparatorColor {
-    _contentSeparatorColor = contentSeparatorColor;
-    if (self.scrollViewDividingLayer) {
-        self.scrollViewDividingLayer.backgroundColor = contentSeparatorColor.CGColor;
-    }
-}
-
-- (void)setCancelButtonBackgroundColor:(UIColor *)cancelButtonBackgroundColor {
-    _cancelButtonBackgroundColor = cancelButtonBackgroundColor;
-    if (self.cancelButton) {
-        self.cancelButton.backgroundColor = cancelButtonBackgroundColor;
-    }
-}
-
-- (void)setCancelButtonTitleColor:(UIColor *)cancelButtonTitleColor {
-    _cancelButtonTitleColor = cancelButtonTitleColor;
-    if (self.cancelButton) {
-        [self.cancelButton setTitleColor:cancelButtonTitleColor forState:UIControlStateNormal];
-        [self.cancelButton setTitleColor:[cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
-    }
-}
-
-- (void)setCancelButtonSeparatorColor:(UIColor *)cancelButtonSeparatorColor {
-    _cancelButtonSeparatorColor = cancelButtonSeparatorColor;
-    if (self.cancelButtonDividingLayer) {
-        self.cancelButtonDividingLayer.backgroundColor = cancelButtonSeparatorColor.CGColor;
-    }
-}
-
-- (void)setItemBackgroundColor:(UIColor *)itemBackgroundColor {
-    _itemBackgroundColor = itemBackgroundColor;
-    for (QMUIMoreOperationItemView *item in [self.importantItems arrayByAddingObjectsFromArray:self.normalItems]) {
-        item.imageView.backgroundColor = itemBackgroundColor;
-    }
-}
-
-- (void)setItemTitleColor:(UIColor *)itemTitleColor {
-    _itemTitleColor = itemTitleColor;
-    for (QMUIMoreOperationItemView *item in [self.importantItems arrayByAddingObjectsFromArray:self.normalItems]) {
-        [item setTitleColor:itemTitleColor forState:UIControlStateNormal];
-    }
-}
-
-- (void)setItemTitleFont:(UIFont *)itemTitleFont {
-    _itemTitleFont = itemTitleFont;
-    for (QMUIMoreOperationItemView *item in [self.importantItems arrayByAddingObjectsFromArray:self.normalItems]) {
-        item.titleLabel.font = itemTitleFont;
-    }
-}
-
-- (void)setCancelButtonFont:(UIFont *)cancelButtonFont {
-    _cancelButtonFont = cancelButtonFont;
-    if (self.cancelButton) {
-        self.cancelButton.titleLabel.font = cancelButtonFont;
-    }
-}
-
-- (void)setContentCornerRadius:(CGFloat)contentCornerRadius {
-    _contentCornerRadius = contentCornerRadius;
-    [self updateCornerRadius];
-}
-
-- (void)setCancelButtonMarginTop:(CGFloat)cancelButtonMarginTop {
-    _cancelButtonMarginTop = cancelButtonMarginTop;
-    [self updateCornerRadius];
-}
-
-- (void)updateCornerRadius {
-    if (self.cancelButtonMarginTop > 0) {
-        self.contentView.layer.cornerRadius = self.contentCornerRadius;
-        self.containerView.layer.cornerRadius = 0;
-        self.cancelButton.layer.cornerRadius = self.contentCornerRadius;
-    } else {
-        self.containerView.layer.cornerRadius = self.contentCornerRadius;
-        self.contentView.layer.cornerRadius = 0;
-        self.cancelButton.layer.cornerRadius = 0;
-    }
-}
-
-- (void)setItemTitleMarginTop:(CGFloat)itemTitleMarginTop {
-    _itemTitleMarginTop = itemTitleMarginTop;
-    for (QMUIMoreOperationItemView *item in [self.importantItems arrayByAddingObjectsFromArray:self.normalItems]) {
-        item.titleEdgeInsets = UIEdgeInsetsMake(itemTitleMarginTop, 0, 0, 0);
-    }
-}
-
-- (void)initSubviewsIfNeeded {
-    
-    self.maskView = [[UIControl alloc] init];
-    self.maskView.alpha = 0;
-    self.maskView.backgroundColor = UIColorMask;
-    [self.maskView addTarget:self action:@selector(handleMaskControlEvent:) forControlEvents:UIControlEventTouchUpInside];
-    
-    self.containerView = [[UIView alloc] init];
-    self.containerView.clipsToBounds = YES;
+- (void)viewDidLoad {
+    [super viewDidLoad];
     
     self.contentView = [[UIView alloc] init];
-    self.contentView.clipsToBounds = YES;
     self.contentView.backgroundColor = self.contentBackgroundColor;
-    
-    self.scrollViewDividingLayer = [CALayer layer];
-    self.scrollViewDividingLayer.hidden = YES;
-    self.scrollViewDividingLayer.backgroundColor = self.contentSeparatorColor.CGColor;
-    [self.scrollViewDividingLayer qmui_removeDefaultAnimations];
-    
-    self.importantItemsScrollView = [[UIScrollView alloc] init];
-    self.importantItemsScrollView.showsHorizontalScrollIndicator = NO;
-    self.importantItemsScrollView.showsVerticalScrollIndicator = NO;
-    
-    self.normalItemsScrollView = [[UIScrollView alloc] init];
-    self.normalItemsScrollView.showsHorizontalScrollIndicator = NO;
-    self.normalItemsScrollView.showsVerticalScrollIndicator = NO;
-    self.normalItemsScrollView.hidden = YES;
+    [self.view addSubview:self.contentView];
     
     _cancelButton = [[QMUIButton alloc] init];
+    self.cancelButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     self.cancelButton.adjustsButtonWhenHighlighted = NO;
     self.cancelButton.titleLabel.font = self.cancelButtonFont;
     self.cancelButton.backgroundColor = self.cancelButtonBackgroundColor;
     [self.cancelButton setTitle:@"取消" forState:UIControlStateNormal];
     [self.cancelButton setTitleColor:self.cancelButtonTitleColor forState:UIControlStateNormal];
     [self.cancelButton setTitleColor:[self.cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
+    self.cancelButton.qmui_borderPosition = QMUIBorderViewPositionBottom;
+    self.cancelButton.qmui_borderColor = self.cancelButtonSeparatorColor;
     [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:self.cancelButton];
     
-    self.cancelButtonDividingLayer = [CALayer layer];
-    self.cancelButtonDividingLayer.backgroundColor = self.cancelButtonSeparatorColor.CGColor;
-    [self.cancelButtonDividingLayer qmui_removeDefaultAnimations];
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    [self.view addSubview:self.maskView];
-    [self.view addSubview:self.containerView];
-    [self.containerView addSubview:self.contentView];
-    [self.contentView.layer addSublayer:self.scrollViewDividingLayer];
-    [self.contentView addSubview:self.importantItemsScrollView];
-    [self.contentView addSubview:self.normalItemsScrollView];
-    [self.containerView addSubview:self.cancelButton];
-    [self.containerView.layer addSublayer:self.cancelButtonDividingLayer];
+    self.extendLayer = [CALayer layer];
+    self.extendLayer.hidden = !self.isExtendBottomLayout;
+    [self.extendLayer qmui_removeDefaultAnimations];
+    [self.view.layer addSublayer:self.extendLayer];
+    [self updateExtendLayerAppearance];
+    
     [self updateCornerRadius];
 }
 
-- (NSArray *)items {
-    return [self.importantItems arrayByAddingObjectsFromArray:self.normalItems];
-}
-
-- (void)resetShowingItemsArray {
-    [self.importantShowingItems removeAllObjects];
-    [self.normalShowingItems removeAllObjects];
-    for (QMUIMoreOperationItemView *item in self.importantItems) {
-        if (!item.hidden) {
-            [self.importantShowingItems addObject:item];
-        }
-    }
-    for (QMUIMoreOperationItemView *item in self.normalItems) {
-        if (!item.hidden) {
-            [self.normalShowingItems addObject:item];
-        }
-    }
-}
+#pragma mark - Layout
 
 - (void)viewDidLayoutSubviews {
-    
     [super viewDidLayoutSubviews];
-    [self resetShowingItemsArray];
     
-    self.maskView.frame = self.view.bounds;
+    __block CGFloat layoutY = CGRectGetHeight(self.view.bounds);
     
-    CGFloat layoutOriginY = 0;
-    CGFloat contentWidth = fmin(CGRectGetWidth(self.view.bounds) - self.contentEdgeMargin * 2, self.contentMaximumWidth);
-    
-    UIEdgeInsets importantScrollViewInsets = self.topScrollViewInsets;
-    UIEdgeInsets normaltScrollViewInsets = self.bottomScrollViewInsets;
-    
-    if (self.importantShowingItems.count <= 0 || self.normalShowingItems.count <= 0) {
-        // 当两个scrollView其中一个没有的时候，需要调整对应的insets
-        if (self.importantShowingItems.count <= 0) {
-            normaltScrollViewInsets = UIEdgeInsetsSetTop(normaltScrollViewInsets, importantScrollViewInsets.top);
-            self.bottomScrollViewInsets = normaltScrollViewInsets;
-        }
-        if (self.normalShowingItems.count <= 0) {
-            importantScrollViewInsets = UIEdgeInsetsSetBottom(importantScrollViewInsets, normaltScrollViewInsets.bottom);
-            self.topScrollViewInsets = importantScrollViewInsets;
+    if (!self.extendLayer.hidden) {
+        self.extendLayer.frame = CGRectMake(0, layoutY, CGRectGetWidth(self.view.bounds), IPhoneXSafeAreaInsets.bottom);
+        if (self.view.clipsToBounds) {
+            QMUILog(@"%@ 需要显示 extendLayer，但却被父级 clip 掉了，可能看不到", NSStringFromClass(self.class));
         }
     }
     
-    BOOL isLargeSreen = CGRectGetWidth(self.view.bounds) > [QMUIHelper screenSizeFor40Inch].width;
-    NSInteger maxItemCountInScrollView = MAX(self.importantShowingItems.count, self.normalShowingItems.count);
-    NSInteger itemCountForTotallyVisibleItem = isLargeSreen ? 4 : 3;
-    
-    CGFloat itemWidth = flat((contentWidth - fmax(UIEdgeInsetsGetHorizontalValue(importantScrollViewInsets), UIEdgeInsetsGetHorizontalValue(normaltScrollViewInsets))) / itemCountForTotallyVisibleItem) - (maxItemCountInScrollView > itemCountForTotallyVisibleItem ? 11 : 0);
-    
-    CGFloat itemMaxHeight = 0;
-    CGFloat itemMaxX = 0;
-    if (self.importantShowingItems.count > 0) {
-        self.importantItemsScrollView.hidden = NO;
-        for (NSInteger i = 0; i < self.importantShowingItems.count; i++) {
-            QMUIMoreOperationItemView *itemView = [self.importantShowingItems objectAtIndex:i];
-            [itemView sizeToFit];
-            itemView.frame = CGRectFlatted(CGRectMake(itemWidth * i, 0, itemWidth, CGRectGetHeight(itemView.bounds)));
-            itemMaxX = CGRectGetMaxX(itemView.frame);
-            if (CGRectGetHeight(itemView.bounds) > itemMaxHeight) {
-                itemMaxHeight = CGRectGetHeight(itemView.bounds);
-            }
-        }
-        self.importantItemsScrollView.contentSize = CGSizeMake(flat(itemMaxX), flat(itemMaxHeight));
-        self.importantItemsScrollView.contentInset = importantScrollViewInsets;
-        self.importantItemsScrollView.contentOffset = CGPointMake(-self.importantItemsScrollView.contentInset.left, -self.importantItemsScrollView.contentInset.top);
-        self.importantItemsScrollView.frame = CGRectFlatted(CGRectMake(0, 0, contentWidth, UIEdgeInsetsGetVerticalValue(self.importantItemsScrollView.contentInset) + self.importantItemsScrollView.contentSize.height));
-        layoutOriginY = CGRectGetMaxY(self.importantItemsScrollView.frame);
-    } else {
-        self.importantItemsScrollView.hidden = YES;
+    BOOL isCancelButtonShowing = !self.cancelButton.hidden;
+    if (isCancelButtonShowing) {
+        self.cancelButton.frame = CGRectMake(0, layoutY - self.cancelButtonHeight, CGRectGetWidth(self.view.bounds), self.cancelButtonHeight);
+        [self.cancelButton setNeedsLayout];
+        layoutY = CGRectGetMinY(self.cancelButton.frame) - self.cancelButtonMarginTop;
     }
     
-    itemMaxHeight = 0;
-    itemMaxX = 0;
-    if (self.normalShowingItems.count > 0) {
-        self.normalItemsScrollView.hidden = NO;
-        self.scrollViewDividingLayer.hidden = !(self.importantShowingItems.count > 0);
-        self.scrollViewDividingLayer.frame = CGRectFlatted(CGRectMake(0, layoutOriginY, contentWidth, PixelOne));
-        layoutOriginY = CGRectGetMaxY(self.scrollViewDividingLayer.frame);
-        for (NSInteger i = 0; i < self.normalShowingItems.count; i++) {
-            QMUIMoreOperationItemView *itemView = [self.normalShowingItems objectAtIndex:i];
-            [itemView sizeToFit];
-            itemView.frame = CGRectFlatted(CGRectMake(itemWidth * i, 0, itemWidth, CGRectGetHeight(itemView.bounds)));
-            itemMaxX = CGRectGetMaxX(itemView.frame);
-            if (CGRectGetHeight(itemView.bounds) > itemMaxHeight) {
-                itemMaxHeight = CGRectGetHeight(itemView.bounds);
-            }
-        }
-        self.normalItemsScrollView.contentSize = CGSizeMake(flat(itemMaxX), flat(itemMaxHeight));
-        self.normalItemsScrollView.contentInset = normaltScrollViewInsets;
-        self.normalItemsScrollView.frame = CGRectFlatted(CGRectMake(0, layoutOriginY, contentWidth, UIEdgeInsetsGetVerticalValue(self.normalItemsScrollView.contentInset) + self.normalItemsScrollView.contentSize.height));
-        self.normalItemsScrollView.contentOffset = CGPointMake(-self.normalItemsScrollView.contentInset.left, -self.normalItemsScrollView.contentInset.top);
-        layoutOriginY = CGRectGetMaxY(self.normalItemsScrollView.frame);
-    } else {
-        self.normalItemsScrollView.hidden = YES;
-        self.scrollViewDividingLayer.hidden = YES;
-    }
+    self.contentView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), layoutY);
+    layoutY = self.contentPaddings.top;
+    CGFloat contentWidth = CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentPaddings);
     
-    self.contentView.frame = CGRectFlatted(CGRectMake(0, 0, contentWidth, layoutOriginY));
-    layoutOriginY = CGRectGetMaxY(self.contentView.frame);
+    [self.scrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
+        UIEdgeInsets scrollViewSafeAreaInsets = scrollView.qmui_safeAreaInsets;// 左右可能要适配 iPhone X 的 safeAreaInsets
+        NSArray<QMUIMoreOperationItemView *> *itemSection = self.mutableItems[idx];
+        QMUIMoreOperationItemView *exampleItemView = itemSection.firstObject;
+        CGFloat exampleItemWidth = exampleItemView.imageView.image.size.width + self.itemPaddingHorizontal * 2;
+        CGFloat scrollViewVisibleWidth = contentWidth - scrollView.contentInset.left - scrollViewSafeAreaInsets.left;// 注意计算列数时不需要考虑 contentInset.right 的
+        CGFloat columnCount = (scrollViewVisibleWidth + self.itemMinimumMarginHorizontal) / (exampleItemWidth + self.itemMinimumMarginHorizontal);
+        columnCount = [self suitableColumnCountWithCount:columnCount];
+        CGFloat finalItemMarginHorizontal = (scrollViewVisibleWidth - exampleItemWidth / 2.0 - exampleItemWidth * (NSInteger)columnCount) / (NSInteger)columnCount;// 让初始状态下在 scrollView 右边露出半个 item
+        
+        __block CGFloat maximumItemHeight = 0;
+        __block CGFloat itemViewMinX = scrollViewSafeAreaInsets.left;
+        [itemSection enumerateObjectsUsingBlock:^(QMUIMoreOperationItemView * _Nonnull itemView, NSUInteger idx, BOOL * _Nonnull stop) {
+            CGSize itemSize = CGSizeFlatted([itemView sizeThatFits:CGSizeMake(exampleItemWidth, CGFLOAT_MAX)]);
+            maximumItemHeight = fmax(maximumItemHeight, itemSize.height);
+            itemView.frame = CGRectMake(itemViewMinX, 0, exampleItemWidth, itemSize.height);
+            itemViewMinX = CGRectGetMaxX(itemView.frame) + finalItemMarginHorizontal;
+        }];
+        scrollView.contentSize = CGSizeMake(itemViewMinX - finalItemMarginHorizontal + scrollViewSafeAreaInsets.right, maximumItemHeight);
+        scrollView.frame = CGRectMake(self.contentPaddings.left, layoutY, contentWidth, scrollView.contentSize.height + UIEdgeInsetsGetVerticalValue(scrollView.contentInset));
+        layoutY = CGRectGetMaxY(scrollView.frame);
+    }];
+}
 
-    self.cancelButtonDividingLayer.hidden = self.cancelButtonMarginTop > 0;
-    self.cancelButtonDividingLayer.frame = CGRectFlatted(CGRectMake(0, layoutOriginY + self.cancelButtonMarginTop, contentWidth, PixelOne));
-    self.cancelButton.frame = CGRectFlatted(CGRectMake(0, CGRectGetMinY(self.cancelButtonDividingLayer.frame), contentWidth, self.cancelButtonHeight));
-    
-    self.containerView.frame = CGRectFlatted(CGRectMake((CGRectGetWidth(self.view.bounds) - contentWidth) / 2,
-                                                    CGRectGetHeight(self.view.bounds) - CGRectGetMaxY(self.cancelButton.frame) - self.contentEdgeMargin,
-                                                    contentWidth,
-                                                    CGRectGetMaxY(self.cancelButton.frame)));
+- (CGFloat)suitableColumnCountWithCount:(CGFloat)columnCount {
+    // 根据精准的列数，找到一个合适的、能让半个 item 刚好露出来的列数。例如 3.6 会被转换成 3.5，3.2 会被转换成 2.5。
+    CGFloat result = 0;
+    if (((NSInteger)columnCount + .5) == (NSInteger)columnCount) {
+        result = ((NSInteger)columnCount - 1) + 0.5;
+    }
+    result = ((NSInteger)columnCount) + 0.5;
+    return result;
 }
 
 - (void)showFromBottom {
@@ -430,21 +237,26 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     __weak __typeof(self)weakSelf = self;
     
     QMUIModalPresentationViewController *modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
-    modalPresentationViewController.maximumContentViewWidth = CGFLOAT_MAX;
-    modalPresentationViewController.contentViewMargins = UIEdgeInsetsZero;
-    modalPresentationViewController.dimmingView = nil;
+    modalPresentationViewController.delegate = self;
+    modalPresentationViewController.maximumContentViewWidth = self.contentMaximumWidth;
+    modalPresentationViewController.contentViewMargins = UIEdgeInsetsMake(self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin);
     modalPresentationViewController.contentViewController = self;
     
+    __weak __typeof(modalPresentationViewController)weakModalController = modalPresentationViewController;
+    modalPresentationViewController.layoutBlock = ^(CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewDefaultFrame) {
+        weakModalController.contentView.frame = CGRectSetY(contentViewDefaultFrame, CGRectGetHeight(containerBounds) - weakModalController.contentViewMargins.bottom - CGRectGetHeight(contentViewDefaultFrame) - weakModalController.view.qmui_safeAreaInsets.bottom);
+    };
     modalPresentationViewController.showingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewFrame, void(^completion)(BOOL finished)) {
         
         if ([weakSelf.delegate respondsToSelector:@selector(willPresentMoreOperationController:)]) {
             [weakSelf.delegate willPresentMoreOperationController:weakSelf];
         }
         
-        weakSelf.containerView.frame = CGRectSetY(weakSelf.containerView.frame, CGRectGetHeight(weakSelf.view.bounds));
+        dimmingView.alpha = 0;
+        weakModalController.contentView.frame = CGRectSetY(contentViewFrame, CGRectGetHeight(containerBounds));
         [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^(void) {
-            weakSelf.maskView.alpha = 1;
-            weakSelf.containerView.frame = CGRectSetY(weakSelf.containerView.frame, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetHeight(weakSelf.containerView.frame) - weakSelf.contentEdgeMargin);
+            dimmingView.alpha = 1;
+            weakModalController.contentView.frame = contentViewFrame;
         } completion:^(BOOL finished) {
             weakSelf.showing = YES;
             weakSelf.animating = NO;
@@ -459,8 +271,8 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     
     modalPresentationViewController.hidingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished)) {
         [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^(void) {
-            weakSelf.maskView.alpha = 0;
-            weakSelf.containerView.frame = CGRectSetY(weakSelf.containerView.frame, CGRectGetHeight(containerBounds));
+            dimmingView.alpha = 0;
+            weakModalController.contentView.frame = CGRectSetY(weakModalController.contentView.frame, CGRectGetHeight(containerBounds));
         } completion:^(BOOL finished) {
             if (completion) {
                 completion(finished);
@@ -481,134 +293,437 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     if (!self.showing || self.animating) {
         return;
     }
-    self.animating = YES;
     
-    __weak __typeof(self)weakSelf = self;
+    self.hideByCancel = cancelled;
+    [self.qmui_modalPresentationViewController hideWithAnimated:YES completion:NULL];
+}
+
+#pragma mark - Item
+
+- (void)setItems:(NSArray<NSArray<QMUIMoreOperationItemView *> *> *)items {
+    [self.mutableItems qmui_enumerateNestedArrayWithBlock:^(QMUIMoreOperationItemView *itemView, BOOL *stop) {
+        [itemView removeFromSuperview];
+    }];
+    [self.mutableItems removeAllObjects];
     
-    if ([self.delegate respondsToSelector:@selector(willDismissMoreOperationController:cancelled:)]) {
-        [self.delegate willDismissMoreOperationController:self cancelled:cancelled];
+    self.mutableItems = [items qmui_mutableCopyNestedArray];
+    
+    [self.scrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
+        [scrollView removeFromSuperview];
+    }];
+    [self.scrollViews removeAllObjects];
+    [self.mutableItems enumerateObjectsUsingBlock:^(NSArray<QMUIMoreOperationItemView *> * _Nonnull itemViewSection, NSUInteger scrollViewIndex, BOOL * _Nonnull stop) {
+        UIScrollView *scrollView = [self addScrollViewAtIndex:scrollViewIndex];
+        [itemViewSection enumerateObjectsUsingBlock:^(QMUIMoreOperationItemView * _Nonnull itemView, NSUInteger itemViewIndex, BOOL * _Nonnull stop) {
+            [self addItemView:itemView toScrollView:scrollView];
+        }];
+    }];
+    [self setViewNeedsLayoutIfLoaded];
+}
+
+- (NSArray<NSArray<QMUIMoreOperationItemView *> *> *)items {
+    return [self.mutableItems copy];
+}
+
+- (void)addItemView:(QMUIMoreOperationItemView *)itemView inSection:(NSInteger)section {
+    if (section == self.mutableItems.count) {
+        // 创建新的 itemView section
+        [self.mutableItems addObject:[@[itemView] mutableCopy]];
+    } else {
+        [self.mutableItems[section] addObject:itemView];
+    }
+    itemView.moreOperationController = self;
+    
+    if (section == self.scrollViews.count) {
+        // 创建新的 section
+        [self addScrollViewAtIndex:section];
+    }
+    if (section < self.scrollViews.count) {
+        [self addItemView:itemView toScrollView:self.scrollViews[section]];
     }
     
-    [self.modalPresentedViewController hideWithAnimated:YES completion:^(BOOL finished) {
-        weakSelf.showing = NO;
-        weakSelf.animating = NO;
-        if ([weakSelf.delegate respondsToSelector:@selector(didDismissMoreOperationController:cancelled:)]) {
-            [weakSelf.delegate didDismissMoreOperationController:weakSelf cancelled:cancelled];
+    [self setViewNeedsLayoutIfLoaded];
+}
+
+- (void)insertItemView:(QMUIMoreOperationItemView *)itemView atIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == self.mutableItems.count) {
+        // 创建新的 itemView section
+        [self.mutableItems addObject:[@[itemView] mutableCopy]];
+    } else {
+        [self.mutableItems[indexPath.section] insertObject:itemView atIndex:indexPath.item];
+    }
+    itemView.moreOperationController = self;
+    
+    if (indexPath.section == self.scrollViews.count) {
+        // 创建新的 section
+        [self addScrollViewAtIndex:indexPath.section];
+    }
+    if (indexPath.section < self.scrollViews.count) {
+        [itemView formatItemViewStyleWithMoreOperationController:self];
+        [self.scrollViews[indexPath.section] insertSubview:itemView atIndex:indexPath.item];
+    }
+    
+    [self setViewNeedsLayoutIfLoaded];
+}
+
+- (void)removeItemViewAtIndexPath:(NSIndexPath *)indexPath {
+    QMUIMoreOperationItemView *itemView = self.scrollViews[indexPath.section].subviews[indexPath.item];
+    itemView.moreOperationController = nil;
+    [itemView removeFromSuperview];
+    NSMutableArray<QMUIMoreOperationItemView *> *itemViewSection = self.mutableItems[indexPath.section];
+    [itemViewSection removeObject:itemView];
+    if (itemViewSection.count == 0) {
+        [self.mutableItems removeObject:itemViewSection];
+        [self.scrollViews[indexPath.section] removeFromSuperview];
+        [self.scrollViews removeObjectAtIndex:indexPath.section];
+        [self updateScrollViewsBorderStyle];
+    }
+    [self setViewNeedsLayoutIfLoaded];
+}
+
+- (QMUIMoreOperationItemView *)itemViewWithTag:(NSInteger)tag {
+    __block QMUIMoreOperationItemView *result = nil;
+    [self.mutableItems qmui_enumerateNestedArrayWithBlock:^(QMUIMoreOperationItemView *itemView, BOOL *stop) {
+        if (itemView.tag == tag) {
+            result = itemView;
+            *stop = YES;
         }
     }];
+    return result;
 }
+
+- (NSIndexPath *)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView {
+    for (NSInteger section = 0; section < self.mutableItems.count; section++) {
+        NSInteger index = [self.mutableItems[section] indexOfObject:itemView];
+        if (index != NSNotFound) {
+            return [NSIndexPath indexPathForItem:index inSection:section];
+        }
+    }
+    return nil;
+}
+
+- (UIScrollView *)addScrollViewAtIndex:(NSInteger)index {
+    UIScrollView *scrollView = [self generateScrollViewWithIndex:index];
+    [self.contentView addSubview:scrollView];
+    [self.scrollViews addObject:scrollView];
+    [self updateScrollViewsBorderStyle];
+    return scrollView;
+}
+
+- (void)addItemView:(QMUIMoreOperationItemView *)itemView toScrollView:(UIScrollView *)scrollView {
+    [itemView formatItemViewStyleWithMoreOperationController:self];
+    [scrollView addSubview:itemView];
+}
+
+- (UIScrollView *)generateScrollViewWithIndex:(NSInteger)index {
+    UIScrollView *scrollView = [[UIScrollView alloc] init];
+    scrollView.showsHorizontalScrollIndicator = NO;
+    scrollView.showsVerticalScrollIndicator = NO;
+    scrollView.alwaysBounceHorizontal = YES;
+    scrollView.qmui_borderColor = self.scrollViewSeparatorColor;
+    scrollView.qmui_borderPosition = (self.scrollViewSeparatorColor && index != 0) ? QMUIBorderViewPositionTop : QMUIBorderViewPositionNone;
+    scrollView.scrollsToTop = NO;
+    if (@available(iOS 11, *)) {
+        scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
+    scrollView.contentInset = self.scrollViewContentInsets;
+    [scrollView qmui_scrollToTopForce:YES animated:NO];
+    return scrollView;
+}
+
+- (void)updateScrollViewsBorderStyle {
+    [self.scrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
+        scrollView.qmui_borderColor = self.scrollViewSeparatorColor;
+        scrollView.qmui_borderPosition = idx != 0 ? QMUIBorderViewPositionTop : QMUIBorderViewPositionNone;
+    }];
+}
+
+#pragma mark - Event
 
 - (void)handleCancelButtonEvent:(id)sender {
     [self hideToBottomCancelled:YES];
 }
 
-- (void)handleMaskControlEvent:(id)sender {
-    [self hideToBottomCancelled:YES];
-}
-
-- (NSInteger)addItemWithTitle:(NSString *)title selectedTitle:(NSString *)selectedTitle image:(UIImage *)image selectedImage:(UIImage *)selectedImage type:(QMUIMoreOperationItemType)itemType tag:(NSInteger)tag {
-    QMUIMoreOperationItemView *itemView = [self createItemWithTitle:title selectedTitle:selectedTitle image:image selectedImage:selectedImage type:itemType tag:tag];
-    if (itemView.itemType == QMUIMoreOperationItemTypeImportant) {
-        return [self insertItem:itemView toIndex:self.importantItems.count] ? [self.importantItems indexOfObject:itemView] : -1;
-    } else if (itemView.itemType == QMUIMoreOperationItemTypeNormal) {
-        return [self insertItem:itemView toIndex:self.normalItems.count] ? [self.normalItems indexOfObject:itemView] : -1;
+- (void)handleItemViewEvent:(QMUIMoreOperationItemView *)itemView {
+    if ([self.delegate respondsToSelector:@selector(moreOperationController:didSelectItemView:)]) {
+        [self.delegate moreOperationController:self didSelectItemView:itemView];
     }
-    return -1;
-}
-
-- (NSInteger)addItemWithTitle:(NSString *)title image:(UIImage *)image type:(QMUIMoreOperationItemType)itemType tag:(NSInteger)tag {
-    return [self addItemWithTitle:title selectedTitle:title image:image selectedImage:image type:itemType tag:tag];
-}
-
-- (NSInteger)addItemWithTitle:(NSString *)title selectedTitle:(NSString *)selectedTitle image:(UIImage *)image selectedImage:(UIImage *)selectedImage type:(QMUIMoreOperationItemType)itemType {
-    return [self addItemWithTitle:title selectedTitle:selectedTitle image:image selectedImage:selectedImage type:itemType tag:-1];
-}
-
-- (NSInteger)addItemWithTitle:(NSString *)title image:(UIImage *)image type:(QMUIMoreOperationItemType)itemType {
-    return [self addItemWithTitle:title selectedTitle:title image:image selectedImage:image type:itemType tag:-1];
-}
-
-- (QMUIMoreOperationItemView *)createItemWithTitle:(NSString *)title selectedTitle:(NSString *)selectedTitle image:(UIImage *)image selectedImage:(UIImage *)selectedImage type:(QMUIMoreOperationItemType)itemType tag:(NSInteger)tag {
-    QMUIMoreOperationItemView *itemView = [[QMUIMoreOperationItemView alloc] init];
-    itemView.itemType = itemType;
-    itemView.titleLabel.font = self.itemTitleFont;
-    itemView.titleEdgeInsets = UIEdgeInsetsMake(self.itemTitleMarginTop, 0, 0, 0);
-    [itemView setImage:image forState:UIControlStateNormal];
-    [itemView setImage:selectedImage forState:UIControlStateSelected];
-    [itemView setImage:selectedImage forState:UIControlStateHighlighted|UIControlStateSelected];
-    [itemView setTitle:title forState:UIControlStateNormal];
-    [itemView setTitle:selectedTitle forState:UIControlStateHighlighted|UIControlStateSelected];
-    [itemView setTitle:selectedTitle forState:UIControlStateSelected];
-    [itemView setTitleColor:self.itemTitleColor forState:UIControlStateNormal];
-    itemView.imageView.backgroundColor = self.itemBackgroundColor;
-    itemView.tag = tag;
-    [itemView addTarget:self action:@selector(handleButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-    return itemView;
-}
-
-- (BOOL)insertItem:(QMUIMoreOperationItemView *)itemView toIndex:(NSInteger)index {
-    if (itemView.itemType == QMUIMoreOperationItemTypeImportant) {
-        [self.importantItems insertObject:itemView atIndex:index];
-        [self.importantItemsScrollView addSubview:itemView];
-        return YES;
-    } else if (itemView.itemType == QMUIMoreOperationItemTypeNormal) {
-        [self.normalItems insertObject:itemView atIndex:index];
-        [self.normalItemsScrollView addSubview:itemView];
-        return YES;
+    if (itemView.handler) {
+        itemView.handler(self, itemView);
     }
-    return NO;
 }
 
-- (QMUIMoreOperationItemView *)itemAtIndex:(NSInteger)index type:(QMUIMoreOperationItemType)type {
-    if (type == QMUIMoreOperationItemTypeImportant) {
-        return [self.importantItems objectAtIndex:index];
+#pragma mark - Property setter
+
+- (void)setContentBackgroundColor:(UIColor *)contentBackgroundColor {
+    _contentBackgroundColor = contentBackgroundColor;
+    self.contentView.backgroundColor = contentBackgroundColor;
+}
+
+- (void)setScrollViewSeparatorColor:(UIColor *)scrollViewSeparatorColor {
+    _scrollViewSeparatorColor = scrollViewSeparatorColor;
+    [self updateScrollViewsBorderStyle];
+}
+
+- (void)setScrollViewContentInsets:(UIEdgeInsets)scrollViewContentInsets {
+    _scrollViewContentInsets = scrollViewContentInsets;
+    if (self.scrollViews) {
+        for (UIScrollView *scrollView in self.scrollViews) {
+            scrollView.contentInset = scrollViewContentInsets;
+        }
+        [self setViewNeedsLayoutIfLoaded];
+    }
+}
+
+- (void)setCancelButtonBackgroundColor:(UIColor *)cancelButtonBackgroundColor {
+    _cancelButtonBackgroundColor = cancelButtonBackgroundColor;
+    self.cancelButton.backgroundColor = cancelButtonBackgroundColor;
+    [self updateExtendLayerAppearance];
+}
+
+- (void)setCancelButtonTitleColor:(UIColor *)cancelButtonTitleColor {
+    _cancelButtonTitleColor = cancelButtonTitleColor;
+    if (self.cancelButton) {
+        [self.cancelButton setTitleColor:cancelButtonTitleColor forState:UIControlStateNormal];
+        [self.cancelButton setTitleColor:[cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
+    }
+}
+
+- (void)setCancelButtonSeparatorColor:(UIColor *)cancelButtonSeparatorColor {
+    _cancelButtonSeparatorColor = cancelButtonSeparatorColor;
+    self.cancelButton.qmui_borderColor = cancelButtonSeparatorColor;
+}
+
+- (void)setItemBackgroundColor:(UIColor *)itemBackgroundColor {
+    _itemBackgroundColor = itemBackgroundColor;
+    [self.mutableItems qmui_enumerateNestedArrayWithBlock:^(QMUIMoreOperationItemView *itemView, BOOL *stop) {
+        itemView.imageView.backgroundColor = itemBackgroundColor;
+    }];
+}
+
+- (void)setItemTitleColor:(UIColor *)itemTitleColor {
+    _itemTitleColor = itemTitleColor;
+    [self.mutableItems qmui_enumerateNestedArrayWithBlock:^(QMUIMoreOperationItemView *itemView, BOOL *stop) {
+        [itemView setTitleColor:itemTitleColor forState:UIControlStateNormal];
+    }];
+}
+
+- (void)setItemTitleFont:(UIFont *)itemTitleFont {
+    _itemTitleFont = itemTitleFont;
+    [self.mutableItems qmui_enumerateNestedArrayWithBlock:^(QMUIMoreOperationItemView *itemView, BOOL *stop) {
+        itemView.titleLabel.font = itemTitleFont;
+        [itemView setNeedsLayout];
+    }];
+}
+
+- (void)setItemPaddingHorizontal:(CGFloat)itemPaddingHorizontal {
+    _itemPaddingHorizontal = itemPaddingHorizontal;
+    [self setViewNeedsLayoutIfLoaded];
+}
+
+- (void)setItemTitleMarginTop:(CGFloat)itemTitleMarginTop {
+    _itemTitleMarginTop = itemTitleMarginTop;
+    [self.mutableItems qmui_enumerateNestedArrayWithBlock:^(QMUIMoreOperationItemView *itemView, BOOL *stop) {
+        itemView.titleEdgeInsets = UIEdgeInsetsMake(itemTitleMarginTop, 0, 0, 0);
+        [itemView setNeedsLayout];
+    }];
+}
+
+- (void)setItemMinimumMarginHorizontal:(CGFloat)itemMinimumMarginHorizontal {
+    _itemMinimumMarginHorizontal = itemMinimumMarginHorizontal;
+    [self setViewNeedsLayoutIfLoaded];
+}
+
+- (void)setCancelButtonFont:(UIFont *)cancelButtonFont {
+    _cancelButtonFont = cancelButtonFont;
+    self.cancelButton.titleLabel.font = cancelButtonFont;
+    [self.cancelButton setNeedsLayout];
+}
+
+- (void)setContentCornerRadius:(CGFloat)contentCornerRadius {
+    _contentCornerRadius = contentCornerRadius;
+    [self updateCornerRadius];
+}
+
+- (void)setCancelButtonMarginTop:(CGFloat)cancelButtonMarginTop {
+    _cancelButtonMarginTop = cancelButtonMarginTop;
+    self.cancelButton.qmui_borderPosition = cancelButtonMarginTop > 0 ? QMUIBorderViewPositionNone : QMUIBorderViewPositionTop;
+    [self updateCornerRadius];
+    [self setViewNeedsLayoutIfLoaded];
+}
+
+- (void)setIsExtendBottomLayout:(BOOL)isExtendBottomLayout {
+    _isExtendBottomLayout = isExtendBottomLayout;
+    if (isExtendBottomLayout) {
+        self.extendLayer.hidden = NO;
+        [self updateExtendLayerAppearance];
     } else {
-        return [self.normalItems objectAtIndex:index];
+        self.extendLayer.hidden = YES;
     }
 }
 
-- (QMUIMoreOperationItemView *)itemAtTag:(NSInteger)tag {
-    QMUIMoreOperationItemView *item = (QMUIMoreOperationItemView *)[self.importantItemsScrollView viewWithTag:tag + TagOffset];
-    if (!item) {
-        item = (QMUIMoreOperationItemView *)[self.normalItemsScrollView viewWithTag:tag + TagOffset];
+- (void)setViewNeedsLayoutIfLoaded {
+    if (self.isShowing) {
+        [self.qmui_modalPresentationViewController updateLayout];
+        [self.view setNeedsLayout];
+    } else if ([self isViewLoaded]) {
+        [self.view setNeedsLayout];
     }
-    return item;
 }
 
-- (void)setItemHidden:(BOOL)hidden index:(NSInteger)index type:(QMUIMoreOperationItemType)type {
-    QMUIMoreOperationItemView *item = [self itemAtIndex:index type:type];
-    item.hidden = hidden;
+- (void)updateExtendLayerAppearance {
+    self.extendLayer.backgroundColor = self.cancelButtonBackgroundColor.CGColor;
 }
 
-- (void)setItemHidden:(BOOL)hidden tag:(NSInteger)tag {
-    QMUIMoreOperationItemView *item = [self itemAtTag:tag];
-    item.hidden = hidden;
-}
-
-- (void)handleButtonClick:(id)sender {
-    QMUIMoreOperationItemView *item = sender;
-    NSUInteger index;
-    QMUIMoreOperationItemType itemType;
-    if (item.superview == self.importantItemsScrollView) {
-        index = [self.importantItems indexOfObject:item];
-        itemType = QMUIMoreOperationItemTypeImportant;
+- (void)updateCornerRadius {
+    if (self.cancelButtonMarginTop > 0) {
+        self.view.layer.cornerRadius = 0;
+        self.view.clipsToBounds = NO;
+        
+        self.contentView.layer.cornerRadius = self.contentCornerRadius;
+        self.cancelButton.layer.cornerRadius = self.contentCornerRadius;
     } else {
-        index = [self.normalItems indexOfObject:item];
-        itemType = QMUIMoreOperationItemTypeNormal;
-    }
-    NSInteger tag = item.tag;
-    if ([self.delegate respondsToSelector:@selector(moreOperationController:didSelectItemAtIndex:type:)]) {
-        [self.delegate moreOperationController:self didSelectItemAtIndex:index type:itemType];
-    }
-    if ([self.delegate respondsToSelector:@selector(moreOperationController:didSelectItemAtTag:)]) {
-        [self.delegate moreOperationController:self didSelectItemAtTag:tag];
+        self.view.layer.cornerRadius = self.contentCornerRadius;
+        self.view.clipsToBounds = self.view.layer.cornerRadius > 0;// 有圆角才需要 clip
+        self.contentView.layer.cornerRadius = 0;
+        self.cancelButton.layer.cornerRadius = 0;
     }
 }
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
-    return controller.view.bounds.size;
+    __block CGFloat contentHeight = (self.cancelButton.hidden ? 0 : self.cancelButtonHeight + self.cancelButtonMarginTop);
+    [self.scrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSArray<QMUIMoreOperationItemView *> *itemSection = self.mutableItems[idx];
+        QMUIMoreOperationItemView *exampleItemView = itemSection.firstObject;
+        CGFloat exampleItemWidth = exampleItemView.imageView.image.size.width + self.itemPaddingHorizontal * 2;
+        __block CGFloat maximumItemHeight = 0;
+        [itemSection enumerateObjectsUsingBlock:^(QMUIMoreOperationItemView * _Nonnull itemView, NSUInteger idx, BOOL * _Nonnull stop) {
+            CGSize itemSize = CGSizeFlatted([itemView sizeThatFits:CGSizeMake(exampleItemWidth, CGFLOAT_MAX)]);
+            maximumItemHeight = fmax(maximumItemHeight, itemSize.height);
+        }];
+        contentHeight += maximumItemHeight + UIEdgeInsetsGetVerticalValue(scrollView.contentInset);
+    }];
+    if (self.scrollViews.count) {
+        contentHeight += UIEdgeInsetsGetVerticalValue(self.contentPaddings);
+    }
+    limitSize.height = contentHeight;
+    return limitSize;
+}
+
+#pragma mark - <QMUIModalPresentationViewControllerDelegate>
+
+- (void)willHideModalPresentationViewController:(QMUIModalPresentationViewController *)controller {
+    self.animating = YES;
+    if ([self.delegate respondsToSelector:@selector(willDismissMoreOperationController:cancelled:)]) {
+        [self.delegate willDismissMoreOperationController:self cancelled:self.hideByCancel];
+    }
+}
+
+- (void)didHideModalPresentationViewController:(QMUIModalPresentationViewController *)controller {
+    self.showing = NO;
+    self.animating = NO;
+    if ([self.delegate respondsToSelector:@selector(didDismissMoreOperationController:cancelled:)]) {
+        [self.delegate didDismissMoreOperationController:self cancelled:self.hideByCancel];
+    }
+}
+
+@end
+
+@implementation QMUIMoreOperationItemView
+
+@dynamic tag;
+
++ (instancetype)itemViewWithImage:(UIImage *)image selectedImage:(UIImage *)selectedImage title:(NSString *)title selectedTitle:(NSString *)selectedTitle handler:(void (^)(QMUIMoreOperationController *, QMUIMoreOperationItemView *))handler {
+    QMUIMoreOperationItemView *itemView = [[QMUIMoreOperationItemView alloc] init];
+    itemView.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
+    [itemView setImage:image forState:UIControlStateNormal];
+    [itemView setImage:selectedImage forState:UIControlStateSelected];
+    [itemView setImage:selectedImage forState:UIControlStateHighlighted|UIControlStateSelected];
+    [itemView setTitle:title forState:UIControlStateNormal];
+    [itemView setTitle:selectedTitle forState:UIControlStateHighlighted|UIControlStateSelected];
+    [itemView setTitle:selectedTitle forState:UIControlStateSelected];
+    itemView.handler = handler;
+    [itemView formatItemViewStyleWithMoreOperationController:nil];
+    return itemView;
+}
+
++ (instancetype)itemViewWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)(QMUIMoreOperationController *, QMUIMoreOperationItemView *))handler {
+    return [self itemViewWithImage:image selectedImage:nil title:title selectedTitle:nil handler:handler];
+}
+
++ (instancetype)itemViewWithImage:(UIImage *)image
+                            title:(NSString *)title
+                              tag:(NSInteger)tag
+                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler {
+    QMUIMoreOperationItemView *itemView = [self itemViewWithImage:image title:title handler:handler];
+    itemView.tag = tag;
+    return itemView;
+}
+
++ (instancetype)itemViewWithImage:(UIImage *)image
+                    selectedImage:(UIImage *)selectedImage
+                            title:(NSString *)title
+                    selectedTitle:(NSString *)selectedTitle
+                              tag:(NSInteger)tag
+                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler {
+    QMUIMoreOperationItemView *itemView = [self itemViewWithImage:image selectedImage:selectedImage title:title selectedTitle:selectedTitle handler:handler];
+    itemView.tag = tag;
+    return itemView;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        self.imagePosition = QMUIButtonImagePositionTop;
+        self.adjustsButtonWhenHighlighted = NO;
+        self.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
+        self.titleLabel.numberOfLines = 0;
+        self.titleLabel.textAlignment = NSTextAlignmentCenter;
+        self.imageView.contentMode = UIViewContentModeCenter;
+    }
+    return self;
+}
+
+- (void)setHighlighted:(BOOL)highlighted {
+    [super setHighlighted:highlighted];
+    self.imageView.alpha = highlighted ? ButtonHighlightedAlpha : 1;
+}
+
+// 从某个指定的 QMUIMoreOperationController 里取 itemView 的样式，应用到当前 itemView 里
+- (void)formatItemViewStyleWithMoreOperationController:(QMUIMoreOperationController *)moreOperationController {
+    if (moreOperationController) {
+        // 将事件放到 controller 级别去做，以便实现 delegate 功能
+        [self addTarget:moreOperationController action:@selector(handleItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
+    } else {
+        // 参数 nil 则默认使用 appearance 的样式
+        moreOperationController = [QMUIMoreOperationController appearance];
+    }
+    self.titleLabel.font = moreOperationController.itemTitleFont;
+    self.titleEdgeInsets = UIEdgeInsetsMake(moreOperationController.itemTitleMarginTop, 0, 0, 0);
+    [self setTitleColor:moreOperationController.itemTitleColor forState:UIControlStateNormal];
+    self.imageView.backgroundColor = moreOperationController.itemBackgroundColor;
+    
+}
+
+- (void)setTag:(NSInteger)tag {
+    _tag = tag + kQMUIMoreOperationItemViewTagOffset;
+}
+
+- (NSInteger)tag {
+    return MAX(-1, _tag - kQMUIMoreOperationItemViewTagOffset);// 为什么这里用-1而不是0：如果一个 itemView 通过带 tag: 参数初始化，那么 itemView.tag 最小值为 0，而如果一个 itemView 不通过带 tag: 的参数初始化，那么 itemView.tag 固定为 0，可见 tag 为 0 代表的意义不唯一，为了消除歧义，这里用 -1 代表那种不使用 tag: 参数初始化的 itemView
+}
+
+- (NSIndexPath *)indexPath {
+    if (self.moreOperationController) {
+        return [self.moreOperationController indexPathWithItemView:self];
+    }
+    return nil;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@:\t%p\nimage:\t\t\t%@\nselectedImage:\t%@\ntitle:\t\t\t%@\nselectedTitle:\t%@\nindexPath:\t\t%@\ntag:\t\t\t\t%@", NSStringFromClass(self.class), self, [self imageForState:UIControlStateNormal], [self imageForState:UIControlStateSelected] == [self imageForState:UIControlStateNormal] ? nil : [self imageForState:UIControlStateSelected], [self titleForState:UIControlStateNormal], [self titleForState:UIControlStateSelected] == [self titleForState:UIControlStateNormal] ? nil : [self titleForState:UIControlStateSelected], ({self.indexPath ? [NSString stringWithFormat:@"%@ - %@", @(self.indexPath.section), @(self.indexPath.item)] : nil;}), @(self.tag)];
 }
 
 @end

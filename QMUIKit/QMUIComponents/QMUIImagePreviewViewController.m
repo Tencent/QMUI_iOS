@@ -211,7 +211,7 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 - (void)endPreviewWithFadingAnimation:(BOOL)isFading orToRect:(CGRect)rect {
     
     if (isFading) {
-        [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.view.alpha = 0;
         } completion:^(BOOL finished) {
             [self removePreviewWindow];

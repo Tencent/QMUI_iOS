@@ -10,26 +10,7 @@
 #import <CommonCrypto/CommonDigest.h>
 #import <objc/runtime.h>
 
-#define MD5_CHAR_TO_STRING_16 [NSString stringWithFormat:               \
-@"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",    \
-result[0], result[1], result[2], result[3],                             \
-result[4], result[5], result[6], result[7],                             \
-result[8], result[9], result[10], result[11],                           \
-result[12], result[13], result[14], result[15]]                         \
-
 @implementation NSString (QMUI)
-
-- (BOOL)qmui_includesString:(NSString *)string {
-    if (!string || string.length <= 0) {
-        return NO;
-    }
-    
-    if ([self respondsToSelector:@selector(containsString:)]) {
-        return [self containsString:string];
-    }
-    
-    return [self rangeOfString:string].location != NSNotFound;
-}
 
 - (NSString *)qmui_trim {
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -47,7 +28,12 @@ result[12], result[13], result[14], result[15]]                         \
     const char *cStr = [self UTF8String];
     unsigned char result[CC_MD5_DIGEST_LENGTH];
     CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
-    return MD5_CHAR_TO_STRING_16;
+    return [NSString stringWithFormat:
+            @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+            result[0], result[1], result[2], result[3],
+            result[4], result[5], result[6], result[7],
+            result[8], result[9], result[10], result[11],
+            result[12], result[13], result[14], result[15]];
 }
 
 + (NSString *)hexLetterStringWithInteger:(NSInteger)integer {
@@ -131,20 +117,21 @@ result[12], result[13], result[14], result[15]]                         \
 }
 
 - (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
-    NSUInteger characterLength = 0;
-    char *p = (char *)[self cStringUsingEncoding:NSUnicodeStringEncoding];
-    for (NSInteger i = 0, l = [self lengthOfBytesUsingEncoding:NSUnicodeStringEncoding]; i < l; i++) {
-        if (*p) {
-            characterLength++;
+    NSUInteger length = 0;
+    for (NSUInteger i = 0, l = self.length; i < l; i++) {
+        unichar character = [self characterAtIndex:i];
+        if (isascii(character)) {
+            length += 1;
+        } else {
+            length += 2;
         }
-        p++;
     }
-    return characterLength;
+    return length;
 }
 
 - (NSUInteger)transformIndexToDefaultModeWithIndex:(NSUInteger)index {
     CGFloat strlength = 0.f;
-    NSInteger i = 0;
+    NSUInteger i = 0;
     for (i = 0; i < self.length; i++) {
         unichar character = [self characterAtIndex:i];
         if (isascii(character)) {
@@ -160,7 +147,7 @@ result[12], result[13], result[14], result[15]]                         \
 - (NSRange)transformRangeToDefaultModeWithRange:(NSRange)range {
     CGFloat strlength = 0.f;
     NSRange resultRange = NSMakeRange(NSNotFound, 0);
-    NSInteger i = 0;
+    NSUInteger i = 0;
     for (i = 0; i < self.length; i++) {
         unichar character = [self characterAtIndex:i];
         if (isascii(character)) {

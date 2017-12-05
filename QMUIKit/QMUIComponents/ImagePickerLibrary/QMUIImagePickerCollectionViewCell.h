@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "QMUIAsset.h"
+#import "QMUIButton.h"
 
 @class QMUIPieProgressView;
 
@@ -51,9 +52,9 @@ extern const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButton
 @property(nonatomic, assign) UIEdgeInsets videoDurationLabelMargins UI_APPEARANCE_SELECTOR;
 
 @property(nonatomic, strong, readonly) UIImageView *contentImageView;
-@property(nonatomic, strong, readonly) UIButton *checkboxButton;
+@property(nonatomic, strong, readonly) QMUIButton *checkboxButton;
 @property(nonatomic, strong, readonly) QMUIPieProgressView *progressView;
-@property(nonatomic, strong, readonly) UIButton *downloadRetryButton;
+@property(nonatomic, strong, readonly) QMUIButton *downloadRetryButton;
 @property(nonatomic, strong, readonly) UIImageView *videoMarkImageView;
 @property(nonatomic, strong, readonly) UILabel *videoDurationLabel;
 @property(nonatomic, strong, readonly) CAGradientLayer *videoBottomShadowLayer;

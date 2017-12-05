@@ -178,7 +178,7 @@
     item.title = title;
     item.handler = handler;
     
-    QMUIButton *button = [[QMUIButton alloc] initWithImage:image title:title];
+    QMUIButton *button = [[QMUIButton alloc] qmui_initWithImage:image title:title];
     button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
     button.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [button addTarget:item action:@selector(handleButtonEvent:) forControlEvents:UIControlEventTouchUpInside];

@@ -12,7 +12,6 @@
 #import "UIView+QMUI.h"
 #import "QMUIAssetsManager.h"
 #import "QMUIImagePickerViewController.h"
-#import <AssetsLibrary/AssetsLibrary.h>
 #import <Photos/PHPhotoLibrary.h>
 #import <Photos/PHAsset.h>
 #import <Photos/PHFetchOptions.h>
@@ -20,7 +19,11 @@
 #import <Photos/PHFetchResult.h>
 
 // 相册预览图的大小默认值
-const CGFloat QMUIAlbumViewControllerDefaultAlbumTableViewCellHeight = 57;
+const CGFloat QMUIAlbumViewControllerDefaultAlbumTableViewCellHeight = 67;
+// 相册预览大小（正方形），如果想要跟图片一样高，则设置成跟 QMUIAlbumViewControllerDefaultAlbumTableViewCellHeight 一样的值就好了
+const CGFloat QMUIAlbumViewControllerDefaultAlbumImageSize = 57;
+// 相册缩略图的 left，默认 -1，表示和上下一样大
+const CGFloat QMUIAlbumViewControllerDefaultAlbumImageLeft = -1;
 // 相册名称的字号默认值
 const CGFloat QMUIAlbumTableViewCellDefaultAlbumNameFontSize = 16;
 // 相册资源数量的字号默认值
@@ -31,33 +34,31 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
 
 #pragma mark - QMUIAlbumTableViewCell
 
-@implementation QMUIAlbumTableViewCell {
-    CALayer *_bottomLineLayer;
-}
+@implementation QMUIAlbumTableViewCell
 
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        [QMUIAlbumTableViewCell appearance].albumImageSize = QMUIAlbumViewControllerDefaultAlbumImageSize;
+        [QMUIAlbumTableViewCell appearance].albumImageMarginLeft = QMUIAlbumViewControllerDefaultAlbumImageLeft;
         [QMUIAlbumTableViewCell appearance].albumNameFontSize = QMUIAlbumTableViewCellDefaultAlbumNameFontSize;
-        [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize = QMUIAlbumTableViewCellDefaultAlbumAssetsNumberFontSize;
         [QMUIAlbumTableViewCell appearance].albumNameInsets = QMUIAlbumTableViewCellDefaultAlbumNameInsets;
+        [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize = QMUIAlbumTableViewCellDefaultAlbumAssetsNumberFontSize;
     });
 }
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+        
+        self.albumImageSize = [QMUIAlbumTableViewCell appearance].albumImageSize;
+        self.albumImageMarginLeft = [QMUIAlbumTableViewCell appearance].albumImageMarginLeft;
         self.albumNameFontSize = [QMUIAlbumTableViewCell appearance].albumNameFontSize;
-        self.albumAssetsNumberFontSize = [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize;
         self.albumNameInsets = [QMUIAlbumTableViewCell appearance].albumNameInsets;
+        self.albumAssetsNumberFontSize = [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize;
         
         self.imageView.contentMode = UIViewContentModeScaleAspectFill;
         self.imageView.clipsToBounds = YES;
         self.detailTextLabel.textColor = UIColorGrayDarken;
-        
-        _bottomLineLayer = [[CALayer alloc] init];
-        _bottomLineLayer.backgroundColor = UIColorSeparator.CGColor;
-        // 让分隔线垫在背后
-        [self.layer insertSublayer:_bottomLineLayer atIndex:0];
     }
     return self;
 }
@@ -70,24 +71,19 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    // 避免iOS7下seletedBackgroundView会往上下露出1px（以盖住系统分隔线，但我们的分隔线是自定义的）
-    self.selectedBackgroundView.frame = self.bounds;
     
-    CGFloat contentViewPaddingRight = 10;
-    self.imageView.frame = CGRectMake(0, 0, CGRectGetHeight(self.contentView.bounds), CGRectGetHeight(self.contentView.bounds));
-    self.textLabel.frame = CGRectSetXY(self.textLabel.frame, CGRectGetMaxX(self.imageView.frame) + self.albumNameInsets.left, flat([self.textLabel qmui_topWhenCenterInSuperview]));
-    CGFloat textLabelMaxWidth = CGRectGetWidth(self.contentView.bounds) - contentViewPaddingRight - CGRectGetWidth(self.detailTextLabel.frame) - self.albumNameInsets.right - CGRectGetMinX(self.textLabel.frame);
-    if (CGRectGetWidth(self.textLabel.frame) > textLabelMaxWidth) {
+    CGFloat imageEdgeTop = CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), self.albumImageSize);
+    CGFloat imageEdgeLeft = self.albumImageMarginLeft == QMUIAlbumViewControllerDefaultAlbumImageLeft ? imageEdgeTop : self.albumImageMarginLeft;
+    self.imageView.frame = CGRectMake(imageEdgeLeft, imageEdgeTop, self.albumImageSize, self.albumImageSize);
+    
+    self.textLabel.frame = CGRectSetXY(self.textLabel.frame, CGRectGetMaxX(self.imageView.frame) + self.albumNameInsets.left, [self.textLabel qmui_topWhenCenterInSuperview]);
+    
+    CGFloat textLabelMaxWidth = CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(self.textLabel.frame) - CGRectGetWidth(self.detailTextLabel.bounds) - self.albumNameInsets.right;
+    if (CGRectGetWidth(self.textLabel.bounds) > textLabelMaxWidth) {
         self.textLabel.frame = CGRectSetWidth(self.textLabel.frame, textLabelMaxWidth);
     }
     
-    self.detailTextLabel.frame = CGRectSetXY(self.detailTextLabel.frame, CGRectGetMaxX(self.textLabel.frame) + self.albumNameInsets.right, flat([self.detailTextLabel qmui_topWhenCenterInSuperview]));
-    _bottomLineLayer.frame = CGRectMake(0, CGRectGetHeight(self.contentView.bounds) - PixelOne, CGRectGetWidth(self.bounds), PixelOne);
-}
-
-- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
-    [super setHighlighted:highlighted animated:animated];
-    _bottomLineLayer.hidden = highlighted;
+    self.detailTextLabel.frame = CGRectSetXY(self.detailTextLabel.frame, CGRectGetMaxX(self.textLabel.frame) + self.albumNameInsets.right, [self.detailTextLabel qmui_topWhenCenterInSuperview]);
 }
 
 @end
@@ -123,14 +119,11 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
 
 @implementation QMUIAlbumViewController {
     QMUIImagePickerViewController *_imagePickerViewController;
-    NSMutableArray *_albumsArray;
-    
-    BOOL _usePhotoKit;
+    NSMutableArray<QMUIAssetsGroup *> *_albumsArray;
 }
 
 - (void)didInitialized {
     [super didInitialized];
-    _usePhotoKit = YES;
     _shouldShowDefaultLoadingView = YES;
     if (albumViewControllerAppearance) {
         // 避免 albumViewControllerAppearance init 时走到这里来，导致死循环
@@ -166,12 +159,10 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
         }
         [self showEmptyViewWithText:tipString detailText:nil buttonTitle:nil buttonAction:nil];
     } else {
-        
         _albumsArray = [[NSMutableArray alloc] init];
-        
         // 获取相册列表较为耗时，交给子线程去处理，因此这里需要显示 Loading
-        if ([self.albumViewControllerDelegate respondsToSelector:@selector(albumViewControllerWillStartLoad:)]) {
-            [self.albumViewControllerDelegate albumViewControllerWillStartLoad:self];
+        if ([self.albumViewControllerDelegate respondsToSelector:@selector(albumViewControllerWillStartLoading:)]) {
+            [self.albumViewControllerDelegate albumViewControllerWillStartLoading:self];
         }
         if (self.shouldShowDefaultLoadingView) {
             [self showEmptyViewWithLoading];
@@ -193,8 +184,8 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
 
 - (void)refreshAlbumAndShowEmptyTipIfNeed {
     if ([_albumsArray count] > 0) {
-        if ([self.albumViewControllerDelegate respondsToSelector:@selector(albumViewControllerWillFinishLoad:)]) {
-            [self.albumViewControllerDelegate albumViewControllerWillFinishLoad:self];
+        if ([self.albumViewControllerDelegate respondsToSelector:@selector(albumViewControllerWillFinishLoading:)]) {
+            [self.albumViewControllerDelegate albumViewControllerWillFinishLoading:self];
         }
         if (self.shouldShowDefaultLoadingView) {
             [self hideEmptyView];
@@ -230,9 +221,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
     cell.textLabel.text = [assetsGroup name];
     // 显示相册中所包含的资源数量
     cell.detailTextLabel.text = [NSString stringWithFormat:@"(%@)", @(assetsGroup.numberOfAssets)];
-    
     [cell updateCellAppearanceWithIndexPath:indexPath];
-    
     return cell;
 }
 
@@ -250,7 +239,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
 - (void)handleCancelSelectAlbum:(id)sender {
     [self.navigationController dismissViewControllerAnimated:YES completion:^(void) {
         if (self.albumViewControllerDelegate && [self.albumViewControllerDelegate respondsToSelector:@selector(albumViewControllerDidCancel:)]) {
-            [self.albumViewControllerDelegate albumViewControllerDidCancel:self];
+            [self.albumViewControllerDelegate albumViewControllerDidCancel:self]; 
         }
     }];
 }

@@ -11,9 +11,6 @@
 
 @interface NSString (QMUI)
 
-/// 判断是否包含某个子字符串
-- (BOOL)qmui_includesString:(NSString *)string;
-
 /// 去掉头尾的空白字符
 - (NSString *)qmui_trim;
 

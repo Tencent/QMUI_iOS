@@ -25,9 +25,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
 
 
 @implementation QMUIAssetsManager {
-    ALAssetsLibrary *_alAssetsLibrary;
     PHCachingImageManager *_phCachingImageManager;
-    BOOL _usePhotoKit;
 }
 
 + (QMUIAssetsManager *)sharedInstance {
@@ -49,109 +47,61 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
 
 - (instancetype)init {
     if (self = [super init]) {
-        _usePhotoKit = !EnforceUseAssetsLibraryForTest;
-        if (!_usePhotoKit) {
-            _alAssetsLibrary = [[ALAssetsLibrary alloc] init];
-        }
     }
     return self;
 }
 
-- (BOOL)usePhotoKit {
-    return _usePhotoKit;
-}
-
 + (QMUIAssetAuthorizationStatus)authorizationStatus {
     __block QMUIAssetAuthorizationStatus status;
-    if ([[QMUIAssetsManager sharedInstance] usePhotoKit]) {
-        // 获取当前应用对照片的访问授权状态
-        PHAuthorizationStatus authorizationStatus = [PHPhotoLibrary authorizationStatus];
-        if (authorizationStatus == PHAuthorizationStatusRestricted || authorizationStatus == PHAuthorizationStatusDenied) {
-            status = QMUIAssetAuthorizationStatusNotAuthorized;
-        } else if (authorizationStatus == PHAuthorizationStatusNotDetermined) {
-            status = QMUIAssetAuthorizationStatusNotDetermined;
-        } else {
-            status = QMUIAssetAuthorizationStatusAuthorized;
-        }
+    // 获取当前应用对照片的访问授权状态
+    PHAuthorizationStatus authorizationStatus = [PHPhotoLibrary authorizationStatus];
+    if (authorizationStatus == PHAuthorizationStatusRestricted || authorizationStatus == PHAuthorizationStatusDenied) {
+        status = QMUIAssetAuthorizationStatusNotAuthorized;
+    } else if (authorizationStatus == PHAuthorizationStatusNotDetermined) {
+        status = QMUIAssetAuthorizationStatusNotDetermined;
     } else {
-        // 获取当前应用对照片的访问授权状态
-        ALAuthorizationStatus authorizationStatus = [ALAssetsLibrary authorizationStatus];
-        if (authorizationStatus == ALAuthorizationStatusRestricted || authorizationStatus == ALAuthorizationStatusDenied) {
-            status = QMUIAssetAuthorizationStatusNotAuthorized;
-        } else if (authorizationStatus == ALAuthorizationStatusNotDetermined) {
-            status = QMUIAssetAuthorizationStatusNotDetermined;
-        } else {
-            status = QMUIAssetAuthorizationStatusAuthorized;
-        }
+        status = QMUIAssetAuthorizationStatusAuthorized;
     }
     return status;
 }
 
 + (void)requestAuthorization:(void(^)(QMUIAssetAuthorizationStatus status))handler {
-    if ([[QMUIAssetsManager sharedInstance] usePhotoKit]) {
-        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus phStatus) {
-            QMUIAssetAuthorizationStatus status;
-            if (phStatus == PHAuthorizationStatusRestricted || phStatus == PHAuthorizationStatusDenied) {
-                status = QMUIAssetAuthorizationStatusNotAuthorized;
-            } else if (phStatus == PHAuthorizationStatusNotDetermined) {
-                status = QMUIAssetAuthorizationStatusNotDetermined;
-            } else {
-                status = QMUIAssetAuthorizationStatusAuthorized;
-            }
-            if (handler) {
-                handler(status);
-            }
-        }];
-    } else {
-        [[QMUIAssetsManager sharedInstance].alAssetsLibrary enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:nil failureBlock:nil];
-        if (handler) {
-            handler(QMUIAssetAuthorizationStatusNotUsingPhotoKit);
+    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus phStatus) {
+        QMUIAssetAuthorizationStatus status;
+        if (phStatus == PHAuthorizationStatusRestricted || phStatus == PHAuthorizationStatusDenied) {
+            status = QMUIAssetAuthorizationStatusNotAuthorized;
+        } else if (phStatus == PHAuthorizationStatusNotDetermined) {
+            status = QMUIAssetAuthorizationStatusNotDetermined;
+        } else {
+            status = QMUIAssetAuthorizationStatusAuthorized;
         }
-    }
+        if (handler) {
+            handler(status);
+        }
+    }];
 }
 
 - (void)enumerateAllAlbumsWithAlbumContentType:(QMUIAlbumContentType)contentType showEmptyAlbum:(BOOL)showEmptyAlbum showSmartAlbumIfSupported:(BOOL)showSmartAlbumIfSupported usingBlock:(void (^)(QMUIAssetsGroup *resultAssetsGroup))enumerationBlock {
-    if (_usePhotoKit) {
-        // 根据条件获取所有合适的相册，并保存到临时数组中
-        NSArray *tempAlbumsArray = [PHPhotoLibrary fetchAllAlbumsWithAlbumContentType:contentType showEmptyAlbum:showEmptyAlbum showSmartAlbum:showSmartAlbumIfSupported];
-        
-        // 创建一个 PHFetchOptions，用于 QMUIAssetsGroup 对资源的排序以及对内容类型进行控制
-        PHFetchOptions *phFetchOptions = [PHPhotoLibrary createFetchOptionsWithAlbumContentType:contentType];
-        
-        // 遍历结果，生成对应的 QMUIAssetsGroup，并调用 enumerationBlock
-        for (NSUInteger i = 0; i < [tempAlbumsArray count]; i++) {
-            PHAssetCollection *phAssetCollection = [tempAlbumsArray objectAtIndex:i];
-            QMUIAssetsGroup *assetsGroup = [[QMUIAssetsGroup alloc] initWithPHCollection:phAssetCollection fetchAssetsOptions:phFetchOptions];
-            if (enumerationBlock) {
-                enumerationBlock(assetsGroup);
-            }
-        }
-        
-        /**
-         *  所有结果遍历完毕，这时再调用一次 enumerationBlock，并传递 nil 作为实参，作为枚举相册结束的标记。
-         *  该处理方式也是参照系统 ALAssetsLibrary enumerateGroupsWithTypes 枚举结束的处理。
-         */
+    // 根据条件获取所有合适的相册，并保存到临时数组中
+    NSArray *tempAlbumsArray = [PHPhotoLibrary fetchAllAlbumsWithAlbumContentType:contentType showEmptyAlbum:showEmptyAlbum showSmartAlbum:showSmartAlbumIfSupported];
+    
+    // 创建一个 PHFetchOptions，用于 QMUIAssetsGroup 对资源的排序以及对内容类型进行控制
+    PHFetchOptions *phFetchOptions = [PHPhotoLibrary createFetchOptionsWithAlbumContentType:contentType];
+    
+    // 遍历结果，生成对应的 QMUIAssetsGroup，并调用 enumerationBlock
+    for (NSUInteger i = 0; i < [tempAlbumsArray count]; i++) {
+        PHAssetCollection *phAssetCollection = [tempAlbumsArray objectAtIndex:i];
+        QMUIAssetsGroup *assetsGroup = [[QMUIAssetsGroup alloc] initWithPHCollection:phAssetCollection fetchAssetsOptions:phFetchOptions];
         if (enumerationBlock) {
-            enumerationBlock(nil);
+            enumerationBlock(assetsGroup);
         }
-        
-    } else {
-        [_alAssetsLibrary enumerateAllAlbumsWithAlbumContentType:contentType usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-            if (group) {
-                QMUIAssetsGroup *assetsGroup = [[QMUIAssetsGroup alloc] initWithALAssetsGroup:group];
-                if (enumerationBlock) {
-                    enumerationBlock(assetsGroup);
-                }
-            } else {
-                /**
-                 *  枚举结束，与上面 PhotoKit 中的处理相似，再调用一次 enumerationBlock，并传递 nil 作为实参，作为枚举相册结束的标记。
-                 *  与系统 ALAssetsLibrary enumerateGroupsWithTypes 本身处理枚举结束的方式保持一致。
-                 */
-                if (enumerationBlock) {
-                    enumerationBlock(nil);
-                }
-            }
-        }];
+    }
+    
+    /**
+     *  所有结果遍历完毕，这时再调用一次 enumerationBlock，并传递 nil 作为实参，作为枚举相册结束的标记。
+     */
+    if (enumerationBlock) {
+        enumerationBlock(nil);
     }
 }
 
@@ -160,123 +110,64 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
 }
 
 - (void)saveImageWithImageRef:(CGImageRef)imageRef albumAssetsGroup:(QMUIAssetsGroup *)albumAssetsGroup orientation:(UIImageOrientation)orientation completionBlock:(QMUIWriteAssetCompletionBlock)completionBlock {
-    if (_usePhotoKit) {
-        PHAssetCollection *albumPhAssetCollection = albumAssetsGroup.phAssetCollection;
-        // 把图片加入到指定的相册对应的 PHAssetCollection
-        [[PHPhotoLibrary sharedPhotoLibrary] addImageToAlbum:imageRef
-                                        albumAssetCollection:albumPhAssetCollection
-                                                 orientation:orientation
-                                           completionHandler:^(BOOL success, NSDate *creationDate, NSError *error) {
-                                               if (success) {
-                                                   PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-                                                   fetchOptions.predicate = [NSPredicate predicateWithFormat:@"creationDate = %@", creationDate];
-                                                   PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:albumPhAssetCollection options:fetchOptions];
-                                                   PHAsset *phAsset = fetchResult.lastObject;
-                                                   QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
-                                                   completionBlock(asset, error);
-                                               } else {
-                                                   QMUILog(@"Get PHAsset of image error: %@", error);
-                                                   completionBlock(nil, error);
-                                               }
-                                           }];
-    } else {
-        ALAssetsGroup *assetGroup = albumAssetsGroup.alAssetsGroup;
-        [_alAssetsLibrary writeImageToSavedPhotosAlbum:imageRef
-                                      albumAssetsGroup:assetGroup
-                                           orientation:orientation
-                                       completionBlock:^ (NSURL *assetURL, NSError *error) {
-                                           [_alAssetsLibrary assetForURL:assetURL
-                                                             resultBlock:^(ALAsset *asset) {
-                                                                 QMUIAsset *resultAsset = [[QMUIAsset alloc] initWithALAsset:asset];
-                                                                 completionBlock(resultAsset, error);
-                                                             } failureBlock:^(NSError *error) {
-                                                                 QMUILog(@"Get ALAsset of image error : %@", error);
-                                                                 completionBlock(nil, error);
-                                                             }];
+    PHAssetCollection *albumPhAssetCollection = albumAssetsGroup.phAssetCollection;
+    // 把图片加入到指定的相册对应的 PHAssetCollection
+    [[PHPhotoLibrary sharedPhotoLibrary] addImageToAlbum:imageRef
+                                    albumAssetCollection:albumPhAssetCollection
+                                             orientation:orientation
+                                       completionHandler:^(BOOL success, NSDate *creationDate, NSError *error) {
+                                           if (success) {
+                                               PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+                                               fetchOptions.predicate = [NSPredicate predicateWithFormat:@"creationDate = %@", creationDate];
+                                               PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:albumPhAssetCollection options:fetchOptions];
+                                               PHAsset *phAsset = fetchResult.lastObject;
+                                               QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
+                                               completionBlock(asset, error);
+                                           } else {
+                                               QMUILog(@"Get PHAsset of image error: %@", error);
+                                               completionBlock(nil, error);
+                                           }
                                        }];
-        
-    }
 }
 
 - (void)saveImageWithImagePathURL:(NSURL *)imagePathURL albumAssetsGroup:(QMUIAssetsGroup *)albumAssetsGroup completionBlock:(QMUIWriteAssetCompletionBlock)completionBlock {
-    if (_usePhotoKit) {
-        PHAssetCollection *albumPhAssetCollection = albumAssetsGroup.phAssetCollection;
-        // 把图片加入到指定的相册对应的 PHAssetCollection
-        [[PHPhotoLibrary sharedPhotoLibrary] addImageToAlbum:imagePathURL
-                                        albumAssetCollection:albumPhAssetCollection
-                                           completionHandler:^(BOOL success, NSDate *creationDate, NSError *error) {
-                                               if (success) {
-                                                   PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-                                                   fetchOptions.predicate = [NSPredicate predicateWithFormat:@"creationDate = %@", creationDate];
-                                                   PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:albumPhAssetCollection options:fetchOptions];
-                                                   PHAsset *phAsset = fetchResult.lastObject;
-                                                   QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
-                                                   completionBlock(asset, error);
-                                               } else {
-                                                   QMUILog(@"Get PHAsset of image error: %@", error);
-                                                   completionBlock(nil, error);
-                                               }
-                                           }];
-    } else {
-        ALAssetsGroup *assetGroup = albumAssetsGroup.alAssetsGroup;
-        [_alAssetsLibrary writeImageAtPathToSavedPhotosAlbum:imagePathURL albumAssetsGroup:assetGroup completionBlock:^(NSURL *assetURL, NSError *error) {
-            [_alAssetsLibrary assetForURL:assetURL
-                              resultBlock:^(ALAsset *asset) {
-                                  QMUIAsset *resultAsset = [[QMUIAsset alloc] initWithALAsset:asset];
-                                  completionBlock(resultAsset, error);
-                              } failureBlock:^(NSError *error) {
-                                  QMUILog(@"Get ALAsset of image error : %@", error);
-                                  completionBlock(nil, error);
-                              }];
-        }];
-        
-    }
+    PHAssetCollection *albumPhAssetCollection = albumAssetsGroup.phAssetCollection;
+    // 把图片加入到指定的相册对应的 PHAssetCollection
+    [[PHPhotoLibrary sharedPhotoLibrary] addImageToAlbum:imagePathURL
+                                    albumAssetCollection:albumPhAssetCollection
+                                       completionHandler:^(BOOL success, NSDate *creationDate, NSError *error) {
+                                           if (success) {
+                                               PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+                                               fetchOptions.predicate = [NSPredicate predicateWithFormat:@"creationDate = %@", creationDate];
+                                               PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:albumPhAssetCollection options:fetchOptions];
+                                               PHAsset *phAsset = fetchResult.lastObject;
+                                               QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
+                                               completionBlock(asset, error);
+                                           } else {
+                                               QMUILog(@"Get PHAsset of image error: %@", error);
+                                               completionBlock(nil, error);
+                                           }
+                                       }];
 }
 
 - (void)saveVideoWithVideoPathURL:(NSURL *)videoPathURL albumAssetsGroup:(QMUIAssetsGroup *)albumAssetsGroup completionBlock:(QMUIWriteAssetCompletionBlock)completionBlock {
-    if (_usePhotoKit) {
-        PHAssetCollection *albumPhAssetCollection = albumAssetsGroup.phAssetCollection;
-        // 把视频加入到指定的相册对应的 PHAssetCollection
-        [[PHPhotoLibrary sharedPhotoLibrary] addVideoToAlbum:videoPathURL
-                                        albumAssetCollection:albumPhAssetCollection
-                                           completionHandler:^(BOOL success, NSDate *creationDate, NSError *error) {
-                                               if (success) {
-                                                   PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
-                                                   fetchOptions.predicate = [NSPredicate predicateWithFormat:@"creationDate = %@", creationDate];
-                                                   PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:albumPhAssetCollection options:fetchOptions];
-                                                   PHAsset *phAsset = fetchResult.lastObject;
-                                                   QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
-                                                   completionBlock(asset, error);
-                                               } else {
-                                                   QMUILog(@"Get PHAsset of video Error: %@", error);
-                                                   completionBlock(nil, error);
-                                               }
-                                           }];
-    } else {
-        ALAssetsGroup *assetsGroup = albumAssetsGroup.alAssetsGroup;
-        
-        [_alAssetsLibrary writeVideoAtPathToSavedPhotosAlbum:videoPathURL
-                                            albumAssetsGroup:assetsGroup
-                                             completionBlock:^ (NSURL *assetURL, NSError *error) {
-                                                 [_alAssetsLibrary assetForURL:assetURL
-                                                                   resultBlock:^(ALAsset *asset) {
-                                                                       QMUIAsset *resultAsset = [[QMUIAsset alloc] initWithALAsset:asset];
-                                                                       completionBlock(resultAsset, error);
-                                                                   } failureBlock:^(NSError *error) {
-                                                                       QMUILog(@"Get ALAsset of video error: %@", error);
-                                                                       completionBlock(nil, error);
-                                                                   }];
-                                             }];
-        
-    }
-}
-
-- (void)refreshAssetsLibrary {
-    _alAssetsLibrary = [[ALAssetsLibrary alloc] init];
-}
-
-- (ALAssetsLibrary *)alAssetsLibrary {
-    return _alAssetsLibrary;
+    PHAssetCollection *albumPhAssetCollection = albumAssetsGroup.phAssetCollection;
+    // 把视频加入到指定的相册对应的 PHAssetCollection
+    [[PHPhotoLibrary sharedPhotoLibrary] addVideoToAlbum:videoPathURL
+                                    albumAssetCollection:albumPhAssetCollection
+                                       completionHandler:^(BOOL success, NSDate *creationDate, NSError *error) {
+                                           if (success) {
+                                               PHFetchOptions *fetchOptions = [[PHFetchOptions alloc] init];
+                                               fetchOptions.predicate = [NSPredicate predicateWithFormat:@"creationDate = %@", creationDate];
+                                               PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:albumPhAssetCollection options:fetchOptions];
+                                               PHAsset *phAsset = fetchResult.lastObject;
+                                               QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
+                                               completionBlock(asset, error);
+                                           } else {
+                                               QMUILog(@"Get PHAsset of video Error: %@", error);
+                                               completionBlock(nil, error);
+                                           }
+                                       }];
 }
 
 - (PHCachingImageManager *)phCachingImageManager {
@@ -491,120 +382,6 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
             });
         }
     }];
-}
-
-@end
-
-
-@implementation ALAssetsLibrary (QMUI)
-
-- (void)enumerateAllAlbumsWithAlbumContentType:(QMUIAlbumContentType)contentType usingBlock:(ALAssetsLibraryGroupsEnumerationResultsBlock)enumerationBlock {
-    [self enumerateGroupsWithTypes:ALAssetsGroupAll usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-        if (group) {
-            // 根据输入的内容类型过滤相册内的资源，过滤后 group.numberOfAssets 的值会由自动被更新
-            switch (contentType) {
-                case QMUIAlbumContentTypeOnlyPhoto:
-                    [group setAssetsFilter:[ALAssetsFilter allPhotos]];
-                    break;
-                    
-                case QMUIAlbumContentTypeOnlyVideo:
-                    [group setAssetsFilter:[ALAssetsFilter allVideos]];
-                    break;
-                    
-                default:
-                    break;
-            }
-            if (group.numberOfAssets > 0) {
-                if (enumerationBlock) {
-                    enumerationBlock(group, stop);
-                }
-            }
-        } else {
-            /**
-             *  枚举结束，再调用一次 enumerationBlock，并传递 nil 作为实参，作为枚举相册结束的标记。
-             *  与系统 ALAssetsLibrary enumerateGroupsWithTypes 本身处理枚举结束的方式保持一致。
-             */
-            if (enumerationBlock) {
-                enumerationBlock(nil, stop);
-            }
-        }
-    } failureBlock:^(NSError *error) {
-        QMUILog(@"Asset group not found!error: %@", error);
-    }];
-}
-
-- (void)writeImageToSavedPhotosAlbum:(CGImageRef)imageRef albumAssetsGroup:(ALAssetsGroup *)albumAssetsGroup orientation:(UIImageOrientation)orientation completionBlock:(ALAssetsLibraryWriteImageCompletionBlock)completionBlock {
-    // 调用系统的添加照片的接口，把图片保存到相机胶卷，从而生成一个图片的 ALAsset
-    [self writeImageToSavedPhotosAlbum:imageRef
-                           orientation:(ALAssetOrientation)orientation
-                       completionBlock:^(NSURL *assetURL, NSError *error) {
-                           if (error) {
-                               if (completionBlock) {
-                                   completionBlock(assetURL, error);
-                               }
-                           } else {
-                               // 把获取到的 ALAsset 添加到用户指定的相册中
-                               [self addAssetURL:assetURL
-                                albumAssetsGroup:albumAssetsGroup
-                                 completionBlock:^(NSError *error) {
-                                     if (completionBlock) {
-                                         completionBlock(assetURL, error);
-                                     }
-                                 }];
-                           }
-                       }];
-}
-
-- (void)writeImageAtPathToSavedPhotosAlbum:(NSURL *)imagePathURL albumAssetsGroup:(ALAssetsGroup *)albumAssetsGroup completionBlock:(ALAssetsLibraryWriteImageCompletionBlock)completionBlock {
-    // 调用系统的添加照片的接口，把图片保存到相机胶卷，从而生成一个图片的 ALAsset
-    NSData *imageData = [NSData dataWithContentsOfURL:imagePathURL];
-    [self writeImageDataToSavedPhotosAlbum:imageData metadata:nil completionBlock:^(NSURL *assetURL, NSError *error) {
-        if (error) {
-            if (completionBlock) {
-                completionBlock(assetURL, error);
-            }
-        } else {
-            // 把获取到的 ALAsset 添加到用户指定的相册中
-            [self addAssetURL:assetURL
-             albumAssetsGroup:albumAssetsGroup
-              completionBlock:^(NSError *error) {
-                  if (completionBlock) {
-                      completionBlock(assetURL, error);
-                  }
-              }];
-        }
-    }];
-}
-
-- (void)writeVideoAtPathToSavedPhotosAlbum:(NSURL *)videoPathURL albumAssetsGroup:(ALAssetsGroup *)albumAssetsGroup completionBlock:(ALAssetsLibraryWriteImageCompletionBlock)completionBlock {
-    // 调用系统的添加照片的接口，把图片保存到相机胶卷，从而生成一个图片的 ALAsset
-    [self writeVideoAtPathToSavedPhotosAlbum:videoPathURL completionBlock:^(NSURL *assetURL, NSError *error) {
-        if (error) {
-            if (completionBlock) {
-                completionBlock(assetURL, error);
-            }
-        } else {
-            // 把获取到的 ALAsset 添加到用户指定的相册中
-            [self addAssetURL:assetURL
-             albumAssetsGroup:albumAssetsGroup
-              completionBlock:^(NSError *error) {
-                  if (completionBlock) {
-                      completionBlock(assetURL, error);
-                  }
-              }];
-        }
-    }];
-}
-
-- (void)addAssetURL:(NSURL *)assetURL albumAssetsGroup:(ALAssetsGroup *)albumAssetsGroup completionBlock:(ALAssetsLibraryAccessFailureBlock)completionBlock {
-    [self assetForURL:assetURL
-          resultBlock:^(ALAsset *asset) {
-              [albumAssetsGroup addAsset:asset];
-              completionBlock(nil);
-          }
-         failureBlock:^(NSError *error) {
-             completionBlock(error);
-         }];
 }
 
 @end

@@ -35,7 +35,7 @@ BeginIgnoreDeprecatedWarning
 
 - (void)initTableView {
     [super initTableView];
-    if (@available(ios 11, *)) {
+    if (@available(iOS 11, *)) {
         self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     }
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
@@ -167,20 +167,11 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (BOOL)hidesNavigationBarDuringPresentation {
-    if (self.searchController) {
-        return self.searchController.hidesNavigationBarDuringPresentation;
-    } else {
-        NSLog(@"%s 仅支持 iOS 8 及以上版本", __func__);
-        return YES;
-    }
+    return self.searchController.hidesNavigationBarDuringPresentation;
 }
 
 - (void)setHidesNavigationBarDuringPresentation:(BOOL)hidesNavigationBarDuringPresentation {
-    if (self.searchController) {
-        self.searchController.hidesNavigationBarDuringPresentation = hidesNavigationBarDuringPresentation;
-    } else {
-        NSLog(@"%s 仅支持 iOS 8 及以上版本", __func__);
-    }
+    self.searchController.hidesNavigationBarDuringPresentation = hidesNavigationBarDuringPresentation;
 }
 
 #pragma mark - QMUIEmptyView
@@ -354,6 +345,7 @@ EndIgnoreDeprecatedWarning
         self.searchController = [[QMUISearchController alloc] initWithContentsViewController:self];
         self.searchController.searchResultsDelegate = self;
         self.searchController.searchBar.placeholder = @"搜索";
+        self.searchController.searchBar.qmui_usedAsTableHeaderView = YES;// 以 tableHeaderView 的方式使用 searchBar 的话，将其置为 YES，以辅助兼容一些系统 bug
         self.tableView.tableHeaderView = self.searchController.searchBar;
         self.searchBar = self.searchController.searchBar;
     }

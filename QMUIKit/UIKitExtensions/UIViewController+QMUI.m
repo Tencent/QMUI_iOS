@@ -2,7 +2,7 @@
 //  UIViewController+QMUI.m
 //  qmui
 //
-//  Created by QQMail on 16/1/12.
+//  Created by QMUI Team on 16/1/12.
 //  Copyright © 2016年 QMUI Team. All rights reserved.
 //
 
@@ -20,7 +20,7 @@
 
 void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     // 主动调用 self.view，从而触发 loadView，以模拟 iOS 9.0 以下的系统 loadViewIfNeeded 行为
-    QMUILog(@"%@", ((UIViewController *)current_self).view);
+    [((UIViewController *)current_self) view];
 }
 
 + (void)load {
@@ -33,8 +33,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
         // 兼容 iOS 9.0 以下的版本对 loadViewIfNeeded 方法的调用
         if (![[UIViewController class] instancesRespondToSelector:@selector(loadViewIfNeeded)]) {
             Class metaclass = [self class];
-            BOOL success = class_addMethod(metaclass, @selector(loadViewIfNeeded), (IMP)qmui_loadViewIfNeeded, "v@:");
-            QMUILog(@"%@ %s, success = %@", NSStringFromClass([self class]), __func__, StringFromBOOL(success));
+            class_addMethod(metaclass, @selector(loadViewIfNeeded), (IMP)qmui_loadViewIfNeeded, "v@:");
         }
         
         // 实现 AutomaticallyRotateDeviceOrientation 开关的功能
@@ -203,7 +202,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if ([self isViewLoaded] && self.view.window) {
         return self;
     } else {
-        NSLog(@"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view.window = %@", self, self.view.window);
+        QMUILog(@"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view : nil, [self isViewLoaded] ? self.view.window : nil);
         return nil;
     }
 }
@@ -220,10 +219,6 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
         return 0;
     }
     CGRect navigationBarFrameInView = [self.view convertRect:self.navigationController.navigationBar.frame fromView:self.navigationController.navigationBar.superview];
-    if (IOS_VERSION < 9.0) {
-        // iOS 8 用上面的方法转换得到的 x = 1408（iPad 横屏下），不知道为什么，暂时认为是系统的 bug，所以这时候先改为转换到 window 坐标系里
-        navigationBarFrameInView = [self.view convertRect:self.navigationController.navigationBar.frame fromView:nil];
-    }
     CGRect navigationBarFrame = CGRectIntersection(self.view.bounds, navigationBarFrameInView);
     
     // 两个 rect 如果不存在交集，CGRectIntersection 计算结果可能为非法的 rect，所以这里做个保护
@@ -234,7 +229,6 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     CGFloat result = CGRectGetMaxY(navigationBarFrame);
     return result;
 }
-
 
 - (CGFloat)qmui_toolbarSpacingInViewCoordinator {
     if (!self.isViewLoaded) {
@@ -261,7 +255,13 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if (!self.tabBarController.tabBar || self.tabBarController.tabBar.hidden) {
         return 0;
     }
-    CGRect tabBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.tabBarController.tabBar.frame fromView:nil]);
+    CGRect tabBarFrame = CGRectIntersection(self.view.bounds, [self.view convertRect:self.tabBarController.tabBar.frame fromView:self.tabBarController.tabBar.superview]);
+    
+    // 两个 rect 如果不存在交集，CGRectIntersection 计算结果可能为非法的 rect，所以这里做个保护
+    if (!CGRectIsValidated(tabBarFrame)) {
+        return 0;
+    }
+    
     CGFloat result = CGRectGetHeight(self.view.bounds) - CGRectGetMinY(tabBarFrame);
     return result;
 }

@@ -273,7 +273,7 @@
         tipSize.height = self.maximumHeight;
         _currentLayoutDirection = maximumHeightAbove > maximumHeightBelow ? QMUIPopupContainerViewLayoutDirectionAbove : QMUIPopupContainerViewLayoutDirectionBelow;
         
-        NSLog(@"%@, 因为上下都不够空间，所以最大高度被强制改为%@, 位于目标的%@", self, @(self.maximumHeight), maximumHeightAbove > maximumHeightBelow ? @"上方" : @"下方");
+        QMUILogInfo(@"%@, 因为上下都不够空间，所以最大高度被强制改为%@, 位于目标的%@", self, @(self.maximumHeight), maximumHeightAbove > maximumHeightBelow ? @"上方" : @"下方");
         
     } else if (_currentLayoutDirection == QMUIPopupContainerViewLayoutDirectionAbove && !canShowAtAbove) {
         _currentLayoutDirection = QMUIPopupContainerViewLayoutDirectionBelow;
@@ -357,6 +357,10 @@
         self.hidden = NO;
     }
     
+    if (self.willShowBlock) {
+        self.willShowBlock(animated);
+    }
+    
     if (animated) {
         if (isShowingByWindowMode) {
             self.popupWindow.alpha = 0;
@@ -396,7 +400,7 @@
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
     if (self.willHideBlock) {
-        self.willHideBlock(self.hidesByUserTap);
+        self.willHideBlock(self.hidesByUserTap, animated);
     }
     
     BOOL isShowingByWindowMode = !!self.popupWindow;

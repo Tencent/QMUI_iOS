@@ -2,7 +2,7 @@
 //  UINavigationController+QMUI.h
 //  qmui
 //
-//  Created by QQMail on 16/1/12.
+//  Created by QMUI Team on 16/1/12.
 //  Copyright © 2016年 QMUI Team. All rights reserved.
 //
 

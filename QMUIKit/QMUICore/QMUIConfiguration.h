@@ -2,7 +2,7 @@
 //  QMUIConfiguration.h
 //  qmui
 //
-//  Created by QQMail on 15/3/29.
+//  Created by QMUI Team on 15/3/29.
 //  Copyright (c) 2015年 QMUI Team. All rights reserved.
 //
 
@@ -128,6 +128,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - TableView / TableViewCell
 
+@property(nonatomic, assign) BOOL               tableViewEstimatedHeightEnabled;
+
 @property(nonatomic, strong, nullable) UIColor  *tableViewBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableSectionIndexColor;
@@ -169,6 +171,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) CGFloat            windowLevelQMUIAlertView;
 @property(nonatomic, assign) CGFloat            windowLevelQMUIImagePreviewView;
 
+#pragma mark - QMUILog
+
+@property(nonatomic, assign) BOOL               shouldPrintDefaultLog;
+@property(nonatomic, assign) BOOL               shouldPrintInfoLog;
+@property(nonatomic, assign) BOOL               shouldPrintWarnLog;
+
 #pragma mark - Others
 
 @property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
@@ -177,6 +185,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               needsBackBarButtonItemTitle;
 @property(nonatomic, assign) BOOL               hidesBottomBarWhenPushedInitially;
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
+@property(nonatomic, assign) BOOL               shouldFixTabBarTransitionBugInIPhoneX;
 
 NS_ASSUME_NONNULL_END
 

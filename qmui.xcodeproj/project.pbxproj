@@ -176,6 +176,8 @@
 		CDC870321F68D63B000E8829 /* QMUITabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86FBC1F68D5F9000E8829 /* QMUITabBarViewController.m */; };
 		CDC8703F1F68D66A000E8829 /* QMUI_QQEmotion.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDC86F3D1F68D5F8000E8829 /* QMUI_QQEmotion.bundle */; };
 		CDC870401F68D66A000E8829 /* QMUIResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDC86F3E1F68D5F8000E8829 /* QMUIResources.bundle */; };
+		CDD12D3C1FBB320E00114EA9 /* NSArray+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD12D3A1FBB320E00114EA9 /* NSArray+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CDD12D3D1FBB320E00114EA9 /* NSArray+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD12D3B1FBB320E00114EA9 /* NSArray+QMUI.m */; };
 		CDEA6D081F4B07E700F627AF /* UIGestureRecognizer+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDEA6D061F4B07E700F627AF /* UIGestureRecognizer+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDEA6D0A1F4B07E700F627AF /* UIGestureRecognizer+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDEA6D071F4B07E700F627AF /* UIGestureRecognizer+QMUI.m */; };
 		FE1FBCA91E8BA61300C6C01A /* UITextField+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -370,6 +372,8 @@
 		CDC86FBA1F68D5F9000E8829 /* QMUINavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUINavigationController.m; sourceTree = "<group>"; };
 		CDC86FBB1F68D5F9000E8829 /* QMUITabBarViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUITabBarViewController.h; sourceTree = "<group>"; };
 		CDC86FBC1F68D5F9000E8829 /* QMUITabBarViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUITabBarViewController.m; sourceTree = "<group>"; };
+		CDD12D3A1FBB320E00114EA9 /* NSArray+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSArray+QMUI.h"; sourceTree = "<group>"; };
+		CDD12D3B1FBB320E00114EA9 /* NSArray+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSArray+QMUI.m"; sourceTree = "<group>"; };
 		CDEA6D061F4B07E700F627AF /* UIGestureRecognizer+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+QMUI.h"; sourceTree = "<group>"; };
 		CDEA6D071F4B07E700F627AF /* UIGestureRecognizer+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIGestureRecognizer+QMUI.m"; sourceTree = "<group>"; };
 		FE0AFAD11D82B9D8000D21D9 /* QMUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = QMUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -472,6 +476,8 @@
 			children = (
 				CDB8CA761DCC870700769DF0 /* CALayer+QMUI.h */,
 				CDB8CA771DCC870700769DF0 /* CALayer+QMUI.m */,
+				CDD12D3A1FBB320E00114EA9 /* NSArray+QMUI.h */,
+				CDD12D3B1FBB320E00114EA9 /* NSArray+QMUI.m */,
 				CDB8CA781DCC870700769DF0 /* NSAttributedString+QMUI.h */,
 				CDB8CA791DCC870700769DF0 /* NSAttributedString+QMUI.m */,
 				CDB8CA7A1DCC870700769DF0 /* NSObject+QMUI.h */,
@@ -723,6 +729,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDD12D3C1FBB320E00114EA9 /* NSArray+QMUI.h in Headers */,
 				CDC86FBD1F68D617000E8829 /* QMUIAsset.h in Headers */,
 				CDC86FBE1F68D617000E8829 /* QMUIAssetsGroup.h in Headers */,
 				CDC86FBF1F68D617000E8829 /* QMUIAssetsManager.h in Headers */,
@@ -962,6 +969,7 @@
 				CDC8702F1F68D63B000E8829 /* QMUICommonTableViewController.m in Sources */,
 				CDC870301F68D63B000E8829 /* QMUICommonViewController.m in Sources */,
 				CDC870311F68D63B000E8829 /* QMUINavigationController.m in Sources */,
+				CDD12D3D1FBB320E00114EA9 /* NSArray+QMUI.m in Sources */,
 				CDC870321F68D63B000E8829 /* QMUITabBarViewController.m in Sources */,
 				CDB8CB601DCC870700769DF0 /* NSParagraphStyle+QMUI.m in Sources */,
 				CDB8CBB81DCC870800769DF0 /* UIImage+QMUI.m in Sources */,

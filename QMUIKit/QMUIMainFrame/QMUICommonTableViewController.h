@@ -2,7 +2,7 @@
 //  QMUICommonTableViewController.h
 //  qmui
 //
-//  Created by QQMail on 14-6-24.
+//  Created by QMUI Team on 14-6-24.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -48,7 +48,7 @@ extern const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet
 
 /**
  *  列表使用自定义的contentInset，不使用系统默认计算的，默认为QMUICommonTableViewControllerInitialContentInsetNotSet。<br/>
- *  当更改了这个值后，会把self.automaticallyAdjustsScrollViewInsets = NO
+ *  @warning 当更改了这个值后，在 iOS 11 及以后里，会把 self.tableView.contentInsetAdjustmentBehavior 改为 UIScrollViewContentInsetAdjustmentNever，而在 iOS 11 以前，会把 self.automaticallyAdjustsScrollViewInsets 改为 NO。
  */
 @property(nonatomic, assign) UIEdgeInsets tableViewInitialContentInset;
 

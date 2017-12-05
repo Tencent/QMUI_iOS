@@ -2,7 +2,7 @@
 //  QMUICommonTableViewController.m
 //  qmui
 //
-//  Created by QQMail on 14-6-24.
+//  Created by QMUI Team on 14-6-24.
 //  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
@@ -158,9 +158,21 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 - (void)setTableViewInitialContentInset:(UIEdgeInsets)tableViewInitialContentInset {
     _tableViewInitialContentInset = tableViewInitialContentInset;
     if (UIEdgeInsetsEqualToEdgeInsets(tableViewInitialContentInset, QMUICommonTableViewControllerInitialContentInsetNotSet)) {
-        self.automaticallyAdjustsScrollViewInsets = YES;
+        if (@available(iOS 11, *)) {
+            if (self.isViewLoaded) {
+                self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
+            }
+        } else {
+            self.automaticallyAdjustsScrollViewInsets = YES;
+        }
     } else {
-        self.automaticallyAdjustsScrollViewInsets = NO;
+        if (@available(iOS 11, *)) {
+            if (self.isViewLoaded) {
+                self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+            }
+        } else {
+            self.automaticallyAdjustsScrollViewInsets = NO;
+        }
     }
 }
 
@@ -194,7 +206,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
     }
     
     UIEdgeInsets insets = self.tableView.contentInset;
-    if (@available(ios 11, *)) {
+    if (@available(iOS 11, *)) {
         if (self.tableView.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
             insets = self.tableView.adjustedContentInset;
         }
@@ -228,6 +240,9 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
         QMUILabel *label = (QMUILabel *)[headerFooterView.contentView viewWithTag:kSectionHeaderFooterLabelTag];
         label.text = title;
         label.contentEdgeInsets = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderContentInset : TableViewGroupedSectionHeaderContentInset;
+        // 针对 iPhone X 机型，应该在用户定义的 Insets 基础上增加 iPhone X 的安全 insets
+        label.contentEdgeInsets = UIEdgeInsetsSetLeft(label.contentEdgeInsets, label.contentEdgeInsets.left + IPhoneXSafeAreaInsets.left);
+        label.contentEdgeInsets = UIEdgeInsetsSetRight(label.contentEdgeInsets, label.contentEdgeInsets.right + IPhoneXSafeAreaInsets.right);
         label.font = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderFont : TableViewGroupedSectionHeaderFont;
         label.textColor = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderTextColor : TableViewGroupedSectionHeaderTextColor;
         label.backgroundColor = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderBackgroundColor : UIColorClear;
@@ -247,6 +262,9 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
         QMUILabel *label = (QMUILabel *)[headerFooterView.contentView viewWithTag:kSectionHeaderFooterLabelTag];
         label.text = title;
         label.contentEdgeInsets = tableView.style == UITableViewStylePlain ? TableViewSectionFooterContentInset : TableViewGroupedSectionFooterContentInset;
+        // 针对 iPhone X 机型，应该在用户定义的 Insets 基础上增加 iPhone X 的安全 insets
+        label.contentEdgeInsets = UIEdgeInsetsSetLeft(label.contentEdgeInsets, label.contentEdgeInsets.left + IPhoneXSafeAreaInsets.left);
+        label.contentEdgeInsets = UIEdgeInsetsSetRight(label.contentEdgeInsets, label.contentEdgeInsets.right + IPhoneXSafeAreaInsets.right);
         label.font = tableView.style == UITableViewStylePlain ? TableViewSectionFooterFont : TableViewGroupedSectionFooterFont;
         label.textColor = tableView.style == UITableViewStylePlain ? TableViewSectionFooterTextColor : TableViewGroupedSectionFooterTextColor;
         label.backgroundColor = tableView.style == UITableViewStylePlain ? TableViewSectionFooterBackgroundColor : UIColorClear;
@@ -317,7 +335,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return nil;
+    return [[UITableViewCell alloc] init];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -335,6 +353,12 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
         self.tableView.delegate = self;
         self.tableView.dataSource = self;
         [self.view addSubview:self.tableView];
+        
+        if (@available(iOS 11, *)) {
+            if ([self shouldAdjustTableViewContentInsetsInitially]) {
+                self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+            }
+        }
     }
 }
 

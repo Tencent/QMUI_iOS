@@ -2,7 +2,7 @@
 //  UINavigationController+NavigationBarTransition.m
 //  qmui
 //
-//  Created by QQMail on 16/2/22.
+//  Created by QMUI Team on 16/2/22.
 //  Copyright © 2016年 QMUI Team. All rights reserved.
 //
 
