@@ -36,7 +36,7 @@
 
 /**
  * 用正则表达式匹配的方式去除字符串里一些特殊字符，避免UI上的展示问题
- * @link http://www.croton.su/en/uniblock/Diacriticals.html
+ * @link http://www.croton.su/en/uniblock/Diacriticals.html @/link
  */
 - (NSString *)qmui_removeMagicalChar;
 

@@ -16,8 +16,6 @@
 
 @implementation QMUIEmotion
 
-@synthesize image = _image;
-
 + (instancetype)emotionWithIdentifier:(NSString *)identifier displayName:(NSString *)displayName {
     QMUIEmotion *emotion = [[QMUIEmotion alloc] init];
     emotion.identifier = identifier;
@@ -27,13 +25,6 @@
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@, identifier: %@, displayName: %@", [super description], self.identifier, self.displayName];
-}
-
-- (UIImage *)image {
-    if (!_image) {
-        _image = [QMUIHelper imageInBundle:[QMUIHelper resourcesBundleWithName:QMUIResourcesQQEmotionBundleName] withName:self.identifier];
-    }
-    return _image;
 }
 
 @end

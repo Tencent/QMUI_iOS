@@ -130,6 +130,7 @@ static QMUIModalPresentationViewController *appearance;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    
     if (self.shownInWindowMode) {
         // 只有使用showWithAnimated:completion:显示出来的浮层，才需要修改之前就记住的animated的值
         animated = self.appearAnimated;
@@ -141,6 +142,12 @@ static QMUIModalPresentationViewController *appearance;
     if (self.contentViewController) {
         self.contentViewController.qmui_modalPresentationViewController = self;
         [self.contentViewController beginAppearanceTransition:YES animated:animated];
+    }
+    
+    // 如果是因为 present 了新的界面再从那边回来，导致走到 viewWillAppear，则后面那些升起浮层的操作都可以不用做了，因为浮层从来没被降下去过
+    BOOL willAppearByPresentedViewController = [self isShowingPresentedViewController];
+    if (willAppearByPresentedViewController) {
+        return;
     }
     
     [QMUIHelper dimmedApplicationWindow];
@@ -194,12 +201,33 @@ static QMUIModalPresentationViewController *appearance;
     }
     
     [super viewWillDisappear:animated];
+    
     if (self.shownInWindowMode) {
         animated = self.disappearAnimated;
     }
     
-    if ([self.delegate respondsToSelector:@selector(willHideModalPresentationViewController:)]) {
-        [self.delegate willHideModalPresentationViewController:self];
+    BOOL willDisappearByPresentedViewController = [self isShowingPresentedViewController];
+    
+    if (!willDisappearByPresentedViewController) {
+        if ([self.delegate respondsToSelector:@selector(willHideModalPresentationViewController:)]) {
+            [self.delegate willHideModalPresentationViewController:self];
+        }
+    }
+    
+    // 在降下键盘前取消对键盘事件的监听，从而避免键盘影响隐藏浮层的动画
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    [self.view endEditing:YES];
+    
+    // 如果是因为 present 了新的界面导致走到 willDisappear，则后面那些降下浮层的操作都可以不用做了
+    if (willDisappearByPresentedViewController) {
+        return;
+    }
+    
+    [QMUIHelper resetDimmedApplicationWindow];
+    
+    if (self.contentViewController) {
+        [self.contentViewController beginAppearanceTransition:NO animated:animated];
     }
     
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
@@ -244,17 +272,6 @@ static QMUIModalPresentationViewController *appearance;
         
         self.disappearAnimated = NO;
     };
-    
-    // 在降下键盘前取消对键盘事件的监听，从而避免键盘影响隐藏浮层的动画
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
-    
-    [QMUIHelper resetDimmedApplicationWindow];
-    [self.view endEditing:YES];
-    
-    if (self.contentViewController) {
-        [self.contentViewController beginAppearanceTransition:NO animated:animated];
-    }
     
     if (animated) {
         if (self.hidingAnimation) {
@@ -501,6 +518,10 @@ static QMUIModalPresentationViewController *appearance;
 
 - (BOOL)isShownInSubviewMode {
     return !self.shownInPresentedMode && self.view.superview;
+}
+
+- (BOOL)isShowingPresentedViewController {
+    return self.shownInPresentedMode && self.presentedViewController && self.presentedViewController.presentingViewController == self;
 }
 
 #pragma mark - Keyboard

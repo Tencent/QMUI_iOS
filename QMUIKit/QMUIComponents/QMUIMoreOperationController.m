@@ -637,7 +637,6 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 + (instancetype)itemViewWithImage:(UIImage *)image selectedImage:(UIImage *)selectedImage title:(NSString *)title selectedTitle:(NSString *)selectedTitle handler:(void (^)(QMUIMoreOperationController *, QMUIMoreOperationItemView *))handler {
     QMUIMoreOperationItemView *itemView = [[QMUIMoreOperationItemView alloc] init];
-    itemView.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [itemView setImage:image forState:UIControlStateNormal];
     [itemView setImage:selectedImage forState:UIControlStateSelected];
     [itemView setImage:selectedImage forState:UIControlStateHighlighted|UIControlStateSelected];

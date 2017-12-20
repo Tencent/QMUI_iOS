@@ -92,6 +92,8 @@
 #define NavBarTintColor                                 [QMUICMI navBarTintColor]
 #define NavBarTitleColor                                [QMUICMI navBarTitleColor]
 #define NavBarTitleFont                                 [QMUICMI navBarTitleFont]
+#define NavBarLargeTitleColor                           [QMUICMI navBarLargeTitleColor]
+#define NavBarLargeTitleFont                            [QMUICMI navBarLargeTitleFont]
 #define NavBarBarBackButtonTitlePositionAdjustment      [QMUICMI navBarBackButtonTitlePositionAdjustment]
 #define NavBarBackIndicatorImage                        [QMUICMI navBarBackIndicatorImage]                          // 自定义的返回按钮，尺寸建议与系统的返回按钮尺寸一致（iOS8下实测系统大小是(13, 21)），可提高性能
 #define NavBarCloseButtonImage                          [QMUICMI navBarCloseButtonImage]
@@ -167,6 +169,8 @@
 #define TableViewSectionFooterFont                 [QMUICMI tableViewSectionFooterFont]
 #define TableViewSectionHeaderTextColor            [QMUICMI tableViewSectionHeaderTextColor]
 #define TableViewSectionFooterTextColor            [QMUICMI tableViewSectionFooterTextColor]
+#define TableViewSectionHeaderAccessoryMargins     [QMUICMI tableViewSectionHeaderAccessoryMargins]
+#define TableViewSectionFooterAccessoryMargins     [QMUICMI tableViewSectionFooterAccessoryMargins]
 #define TableViewSectionHeaderContentInset         [QMUICMI tableViewSectionHeaderContentInset]
 #define TableViewSectionFooterContentInset         [QMUICMI tableViewSectionFooterContentInset]
 
@@ -174,6 +178,8 @@
 #define TableViewGroupedSectionFooterFont          [QMUICMI tableViewGroupedSectionFooterFont]
 #define TableViewGroupedSectionHeaderTextColor     [QMUICMI tableViewGroupedSectionHeaderTextColor]
 #define TableViewGroupedSectionFooterTextColor     [QMUICMI tableViewGroupedSectionFooterTextColor]
+#define TableViewGroupedSectionHeaderAccessoryMargins   [QMUICMI tableViewGroupedSectionHeaderAccessoryMargins]
+#define TableViewGroupedSectionFooterAccessoryMargins   [QMUICMI tableViewGroupedSectionFooterAccessoryMargins]
 #define TableViewGroupedSectionHeaderDefaultHeight [QMUICMI tableViewGroupedSectionHeaderDefaultHeight]
 #define TableViewGroupedSectionFooterDefaultHeight [QMUICMI tableViewGroupedSectionFooterDefaultHeight]
 #define TableViewGroupedSectionHeaderContentInset  [QMUICMI tableViewGroupedSectionHeaderContentInset]

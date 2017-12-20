@@ -21,12 +21,10 @@
  */
 @property(nonatomic, assign) BOOL qmui_automaticallyAdjustTouchHighlightedInScrollView;
 
-@property(nonatomic, assign) BOOL qmui_needsTakeOverTouchEvent DEPRECATED_MSG_ATTRIBUTE("已在 1.7.0 版本中废弃，请使用 qmui_automaticallyAdjustTouchHighlightedInScrollView 来代替");
-
-/*
- * 响应区域需要改变的大小，负值表示往外扩大，正值表示往内缩小
- */
+/// 响应区域需要改变的大小，负值表示往外扩大，正值表示往内缩小
 @property(nonatomic,assign) UIEdgeInsets qmui_outsideEdge;
 
+/// setHighlighted: 方法的回调 block
+@property(nonatomic, copy) void (^qmui_setHighlightedBlock)(BOOL highlighted);
 
 @end

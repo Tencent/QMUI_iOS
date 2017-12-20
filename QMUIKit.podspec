@@ -1,6 +1,10 @@
 Pod::Spec.new do |s|
   s.name             = "QMUIKit"
+<<<<<<< HEAD
   s.version          = "2.0.1"
+=======
+  s.version          = "2.2.0"
+>>>>>>> c28e094c62c548e888026c9be9eb2048e208892b
   s.summary          = "致力于提高项目 UI 开发效率的解决方案"
   s.description      = <<-DESC
                        QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设计目的是用于辅助快速搭建一个具备基本设计还原效果的 iOS 项目，同时利用自身提供的丰富控件及兼容处理， 让开发者能专注于业务需求而无需耗费精力在基础代码的设计上。不管是新项目的创建，或是已有项目的维护，均可使开发效率和项目质量得到大幅度提升。
@@ -32,8 +36,8 @@ Pod::Spec.new do |s|
     ss.dependency 'QMUIKit/QMUICore'
     ss.dependency 'QMUIKit/QMUIComponents/QMUINavigationTitleView'
     ss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUITableViewHeaderFooterView'
     ss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
-    ss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
     ss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
   end
 
@@ -160,8 +164,8 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIPopupContainerView'
     end
 
-    ss.subspec 'QMUIQQEmotionManager' do |sss|
-      sss.source_files = 'QMUIKit/QMUIComponents/QMUIQQEmotionManager.{h,m}'
+    ss.subspec 'QMUIEmotionInputManager' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIEmotionInputManager.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmotionView'
     end
 
@@ -187,6 +191,10 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUITableViewCell' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUITableViewCell.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+    end
+
+    ss.subspec 'QMUITableViewHeaderFooterView' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUITableViewHeaderFooterView.{h,m}'
     end
 
     ss.subspec 'QMUITestView' do |sss|

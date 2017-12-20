@@ -9,8 +9,6 @@
 #import "UINavigationController+QMUI.h"
 #import "QMUICore.h"
 
-NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNotification";
-
 @interface UINavigationController (BackButtonHandlerProtocol)
 
 // `UINavigationControllerBackButtonHandlerProtocol`的`canPopViewController`功能里面，当 A canPop = NO，B canPop = YES，那么从 B 手势返回到 A，也会触发需求 A 的 `canPopViewController` 方法，这是因为手势返回会去询问`gestureRecognizerShouldBegin:`和`qmui_navigationBar:shouldPopItem:`，而这两个方法里面的 self.topViewController 是不同的对象，所以导致这个问题。所以通过 tmp_topViewController 来记录 self.topViewController 从而保证两个地方的值是相等的。
@@ -37,55 +35,9 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
-        // 适配 iOS 11 下不透明的 tabBar 的底部 inset
-        if (@available(iOS 11, *)) {
-            ReplaceMethod([self class], @selector(initWithNibName:bundle:), @selector(qmui_initWithNibName:bundle:));
-        }
-        
         ReplaceMethod([self class], @selector(viewDidLoad), @selector(qmui_viewDidLoad));
         ReplaceMethod([self class], @selector(navigationBar:shouldPopItem:), @selector(qmui_navigationBar:shouldPopItem:));
     });
-}
-
-- (void)dealloc {
-    if (@available(iOS 11, *)) {
-        [[NSNotificationCenter defaultCenter] removeObserver:self name:QMUITabBarStyleChangedNotification object:nil];
-    }
-}
-
-- (instancetype)qmui_initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    [self qmui_initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-    if (@available(iOS 11, *)) {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(adjustsAdditionalSafeAreaInsetsForOpaqueTabBarWithNotification:) name:QMUITabBarStyleChangedNotification object:nil];
-    }
-    return self;
-}
-
-- (void)adjustsAdditionalSafeAreaInsetsForOpaqueTabBarWithNotification:(NSNotification *)notification {
-    if (@available(iOS 11, *)) {
-        
-        BOOL isCurrentTabBar = self.tabBarController && self.parentViewController == self.tabBarController && (notification ? notification.object == self.tabBarController.tabBar : YES);
-        if (!isCurrentTabBar) {
-            return;
-        }
-        
-        UITabBar *tabBar = self.tabBarController.tabBar;
-        
-        // 这串判断条件来源于这个 issue：https://github.com/QMUI/QMUI_iOS/issues/218
-        BOOL isOpaqueBarAndCanExtendedLayout = !tabBar.translucent && self.topViewController.extendedLayoutIncludesOpaqueBars;
-        if (!isOpaqueBarAndCanExtendedLayout) {
-            // TODO: molice 考虑一下如果是这个分支，是否要把 additionalSafeAreaInsets 置为 UIEdgeInsetsZero
-            return;
-        }
-        
-        BOOL tabBarHidden = tabBar.hidden;
-        
-        // 这里直接用 CGRectGetHeight(tabBar.frame) 来计算理论上不准确，但因为系统有这个 bug（https://github.com/QMUI/QMUI_iOS/issues/217），所以暂时用 CGRectGetHeight(tabBar.frame) 来代替
-        CGFloat correctSafeAreaInsetsBottom = tabBarHidden ? tabBar.safeAreaInsets.bottom : CGRectGetHeight(tabBar.frame);
-        CGFloat additionalSafeAreaInsetsBottom = correctSafeAreaInsetsBottom - tabBar.safeAreaInsets.bottom;
-        self.additionalSafeAreaInsets = UIEdgeInsetsSetBottom(self.additionalSafeAreaInsets, additionalSafeAreaInsetsBottom);
-    }
 }
 
 - (nullable UIViewController *)qmui_rootViewController {
@@ -203,58 +155,5 @@ static char originGestureDelegateKey;
 
 
 @implementation UIViewController (BackBarButtonSupport)
-
-@end
-
-// 为了 UINavigationController 适配 iOS 11 下出现不透明的 tabBar 时底部 inset 错误的问题
-@interface UITabBar (NavigationController)
-
-@end
-
-@implementation UITabBar (NavigationController)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (@available(iOS 11, *)) {
-            ReplaceMethod([self class], @selector(setHidden:), @selector(nav_setHidden:));
-            ReplaceMethod([self class], @selector(setBackgroundImage:), @selector(nav_setBackgroundImage:));
-            ReplaceMethod([self class], @selector(setTranslucent:), @selector(nav_setTranslucent:));
-            ReplaceMethod([self class], @selector(setFrame:), @selector(nav_setFrame:));
-        }
-    });
-}
-
-- (void)nav_setHidden:(BOOL)hidden {
-    BOOL shouldNotify = self.hidden != hidden;
-    [self nav_setHidden:hidden];
-    if (shouldNotify) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:self];
-    }
-}
-
-- (void)nav_setBackgroundImage:(UIImage *)backgroundImage {
-    BOOL shouldNotify = ![self.backgroundImage isEqual:backgroundImage];
-    [self nav_setBackgroundImage:backgroundImage];
-    if (shouldNotify) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:self];
-    }
-}
-
-- (void)nav_setTranslucent:(BOOL)translucent {
-    BOOL shouldNotify = self.translucent != translucent;
-    [self nav_setTranslucent:translucent];
-    if (shouldNotify) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:self];
-    }
-}
-
-- (void)nav_setFrame:(CGRect)frame {
-    BOOL shouldNotify = CGRectGetMinY(self.frame) != CGRectGetMinY(frame);
-    [self nav_setFrame:frame];
-    if (shouldNotify) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:self];
-    }
-}
 
 @end

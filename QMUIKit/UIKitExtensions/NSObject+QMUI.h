@@ -24,7 +24,7 @@
 
  @param aSelector 要发送的消息
  @return 消息执行后的结果
- @link http://stackoverflow.com/questions/14635024/using-objc-msgsendsuper-to-invoke-a-class-method
+ @link http://stackoverflow.com/questions/14635024/using-objc-msgsendsuper-to-invoke-a-class-method @/link
  */
 - (id)qmui_performSelectorToSuperclass:(SEL)aSelector;
 
@@ -34,7 +34,7 @@
  @param aSelector 要发送的消息
  @param object 作为参数传过去
  @return 消息执行后的结果
- @link http://stackoverflow.com/questions/14635024/using-objc-msgsendsuper-to-invoke-a-class-method
+ @link http://stackoverflow.com/questions/14635024/using-objc-msgsendsuper-to-invoke-a-class-method @/link
  */
 - (id)qmui_performSelectorToSuperclass:(SEL)aSelector withObject:(id)object;
 

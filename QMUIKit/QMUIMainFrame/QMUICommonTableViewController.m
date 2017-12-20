@@ -10,13 +10,15 @@
 #import "QMUICore.h"
 #import "QMUITableView.h"
 #import "QMUIEmptyView.h"
-#import "QMUILabel.h"
+#import "QMUITableViewHeaderFooterView.h"
 #import "UIScrollView+QMUI.h"
 #import "UITableView+QMUI.h"
 #import "UICollectionView+QMUI.h"
+#import "UIView+QMUI.h"
 
 const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet = {-1, -1, -1, -1};
-const NSInteger kSectionHeaderFooterLabelTag = 1024;
+NSString *const QMUICommonTableViewControllerSectionHeaderIdentifier = @"QMUISectionHeaderView";
+NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISectionFooterView";
 
 @interface QMUICommonTableViewController ()
 
@@ -65,6 +67,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 }
 
 - (NSString *)description {
+#ifdef DEBUG
     if (![self isViewLoaded]) {
         return [super description];
     }
@@ -83,6 +86,9 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
         result = [result stringByAppendingString:sectionCountString];
     }
     return result;
+#else
+    return [super description];
+#endif
 }
 
 - (void)viewDidLoad {
@@ -110,10 +116,8 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    BOOL shouldChangeTableViewFrame = !CGRectEqualToRect(self.view.bounds, self.tableView.frame);
-    if (shouldChangeTableViewFrame) {
-        self.tableView.frame = self.view.bounds;
-    }
+    
+    [self layoutTableView];
     
     if ([self shouldAdjustTableViewContentInsetsInitially] && !self.hasSetInitialContentInset) {
         self.tableView.contentInset = self.tableViewInitialContentInset;
@@ -144,7 +148,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
 
 - (void)hideTableHeaderViewInitialIfCanWithAnimated:(BOOL)animated force:(BOOL)force {
     if (self.tableView.tableHeaderView && [self shouldHideTableHeaderViewInitial] && (force || !self.hasHideTableHeaderViewInitial)) {
-        CGPoint contentOffset = CGPointMake(self.tableView.contentOffset.x, self.tableView.contentOffset.y + CGRectGetHeight(self.tableView.tableHeaderView.frame));
+        CGPoint contentOffset = CGPointMake(self.tableView.contentOffset.x, -self.tableView.qmui_contentInset.top + CGRectGetHeight(self.tableView.tableHeaderView.frame));
         [self.tableView setContentOffset:contentOffset animated:animated];
         self.hasHideTableHeaderViewInitial = YES;
     }
@@ -231,68 +235,35 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
     return 0;
 }
 
-// 默认拿title来构建一个view然后添加到viewForHeaderInSection里面，如果业务重写了viewForHeaderInSection，则titleForHeaderInSection被覆盖
-// viewForFooterInSection同上
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     NSString *title = [self tableView:tableView realTitleForHeaderInSection:section];
     if (title) {
-        UITableViewHeaderFooterView *headerFooterView = [self tableHeaderFooterLabelInTableView:tableView identifier:@"headerTitle"];
-        QMUILabel *label = (QMUILabel *)[headerFooterView.contentView viewWithTag:kSectionHeaderFooterLabelTag];
-        label.text = title;
-        label.contentEdgeInsets = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderContentInset : TableViewGroupedSectionHeaderContentInset;
-        // 针对 iPhone X 机型，应该在用户定义的 Insets 基础上增加 iPhone X 的安全 insets
-        label.contentEdgeInsets = UIEdgeInsetsSetLeft(label.contentEdgeInsets, label.contentEdgeInsets.left + IPhoneXSafeAreaInsets.left);
-        label.contentEdgeInsets = UIEdgeInsetsSetRight(label.contentEdgeInsets, label.contentEdgeInsets.right + IPhoneXSafeAreaInsets.right);
-        label.font = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderFont : TableViewGroupedSectionHeaderFont;
-        label.textColor = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderTextColor : TableViewGroupedSectionHeaderTextColor;
-        label.backgroundColor = tableView.style == UITableViewStylePlain ? TableViewSectionHeaderBackgroundColor : UIColorClear;
-        CGFloat labelLimitWidth = CGRectGetWidth(tableView.bounds) - UIEdgeInsetsGetHorizontalValue(tableView.contentInset);
-        CGSize labelSize = [label sizeThatFits:CGSizeMake(labelLimitWidth, CGFLOAT_MAX)];
-        label.frame = CGRectMake(0, 0, labelLimitWidth, labelSize.height);
-        return label;
+        QMUITableViewHeaderFooterView *headerView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:QMUICommonTableViewControllerSectionHeaderIdentifier];
+        headerView.parentTableView = tableView;
+        headerView.type = QMUITableViewHeaderFooterViewTypeHeader;
+        headerView.titleLabel.text = title;
+        return headerView;
     }
     return nil;
 }
 
-// 同viewForHeaderInSection
 - (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
     NSString *title = [self tableView:tableView realTitleForFooterInSection:section];
     if (title) {
-        UITableViewHeaderFooterView *headerFooterView = [self tableHeaderFooterLabelInTableView:tableView identifier:@"footerTitle"];
-        QMUILabel *label = (QMUILabel *)[headerFooterView.contentView viewWithTag:kSectionHeaderFooterLabelTag];
-        label.text = title;
-        label.contentEdgeInsets = tableView.style == UITableViewStylePlain ? TableViewSectionFooterContentInset : TableViewGroupedSectionFooterContentInset;
-        // 针对 iPhone X 机型，应该在用户定义的 Insets 基础上增加 iPhone X 的安全 insets
-        label.contentEdgeInsets = UIEdgeInsetsSetLeft(label.contentEdgeInsets, label.contentEdgeInsets.left + IPhoneXSafeAreaInsets.left);
-        label.contentEdgeInsets = UIEdgeInsetsSetRight(label.contentEdgeInsets, label.contentEdgeInsets.right + IPhoneXSafeAreaInsets.right);
-        label.font = tableView.style == UITableViewStylePlain ? TableViewSectionFooterFont : TableViewGroupedSectionFooterFont;
-        label.textColor = tableView.style == UITableViewStylePlain ? TableViewSectionFooterTextColor : TableViewGroupedSectionFooterTextColor;
-        label.backgroundColor = tableView.style == UITableViewStylePlain ? TableViewSectionFooterBackgroundColor : UIColorClear;
-        CGFloat labelLimitWidth = CGRectGetWidth(tableView.bounds) - UIEdgeInsetsGetHorizontalValue(tableView.contentInset);
-        CGSize labelSize = [label sizeThatFits:CGSizeMake(labelLimitWidth, CGFLOAT_MAX)];
-        label.frame = CGRectMake(0, 0, labelLimitWidth, labelSize.height);
-        return label;
+        QMUITableViewHeaderFooterView *footerView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:QMUICommonTableViewControllerSectionFooterIdentifier];
+        footerView.parentTableView = tableView;
+        footerView.type = QMUITableViewHeaderFooterViewTypeFooter;
+        footerView.titleLabel.text = title;
+        return footerView;
     }
     return nil;
-}
-
-- (UITableViewHeaderFooterView *)tableHeaderFooterLabelInTableView:(UITableView *)tableView identifier:(NSString *)identifier {
-    UITableViewHeaderFooterView *headerFooterView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:identifier];
-    if (!headerFooterView) {
-        QMUILabel *label = [[QMUILabel alloc] init];
-        label.tag = kSectionHeaderFooterLabelTag;
-        label.numberOfLines = 0;
-        headerFooterView = [[UITableViewHeaderFooterView alloc] initWithReuseIdentifier:identifier];
-        [headerFooterView.contentView addSubview:label];
-    }
-    return headerFooterView;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
     if ([tableView.delegate respondsToSelector:@selector(tableView:viewForHeaderInSection:)]) {
         UIView *view = [tableView.delegate tableView:tableView viewForHeaderInSection:section];
         if (view) {
-            CGFloat height = [view sizeThatFits:CGSizeMake(CGRectGetWidth(tableView.bounds), CGFLOAT_MAX)].height;
+            CGFloat height = [view sizeThatFits:CGSizeMake(CGRectGetWidth(tableView.bounds) - UIEdgeInsetsGetHorizontalValue(tableView.qmui_safeAreaInsets), CGFLOAT_MAX)].height;
             return height;
         }
     }
@@ -304,7 +275,7 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
     if ([tableView.delegate respondsToSelector:@selector(tableView:viewForFooterInSection:)]) {
         UIView *view = [tableView.delegate tableView:tableView viewForFooterInSection:section];
         if (view) {
-            CGFloat height = [view sizeThatFits:CGSizeMake(CGRectGetWidth(tableView.bounds), CGFLOAT_MAX)].height;
+            CGFloat height = [view sizeThatFits:CGSizeMake(CGRectGetWidth(tableView.bounds) - UIEdgeInsetsGetHorizontalValue(tableView.qmui_safeAreaInsets), CGFLOAT_MAX)].height;
             return height;
         }
     }
@@ -352,6 +323,8 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
         _tableView = [[QMUITableView alloc] initWithFrame:self.view.bounds style:self.style];
         self.tableView.delegate = self;
         self.tableView.dataSource = self;
+        [self.tableView registerClass:[QMUITableViewHeaderFooterView class] forHeaderFooterViewReuseIdentifier:QMUICommonTableViewControllerSectionHeaderIdentifier];
+        [self.tableView registerClass:[QMUITableViewHeaderFooterView class] forHeaderFooterViewReuseIdentifier:QMUICommonTableViewControllerSectionFooterIdentifier];
         [self.view addSubview:self.tableView];
         
         if (@available(iOS 11, *)) {
@@ -359,6 +332,13 @@ const NSInteger kSectionHeaderFooterLabelTag = 1024;
                 self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
             }
         }
+    }
+}
+
+- (void)layoutTableView {
+    BOOL shouldChangeTableViewFrame = !CGRectEqualToRect(self.view.bounds, self.tableView.frame);
+    if (shouldChangeTableViewFrame) {
+        self.tableView.frame = self.view.bounds;
     }
 }
 

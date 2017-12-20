@@ -103,10 +103,6 @@
     [self setToolbarItemsIsInEditMode:NO animated:NO];
 }
 
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
-
 
 #pragma mark - 空列表视图 QMUIEmptyView
 
