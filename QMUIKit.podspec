@@ -34,7 +34,6 @@ Pod::Spec.new do |s|
     ss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
     ss.dependency 'QMUIKit/QMUIComponents/QMUITableViewHeaderFooterView'
     ss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
-    ss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
     ss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
   end
 
