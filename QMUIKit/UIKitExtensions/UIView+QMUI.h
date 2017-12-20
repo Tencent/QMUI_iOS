@@ -16,8 +16,12 @@
  */
 - (instancetype)qmui_initWithSize:(CGSize)size;
 
-// 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
+/// 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
 @property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
+
+/// 为了在 safeAreaInsetsDidChange 里得知变化前的 safeAreaInsets 值，增加了这个属性，注意这个属性仅在 `safeAreaInsetsDidChange` 的 super 调用前才有效。
+/// https://github.com/QMUI/QMUI_iOS/issues/253
+@property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsetsBeforeChange;
 
 - (void)qmui_removeAllSubviews;
 

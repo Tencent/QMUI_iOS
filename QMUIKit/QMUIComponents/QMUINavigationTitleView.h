@@ -63,6 +63,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 @property(nonatomic, weak) id<QMUINavigationTitleViewDelegate> delegate;
 @property(nonatomic, assign) QMUINavigationTitleViewStyle style;
 @property(nonatomic, assign, getter=isActive) BOOL active;
+@property(nonatomic, assign) CGFloat maximumWidth UI_APPEARANCE_SELECTOR;
 
 #pragma mark - Titles
 

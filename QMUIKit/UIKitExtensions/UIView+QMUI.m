@@ -29,6 +29,11 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        
+        if (@available(iOS 11, *)) {
+            ReplaceMethod([self class], @selector(safeAreaInsetsDidChange), @selector(qmui_safeAreaInsetsDidChange));
+        }
+        
         // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
         ReplaceMethod([self class], @selector(convertPoint:toView:), @selector(qmui_convertPoint:toView:));
         ReplaceMethod([self class], @selector(convertPoint:fromView:), @selector(qmui_convertPoint:fromView:));
@@ -46,6 +51,20 @@
         return self.safeAreaInsets;
     }
     return UIEdgeInsetsZero;
+}
+
+static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
+- (void)setQmui_safeAreaInsetsBeforeChange:(UIEdgeInsets)qmui_safeAreaInsetsBeforeChange {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_safeAreaInsetsBeforeChange, [NSValue valueWithUIEdgeInsets:qmui_safeAreaInsetsBeforeChange], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (UIEdgeInsets)qmui_safeAreaInsetsBeforeChange {
+    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_safeAreaInsetsBeforeChange)) UIEdgeInsetsValue];
+}
+
+- (void)qmui_safeAreaInsetsDidChange {
+    [self qmui_safeAreaInsetsBeforeChange];
+    self.qmui_safeAreaInsetsBeforeChange = self.qmui_safeAreaInsets;
 }
 
 - (void)qmui_removeAllSubviews {

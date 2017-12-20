@@ -362,10 +362,10 @@ static UIResponder *kCurrentResponder = nil;
     }
     
     // 额外处理iPad浮动键盘
-    if (IS_IPAD) {
-        self.keyboardMoveUserInfo = userInfo;
-        [self keyboardDidChangedFrame:[self.class keyboardView]];
-    }
+//    if (IS_IPAD) {
+//        self.keyboardMoveUserInfo = userInfo;
+//        [self keyboardDidChangedFrame:[self.class keyboardView]];
+//    }
 }
 
 - (void)keyboardDidShowNotification:(NSNotification *)notification {
@@ -388,10 +388,10 @@ static UIResponder *kCurrentResponder = nil;
         }
         
         // 额外处理iPad浮动键盘
-        if (IS_IPAD) {
-            self.keyboardMoveUserInfo = userInfo;
-            [self keyboardDidChangedFrame:[self.class keyboardView]];
-        }
+//        if (IS_IPAD) {
+//            self.keyboardMoveUserInfo = userInfo;
+//            [self keyboardDidChangedFrame:[self.class keyboardView]];
+//        }
     }
 }
 
@@ -414,10 +414,10 @@ static UIResponder *kCurrentResponder = nil;
     }
     
     // 额外处理iPad浮动键盘
-    if (IS_IPAD) {
-        self.keyboardMoveUserInfo = userInfo;
-        [self keyboardDidChangedFrame:[self.class keyboardView]];
-    }
+//    if (IS_IPAD) {
+//        self.keyboardMoveUserInfo = userInfo;
+//        [self keyboardDidChangedFrame:[self.class keyboardView]];
+//    }
 }
 
 - (void)keyboardDidHideNotification:(NSNotification *)notification {
@@ -436,19 +436,17 @@ static UIResponder *kCurrentResponder = nil;
         }
     }
     
-    if (kCurrentResponder &&
-        !kCurrentResponder.keyboardManager_isFirstResponder &&
-        !IS_IPAD) {
+    if (kCurrentResponder && !kCurrentResponder.keyboardManager_isFirstResponder && !IS_IPAD) {
         kCurrentResponder = nil;
     }
     
     // 额外处理iPad浮动键盘
-    if (IS_IPAD) {
-        if (self.targetResponderValues.count <= 0 || kCurrentResponder) {
-            self.keyboardMoveUserInfo = userInfo;
-            [self keyboardDidChangedFrame:[self.class keyboardView]];
-        }
-    }
+//    if (IS_IPAD) {
+//        if (self.targetResponderValues.count <= 0 || kCurrentResponder) {
+//            self.keyboardMoveUserInfo = userInfo;
+//            [self keyboardDidChangedFrame:[self.class keyboardView]];
+//        }
+//    }
 }
 
 - (void)keyboardWillChangeFrameNotification:(NSNotification *)notification {
@@ -473,10 +471,10 @@ static UIResponder *kCurrentResponder = nil;
     }
     
     // 额外处理iPad浮动键盘
-    if (IS_IPAD) {
-        self.keyboardMoveUserInfo = userInfo;
-        [self addFrameObserverIfNeeded];
-    }
+//    if (IS_IPAD) {
+//        self.keyboardMoveUserInfo = userInfo;
+//        [self addFrameObserverIfNeeded];
+//    }
 }
 
 - (void)keyboardDidChangeFrameNotification:(NSNotification *)notification {
@@ -501,10 +499,10 @@ static UIResponder *kCurrentResponder = nil;
     }
     
     // 额外处理iPad浮动键盘
-    if (IS_IPAD) {
-        self.keyboardMoveUserInfo = userInfo;
-        [self keyboardDidChangedFrame:[self.class keyboardView]];
-    }
+//    if (IS_IPAD) {
+//        self.keyboardMoveUserInfo = userInfo;
+//        [self keyboardDidChangedFrame:[self.class keyboardView]];
+//    }
 }
 
 - (QMUIKeyboardUserInfo *)newUserInfoWithNotification:(NSNotification *)notification {

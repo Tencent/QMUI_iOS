@@ -186,6 +186,16 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     [self updatePlaceholderStyle];
 }
 
+- (void)setTextContainerInset:(UIEdgeInsets)textContainerInset {
+    [super setTextContainerInset:textContainerInset];
+    if (@available(iOS 11, *)) {
+    } else {
+        // iOS 11 以下修改 textContainerInset 的时候无法自动触发 layoutSubview，导致 placeholderLabel 无法更新布局
+        [self setNeedsLayout];
+    }
+}
+
+
 - (void)setPlaceholder:(NSString *)placeholder {
     _placeholder = placeholder;
     self.placeholderLabel.attributedText = [[NSAttributedString alloc] initWithString:_placeholder attributes:self.typingAttributes];

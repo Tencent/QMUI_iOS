@@ -113,8 +113,10 @@
     self.navBarShadowImage = nil;
     self.navBarBarTintColor = nil;
     self.navBarTintColor = nil;
-    self.navBarTitleColor = self.blackColor;
+    self.navBarTitleColor = nil;
     self.navBarTitleFont = nil;
+    self.navBarLargeTitleColor = nil;
+    self.navBarLargeTitleFont = nil;
     self.navBarBackButtonTitlePositionAdjustment = UIOffsetZero;
     self.navBarBackIndicatorImage = nil;
     self.navBarCloseButtonImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavClose size:CGSizeMake(16, 16) tintColor:self.navBarTintColor];
@@ -188,6 +190,8 @@
     self.tableViewSectionFooterFont = UIFontBoldMake(12);
     self.tableViewSectionHeaderTextColor = self.grayDarkenColor;
     self.tableViewSectionFooterTextColor = self.grayColor;
+    self.tableViewSectionHeaderAccessoryMargins = UIEdgeInsetsMake(0, 15, 0, 0);
+    self.tableViewSectionFooterAccessoryMargins = UIEdgeInsetsMake(0, 15, 0, 0);
     self.tableViewSectionHeaderContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
     self.tableViewSectionFooterContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
     
@@ -195,6 +199,8 @@
     self.tableViewGroupedSectionFooterFont = UIFontMake(12);
     self.tableViewGroupedSectionHeaderTextColor = self.grayDarkenColor;
     self.tableViewGroupedSectionFooterTextColor = self.grayColor;
+    self.tableViewGroupedSectionHeaderAccessoryMargins = UIEdgeInsetsMake(0, 15, 0, 0);
+    self.tableViewGroupedSectionFooterAccessoryMargins = UIEdgeInsetsMake(0, 15, 0, 0);
     self.tableViewGroupedSectionHeaderDefaultHeight = UITableViewAutomaticDimension;
     self.tableViewGroupedSectionFooterDefaultHeight = UITableViewAutomaticDimension;
     self.tableViewGroupedSectionHeaderContentInset = UIEdgeInsetsMake(16, 15, 8, 15);
@@ -263,6 +269,15 @@
 
 - (void)setNavBarTitleFont:(UIFont *)navBarTitleFont {
     _navBarTitleFont = navBarTitleFont;
+    [self updateNavigationBarTitleAttributesIfNeeded];
+}
+
+- (void)setNavBarTitleColor:(UIColor *)navBarTitleColor {
+    _navBarTitleColor = navBarTitleColor;
+    [self updateNavigationBarTitleAttributesIfNeeded];
+}
+
+- (void)updateNavigationBarTitleAttributesIfNeeded {
     if (self.navBarTitleFont || self.navBarTitleColor) {
         NSMutableDictionary<NSString *, id> *titleTextAttributes = [[NSMutableDictionary alloc] init];
         if (self.navBarTitleFont) {
@@ -276,18 +291,29 @@
     }
 }
 
-- (void)setNavBarTitleColor:(UIColor *)navBarTitleColor {
-    _navBarTitleColor = navBarTitleColor;
-    if (self.navBarTitleFont || self.navBarTitleColor) {
-        NSMutableDictionary<NSString *, id> *titleTextAttributes = [[NSMutableDictionary alloc] init];
-        if (self.navBarTitleFont) {
-            [titleTextAttributes setValue:self.navBarTitleFont forKey:NSFontAttributeName];
+- (void)setNavBarLargeTitleFont:(UIFont *)navBarLargeTitleFont {
+    _navBarLargeTitleFont = navBarLargeTitleFont;
+    [self updateNavigationBarLargeTitleTextAttributesIfNeeded];
+}
+
+- (void)setNavBarLargeTitleColor:(UIColor *)navBarLargeTitleColor {
+    _navBarLargeTitleColor = navBarLargeTitleColor;
+    [self updateNavigationBarLargeTitleTextAttributesIfNeeded];
+}
+
+- (void)updateNavigationBarLargeTitleTextAttributesIfNeeded {
+    if (@available(iOS 11, *)) {
+        if (self.navBarLargeTitleFont || self.navBarLargeTitleColor) {
+            NSMutableDictionary<NSString *, id> *largeTitleTextAttributes = [[NSMutableDictionary alloc] init];
+            if (self.navBarLargeTitleFont) {
+                largeTitleTextAttributes[NSFontAttributeName] = self.navBarLargeTitleFont;
+            }
+            if (self.navBarLargeTitleColor) {
+                largeTitleTextAttributes[NSForegroundColorAttributeName] = self.navBarLargeTitleColor;
+            }
+            [UINavigationBar appearance].largeTitleTextAttributes = largeTitleTextAttributes;
+            [QMUIHelper visibleViewController].navigationController.navigationBar.largeTitleTextAttributes = largeTitleTextAttributes;
         }
-        if (self.navBarTitleColor) {
-            [titleTextAttributes setValue:self.navBarTitleColor forKey:NSForegroundColorAttributeName];
-        }
-        [UINavigationBar appearance].titleTextAttributes = titleTextAttributes;
-        [QMUIHelper visibleViewController].navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
     }
 }
 

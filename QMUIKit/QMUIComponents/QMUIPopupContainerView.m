@@ -595,7 +595,6 @@
     self.borderWidth = appearance.borderWidth;
     self.cornerRadius = appearance.cornerRadius;
     self.qmui_outsideEdge = appearance.qmui_outsideEdge;
-    
 }
 
 @end

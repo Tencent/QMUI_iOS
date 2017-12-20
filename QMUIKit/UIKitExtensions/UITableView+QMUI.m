@@ -17,19 +17,13 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        ReplaceMethod([self class], @selector(initWithFrame:style:), @selector(qmui_initWithFrame:style:));
         ReplaceMethod([self class], @selector(sizeThatFits:), @selector(qmui_sizeThatFits:));
-        ReplaceMethod([self class], @selector(didMoveToSuperview), @selector(qmui_didMoveToSuperview));
     });
 }
 
-- (CGSize)qmui_sizeThatFits:(CGSize)size {
-    [self alertEstimatedHeightUsageIfDetected];
-    CGSize result = [self qmui_sizeThatFits:size];
-    return result;
-}
-
-- (void)qmui_didMoveToSuperview {
-    [self qmui_didMoveToSuperview];
+- (instancetype)qmui_initWithFrame:(CGRect)frame style:(UITableViewStyle)style {
+    [self qmui_initWithFrame:frame style:style];
     
     // iOS 11 之后 estimatedRowHeight 默认值变成 UITableViewAutomaticDimension 了，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地禁掉所有 UITableView 的 estimatedXxxHeight
     if (!TableViewEstimatedHeightEnabled) {
@@ -41,6 +35,13 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
         self.estimatedSectionHeaderHeight = UITableViewAutomaticDimension;
         self.estimatedSectionFooterHeight = UITableViewAutomaticDimension;
     }
+    return self;
+}
+
+- (CGSize)qmui_sizeThatFits:(CGSize)size {
+    [self alertEstimatedHeightUsageIfDetected];
+    CGSize result = [self qmui_sizeThatFits:size];
+    return result;
 }
 
 - (void)qmui_styledAsQMUITableView {

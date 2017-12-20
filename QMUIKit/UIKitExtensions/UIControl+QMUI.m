@@ -10,7 +10,6 @@
 #import <objc/runtime.h>
 #import "QMUICore.h"
 
-static char kAssociatedObjectKey_needsTakeOverTouchEvent;
 static char kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView;
 static char kAssociatedObjectKey_canSetHighlighted;
 static char kAssociatedObjectKey_touchEndCount;
@@ -24,14 +23,6 @@ static char kAssociatedObjectKey_outsideEdge;
 @end
 
 @implementation UIControl (QMUI)
-
-- (void)setQmui_needsTakeOverTouchEvent:(BOOL)qmui_needsTakeOverTouchEvent {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent, [NSNumber numberWithBool:qmui_needsTakeOverTouchEvent], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)qmui_needsTakeOverTouchEvent {
-    return (BOOL)[objc_getAssociatedObject(self, &kAssociatedObjectKey_needsTakeOverTouchEvent) boolValue];
-}
 
 - (void)setQmui_automaticallyAdjustTouchHighlightedInScrollView:(BOOL)qmui_automaticallyAdjustTouchHighlightedInScrollView {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView, [NSNumber numberWithBool:qmui_automaticallyAdjustTouchHighlightedInScrollView], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -87,19 +78,32 @@ static char kAssociatedObjectKey_outsideEdge;
         SEL pointInsideSelector = @selector(pointInside:withEvent:);
         SEL swizzled_pointInsideSelector = @selector(qmui_pointInside:withEvent:);
         
+        SEL setHighlightedSelector = @selector(setHighlighted:);
+        SEL swizzled_setHighlightedSelector = @selector(qmui_setHighlighted:);
+        
         ReplaceMethod(clz, beginSelector, swizzled_beginSelector);
         ReplaceMethod(clz, moveSelector, swizzled_moveSelector);
         ReplaceMethod(clz, endSelector, swizzled_endSelector);
         ReplaceMethod(clz, cancelSelector, swizzled_cancelSelector);
         ReplaceMethod(clz, pointInsideSelector, swizzled_pointInsideSelector);
+        ReplaceMethod(clz, setHighlightedSelector, swizzled_setHighlightedSelector);
         
     });
+}
+
+
+
+- (void)qmui_setHighlighted:(BOOL)highlighted {
+    [self qmui_setHighlighted:highlighted];
+    if (self.qmui_setHighlightedBlock) {
+        self.qmui_setHighlightedBlock(highlighted);
+    }
 }
 
 BeginIgnoreDeprecatedWarning
 - (void)qmui_touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
     self.touchEndCount = 0;
-    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
         self.canSetHighlighted = YES;
         [self qmui_touchesBegan:touches withEvent:event];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -113,7 +117,7 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (void)qmui_touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
         self.canSetHighlighted = NO;
         [self qmui_touchesMoved:touches withEvent:event];
     } else {
@@ -122,7 +126,7 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (void)qmui_touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
         self.canSetHighlighted = NO;
         if (self.touchInside) {
             [self setHighlighted:YES];
@@ -144,7 +148,7 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (void)qmui_touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event {
-    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView || self.qmui_needsTakeOverTouchEvent) {
+    if (self.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
         self.canSetHighlighted = NO;
         [self qmui_touchesCancelled:touches withEvent:event];
         if (self.highlighted) {
@@ -172,6 +176,14 @@ EndIgnoreDeprecatedWarning
     if (self.touchEndCount == 1) {
         [self sendActionsForControlEvents:UIControlEventAllTouchEvents];
     }
+}
+
+- (void)setQmui_setHighlightedBlock:(void (^)(BOOL))qmui_setHighlightedBlock {
+    objc_setAssociatedObject(self, @selector(qmui_setHighlightedBlock), qmui_setHighlightedBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(BOOL))qmui_setHighlightedBlock {
+    return objc_getAssociatedObject(self, _cmd);
 }
 
 @end

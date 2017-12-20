@@ -86,6 +86,10 @@
 #import "QMUIDialogViewController.h"
 #endif
 
+#if __has_include("QMUIEmotionInputManager.h")
+#import "QMUIEmotionInputManager.h"
+#endif
+
 #if __has_include("QMUIEmotionView.h")
 #import "QMUIEmotionView.h"
 #endif
@@ -174,10 +178,6 @@
 #import "QMUIPopupMenuView.h"
 #endif
 
-#if __has_include("QMUIQQEmotionManager.h")
-#import "QMUIQQEmotionManager.h"
-#endif
-
 #if __has_include("QMUISearchBar.h")
 #import "QMUISearchBar.h"
 #endif
@@ -212,6 +212,10 @@
 
 #if __has_include("QMUITableViewCell.h")
 #import "QMUITableViewCell.h"
+#endif
+
+#if __has_include("QMUITableViewHeaderFooterView.h")
+#import "QMUITableViewHeaderFooterView.h"
 #endif
 
 #if __has_include("QMUITableViewProtocols.h")

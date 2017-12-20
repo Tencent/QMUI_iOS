@@ -221,11 +221,18 @@
 }
 
 // iOS 11 里，横竖屏带来的 safeAreaInsets 变化时机晚于计算 cell 高度，所以在计算 cell 高度时是获取不到准确的 safeAreaInsets，所以需要在 safeAreaInsetsDidChange 里重新计算
+// 至于为什么只判断水平方向的变化，请看 https://github.com/QMUI/QMUI_iOS/issues/253
 - (void)qmui_safeAreaInsetsDidChange {
+    UIEdgeInsets safeAreaInsetsBeforeChange = self.qmui_safeAreaInsetsBeforeChange;
+    BOOL horizontalSafeAreaInsetsChanged = safeAreaInsetsBeforeChange.left != self.qmui_safeAreaInsets.left || safeAreaInsetsBeforeChange.right != self.qmui_safeAreaInsets.right;
+    
     [self qmui_safeAreaInsetsDidChange];
-    [self.qmui_keyedHeightCache invalidateAllHeightCache];
-    [self.qmui_indexPathHeightCache invalidateAllHeightCache];
-    [self qmui_reloadData];
+    
+    if (horizontalSafeAreaInsetsChanged) {
+        [self.qmui_keyedHeightCache invalidateAllHeightCache];
+        [self.qmui_indexPathHeightCache invalidateAllHeightCache];
+        [self qmui_reloadData];
+    }
 }
 
 - (void)qmui_reloadData {

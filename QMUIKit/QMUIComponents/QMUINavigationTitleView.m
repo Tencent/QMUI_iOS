@@ -107,6 +107,7 @@
         self.accessoryType = QMUINavigationTitleViewAccessoryTypeNone;
         
         QMUINavigationTitleView *appearance = [QMUINavigationTitleView appearance];
+        self.maximumWidth = appearance.maximumWidth;
         self.loadingViewSize = appearance.loadingViewSize;
         self.loadingViewMarginRight = appearance.loadingViewMarginRight;
         self.horizontalTitleFont = appearance.horizontalTitleFont;
@@ -223,6 +224,7 @@
 
 - (CGSize)sizeThatFits:(CGSize)size {
     CGSize resultSize = [self contentSize];
+    resultSize.width = fmin(resultSize.width, self.maximumWidth);
     return resultSize;
 }
 
@@ -333,6 +335,11 @@
 
 
 #pragma mark - setter / getter
+
+- (void)setMaximumWidth:(CGFloat)maximumWidth {
+    _maximumWidth = maximumWidth;
+    [self refreshLayout];
+}
 
 - (void)setContentHorizontalAlignment:(UIControlContentHorizontalAlignment)contentHorizontalAlignment {
     [super setContentHorizontalAlignment:contentHorizontalAlignment];
@@ -579,6 +586,7 @@
 
 + (void)setDefaultAppearance {
     QMUINavigationTitleView *appearance = [QMUINavigationTitleView appearance];
+    appearance.maximumWidth = CGFLOAT_MAX;
     appearance.loadingViewSize = CGSizeMake(18, 18);
     appearance.loadingViewMarginRight = 3;
     appearance.horizontalTitleFont = NavBarTitleFont;

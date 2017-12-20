@@ -80,6 +80,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *navBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *navBarTitleColor;
 @property(nonatomic, strong, nullable) UIFont   *navBarTitleFont;
+@property(nonatomic, strong, nullable) UIColor  *navBarLargeTitleColor;
+@property(nonatomic, strong, nullable) UIFont   *navBarLargeTitleFont;
 @property(nonatomic, assign) UIOffset           navBarBackButtonTitlePositionAdjustment;
 @property(nonatomic, strong, nullable) UIImage  *navBarBackIndicatorImage;
 @property(nonatomic, strong) UIImage            *navBarCloseButtonImage;
@@ -154,6 +156,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIFont   *tableViewSectionFooterFont;
 @property(nonatomic, strong, nullable) UIColor  *tableViewSectionHeaderTextColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewSectionFooterTextColor;
+@property(nonatomic, assign) UIEdgeInsets       tableViewSectionHeaderAccessoryMargins;
+@property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterAccessoryMargins;
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterContentInset;
 
@@ -161,6 +165,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIFont   *tableViewGroupedSectionFooterFont;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedSectionHeaderTextColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedSectionFooterTextColor;
+@property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionHeaderAccessoryMargins;
+@property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionFooterAccessoryMargins;
 @property(nonatomic, assign) CGFloat            tableViewGroupedSectionHeaderDefaultHeight;
 @property(nonatomic, assign) CGFloat            tableViewGroupedSectionFooterDefaultHeight;
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionHeaderContentInset;
