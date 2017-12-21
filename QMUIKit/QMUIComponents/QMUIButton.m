@@ -591,7 +591,6 @@
     if (self = [super initWithFrame:CGRectZero]) {
         _type = type;
         self.buttonPosition = QMUINavigationButtonPositionNone;
-        self.translatesAutoresizingMaskIntoConstraints = NO;
         self.useForBarButtonItem = YES;
         [self setTitle:title forState:UIControlStateNormal];
         [self renderButtonStyle];
@@ -708,9 +707,9 @@
     _useForBarButtonItem = useForBarButtonItem;
 }
 
-// 修复系统的UIBarButtonItem里的图片无法跟着tintColor走
 - (void)setImage:(UIImage *)image forState:(UIControlState)state {
-    if (image && [image respondsToSelector:@selector(imageWithRenderingMode:)]) {
+    if (image && image.renderingMode == UIImageRenderingModeAutomatic) {
+        // 由于 QMUINavigationButton 是用于 UIBarButtonItem 的，所以默认的行为应该是尽量去跟随 tintColor，所以做了这个优化
         image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     }
     [super setImage:image forState:state];
