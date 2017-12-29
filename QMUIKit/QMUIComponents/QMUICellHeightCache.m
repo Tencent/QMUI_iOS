@@ -225,7 +225,7 @@
 - (void)qmui_safeAreaInsetsDidChange {
     UIEdgeInsets safeAreaInsetsBeforeChange = self.qmui_safeAreaInsetsBeforeChange;
     BOOL horizontalSafeAreaInsetsChanged = safeAreaInsetsBeforeChange.left != self.qmui_safeAreaInsets.left || safeAreaInsetsBeforeChange.right != self.qmui_safeAreaInsets.right;
-    
+
     [self qmui_safeAreaInsetsDidChange];
     
     if (horizontalSafeAreaInsetsChanged) {
@@ -390,7 +390,7 @@
     UITableViewCell *cell = [self templateCellForReuseIdentifier:identifier];
     [cell prepareForReuse];
     if (configuration) { configuration(cell); }
-    CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets);
+    CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets) - UIEdgeInsetsGetHorizontalValue(self.contentInset);
     CGSize fitSize = CGSizeZero;
     if (cell && contentWidth > 0) {
         SEL selector = @selector(sizeThatFits:);

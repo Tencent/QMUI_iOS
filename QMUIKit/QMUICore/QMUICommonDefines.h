@@ -97,10 +97,15 @@
 #define DEVICE_HEIGHT (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height)
 
 // 设备屏幕尺寸
+// iPhoneX
 #define IS_58INCH_SCREEN [QMUIHelper is58InchScreen]
+// iPhone6/7/8 Plus
 #define IS_55INCH_SCREEN [QMUIHelper is55InchScreen]
+// iPhone6/7/8
 #define IS_47INCH_SCREEN [QMUIHelper is47InchScreen]
+// iPhone5/5s/SE
 #define IS_40INCH_SCREEN [QMUIHelper is40InchScreen]
+// iPhone4/4s
 #define IS_35INCH_SCREEN [QMUIHelper is35InchScreen]
 
 // 是否Retina
