@@ -28,6 +28,8 @@
 
 @property(nonatomic, assign) CGFloat        cornerRadius UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) UIEdgeInsets   contentViewMargins UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) CGFloat        maximumContentViewWidth UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) UIColor        *backgroundColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *titleTintColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIFont         *titleLabelFont UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *titleLabelTextColor UI_APPEARANCE_SELECTOR;
@@ -36,10 +38,12 @@
 @property(nonatomic, strong) UIColor        *headerFooterSeparatorColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        headerViewHeight UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *headerViewBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) CGFloat        footerViewMarginTop UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        footerViewHeight UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *footerViewBackgroundColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) NSDictionary<NSString *, id> *buttonTitleAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) UIColor        *buttonBackgroundColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *buttonHighlightedBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) NSDictionary<NSString *, id> *buttonTitleAttributes UI_APPEARANCE_SELECTOR;
 
 @property(nonatomic, strong, readonly) UIView *headerView;
 @property(nonatomic, strong, readonly) CALayer *headerViewSeparatorLayer;
