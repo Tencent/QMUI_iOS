@@ -605,3 +605,12 @@ CGRectRemoveFloatMin(CGRect rect) {
                                removeFloatMin(CGRectGetHeight(rect)));
     return result;
 }
+
+/// outerRange 是否包含了 innerRange
+CG_INLINE BOOL
+NSContainingRanges(NSRange outerRange, NSRange innerRange) {
+    if (innerRange.location >= outerRange.location && outerRange.location + outerRange.length >= innerRange.location + innerRange.length) {
+        return YES;
+    }
+    return NO;
+}
