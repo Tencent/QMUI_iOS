@@ -11,26 +11,13 @@
 #import "UIImage+QMUI.h"
 #import "NSString+QMUI.h"
 #import "UIViewController+QMUI.h"
+#import <objc/runtime.h>
 
 @implementation QMUIConfiguration
 
 + (instancetype)sharedInstance {
     static dispatch_once_t pred;
-    static QMUIConfiguration *sharedInstance = nil;
-    
-    // 检查是否有在某些类的 +load 方法里调用 QMUICMI，因为在 [QMUIConfiguration init] 方法里会操作到 UI 的东西，例如 [UINavigationBar appearance] xxx 等，这些操作不能太早（+load 里就太早了）执行，否则会 crash，所以加这个检测
-//#ifdef DEBUG
-//    BOOL shouldCheckCallStack = NO;
-//    if (shouldCheckCallStack) {
-//        for (NSString *symbol in [NSThread callStackSymbols]) {
-//            if ([symbol containsString:@" load]"]) {
-//                NSAssert(NO, @"不应该在 + load 方法里调用 %s", __func__);
-//                return nil;
-//            }
-//        }
-//    }
-//#endif
-    
+    static QMUIConfiguration *sharedInstance;
     dispatch_once(&pred, ^{
         sharedInstance = [[QMUIConfiguration alloc] init];
     });
@@ -43,6 +30,39 @@
         [self initDefaultConfiguration];
     }
     return self;
+}
+
+static BOOL QMUI_hasAppliedInitialTemplate;
+- (void)applyInitialTemplate {
+    if (QMUI_hasAppliedInitialTemplate) {
+        return;
+    }
+    
+    // 自动寻找并应用模板的解释参照这里 https://github.com/QMUI/QMUI_iOS/issues/264
+    
+    Protocol *protocol = @protocol(QMUIConfigurationTemplateProtocol);
+    int numberOfClasses = objc_getClassList(NULL, 0);
+    if (numberOfClasses > 0) {
+        Class *classes = (__unsafe_unretained Class *)malloc(sizeof(Class) * numberOfClasses);
+        numberOfClasses = objc_getClassList(classes, numberOfClasses);
+        for (int i = 0; i < numberOfClasses; i++) {
+            Class class = classes[i];
+            if ([NSStringFromClass(class) hasPrefix:@"QMUIConfigurationTemplate"] && [class conformsToProtocol:protocol]) {
+                if ([class instancesRespondToSelector:@selector(shouldApplyTemplateAutomatically)]) {
+                    id<QMUIConfigurationTemplateProtocol> template = [[class alloc] init];
+                    if ([template shouldApplyTemplateAutomatically]) {
+                        QMUI_hasAppliedInitialTemplate = YES;
+                        [template applyConfigurationTemplate];
+                        // 只应用第一个 shouldApplyTemplateAutomatically 的主题
+                        break;
+                    }
+                }
+            }
+        }
+        free(classes);
+    }
+    
+    QMUI_hasAppliedInitialTemplate = YES;
 }
 
 #pragma mark - 初始化默认值
@@ -329,10 +349,10 @@
         CGSize customBackIndicatorImageSize = _navBarBackIndicatorImage.size;
         if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
             CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
-            _navBarBackIndicatorImage = [_navBarBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
-                                                                                                                         0,
-                                                                                                                         imageExtensionVerticalFloat,
-                                                                                                                         systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)];
+            _navBarBackIndicatorImage = [[_navBarBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
+                                                                                                                          0,
+                                                                                                                          imageExtensionVerticalFloat,
+                                                                                                                          systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)] imageWithRenderingMode:_navBarBackIndicatorImage.renderingMode];
         }
         
         navBarAppearance.backIndicatorImage = _navBarBackIndicatorImage;

@@ -16,6 +16,7 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 @interface UIViewController ()
 
 @property(nonatomic, assign) BOOL qmui_isViewDidAppear;
+@property(nonatomic, strong) UINavigationBar *transitionNavigationBar;// by molice 对应 UIViewController (NavigationBarTransition) 里的 transitionNavigationBar，为了让这个属性在这里可以被访问到，有点 hack，具体请查看 https://github.com/QMUI/QMUI_iOS/issues/268
 @end
 
 @implementation UIViewController (QMUI)
@@ -257,10 +258,15 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if (!self.isViewLoaded) {
         return 0;
     }
-    if (!self.navigationController.navigationBar || self.navigationController.navigationBarHidden) {
+    
+    // 这里为什么要把 transitionNavigationBar 考虑进去，请参考 https://github.com/QMUI/QMUI_iOS/issues/268
+    UINavigationBar *navigationBar = !self.navigationController.navigationBarHidden && self.navigationController.navigationBar ? self.navigationController.navigationBar : ([self respondsToSelector:@selector(transitionNavigationBar)] && self.transitionNavigationBar ? self.transitionNavigationBar : nil);
+    
+    if (!navigationBar) {
         return 0;
     }
-    CGRect navigationBarFrameInView = [self.view convertRect:self.navigationController.navigationBar.frame fromView:self.navigationController.navigationBar.superview];
+    
+    CGRect navigationBarFrameInView = [self.view convertRect:navigationBar.frame fromView:navigationBar.superview];
     CGRect navigationBarFrame = CGRectIntersection(self.view.bounds, navigationBarFrameInView);
     
     // 两个 rect 如果不存在交集，CGRectIntersection 计算结果可能为非法的 rect，所以这里做个保护

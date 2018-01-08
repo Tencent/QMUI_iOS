@@ -24,7 +24,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    if (IOS_VERSION >= 11.0) {
+    if (@available(iOS 11, *)) {
         // iOS 11 以前，自己 init 的 navigationBar，它的 backgroundView 默认会一直保持与 navigationBar 的高度相等，但 iOS 11 Beta 1-5 里，自己 init 的 navigationBar.backgroundView.height 默认一直是 44，所以才加上这个兼容
         UIView *backgroundView = [self valueForKey:@"backgroundView"];
         backgroundView.frame = self.bounds;
@@ -40,10 +40,10 @@
 @interface UIViewController (NavigationBarTransition)
 
 /// 用来模仿真的navBar的，在转场过程中存在的一条假navBar
-@property (nonatomic, strong) _QMUITransitionNavigationBar *transitionNavigationBar;
+@property(nonatomic, strong) _QMUITransitionNavigationBar *transitionNavigationBar;
 
 /// 是否要把真的navBar隐藏
-@property (nonatomic, assign) BOOL prefersNavigationBarBackgroundViewHidden;
+@property(nonatomic, assign) BOOL prefersNavigationBarBackgroundViewHidden;
 
 /// 原始的clipsToBounds
 @property(nonatomic, assign) BOOL originClipsToBounds;
@@ -55,7 +55,7 @@
 - (void)addTransitionNavigationBarIfNeeded;
 
 /// .m文件里自己赋值和使用。因为有些特殊情况下viewDidAppear之后，有可能还会调用到viewWillLayoutSubviews，导致原始的navBar隐藏，所以用这个属性做个保护。
-@property (nonatomic, assign) BOOL lockTransitionNavigationBar;
+@property(nonatomic, assign) BOOL lockTransitionNavigationBar;
 
 
 /** 是否响应 QMUINavigationControllerDelegate */

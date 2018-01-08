@@ -18,7 +18,7 @@
 
 // 单例的宏
 
-#define QMUICMI [QMUIConfiguration sharedInstance]
+#define QMUICMI ({[[QMUIConfiguration sharedInstance] applyInitialTemplate];[QMUIConfiguration sharedInstance];})
 
 
 #pragma mark - Global Color

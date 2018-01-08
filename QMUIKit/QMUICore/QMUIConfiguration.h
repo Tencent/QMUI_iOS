@@ -9,6 +9,19 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+/// 所有配置表都应该实现的 protocol
+@protocol QMUIConfigurationTemplateProtocol <NSObject>
+
+@required
+/// 应用配置表的设置
+- (void)applyConfigurationTemplate;
+
+@optional
+/// 当返回 YES 时，启动 App 的时候 QMUIConfiguration 会自动应用这份配置表。但启动 App 时自动应用的配置表最多只允许一份，如果有多份则其他的会被忽略，需要在某些时机手动应用
+- (BOOL)shouldApplyTemplateAutomatically;
+
+@end
+
 /**
  *  维护项目全局 UI 配置的单例，通过业务项目自己的 QMUIConfigurationTemplate 来为这个单例赋值，而业务代码里则通过 QMUIConfigurationMacros.h 文件里的宏来使用这些值。
  */
@@ -197,5 +210,6 @@ NS_ASSUME_NONNULL_END
 
 /// 单例对象
 + (instancetype _Nullable )sharedInstance;
+- (void)applyInitialTemplate;
 
 @end

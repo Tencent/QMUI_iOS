@@ -201,7 +201,13 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     CGFloat contentWidth = CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentPaddings);
     
     [self.mutableScrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
-        UIEdgeInsets scrollViewSafeAreaInsets = scrollView.qmui_safeAreaInsets;// 左右可能要适配 iPhone X 的 safeAreaInsets
+        scrollView.frame = CGRectMake(self.contentPaddings.left, layoutY, contentWidth, CGRectGetHeight(scrollView.frame));
+        
+        // 要保护 safeAreaInsets 的区域，而这里不使用 scrollView.qmui_safeAreaInsets 是因为此时 scrollView 的 safeAreaInsets 仍然为 0，但 scrollView.superview.safeAreaInsets 已经正确了，所以使用 scrollView.superview 也即 self.view 的
+        // 底部的 insets 暂不考虑
+//        UIEdgeInsets scrollViewSafeAreaInsets = scrollView.qmui_safeAreaInsets;
+        UIEdgeInsets scrollViewSafeAreaInsets = UIEdgeInsetsMake(fmax(self.view.qmui_safeAreaInsets.top - scrollView.qmui_top, 0), fmax(self.view.qmui_safeAreaInsets.left - scrollView.qmui_left, 0), 0, fmax(self.view.qmui_safeAreaInsets.right - (self.view.qmui_width - scrollView.qmui_right), 0));
+        
         NSArray<QMUIMoreOperationItemView *> *itemSection = self.mutableItems[idx];
         QMUIMoreOperationItemView *exampleItemView = itemSection.firstObject;
         CGFloat exampleItemWidth = exampleItemView.imageView.image.size.width + self.itemPaddingHorizontal * 2;
@@ -224,7 +230,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
             itemViewMinX = CGRectGetMaxX(itemView.frame) + finalItemMarginHorizontal;
         }];
         scrollView.contentSize = CGSizeMake(itemViewMinX - finalItemMarginHorizontal + scrollViewSafeAreaInsets.right, maximumItemHeight);
-        scrollView.frame = CGRectMake(self.contentPaddings.left, layoutY, contentWidth, scrollView.contentSize.height + UIEdgeInsetsGetVerticalValue(scrollView.contentInset));
+        scrollView.frame = CGRectSetHeight(scrollView.frame, scrollView.contentSize.height + UIEdgeInsetsGetVerticalValue(scrollView.contentInset));
         layoutY = CGRectGetMaxY(scrollView.frame);
     }];
 }

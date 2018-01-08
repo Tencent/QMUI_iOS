@@ -63,7 +63,7 @@ static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
 }
 
 - (void)qmui_safeAreaInsetsDidChange {
-    [self qmui_safeAreaInsetsBeforeChange];
+    [self qmui_safeAreaInsetsDidChange];
     self.qmui_safeAreaInsetsBeforeChange = self.qmui_safeAreaInsets;
 }
 

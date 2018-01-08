@@ -267,8 +267,13 @@
         return;
     }
     
-    if (animated) {
+    // 增加一个 presentedViewController 作为判断条件是因为这个 issue：https://github.com/QMUI/QMUI_iOS/issues/261
+    if (!self.presentedViewController && animated) {
         self.isViewControllerTransiting = YES;
+    }
+    
+    if (self.presentedViewController) {
+        QMUILogInfo(@"push 的时候 navigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
     }
     
     UIViewController *currentViewController = self.topViewController;

@@ -33,7 +33,7 @@
  */
 @interface QMUICellHeightIndexPathCache : NSObject
 
-@property (nonatomic, assign) BOOL automaticallyInvalidateEnabled;
+@property(nonatomic, assign) BOOL automaticallyInvalidateEnabled;
 
 - (BOOL)existsHeightAtIndexPath:(NSIndexPath *)indexPath;
 - (void)cacheHeight:(CGFloat)height byIndexPath:(NSIndexPath *)indexPath;
@@ -101,13 +101,13 @@
 
 @interface UITableView (QMUIKeyedHeightCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
+@property(nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
 
 @end
 
 @interface UITableView (QMUICellHeightIndexPathCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightIndexPathCache *qmui_indexPathHeightCache;
+@property(nonatomic, strong, readonly) QMUICellHeightIndexPathCache *qmui_indexPathHeightCache;
 
 @end
 
@@ -127,13 +127,13 @@
 
 @interface UICollectionView (QMUIKeyedHeightCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
+@property(nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
 
 @end
 
 @interface UICollectionView (QMUICellHeightIndexPathCache)
 
-@property (nonatomic, strong, readonly) QMUICellHeightIndexPathCache *qmui_indexPathHeightCache;
+@property(nonatomic, strong, readonly) QMUICellHeightIndexPathCache *qmui_indexPathHeightCache;
 
 @end
 
