@@ -9,6 +9,7 @@
 #import "QMUIDialogViewController.h"
 #import "QMUICore.h"
 #import "QMUIButton.h"
+#import "QMUILabel.h"
 #import "QMUITextField.h"
 #import "QMUITableViewCell.h"
 #import "QMUINavigationTitleView.h"
@@ -32,8 +33,8 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         if (!dialogViewControllerAppearance) {
             dialogViewControllerAppearance = [[QMUIDialogViewController alloc] init];
             dialogViewControllerAppearance.cornerRadius = 6;
-            dialogViewControllerAppearance.contentViewMargins = UIEdgeInsetsMake(20, 20, 20, 20); // 在实例的 didInitialized 里会适配 iPhone X 的 safeAreaInsets
-            dialogViewControllerAppearance.maximumContentViewWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(dialogViewControllerAppearance.contentViewMargins);
+            dialogViewControllerAppearance.dialogViewMargins = UIEdgeInsetsMake(20, 20, 20, 20); // 在实例的 didInitialized 里会适配 iPhone X 的 safeAreaInsets
+            dialogViewControllerAppearance.maximumContentViewWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(dialogViewControllerAppearance.dialogViewMargins);
             dialogViewControllerAppearance.backgroundColor = UIColorClear;
             dialogViewControllerAppearance.titleTintColor = UIColorBlack;
             dialogViewControllerAppearance.titleLabelFont = UIFontMake(16);
@@ -41,14 +42,15 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
             dialogViewControllerAppearance.subTitleLabelFont = UIFontMake(12);
             dialogViewControllerAppearance.subTitleLabelTextColor = UIColorMake(133, 140, 150);
             
-            dialogViewControllerAppearance.headerFooterSeparatorColor = UIColorMake(222, 224, 226);
+            dialogViewControllerAppearance.headerSeparatorColor = UIColorMake(222, 224, 226);
             dialogViewControllerAppearance.headerViewHeight = 48;
             dialogViewControllerAppearance.headerViewBackgroundColor = UIColorMake(244, 245, 247);
-            dialogViewControllerAppearance.footerViewMarginTop = 0;
+            dialogViewControllerAppearance.contentViewMargins = UIEdgeInsetsZero;
+            dialogViewControllerAppearance.footerSeparatorColor = UIColorMake(222, 224, 226);
             dialogViewControllerAppearance.footerViewHeight = 48;
             dialogViewControllerAppearance.footerViewBackgroundColor = UIColorWhite;
             
-            dialogViewControllerAppearance.buttonBackgroundColor = UIColorBlue;
+            dialogViewControllerAppearance.buttonBackgroundColor = nil;
             dialogViewControllerAppearance.buttonTitleAttributes = @{NSForegroundColorAttributeName: UIColorBlue, NSKernAttributeName: @2};
             dialogViewControllerAppearance.buttonHighlightedBackgroundColor = [UIColorBlue colorWithAlphaComponent:.25];
         }
@@ -71,7 +73,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     [super didInitialized];
     if (dialogViewControllerAppearance) {
         self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
-        self.contentViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].contentViewMargins, IPhoneXSafeAreaInsets);
+        self.dialogViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].dialogViewMargins, IPhoneXSafeAreaInsets);
         self.maximumContentViewWidth = [QMUIDialogViewController appearance].maximumContentViewWidth;
         self.backgroundColor = [QMUIDialogViewController appearance].backgroundColor;
         self.titleTintColor = [QMUIDialogViewController appearance].titleTintColor;
@@ -79,10 +81,11 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         self.titleLabelTextColor = [QMUIDialogViewController appearance].titleLabelTextColor;
         self.subTitleLabelFont = [QMUIDialogViewController appearance].subTitleLabelFont;
         self.subTitleLabelTextColor = [QMUIDialogViewController appearance].subTitleLabelTextColor;
-        self.headerFooterSeparatorColor = [QMUIDialogViewController appearance].headerFooterSeparatorColor;
+        self.headerSeparatorColor = [QMUIDialogViewController appearance].headerSeparatorColor;
         self.headerViewHeight = [QMUIDialogViewController appearance].headerViewHeight;
         self.headerViewBackgroundColor = [QMUIDialogViewController appearance].headerViewBackgroundColor;
-        self.footerViewMarginTop = [QMUIDialogViewController appearance].footerViewMarginTop;
+        self.contentViewMargins = [QMUIDialogViewController appearance].contentViewMargins;
+        self.footerSeparatorColor = [QMUIDialogViewController appearance].footerSeparatorColor;
         self.footerViewHeight = [QMUIDialogViewController appearance].footerViewHeight;
         self.footerViewBackgroundColor = [QMUIDialogViewController appearance].footerViewBackgroundColor;
         self.buttonBackgroundColor = [QMUIDialogViewController appearance].buttonBackgroundColor;
@@ -111,6 +114,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 - (void)setTitleLabelFont:(UIFont *)titleLabelFont {
     _titleLabelFont = titleLabelFont;
     self.titleView.titleLabel.font = titleLabelFont;
+    self.titleView.verticalTitleFont = titleLabelFont;
 }
 
 - (void)setTitleLabelTextColor:(UIColor *)titleLabelTextColor {
@@ -121,6 +125,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 - (void)setSubTitleLabelFont:(UIFont *)subTitleLabelFont {
     _subTitleLabelFont = subTitleLabelFont;
     self.titleView.subtitleLabel.font = subTitleLabelFont;
+    self.titleView.verticalSubtitleFont = subTitleLabelFont;
 }
 
 - (void)setSubTitleLabelTextColor:(UIColor *)subTitleLabelTextColor {
@@ -128,16 +133,20 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     self.titleView.subtitleLabel.textColor = subTitleLabelTextColor;
 }
 
-- (void)setHeaderFooterSeparatorColor:(UIColor *)headerFooterSeparatorColor {
-    _headerFooterSeparatorColor = headerFooterSeparatorColor;
+- (void)setHeaderSeparatorColor:(UIColor *)headerSeparatorColor {
+    _headerSeparatorColor = headerSeparatorColor;
     if (self.headerViewSeparatorLayer) {
-        self.headerViewSeparatorLayer.backgroundColor = headerFooterSeparatorColor.CGColor;
+        self.headerViewSeparatorLayer.backgroundColor = headerSeparatorColor.CGColor;
     }
+}
+
+- (void)setFooterSeparatorColor:(UIColor *)footerSeparatorColor {
+    _footerSeparatorColor = footerSeparatorColor;
     if (self.footerViewSeparatorLayer) {
-        self.footerViewSeparatorLayer.backgroundColor = headerFooterSeparatorColor.CGColor;
+        self.footerViewSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
     }
     if (self.buttonSeparatorLayer) {
-        self.buttonSeparatorLayer.backgroundColor = headerFooterSeparatorColor.CGColor;
+        self.buttonSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
     }
 }
 
@@ -150,10 +159,6 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     if ([self isViewLoaded]) {
         self.headerView.backgroundColor = headerViewBackgroundColor;
     }
-}
-
-- (void)setFooterViewMarginTop:(CGFloat)footerViewMarginTop {
-    _footerViewMarginTop = footerViewMarginTop;
 }
 
 - (void)setFooterViewHeight:(CGFloat)footerViewHeight {
@@ -236,7 +241,7 @@ EndIgnoreClangWarning
     // 加上分隔线
     _headerViewSeparatorLayer = [CALayer layer];
     [self.headerViewSeparatorLayer qmui_removeDefaultAnimations];
-    self.headerViewSeparatorLayer.backgroundColor = self.headerFooterSeparatorColor.CGColor;
+    self.headerViewSeparatorLayer.backgroundColor = self.headerSeparatorColor.CGColor;
     [self.headerView.layer addSublayer:self.headerViewSeparatorLayer];
     
     [self.view addSubview:self.headerView];
@@ -262,7 +267,8 @@ EndIgnoreClangWarning
     BOOL isFooterViewShowing = self.footerView && !self.footerView.hidden;
     
     self.headerView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), self.headerViewHeight);
-    self.headerViewSeparatorLayer.frame = CGRectMake(0, CGRectGetHeight(self.headerView.bounds), CGRectGetWidth(self.headerView.bounds), PixelOne);
+    self.headerViewSeparatorLayer.frame = CGRectFlatMake(0, self.headerViewHeight, CGRectGetWidth(self.view.bounds), PixelOne);
+    
     CGFloat headerViewPaddingHorizontal = 16;
     CGFloat headerViewContentWidth = CGRectGetWidth(self.headerView.bounds) - headerViewPaddingHorizontal * 2;
     CGSize titleViewSize = [self.titleView sizeThatFits:CGSizeMake(headerViewContentWidth, CGFLOAT_MAX)];
@@ -287,9 +293,9 @@ EndIgnoreClangWarning
         }
     }
     
-    CGFloat contentViewMinY = CGRectGetMaxY(self.headerView.frame);
-    CGFloat contentViewHeight = (isFooterViewShowing ? CGRectGetMinY(self.footerView.frame) - self.footerViewMarginTop : CGRectGetHeight(self.view.bounds)) - contentViewMinY;
-    self.contentView.frame = CGRectMake(0, contentViewMinY, CGRectGetWidth(self.view.bounds), contentViewHeight);
+    CGFloat contentViewMinY = CGRectGetMaxY(self.headerView.frame) + self.contentViewMargins.top;
+    CGFloat contentViewHeight = (isFooterViewShowing ? CGRectGetMinY(self.footerView.frame) - self.contentViewMargins.bottom : CGRectGetHeight(self.view.bounds)) - contentViewMinY;
+    self.contentView.frame = CGRectMake(self.contentViewMargins.left, contentViewMinY, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentViewMargins), contentViewHeight);
 }
 
 - (void)initFooterViewIfNeeded {
@@ -300,7 +306,7 @@ EndIgnoreClangWarning
         
         _footerViewSeparatorLayer = [CALayer layer];
         [self.footerViewSeparatorLayer qmui_removeDefaultAnimations];
-        self.footerViewSeparatorLayer.backgroundColor = self.headerFooterSeparatorColor.CGColor;
+        self.footerViewSeparatorLayer.backgroundColor = self.footerSeparatorColor.CGColor;
         [self.footerView.layer addSublayer:self.footerViewSeparatorLayer];
         
         _buttonSeparatorLayer = [CALayer layer];
@@ -375,7 +381,7 @@ EndIgnoreClangWarning
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
     QMUIModalPresentationViewController *modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
-    modalPresentationViewController.contentViewMargins = self.contentViewMargins;
+    modalPresentationViewController.contentViewMargins = self.dialogViewMargins;
     modalPresentationViewController.maximumContentViewWidth = self.maximumContentViewWidth;
     modalPresentationViewController.contentViewController = self;
     modalPresentationViewController.modal = YES;
@@ -402,12 +408,14 @@ EndIgnoreClangWarning
     }
     
     BOOL isFooterViewShowing = self.footerView && !self.footerView.hidden;
-    CGFloat footerHeight = isFooterViewShowing ? self.footerViewHeight + self.footerViewMarginTop : 0; // footerHeight 包含 footerViewMarginTop
+    CGFloat footerHeight = isFooterViewShowing ? self.footerViewHeight : 0;
     
-    CGSize contentViewLimitSize = CGSizeMake(limitSize.width, limitSize.height - self.headerViewHeight - footerHeight);
+    CGFloat contentViewVerticalMargin = UIEdgeInsetsGetVerticalValue(self.contentViewMargins);
+    
+    CGSize contentViewLimitSize = CGSizeMake(limitSize.width, limitSize.height - self.headerViewHeight - contentViewVerticalMargin - footerHeight);
     CGSize contentViewSize = [self.contentView sizeThatFits:contentViewLimitSize];
     
-    CGSize finalSize = CGSizeMake(fmin(limitSize.width, contentViewSize.width), fmin(limitSize.height, self.headerViewHeight + contentViewSize.height + footerHeight));
+    CGSize finalSize = CGSizeMake(fmin(limitSize.width, contentViewSize.width), fmin(limitSize.height, self.headerViewHeight + contentViewSize.height + contentViewVerticalMargin + footerHeight));
     return finalSize;
 }
 
@@ -443,9 +451,9 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    CGFloat tableViewMinY = CGRectGetMaxY(self.headerView.frame);
-    CGFloat tableViewHeight = CGRectGetHeight(self.view.bounds) - tableViewMinY - (!self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0);
-    self.tableView.frame = CGRectMake(0, tableViewMinY, CGRectGetWidth(self.view.bounds), tableViewHeight);
+    CGFloat tableViewMinY = CGRectGetMaxY(self.headerView.frame) + self.contentViewMargins.top;
+    CGFloat tableViewHeight = CGRectGetHeight(self.view.bounds) - tableViewMinY - (!self.footerView.hidden ? (CGRectGetHeight(self.footerView.bounds) + self.contentViewMargins.bottom) : 0);
+    self.tableView.frame = CGRectMake(self.contentViewMargins.left, tableViewMinY, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentViewMargins), tableViewHeight);
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -574,18 +582,20 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
-    CGFloat footerHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) + self.footerViewMarginTop : 0;
-    CGFloat tableViewLimitHeight = limitSize.height - CGRectGetHeight(self.headerView.frame) - footerHeight;
+    CGFloat contentViewVerticalMargin = UIEdgeInsetsGetVerticalValue(self.contentViewMargins);
+    CGFloat footerHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0;
+    CGFloat tableViewLimitHeight = limitSize.height - CGRectGetHeight(self.headerView.frame) - footerHeight - contentViewVerticalMargin;
     CGSize tableViewSize = [self.tableView sizeThatFits:CGSizeMake(limitSize.width, tableViewLimitHeight)];
     CGFloat finalTableViewHeight = fmin(tableViewSize.height, tableViewLimitHeight);
-    return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + finalTableViewHeight + footerHeight);
+    return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + finalTableViewHeight + contentViewVerticalMargin + footerHeight);
 }
 
 @end
 
 @interface QMUIDialogTextFieldViewController ()
-
-@property(nonatomic,strong,readwrite) QMUITextField *textField;
+@property(nonatomic, strong, readwrite) QMUILabel *textFieldLabel;
+@property(nonatomic, strong, readwrite) CALayer *textFieldSeparatorLayer;
+@property(nonatomic, strong, readwrite) QMUITextField *textField;
 @end
 
 @implementation QMUIDialogTextFieldViewController
@@ -600,6 +610,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 - (void)initSubviews {
     [super initSubviews];
+    
     self.textField = [[QMUITextField alloc] init];
     self.textField.backgroundColor = UIColorWhite;
     self.textField.textInsets = UIEdgeInsetsMake(self.textField.textInsets.top, 16, self.textField.textInsets.bottom, 16);
@@ -607,11 +618,43 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     self.textField.enablesReturnKeyAutomatically = self.enablesSubmitButtonAutomatically;
     [self.textField addTarget:self action:@selector(handleTextFieldTextDidChangeEvent:) forControlEvents:UIControlEventEditingChanged];
     [self.view addSubview:self.textField];
+    
+    self.textFieldLabel = [[QMUILabel alloc] init];
+    self.textFieldLabel.font = UIFontBoldMake(12);
+    self.textFieldLabel.contentEdgeInsets = UIEdgeInsetsMake(11, 16, 8, 16);
+    self.textFieldLabel.text = @"";
+    self.textFieldLabel.hidden = YES;
+    [self.view addSubview:self.textFieldLabel];
+    
+    self.textFieldSeparatorLayer = [CALayer layer];
+    [self.textFieldSeparatorLayer qmui_removeDefaultAnimations];
+    self.textFieldSeparatorLayer.backgroundColor = UIColorSeparator.CGColor;
+    [self.view.layer addSublayer:self.textFieldSeparatorLayer];
 }
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    self.textField.frame = CGRectMake(0, CGRectGetMaxY(self.headerView.frame), CGRectGetWidth(self.view.bounds), (!self.footerView.hidden ? CGRectGetMinY(self.footerView.frame) : CGRectGetHeight(self.view.bounds)) - CGRectGetMaxY(self.headerView.frame));
+    
+    CGFloat minY = CGRectGetMaxY(self.headerView.frame) + self.contentViewMargins.top;
+    CGFloat horizontalMargin = UIEdgeInsetsGetHorizontalValue(self.contentViewMargins);
+    CGFloat widthLimit = CGRectGetWidth(self.view.bounds) - horizontalMargin;
+    CGFloat separatorOffsetY = 13.0;
+    
+    if (!self.textFieldLabel.hidden) {
+        [self.textFieldLabel sizeToFit];
+        self.textFieldLabel.frame = CGRectMake(self.contentViewMargins.left, minY, widthLimit, CGRectGetHeight(self.textFieldLabel.bounds));
+        minY += CGRectGetHeight(self.textFieldLabel.bounds);
+    }
+    
+    CGFloat textFieldHeight = 0;
+    if (self.footerView.hidden) {
+        textFieldHeight = CGRectGetHeight(self.view.bounds) - self.contentViewMargins.bottom - minY;
+    } else {
+        textFieldHeight = CGRectGetMinY(self.footerView.frame) - self.contentViewMargins.bottom - minY;
+    }
+    
+    self.textField.frame = CGRectMake(self.contentViewMargins.left, minY, widthLimit, textFieldHeight);
+    self.textFieldSeparatorLayer.frame = CGRectMake(self.contentViewMargins.left + self.textField.textInsets.left, CGRectGetMaxY(self.textField.frame) - PixelOne + separatorOffsetY, widthLimit - self.textField.textInsets.left - self.textField.textInsets.right, PixelOne);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -622,6 +665,20 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     [self.textField resignFirstResponder];
+}
+
+#pragma mark - Setters
+- (void)setTextFieldTitle:(NSString *)textFieldTitle {
+    _textFieldTitle = textFieldTitle;
+    
+    if (textFieldTitle.length > 0) {
+        self.textFieldLabel.hidden = NO;
+        self.textFieldLabel.text = textFieldTitle;
+    } else {
+        self.textFieldLabel.hidden = YES;
+    }
+    
+    [self.view setNeedsLayout];
 }
 
 #pragma mark - Submit Button Enables
@@ -665,8 +722,10 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
-    CGFloat textFieldHeight = 56;
-    return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + textFieldHeight + (!self.footerView.hidden ?  CGRectGetHeight(self.footerView.frame) : 0));
+    CGFloat textFieldHeight = self.textFieldLabel.hidden ? 56.0 : 25.0; // 25.0 考虑了行高导致的 offsetoffset
+    CGFloat textFieldTitleHeight = 29.0;
+    
+    return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + UIEdgeInsetsGetVerticalValue(self.contentViewMargins) + (!self.textFieldLabel.hidden ? textFieldTitleHeight : 0) + textFieldHeight + (!self.footerView.hidden ?  CGRectGetHeight(self.footerView.frame) : 0));
 }
 
 @end
