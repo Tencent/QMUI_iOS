@@ -92,6 +92,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIDialogViewController' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIDialogViewController.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
+			sss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
