@@ -26,7 +26,6 @@
 
 
 extern NSString *const _Nonnull QMUIResourcesMainBundleName;
-extern NSString *const _Nonnull QMUIResourcesQQEmotionBundleName;
 
 @interface QMUIHelper (Bundle)
 

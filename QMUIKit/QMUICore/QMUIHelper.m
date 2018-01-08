@@ -12,7 +12,6 @@
 
 
 NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
-NSString *const QMUIResourcesQQEmotionBundleName = @"QMUI_QQEmotion.bundle";
 
 @implementation QMUIHelper (Bundle)
 
