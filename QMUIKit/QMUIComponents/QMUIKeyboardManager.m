@@ -158,7 +158,7 @@
 
 @interface QMUIKeyboardViewFrameObserver : NSObject
 
-@property (nonatomic, copy) void (^keyboardViewChangeFrameBlock)(UIView *keyboardView);
+@property(nonatomic, copy) void (^keyboardViewChangeFrameBlock)(UIView *keyboardView);
 - (void)addToKeyboardView:(UIView *)keyboardView;
 + (instancetype)observerForView:(UIView *)keyboardView;
 
