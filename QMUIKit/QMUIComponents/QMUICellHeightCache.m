@@ -198,37 +198,44 @@
 }
 
 + (void)load {
-    SEL selectors[] = {
-        @selector(reloadData),
-        @selector(insertSections:withRowAnimation:),
-        @selector(deleteSections:withRowAnimation:),
-        @selector(reloadSections:withRowAnimation:),
-        @selector(moveSection:toSection:),
-        @selector(insertRowsAtIndexPaths:withRowAnimation:),
-        @selector(deleteRowsAtIndexPaths:withRowAnimation:),
-        @selector(reloadRowsAtIndexPaths:withRowAnimation:),
-        @selector(moveRowAtIndexPath:toIndexPath:)
-    };
-    for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); ++index) {
-        SEL originalSelector = selectors[index];
-        SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-        ReplaceMethod([self class], originalSelector, swizzledSelector);
-    }
-    
-    if (@available(iOS 11, *)) {
-        ReplaceMethod([self class], @selector(safeAreaInsetsDidChange), @selector(qmui_safeAreaInsetsDidChange));
-    }
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        SEL selectors[] = {
+            @selector(reloadData),
+            @selector(insertSections:withRowAnimation:),
+            @selector(deleteSections:withRowAnimation:),
+            @selector(reloadSections:withRowAnimation:),
+            @selector(moveSection:toSection:),
+            @selector(insertRowsAtIndexPaths:withRowAnimation:),
+            @selector(deleteRowsAtIndexPaths:withRowAnimation:),
+            @selector(reloadRowsAtIndexPaths:withRowAnimation:),
+            @selector(moveRowAtIndexPath:toIndexPath:)
+        };
+        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); ++index) {
+            SEL originalSelector = selectors[index];
+            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            ReplaceMethod([self class], originalSelector, swizzledSelector);
+        }
+        
+        if (@available(iOS 11, *)) {
+            ReplaceMethod([self class], @selector(safeAreaInsetsDidChange), @selector(cellHeightCache_safeAreaInsetsDidChange));
+        }
+    });
 }
 
 // iOS 11 里，横竖屏带来的 safeAreaInsets 变化时机晚于计算 cell 高度，所以在计算 cell 高度时是获取不到准确的 safeAreaInsets，所以需要在 safeAreaInsetsDidChange 里重新计算
 // 至于为什么只判断水平方向的变化，请看 https://github.com/QMUI/QMUI_iOS/issues/253
-- (void)qmui_safeAreaInsetsDidChange {
+- (void)cellHeightCache_safeAreaInsetsDidChange {
     UIEdgeInsets safeAreaInsetsBeforeChange = self.qmui_safeAreaInsetsBeforeChange;
     BOOL horizontalSafeAreaInsetsChanged = safeAreaInsetsBeforeChange.left != self.qmui_safeAreaInsets.left || safeAreaInsetsBeforeChange.right != self.qmui_safeAreaInsets.right;
 
-    [self qmui_safeAreaInsetsDidChange];
+    [self cellHeightCache_safeAreaInsetsDidChange];
     
     if (horizontalSafeAreaInsetsChanged) {
+        if ([self.delegate respondsToSelector:@selector(qmui_willReloadAfterSafeAreaInsetsDidChangeInTableView:)]) {
+            id<QMUICellHeightCache_UITableViewDelegate> delegate = (id<QMUICellHeightCache_UITableViewDelegate>)self.delegate;
+            [delegate qmui_willReloadAfterSafeAreaInsetsDidChangeInTableView:self];
+        }
         [self.qmui_keyedHeightCache invalidateAllHeightCache];
         [self.qmui_indexPathHeightCache invalidateAllHeightCache];
         [self qmui_reloadData];
@@ -369,7 +376,7 @@
     if (!templateCell) {
         // 是否有通过dataSource返回的cell
         if ([self.dataSource respondsToSelector:@selector(qmui_tableView:cellWithIdentifier:)] ) {
-            id <qmui_UITableViewDataSource>dataSource = (id<qmui_UITableViewDataSource>)self.dataSource;
+            id <QMUICellHeightCache_UITableViewDataSource>dataSource = (id<QMUICellHeightCache_UITableViewDataSource>)self.dataSource;
             templateCell = [dataSource qmui_tableView:self cellWithIdentifier:identifier];
         }
         // 没有的话，则需要通过register来注册一个cell，否则会crash
