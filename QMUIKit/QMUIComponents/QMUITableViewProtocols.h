@@ -10,14 +10,23 @@
 
 @class QMUITableView;
 
-@protocol qmui_UITableViewDataSource
+@protocol QMUICellHeightCache_UITableViewDataSource
 
 @optional
+/// 搭配 QMUICellHeightCache 使用，对于 UITableView 而言如果要用 QMUICellHeightCache 那套高度计算方式，则必须实现这个方法
 - (__kindof UITableViewCell *)qmui_tableView:(UITableView *)tableView cellWithIdentifier:(NSString *)identifier;
 
 @end
 
-@protocol QMUITableViewDelegate <UITableViewDelegate>
+@protocol QMUICellHeightCache_UITableViewDelegate
+
+@optional
+/// 搭配 QMUICellHeightCache 使用，在 UITableView safeAreaInsetsChange 之后会通过这个方法通知到外面。至于缓存到内存的高度清理、tableView reloadData 的调用，都是在这个方法执行之后才执行。
+- (void)qmui_willReloadAfterSafeAreaInsetsDidChangeInTableView:(UITableView *)tableView;
+
+@end
+
+@protocol QMUITableViewDelegate <UITableViewDelegate, QMUICellHeightCache_UITableViewDelegate>
 
 @optional
 
@@ -30,6 +39,6 @@
 @end
 
 
-@protocol QMUITableViewDataSource <UITableViewDataSource, qmui_UITableViewDataSource>
+@protocol QMUITableViewDataSource <UITableViewDataSource, QMUICellHeightCache_UITableViewDataSource>
 
 @end

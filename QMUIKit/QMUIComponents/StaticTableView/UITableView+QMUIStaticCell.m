@@ -19,8 +19,11 @@
 @implementation UITableView (QMUI_StaticCell)
 
 + (void)load {
-    ReplaceMethod([UITableView class], @selector(setDataSource:), @selector(staticCell_setDataSource:));
-    ReplaceMethod([UITableView class], @selector(setDelegate:), @selector(staticCell_setDelegate:));
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ReplaceMethod([UITableView class], @selector(setDataSource:), @selector(staticCell_setDataSource:));
+        ReplaceMethod([UITableView class], @selector(setDelegate:), @selector(staticCell_setDelegate:));
+    });
 }
 
 static char kAssociatedObjectKey_staticCellDataSource;
