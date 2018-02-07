@@ -195,7 +195,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 - (void)addCancelAction;
 
 /// 增加一个输入框
-- (void)addTextFieldWithConfigurationHandler:(void (^)(UITextField *textField))configurationHandler;
+- (void)addTextFieldWithConfigurationHandler:(void (^)(QMUITextField *textField))configurationHandler;
 
 /// 增加一个自定义的view作为`QMUIAlertController`的customView
 - (void)addCustomView:(UIView *)view;

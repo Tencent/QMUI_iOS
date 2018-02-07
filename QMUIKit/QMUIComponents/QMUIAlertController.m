@@ -912,7 +912,7 @@ static QMUIAlertController *alertControllerAppearance;
     [self addAction:action];
 }
 
-- (void)addTextFieldWithConfigurationHandler:(void (^)(UITextField *textField))configurationHandler {
+- (void)addTextFieldWithConfigurationHandler:(void (^)(QMUITextField *textField))configurationHandler {
     if (_customView) {
         [NSException raise:@"QMUIAlertController使用错误" format:@"UITextField和CustomView不能共存"];
     }
