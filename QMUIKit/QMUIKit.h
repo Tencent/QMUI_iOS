@@ -202,10 +202,6 @@
 #import "QMUIPopupMenuView.h"
 #endif
 
-#if __has_include("QMUIQQEmotionManager.h")
-#import "QMUIQQEmotionManager.h"
-#endif
-
 #if __has_include("QMUISearchBar.h")
 #import "QMUISearchBar.h"
 #endif

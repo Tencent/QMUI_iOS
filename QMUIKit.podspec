@@ -48,6 +48,7 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUITableView' do |sss|
@@ -122,6 +123,7 @@ Pod::Spec.new do |s|
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIPieProgressView'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUIImagePreviewViewController' do |sss|
@@ -142,6 +144,7 @@ Pod::Spec.new do |s|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIMoreOperationController.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUIOrderedDictionary' do |sss|
@@ -155,6 +158,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIPopupContainerView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIPopupContainerView.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUIPopupMenuView' do |sss|
@@ -225,10 +229,12 @@ Pod::Spec.new do |s|
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUISlider'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIPieProgressView'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIAssetLibrary'
     end
 
     ss.subspec 'QMUIAssetLibrary' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/AssetLibrary/*.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUIImagePickerLibrary' do |sss|
@@ -242,6 +248,7 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIZoomImageView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIAlertController'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUILog' do |sss|
@@ -268,6 +275,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIStaticTableView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/StaticTableView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
   end

@@ -10,7 +10,6 @@
 #import "UINavigationController+QMUI.h"
 #import "QMUICore.h"
 #import "NSObject+QMUI.h"
-#import "QMUILog.h"
 
 NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNotification";
 
@@ -246,7 +245,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if ([self isViewLoaded] && self.view.window) {
         return self;
     } else {
-        QMUILog(@"UIViewController (QMUI)", @"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view : nil, [self isViewLoaded] ? self.view.window : nil);
+        NSLog(@"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view : nil, [self isViewLoaded] ? self.view.window : nil);
         return nil;
     }
 }
