@@ -57,10 +57,6 @@
 /// .m文件里自己赋值和使用。因为有些特殊情况下viewDidAppear之后，有可能还会调用到viewWillLayoutSubviews，导致原始的navBar隐藏，所以用这个属性做个保护。
 @property(nonatomic, assign) BOOL lockTransitionNavigationBar;
 
-
-/** 是否响应 QMUINavigationControllerDelegate */
-- (BOOL)qmui_respondQMUINavigationControllerDelegate;
-
 @end
 
 
@@ -210,10 +206,6 @@
 
 #pragma mark - 工具方法
 
-- (BOOL)qmui_respondQMUINavigationControllerDelegate {
-    return [[self class] conformsToProtocol:@protocol(QMUINavigationControllerDelegate)];
-}
-
 // 根据当前的viewController，统一处理导航栏底部的分隔线、状态栏的颜色
 - (void)renderNavigationStyleInViewController:(UIViewController *)viewController animated:(BOOL)animated {
     
@@ -222,11 +214,12 @@
         return;
     }
     
-    if (viewController.qmui_respondQMUINavigationControllerDelegate) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)viewController;
+    // 以下用于控制 vc 的外观样式，如果某个方法有实现则用方法的返回值，否则再看配置表对应的值是否有配置，有配置就使用配置表，没配置则什么都不做，维持系统原生样式
+    if ([viewController conformsToProtocol:@protocol(QMUINavigationControllerAppearanceDelegate)]) {
+        UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController;
         
         // 控制界面的状态栏颜色
-        if ([vc shouldSetStatusBarStyleLight]) {
+        if ([vc respondsToSelector:@selector(shouldSetStatusBarStyleLight)] && [vc shouldSetStatusBarStyleLight]) {
             if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
                 [QMUIHelper renderStatusBarStyleLight];
             }
@@ -249,15 +242,15 @@
             }
         }
         
-        // 不能直接return，否则当navBar再次出现的时候可能样式不正确，这里说的再次出现有可能不是由QMUI控制的，而是自己手动触发
-        // if (viewController.navigationController.isNavigationBarHidden) return;
-        
         // 导航栏的背景
         if ([vc respondsToSelector:@selector(navigationBarBackgroundImage)]) {
             UIImage *backgroundImage = [vc navigationBarBackgroundImage];
             [viewController.navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
         } else {
-            [viewController.navigationController.navigationBar setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+            UIImage *backgroundImage = NavBarBackgroundImage;
+            if (backgroundImage) {
+                [viewController.navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
+            }
         }
         
         // 导航栏底部的分隔线
@@ -265,7 +258,10 @@
             UIImage *shadowImage = [vc navigationBarShadowImage];
             [viewController.navigationController.navigationBar setShadowImage:shadowImage];
         } else {
-            [viewController.navigationController.navigationBar setShadowImage:NavBarShadowImage];
+            UIImage *shadowImage = NavBarShadowImage;
+            if (shadowImage) {
+                [viewController.navigationController.navigationBar setShadowImage:shadowImage];
+            }
         }
         
         // 导航栏上控件的主题色
@@ -273,17 +269,28 @@
             UIColor *tintColor = [vc navigationBarTintColor];
             viewController.navigationController.navigationBar.tintColor = tintColor;
         } else {
-            viewController.navigationController.navigationBar.tintColor = NavBarTintColor;
+            UIColor *tintColor = NavBarTintColor;
+            if (tintColor) {
+                viewController.navigationController.navigationBar.tintColor = tintColor;
+            }
         }
         
         // 导航栏title的颜色
-        if ([vc isKindOfClass:[QMUICommonViewController class]]) {
-            QMUICommonViewController *qmuiVC = (QMUICommonViewController *)vc;
-            if ([qmuiVC respondsToSelector:@selector(titleViewTintColor)]) {
-                UIColor *tintColor = [qmuiVC titleViewTintColor];
-                qmuiVC.titleView.tintColor = tintColor;
+        if ([vc respondsToSelector:@selector(titleViewTintColor)]) {
+            UIColor *tintColor = [vc titleViewTintColor];
+            if ([vc isKindOfClass:[QMUICommonViewController class]]) {
+                ((QMUICommonViewController *)vc).titleView.tintColor = tintColor;
             } else {
-                qmuiVC.titleView.tintColor = NavBarTitleColor;
+                // TODO: molice 对 UIViewController 也支持修改 title 颜色
+            }
+        } else {
+            UIColor *tintColor = NavBarTitleColor;
+            if (tintColor) {
+                if ([vc isKindOfClass:[QMUICommonViewController class]]) {
+                    ((QMUICommonViewController *)vc).titleView.tintColor = tintColor;
+                } else {
+                    // TODO: molice 对 UIViewController 也支持修改 title 颜色
+                }
             }
         }
     }
@@ -300,8 +307,8 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPushAppearing {
     BOOL respondPushAppearing = NO;
-    if ([self qmui_respondQMUINavigationControllerDelegate]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+    if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPushAppearing)]) {
             respondPushAppearing = YES;
         }
@@ -311,8 +318,8 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPushDisappearing {
     BOOL respondPushDisappearing = NO;
-    if ([self qmui_respondQMUINavigationControllerDelegate]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+    if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPushDisappearing)]) {
             respondPushDisappearing = YES;
         }
@@ -322,8 +329,8 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPopAppearing {
     BOOL respondPopAppearing = NO;
-    if ([self qmui_respondQMUINavigationControllerDelegate]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+    if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPopAppearing)]) {
             respondPopAppearing = YES;
         }
@@ -333,8 +340,8 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWhenPopDisappearing {
     BOOL respondPopDisappearing = NO;
-    if ([self qmui_respondQMUINavigationControllerDelegate]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+    if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionWhenPopDisappearing)]) {
             respondPopDisappearing = YES;
         }
@@ -344,9 +351,9 @@
 
 - (BOOL)respondCustomNavigationBarTransitionIfBarHiddenable {
     BOOL respondIfBarHiddenable = NO;
-    if ([self qmui_respondQMUINavigationControllerDelegate]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
-        if ([vc respondsToSelector:@selector(shouldCustomNavigationBarTransitionIfBarHiddenable)]) {
+    if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
+        if ([vc respondsToSelector:@selector(shouldCustomizeNavigationBarTransitionIfHideable)]) {
             respondIfBarHiddenable = YES;
         }
     }
@@ -355,8 +362,8 @@
 
 - (BOOL)respondCustomNavigationBarTransitionWithBarHiddenState {
     BOOL respondWithBarHidden = NO;
-    if ([self qmui_respondQMUINavigationControllerDelegate]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+    if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(preferredNavigationBarHidden)]) {
             respondWithBarHidden = YES;
         }
@@ -368,7 +375,7 @@
 
 - (BOOL)canCustomNavigationBarTransitionWhenPushAppearing {
     if ([self respondCustomNavigationBarTransitionWhenPushAppearing]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         return [vc shouldCustomNavigationBarTransitionWhenPushAppearing];
     }
     return NO;
@@ -376,7 +383,7 @@
 
 - (BOOL)canCustomNavigationBarTransitionWhenPushDisappearing {
     if ([self respondCustomNavigationBarTransitionWhenPushDisappearing]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         return [vc shouldCustomNavigationBarTransitionWhenPushDisappearing];
     }
     return NO;
@@ -384,7 +391,7 @@
 
 - (BOOL)canCustomNavigationBarTransitionWhenPopAppearing {
     if ([self respondCustomNavigationBarTransitionWhenPopAppearing]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         return [vc shouldCustomNavigationBarTransitionWhenPopAppearing];
     }
     return NO;
@@ -392,7 +399,7 @@
 
 - (BOOL)canCustomNavigationBarTransitionWhenPopDisappearing {
     if ([self respondCustomNavigationBarTransitionWhenPopDisappearing]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         return [vc shouldCustomNavigationBarTransitionWhenPopDisappearing];
     }
     return NO;
@@ -400,15 +407,15 @@
 
 - (BOOL)canCustomNavigationBarTransitionIfBarHiddenable {
     if ([self respondCustomNavigationBarTransitionIfBarHiddenable]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
-        return [vc shouldCustomNavigationBarTransitionIfBarHiddenable];
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
+        return [vc shouldCustomizeNavigationBarTransitionIfHideable];
     }
     return NO;
 }
 
 - (BOOL)hideNavigationBarWhenTransitioning {
     if ([self respondCustomNavigationBarTransitionWithBarHiddenState]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         BOOL hidden = [vc preferredNavigationBarHidden];
         return hidden;
     }
@@ -417,8 +424,8 @@
 
 - (UIColor *)containerViewBackgroundColor {
     UIColor *backgroundColor = UIColorWhite;
-    if ([self qmui_respondQMUINavigationControllerDelegate]) {
-        UIViewController<QMUINavigationControllerDelegate> *vc = (UIViewController<QMUINavigationControllerDelegate> *)self;
+    if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
+        UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(containerViewBackgroundColorWhenTransitioning)]) {
             backgroundColor = [vc containerViewBackgroundColorWhenTransitioning];
         }

@@ -35,10 +35,16 @@ static NSString * const kAssetInfoSize = @"size";
                 _assetType = QMUIAssetTypeImage;
                 if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
                     _assetSubType = QMUIAssetSubTypeGIF;
-                } else if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
-                    _assetSubType = QMUIAssetSubTypeLivePhoto;
                 } else {
-                    _assetSubType = QMUIAssetSubTypeImage;
+                    if (@available(iOS 9.1, *)) {
+                        if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
+                            _assetSubType = QMUIAssetSubTypeLivePhoto;
+                        } else {
+                            _assetSubType = QMUIAssetSubTypeImage;
+                        }
+                    } else {
+                        _assetSubType = QMUIAssetSubTypeImage;
+                    }
                 }
                 break;
             case PHAssetMediaTypeVideo:
@@ -55,9 +61,15 @@ static NSString * const kAssetInfoSize = @"size";
     return self;
 }
 
+- (PHAsset *)phAsset {
+    return _phAsset;
+}
+
 - (UIImage *)originImage {
     __block UIImage *resultImage = nil;
     PHImageRequestOptions *phImageRequestOptions = [[PHImageRequestOptions alloc] init];
+    phImageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    phImageRequestOptions.networkAccessAllowed = YES;
     phImageRequestOptions.synchronous = YES;
     [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset
                                                                           targetSize:PHImageManagerMaximumSize
@@ -72,7 +84,7 @@ static NSString * const kAssetInfoSize = @"size";
 - (UIImage *)thumbnailWithSize:(CGSize)size {
     __block UIImage *resultImage;
     PHImageRequestOptions *phImageRequestOptions = [[PHImageRequestOptions alloc] init];
-    phImageRequestOptions.resizeMode = PHImageRequestOptionsResizeModeExact;
+    phImageRequestOptions.resizeMode = PHImageRequestOptionsResizeModeFast;
         // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset
                                                                           targetSize:CGSizeMake(size.width * ScreenScale, size.height * ScreenScale)
@@ -87,6 +99,7 @@ static NSString * const kAssetInfoSize = @"size";
 - (UIImage *)previewImage {
     __block UIImage *resultImage = nil;
     PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
+    imageRequestOptions.networkAccessAllowed = YES;
     imageRequestOptions.synchronous = YES;
     [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset
                                                                         targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -225,9 +238,7 @@ static NSString * const kAssetInfoSize = @"size";
         return _assetIdentityHash;
     }
     NSString *identity = _phAsset.localIdentifier;
-    // 系统输出的 identity 可能包含特殊字符，为了避免引起问题，统一使用 md5 转换
-    _assetIdentityHash = [identity qmui_md5];
-    return _assetIdentityHash;
+    return identity;
 }
 
 - (void)requestPhAssetInfo:(void (^)(NSDictionary *))completion {

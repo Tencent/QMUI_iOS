@@ -242,6 +242,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.statusbarStyleLightInitially = NO;
     self.needsBackBarButtonItemTitle = NO;
     self.hidesBottomBarWhenPushedInitially = NO;
+    self.preventConcurrentNavigationControllerTransitions = YES;
     self.navigationBarHiddenInitially = NO;
     self.shouldFixTabBarTransitionBugInIPhoneX = NO;
 }
@@ -356,9 +357,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         }
         
         navBarAppearance.backIndicatorImage = _navBarBackIndicatorImage;
-        navBarAppearance.backIndicatorTransitionMaskImage = navBarAppearance.backIndicatorImage;
+        navBarAppearance.backIndicatorTransitionMaskImage = _navBarBackIndicatorImage;
         navigationBar.backIndicatorImage = _navBarBackIndicatorImage;
-        navigationBar.backIndicatorTransitionMaskImage = navigationBar.backIndicatorImage;
+        navigationBar.backIndicatorTransitionMaskImage = _navBarBackIndicatorImage;
     }
 }
 

@@ -20,8 +20,9 @@
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
 #import "UIControl+QMUI.h"
+#import "QMUILog.h"
 
-#define TopToolBarViewHeight (64.0 + IPhoneXSafeAreaInsets.bottom)
+#define TopToolBarViewHeight (20 + NavigationBarHeight + IPhoneXSafeAreaInsets.top)
 
 #pragma mark - QMUIImagePickerPreviewViewController (UIAppearance)
 
@@ -95,19 +96,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     [self.checkboxButton addTarget:self action:@selector(handleCheckButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     self.checkboxButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     [self.topToolBarView addSubview:self.checkboxButton];
-    
-    _progressView = [[QMUIPieProgressView alloc] init];
-    self.progressView.tintColor = self.toolBarTintColor;
-    self.progressView.hidden = YES;
-    [self.topToolBarView addSubview:self.progressView];
-    
-    _downloadRetryButton = [[UIButton alloc] init];
-    [self.downloadRetryButton setImage:[QMUIHelper imageWithName:@"QMUI_icloud_download_fault"] forState:UIControlStateNormal];
-    [self.downloadRetryButton sizeToFit];
-    [self.downloadRetryButton addTarget:self action:@selector(handleDownloadRetryButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-    self.downloadRetryButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
-    self.downloadRetryButton.hidden = YES;
-    [self.topToolBarView addSubview:self.downloadRetryButton];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -135,14 +123,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     if (!self.checkboxButton.hidden) {
         self.checkboxButton.frame = CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - CGRectGetWidth(self.checkboxButton.frame), topToolbarPaddingTop + CGFloatGetCenter(topToolbarContentHeight, CGRectGetHeight(self.checkboxButton.frame)));
     }
-    UIImage *downloadRetryImage = [self.downloadRetryButton imageForState:UIControlStateNormal];
-    self.downloadRetryButton.frame = CGRectSetXY(self.downloadRetryButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - downloadRetryImage.size.width, topToolbarPaddingTop + CGFloatGetCenter(topToolbarContentHeight, CGRectGetHeight(self.downloadRetryButton.frame)));
-    /* 理论上 progressView 作为进度按钮，应该需要跟错误重试按钮 downloadRetryButton 的 frame 保持一致，但这里并没有直接使用
-     * self.progressView.frame = self.downloadRetryButton.frame，这是因为 self.downloadRetryButton 具有 1pt 的 top
-     * contentEdgeInsets，因此最终的 frame 是椭圆型，如果按上面的操作，progressView 内部绘制出的饼状图形就会变成椭圆型，
-     * 因此，这里 progressView 直接拿 downloadRetryButton 的 image 图片尺寸作为 frame size
-     */
-    self.progressView.frame = CGRectFlatMake(CGRectGetMinX(self.downloadRetryButton.frame), CGRectGetMinY(self.downloadRetryButton.frame) + self.downloadRetryButton.contentEdgeInsets.top, downloadRetryImage.size.width, downloadRetryImage.size.height);
 }
 
 - (void)setToolBarBackgroundColor:(UIColor *)toolBarBackgroundColor {
@@ -159,35 +139,8 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 
 - (void)setDownloadStatus:(QMUIAssetDownloadStatus)downloadStatus {
     _downloadStatus = downloadStatus;
-    switch (downloadStatus) {
-        case QMUIAssetDownloadStatusSucceed:
-            if (!_singleCheckMode) {
-                self.checkboxButton.hidden = NO;
-            }
-            self.progressView.hidden = YES;
-            self.downloadRetryButton.hidden = YES;
-            break;
-            
-        case QMUIAssetDownloadStatusDownloading:
-            self.checkboxButton.hidden = YES;
-            self.progressView.hidden = NO;
-            self.downloadRetryButton.hidden = YES;
-            break;
-            
-        case QMUIAssetDownloadStatusCanceled:
-            self.checkboxButton.hidden = NO;
-            self.progressView.hidden = YES;
-            self.downloadRetryButton.hidden = YES;
-            break;
-            
-        case QMUIAssetDownloadStatusFailed:
-            self.progressView.hidden = YES;
-            self.checkboxButton.hidden = YES;
-            self.downloadRetryButton.hidden = NO;
-            break;
-            
-        default:
-            break;
+    if (!_singleCheckMode) {
+        self.checkboxButton.hidden = NO;
     }
 }
 
@@ -213,8 +166,10 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 - (QMUIImagePreviewMediaType)imagePreviewView:(QMUIImagePreviewView *)imagePreviewView assetTypeAtIndex:(NSUInteger)index {
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:index];
     if (imageAsset.assetType == QMUIAssetTypeImage) {
-        if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
-            return QMUIImagePreviewMediaTypeLivePhoto;
+        if (@available(iOS 9.1, *)) {
+            if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
+                return QMUIImagePreviewMediaTypeLivePhoto;
+            }
         }
         return QMUIImagePreviewMediaTypeImage;
     } else if (imageAsset.assetType == QMUIAssetTypeVideo) {
@@ -239,6 +194,11 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 
 - (void)singleTouchInZoomingImageView:(QMUIZoomImageView *)zoomImageView location:(CGPoint)location {
     self.topToolBarView.hidden = !self.topToolBarView.hidden;
+}
+
+- (void)didTouchICloudRetryButtonInZoomImageView:(QMUIZoomImageView *)imageView {
+    NSInteger index = [self.imagePreviewView indexForZoomImageView:imageView];
+    [self.imagePreviewView.collectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:index inSection:0]]];
 }
 
 - (void)zoomImageView:(QMUIZoomImageView *)imageView didHideVideoToolbar:(BOOL)didHide {
@@ -299,10 +259,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     }
 }
 
-- (void)handleDownloadRetryButtonClick:(id)sender {
-    [self requestImageForZoomImageView:nil withIndex:self.imagePreviewView.currentImageIndex];
-}
-
 #pragma mark - Request Image
 
 - (void)requestImageForZoomImageView:(QMUIZoomImageView *)zoomImageView withIndex:(NSInteger)index {
@@ -318,26 +274,26 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     PHAssetImageProgressHandler phProgressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
         imageAsset.downloadProgress = progress;
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (index == self.imagePreviewView.currentImageIndex) {
-                // 只有当前显示的预览图才会展示下载进度
-                QMUILogInfo(@"Download iCloud image in preview, current progress is: %f", progress);
-                
-                if (self.downloadStatus != QMUIAssetDownloadStatusDownloading) {
-                    self.downloadStatus = QMUIAssetDownloadStatusDownloading;
-                    // 重置 progressView 的显示的进度为 0
-                    [self.progressView setProgress:0 animated:NO];
-                }
-                // 拉取资源的初期，会有一段时间没有进度，猜测是发出网络请求以及与 iCloud 建立连接的耗时，这时预先给个 0.02 的进度值，看上去好看些
-                float targetProgress = fmax(0.02, progress);
-                if ( targetProgress < self.progressView.progress ) {
-                    [self.progressView setProgress:targetProgress animated:NO];
-                } else {
-                    self.progressView.progress = fmax(0.02, progress);
-                }
-                if (error) {
-                    QMUILog(@"Download iCloud image Failed, current progress is: %f", progress);
-                    self.downloadStatus = QMUIAssetDownloadStatusFailed;
-                }
+            QMUILogInfo(@"QMUIImagePickerLibrary", @"Download iCloud image in preview, current progress is: %f", progress);
+            
+            if (self.downloadStatus != QMUIAssetDownloadStatusDownloading) {
+                self.downloadStatus = QMUIAssetDownloadStatusDownloading;
+                imageView.cloudDownloadStatus = QMUIAssetDownloadStatusDownloading;
+
+                // 重置 progressView 的显示的进度为 0
+                [imageView.cloudProgressView setProgress:0 animated:NO];
+            }
+            // 拉取资源的初期，会有一段时间没有进度，猜测是发出网络请求以及与 iCloud 建立连接的耗时，这时预先给个 0.02 的进度值，看上去好看些
+            float targetProgress = fmax(0.02, progress);
+            if (targetProgress < imageView.cloudProgressView.progress) {
+                [imageView.cloudProgressView setProgress:targetProgress animated:NO];
+            } else {
+                imageView.cloudProgressView.progress = fmax(0.02, progress);
+            }
+            if (error) {
+                QMUILog(@"QMUIImagePickerLibrary", @"Download iCloud image Failed, current progress is: %f", progress);
+                self.downloadStatus = QMUIAssetDownloadStatusFailed;
+                imageView.cloudDownloadStatus = QMUIAssetDownloadStatusFailed;
             }
         });
     };
@@ -346,45 +302,58 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
         imageAsset.requestID = [imageAsset requestPlayerItemWithCompletion:^(AVPlayerItem *playerItem, NSDictionary *info) {
             // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
             // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
-            BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
-            BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
-            BOOL loadICloudImageFault = !playerItem || info[PHImageErrorKey];
-            if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
-                dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
+                BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
+                BOOL loadICloudImageFault = !playerItem || info[PHImageErrorKey];
+                if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
                     imageView.videoPlayerItem = playerItem;
-                });
-            }
+                }
+            });
         } withProgressHandler:phProgressHandler];
         imageView.tag = imageAsset.requestID;
     } else {
         if (imageAsset.assetType != QMUIAssetTypeImage) {
             return;
         }
-        if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
+        
+        // 这么写是为了消除 Xcode 的 API available warning
+        BOOL isLivePhoto = NO;
+        if (@available(iOS 9.1, *)) {
+            if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
+                isLivePhoto = YES;
+            }
+        }
+        
+        if (isLivePhoto) {
             imageView.tag = -1;
             imageAsset.requestID = [imageAsset requestLivePhotoWithCompletion:^void(PHLivePhoto *livePhoto, NSDictionary *info) {
                 // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
                 // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
-                BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
-                BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
-                BOOL loadICloudImageFault = !livePhoto || info[PHImageErrorKey];
-                if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
-                    // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
-                    // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        imageView.livePhoto = livePhoto;
-                    });
-                }
-                BOOL downloadSucceed = (livePhoto && !info) || (![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue]);
-                if (downloadSucceed) {
-                    // 资源资源已经在本地或下载成功
-                    [imageAsset updateDownloadStatusWithDownloadResult:YES];
-                    self.downloadStatus = QMUIAssetDownloadStatusSucceed;
-                } else if ([info objectForKey:PHLivePhotoInfoErrorKey] ) {
-                    // 下载错误
-                    [imageAsset updateDownloadStatusWithDownloadResult:NO];
-                    self.downloadStatus = QMUIAssetDownloadStatusFailed;
-                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
+                    BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
+                    BOOL loadICloudImageFault = !livePhoto || info[PHImageErrorKey];
+                    if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
+                        // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
+                        // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
+                        if (@available(iOS 9.1, *)) {
+                            imageView.livePhoto = livePhoto;
+                        }
+                    }
+                    BOOL downloadSucceed = (livePhoto && !info) || (![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue]);
+                    if (downloadSucceed) {
+                        // 资源资源已经在本地或下载成功
+                        [imageAsset updateDownloadStatusWithDownloadResult:YES];
+                        self.downloadStatus = QMUIAssetDownloadStatusSucceed;
+                        imageView.cloudDownloadStatus = QMUIAssetDownloadStatusSucceed;
+                    } else if ([info objectForKey:PHLivePhotoInfoErrorKey] ) {
+                        // 下载错误
+                        [imageAsset updateDownloadStatusWithDownloadResult:NO];
+                        self.downloadStatus = QMUIAssetDownloadStatusFailed;
+                        imageView.cloudDownloadStatus = QMUIAssetDownloadStatusFailed;
+                    }
+                });
             } withProgressHandler:phProgressHandler];
             imageView.tag = imageAsset.requestID;
         } else if (imageAsset.assetSubType == QMUIAssetSubTypeGIF) {
@@ -397,24 +366,26 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
             imageAsset.requestID = [imageAsset requestPreviewImageWithCompletion:^void(UIImage *result, NSDictionary *info) {
                 // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
                 // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
-                BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
-                BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
-                BOOL loadICloudImageFault = !result || info[PHImageErrorKey];
-                if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
+                    BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
+                    BOOL loadICloudImageFault = !result || info[PHImageErrorKey];
+                    if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
                         imageView.image = result;
-                    });
-                }
-                BOOL downloadSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-                if (downloadSucceed) {
-                    // 资源资源已经在本地或下载成功
-                    [imageAsset updateDownloadStatusWithDownloadResult:YES];
-                    self.downloadStatus = QMUIAssetDownloadStatusSucceed;
-                } else if ([info objectForKey:PHImageErrorKey] ) {
-                    // 下载错误
-                    [imageAsset updateDownloadStatusWithDownloadResult:NO];
-                    self.downloadStatus = QMUIAssetDownloadStatusFailed;
-                }
+                    }
+                    BOOL downloadSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+                    if (downloadSucceed) {
+                        // 资源资源已经在本地或下载成功
+                        [imageAsset updateDownloadStatusWithDownloadResult:YES];
+                        self.downloadStatus = QMUIAssetDownloadStatusSucceed;
+                        imageView.cloudDownloadStatus = QMUIAssetDownloadStatusSucceed;
+                    } else if ([info objectForKey:PHImageErrorKey] ) {
+                        // 下载错误
+                        [imageAsset updateDownloadStatusWithDownloadResult:NO];
+                        self.downloadStatus = QMUIAssetDownloadStatusFailed;
+                        imageView.cloudDownloadStatus = QMUIAssetDownloadStatusFailed;
+                    }
+                });
             } withProgressHandler:phProgressHandler];
             imageView.tag = imageAsset.requestID;
         }

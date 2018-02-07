@@ -15,19 +15,19 @@
 /// 默认值为 NO
 @property(nonatomic, assign) BOOL qmui_usedAsTableHeaderView;
 
-@property(nonatomic, strong) UIColor *qmui_placeholderColor;
-@property(nonatomic, strong) UIColor *qmui_textColor;
-@property(nonatomic, strong) UIFont *qmui_font;
+@property(nullable, nonatomic, strong) UIColor *qmui_placeholderColor;
+@property(nullable, nonatomic, strong) UIColor *qmui_textColor;
+@property(nullable, nonatomic, strong) UIFont *qmui_font;
 @property(nonatomic, assign) UIEdgeInsets qmui_textFieldMargins;
 
 /// 获取 searchBar 内的输入框
-@property(nonatomic, weak, readonly) UITextField *qmui_textField;
+@property(nullable, nonatomic, weak, readonly) UITextField *qmui_textField;
 
 /// 获取 searchBar 内的取消按钮
-@property(nonatomic, weak, readonly) UIButton *qmui_cancelButton;
+@property(nullable, nonatomic, weak, readonly) UIButton *qmui_cancelButton;
 
 /// 获取 scopeBar 里的 UISegmentedControl
-@property(nonatomic, weak, readonly) UISegmentedControl *qmui_segmentedControl;
+@property(nullable, nonatomic, weak, readonly) UISegmentedControl *qmui_segmentedControl;
 
 - (void)qmui_styledAsQMUISearchBar;
 

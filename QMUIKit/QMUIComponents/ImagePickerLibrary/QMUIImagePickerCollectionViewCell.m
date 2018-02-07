@@ -38,8 +38,6 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
         [QMUIImagePickerCollectionViewCell appearance].checkboxImage = [QMUIHelper imageWithName:@"QMUI_pickerImage_checkbox"];
         [QMUIImagePickerCollectionViewCell appearance].checkboxCheckedImage = [QMUIHelper imageWithName:@"QMUI_pickerImage_checkbox_checked"];
         [QMUIImagePickerCollectionViewCell appearance].checkboxButtonMargins = QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins;
-        [QMUIImagePickerCollectionViewCell appearance].progressViewTintColor = UIColorWhite;
-        [QMUIImagePickerCollectionViewCell appearance].downloadRetryImage = [QMUIHelper imageWithName:@"QMUI_icloud_download_fault_small"];
         [QMUIImagePickerCollectionViewCell appearance].videoMarkImage = [QMUIHelper imageWithName:@"QMUI_pickerImage_video_mark"];
         [QMUIImagePickerCollectionViewCell appearance].videoMarkImageViewMargins = QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMargins;
         [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelFont = UIFontMake(12);
@@ -55,8 +53,6 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
         self.checkboxImage = [QMUIImagePickerCollectionViewCell appearance].checkboxImage;
         self.checkboxCheckedImage = [QMUIImagePickerCollectionViewCell appearance].checkboxCheckedImage;
         self.checkboxButtonMargins = [QMUIImagePickerCollectionViewCell appearance].checkboxButtonMargins;
-        self.progressViewTintColor = [QMUIImagePickerCollectionViewCell appearance].progressViewTintColor;
-        self.downloadRetryImage = [QMUIImagePickerCollectionViewCell appearance].downloadRetryImage;
         self.videoMarkImage = [QMUIImagePickerCollectionViewCell appearance].videoMarkImage;
         self.videoMarkImageViewMargins = [QMUIImagePickerCollectionViewCell appearance].videoMarkImageViewMargins;
         self.videoDurationLabelFont = [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelFont;
@@ -77,15 +73,6 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     self.checkboxButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
     self.checkboxButton.hidden = YES;
     [self.contentView addSubview:self.checkboxButton];
-    
-    _progressView = [[QMUIPieProgressView alloc] init];
-    self.progressView.hidden = YES;
-    [self.contentView addSubview:self.progressView];
-    
-    _downloadRetryButton = [[QMUIButton alloc] init];
-    self.downloadRetryButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
-    self.downloadRetryButton.hidden = YES;
-    [self.contentView addSubview:self.downloadRetryButton];
 }
 
 - (void)initVideoBottomShadowLayerIfNeeded {
@@ -129,16 +116,9 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
 - (void)layoutSubviews {
     [super layoutSubviews];
     self.contentImageView.frame = self.contentView.bounds;
-    if (_editing) {
+    if (_selectable) {
         self.checkboxButton.frame = CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.contentView.bounds) - self.checkboxButtonMargins.right - CGRectGetWidth(self.checkboxButton.bounds), self.checkboxButtonMargins.top);
     }
-    
-    /* 理论上 downloadRetryButton 应该在 setImage 后 sizeToFit 计算大小，
-     * 但因为当图片小于某个高度时， UIButton sizeToFit 时会自动改写 height 值，
-     * 因此，这里 downloadRetryButton 直接拿 downloadRetryButton 的 image 图片尺寸作为 frame size
-     */
-    self.downloadRetryButton.frame = CGRectFlatMake(CGRectGetWidth(self.contentView.bounds) - self.checkboxButtonMargins.right - _downloadRetryImage.size.width, self.checkboxButtonMargins.top, _downloadRetryImage.size.width, _downloadRetryImage.size.height);
-    self.progressView.frame = CGRectFlatMake(CGRectGetMinX(self.downloadRetryButton.frame), CGRectGetMinY(self.downloadRetryButton.frame) + self.downloadRetryButton.contentEdgeInsets.top, CGRectGetWidth(self.downloadRetryButton.bounds), CGRectGetHeight(self.downloadRetryButton.bounds));
     
     if (_videoBottomShadowLayer && _videoMarkImageView && _videoDurationLabel) {
         _videoMarkImageView.frame = CGRectSetXY(_videoMarkImageView.frame, self.videoMarkImageViewMargins.left, CGRectGetHeight(self.contentView.bounds) - CGRectGetHeight(_videoMarkImageView.bounds) - self.videoMarkImageViewMargins.bottom);
@@ -172,18 +152,6 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     _checkboxCheckedImage = checkboxCheckedImage;
 }
 
-- (void)setDownloadRetryImage:(UIImage *)downloadRetryImage {
-    if (![self.downloadRetryImage isEqual:downloadRetryImage]) {
-        [self.downloadRetryButton setImage:downloadRetryImage forState:UIControlStateNormal];
-    }
-    _downloadRetryImage = downloadRetryImage;
-}
-
-- (void)setProgressViewTintColor:(UIColor *)progressViewTintColor {
-    _progressView.tintColor = progressViewTintColor;
-    _progressViewTintColor = progressViewTintColor;
-}
-
 - (void)setVideoMarkImage:(UIImage *)videoMarkImage {
     if (![self.videoMarkImage isEqual:videoMarkImage]) {
         [_videoMarkImageView setImage:videoMarkImage];
@@ -209,7 +177,7 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
 
 - (void)setChecked:(BOOL)checked {
     _checked = checked;
-    if (_editing) {
+    if (_selectable) {
         self.checkboxButton.selected = checked;
         [QMUIImagePickerHelper removeSpringAnimationOfImageCheckedWithCheckboxButton:self.checkboxButton];
         if (checked) {
@@ -218,44 +186,17 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     }
 }
 
-- (void)setEditing:(BOOL)editing {
-    _editing = editing;
+- (void)setSelectable:(BOOL)editing {
+    _selectable = editing;
     if (self.downloadStatus == QMUIAssetDownloadStatusSucceed) {
-        self.checkboxButton.hidden = !_editing;
+        self.checkboxButton.hidden = !_selectable;
     }
 }
 
 - (void)setDownloadStatus:(QMUIAssetDownloadStatus)downloadStatus {
     _downloadStatus = downloadStatus;
-    switch (downloadStatus) {
-        case QMUIAssetDownloadStatusSucceed:
-            if (_editing) {
-                self.checkboxButton.hidden = !_editing;
-            }
-            self.progressView.hidden = YES;
-            self.downloadRetryButton.hidden = YES;
-            break;
-            
-        case QMUIAssetDownloadStatusDownloading:
-            self.checkboxButton.hidden = YES;
-            self.progressView.hidden = NO;
-            self.downloadRetryButton.hidden = YES;
-            break;
-            
-        case QMUIAssetDownloadStatusCanceled:
-            self.checkboxButton.hidden = NO;
-            self.progressView.hidden = YES;
-            self.downloadRetryButton.hidden = YES;
-            break;
-            
-        case QMUIAssetDownloadStatusFailed:
-            self.progressView.hidden = YES;
-            self.checkboxButton.hidden = YES;
-            self.downloadRetryButton.hidden = NO;
-            break;
-            
-        default:
-            break;
+    if (_selectable) {
+        self.checkboxButton.hidden = !_selectable;
     }
 }
 

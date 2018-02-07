@@ -9,19 +9,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@protocol QMUIHelperDelegate <NSObject>
-
-@required
-- (void)QMUIHelperPrintLog:(nonnull NSString *)log;
-
-@end
-
 @interface QMUIHelper : NSObject
 
 + (instancetype _Nonnull)sharedInstance;
-
-@property(nullable, nonatomic, weak) id<QMUIHelperDelegate> helperDelegate;
-
 @end
 
 
@@ -38,7 +28,7 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 @end
 
 @interface QMUIHelper (SystemVersion)
-
++ (NSInteger)numbericOSVersion;
 + (NSComparisonResult)compareSystemVersion:(nonnull NSString *)currentVersion toVersion:(nonnull NSString *)targetVersion;
 + (BOOL)isCurrentSystemAtLeastVersion:(nonnull NSString *)targetVersion;
 + (BOOL)isCurrentSystemLowerThanVersion:(nonnull NSString *)targetVersion;
@@ -213,17 +203,5 @@ extern NSString * __nonnull const QMUISpringAnimationKey;
 @interface QMUIHelper (Animation)
 
 + (void)actionSpringAnimationForView:(nonnull UIView *)view;
-
-@end
-
-typedef NS_ENUM(NSUInteger, QMUILogLevel) {
-    QMUILogLevelDefault,    // 当使用 QMUILog() 时使用的等级
-    QMUILogLevelInfo,       // 当使用 QMUILogInfo() 时使用的等级，比 QMUILogLevelDefault 要轻量，适用于一些无关紧要的信息
-    QMUILogLevelWarn        // 当使用 QMUILogWarn() 时使用的等级，最重，适用于一些异常或者严重错误的场景
-};
-
-@interface QMUIHelper (Log)
-
-- (void)printLogWithCalledFunction:(nonnull const char *)func level:(QMUILogLevel)level log:(nonnull NSString *)log, ... NS_FORMAT_FUNCTION(3, 4);
 
 @end

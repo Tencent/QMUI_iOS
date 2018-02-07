@@ -151,11 +151,12 @@ static char kAssociatedObjectKey_lineHeight;
     return [objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight) floatValue];
 }
 
-- (instancetype)initWithFont:(UIFont *)font textColor:(UIColor *)textColor {
-    if (self = [super init]) {
-        self.font = font;
-        self.textColor = textColor;
-    }
+- (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor {
+    BeginIgnoreClangWarning(-Wunused-value)
+    [self init];
+    EndIgnoreClangWarning
+    self.font = font;
+    self.textColor = textColor;
     return self;
 }
 

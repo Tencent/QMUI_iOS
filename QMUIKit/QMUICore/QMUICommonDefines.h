@@ -78,6 +78,9 @@
 // 操作系统版本号，只获取第二级的版本号，例如 10.3.1 只会得到 10.3
 #define IOS_VERSION ([[[UIDevice currentDevice] systemVersion] doubleValue])
 
+// 数字形式的操作系统版本号，可直接用于大小比较；如 110205 代表 11.2.5 版本；根据 iOS 规范，版本号最多可能有3位
+#define IOS_VERSION_NUMBER [QMUIHelper numbericOSVersion]
+
 // 是否横竖屏
 // 用户界面横屏了才会返回YES
 #define IS_LANDSCAPE UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation])
@@ -190,13 +193,6 @@
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")
 
-/// 以下是 QMUI 提供的打 log 的方法，仅用于 QMUI 项目内，业务项目可通过 QMUIHelperDelegate 来自定义 log 的输出方式（例如 Release 可将 log 记录到自己的日志文件里）
-/// 按照重要程度从低到高排列是：info、default、warn，每一个级别都可以通过修改配置表的开关来控制这个级别的 log 是否要输出
-/// QMUILog 默认会自动将当前打 log 的方法名记录下来，所以你的 log 内容可以不需要包含这部分的内容
-#define QMUILog(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ level:QMUILogLevelDefault log:__VA_ARGS__]
-#define QMUILogInfo(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ level:QMUILogLevelInfo log:__VA_ARGS__]
-#define QMUILogWarn(...) [[QMUIHelper sharedInstance] printLogWithCalledFunction:__FUNCTION__ level:QMUILogLevelWarn log:__VA_ARGS__]
-
 #pragma mark - 方法-C对象、结构操作
 
 CG_INLINE BOOL
@@ -276,6 +272,7 @@ betweenOrEqual(CGFloat minimumValue, CGFloat value, CGFloat maximumValue) {
  *  例如 CGFloatToFixed(0.3333, 2) 会返回 0.33，而 CGFloatToFixed(0.6666, 2) 会返回 0.67
  *
  *  @warning 参数类型为 CGFloat，也即意味着不管传进来的是 float 还是 double 最终都会被强制转换成 CGFloat 再做计算
+ *  @warning 该方法无法解决浮点数精度运算的问题
  */
 CG_INLINE CGFloat
 CGFloatToFixed(CGFloat value, NSUInteger precision) {

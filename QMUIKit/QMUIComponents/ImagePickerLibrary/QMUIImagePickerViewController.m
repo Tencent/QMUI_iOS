@@ -10,7 +10,6 @@
 #import "QMUICore.h"
 #import "QMUIImagePickerCollectionViewCell.h"
 #import "QMUIButton.h"
-#import "QMUIPieProgressView.h"
 #import "QMUIAssetsManager.h"
 #import "QMUIAlertController.h"
 #import "QMUIImagePickerHelper.h"
@@ -22,6 +21,8 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "NSString+QMUI.h"
 #import "QMUIEmptyView.h"
+#import "UIControl+QMUI.h"
+#import "QMUILog.h"
 
 // 底部工具栏
 #define OperationToolBarViewHeight (44 + IPhoneXSafeAreaInsets.bottom)
@@ -85,7 +86,9 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     _minimumSelectImageCount = 0;
     _shouldShowDefaultLoadingView = YES;
     // 为了让使用者可以在 init 完就可以直接改 UI 相关的 property，这里提前触发 loadView
+    BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
+    EndIgnoreAvailabilityWarning
 }
 
 - (void)dealloc {
@@ -126,6 +129,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         [self.sendButton setTitleColor:UIColorMake(124, 124, 124) forState:UIControlStateNormal];
         [self.sendButton setTitleColor:UIColorGray forState:UIControlStateDisabled];
         [self.sendButton setTitle:@"发送" forState:UIControlStateNormal];
+        self.sendButton.qmui_outsideEdge = UIEdgeInsetsMake(-12, -20, -12, -20);
         [self.sendButton sizeToFit];
         [self.sendButton addTarget:self action:@selector(handleSendButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.operationToolBarView addSubview:self.sendButton];
@@ -136,11 +140,13 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         [self.previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateNormal] forState:UIControlStateNormal];
         [self.previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateDisabled] forState:UIControlStateDisabled];
         [self.previewButton setTitle:@"预览" forState:UIControlStateNormal];
+        self.previewButton.qmui_outsideEdge = UIEdgeInsetsMake(-12, -20, -12, -20);
         [self.previewButton sizeToFit];
         [self.previewButton addTarget:self action:@selector(handlePreviewButtonClick:) forControlEvents:UIControlEventTouchUpInside];
         [self.operationToolBarView addSubview:self.previewButton];
         
         _imageCountLabel = [[UILabel alloc] init];
+        self.imageCountLabel.userInteractionEnabled = NO;// 不要影响 sendButton 的事件
         self.imageCountLabel.backgroundColor = ButtonTintColor;
         self.imageCountLabel.textColor = UIColorWhite;
         self.imageCountLabel.font = UIFontMake(12);
@@ -348,14 +354,13 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     }
     
     [cell.checkboxButton addTarget:self action:@selector(handleCheckBoxButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-    [cell.progressView addTarget:self action:@selector(handleProgressViewClick:) forControlEvents:UIControlEventTouchUpInside];
-    [cell.downloadRetryButton addTarget:self action:@selector(handleDownloadRetryButtonClick:) forControlEvents:UIControlEventTouchUpInside];
     
-    cell.editing = self.allowsMultipleSelection;
-    if (cell.editing) {
+    cell.selectable = self.allowsMultipleSelection;
+    if (cell.selectable) {
         // 如果该图片的 QMUIAsset 被包含在已选择图片的数组中，则控制该图片被选中
         cell.checked = [QMUIImagePickerHelper imageAssetArray:_selectedImageAssetArray containsImageAsset:imageAsset];
     }
+    [cell setNeedsLayout];
     return cell;
 }
 
@@ -433,29 +438,37 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         [self updateImageCountAndCheckLimited];
     } else {
         // 选中该资源
+        if ([_selectedImageAssetArray count] >= _maximumSelectImageCount) {
+            if (!_alertTitleWhenExceedMaxSelectImageCount) {
+                _alertTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"你最多只能选择%@张图片", @(_maximumSelectImageCount)];
+            }
+            if (!_alertButtonTitleWhenExceedMaxSelectImageCount) {
+                _alertButtonTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"我知道了"];
+            }
+            
+            QMUIAlertController *alertController = [QMUIAlertController alertControllerWithTitle:_alertTitleWhenExceedMaxSelectImageCount message:nil preferredStyle:QMUIAlertControllerStyleAlert];
+            [alertController addAction:[QMUIAlertAction actionWithTitle:_alertButtonTitleWhenExceedMaxSelectImageCount style:QMUIAlertActionStyleCancel handler:nil]];
+            [alertController showWithAnimated:YES];
+            return;
+        }
+        
+        if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:willCheckImageAtIndex:)]) {
+            [self.imagePickerViewControllerDelegate imagePickerViewController:self willCheckImageAtIndex:indexPath.item];
+        }
+        
+        cell.checked = YES;
+        [_selectedImageAssetArray addObject:imageAsset];
+        
+        if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:didCheckImageAtIndex:)]) {
+            [self.imagePickerViewControllerDelegate imagePickerViewController:self didCheckImageAtIndex:indexPath.item];
+        }
+        
+        // 根据选择图片数控制预览和发送按钮的 enable，以及修改已选中的图片数
+        [self updateImageCountAndCheckLimited];
+        
         // 发出请求获取大图，如果图片在 iCloud，则会发出网络请求下载图片。这里同时保存请求 id，供取消请求使用
         [self requestImageWithIndexPath:indexPath];
     }
-}
-
-- (void)handleProgressViewClick:(id)sender {
-    UIControl *progressView = sender;
-    NSIndexPath *indexPath = [self.collectionView qmui_indexPathForItemAtView:progressView];
-    QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
-    if (imageAsset.downloadStatus == QMUIAssetDownloadStatusDownloading) {
-        // 下载过程中点击，取消下载，理论上能点击 progressView 就肯定是下载中，这里只是做个保护
-        QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
-        [[QMUIAssetsManager sharedInstance].phCachingImageManager cancelImageRequest:(int32_t)imageAsset.requestID];
-        QMUILogInfo(@"Cancel download asset image with request ID %@", [NSNumber numberWithInteger:imageAsset.requestID]);
-        cell.downloadStatus = QMUIAssetDownloadStatusCanceled;
-        [imageAsset updateDownloadStatusWithDownloadResult:NO];
-    }
-}
-
-- (void)handleDownloadRetryButtonClick:(id)sender {
-    UIButton *downloadRetryButton = sender;
-    NSIndexPath *indexPath = [self.collectionView qmui_indexPathForItemAtView:downloadRetryButton];
-    [self requestImageWithIndexPath:indexPath];
 }
 
 - (void)updateImageCountAndCheckLimited {
@@ -488,33 +501,6 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
             [imageAsset updateDownloadStatusWithDownloadResult:YES];
             cell.downloadStatus = QMUIAssetDownloadStatusSucceed;
             
-            if ([_selectedImageAssetArray count] >= _maximumSelectImageCount) {
-                if (!_alertTitleWhenExceedMaxSelectImageCount) {
-                    _alertTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"你最多只能选择%@张图片", @(_maximumSelectImageCount)];
-                }
-                if (!_alertButtonTitleWhenExceedMaxSelectImageCount) {
-                    _alertButtonTitleWhenExceedMaxSelectImageCount = [NSString stringWithFormat:@"我知道了"];
-                }
-                
-                QMUIAlertController *alertController = [QMUIAlertController alertControllerWithTitle:_alertTitleWhenExceedMaxSelectImageCount message:nil preferredStyle:QMUIAlertControllerStyleAlert];
-                [alertController addAction:[QMUIAlertAction actionWithTitle:_alertButtonTitleWhenExceedMaxSelectImageCount style:QMUIAlertActionStyleCancel handler:nil]];
-                [alertController showWithAnimated:YES];
-                return;
-            }
-            
-            if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:willCheckImageAtIndex:)]) {
-                [self.imagePickerViewControllerDelegate imagePickerViewController:self willCheckImageAtIndex:indexPath.item];
-            }
-            
-            cell.checked = YES;
-            [_selectedImageAssetArray addObject:imageAsset];
-            
-            if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:didCheckImageAtIndex:)]) {
-                [self.imagePickerViewControllerDelegate imagePickerViewController:self didCheckImageAtIndex:indexPath.item];
-            }
-            
-            // 根据选择图片数控制预览和发送按钮的 enable，以及修改已选中的图片数
-            [self updateImageCountAndCheckLimited];
         } else if ([info objectForKey:PHImageErrorKey] ) {
             // 下载错误
             [imageAsset updateDownloadStatusWithDownloadResult:NO];
@@ -524,34 +510,22 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     } withProgressHandler:^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
         imageAsset.downloadProgress = progress;
         
-        if ([self.collectionView qmui_itemVisibleAtIndexPath:indexPath]) {
-            /**
-             *  withProgressHandler 不在主线程执行，若用户在该 block 中操作 UI 时会产生一些问题，
-             *  为了避免这种情况，这里该 block 主动放到主线程执行。
-             */
-            dispatch_async(dispatch_get_main_queue(), ^{
-                QMUILogInfo(@"Download iCloud image, current progress is : %f", progress);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([self.collectionView qmui_itemVisibleAtIndexPath:indexPath]) {
+                
+                QMUILogInfo(@"QMUIImagePickerLibrary", @"Download iCloud image, current progress is : %f", progress);
                 
                 if (cell.downloadStatus != QMUIAssetDownloadStatusDownloading) {
                     cell.downloadStatus = QMUIAssetDownloadStatusDownloading;
-                    // 重置 progressView 的显示的进度为 0
-                    [cell.progressView setProgress:0 animated:NO];
                     // 预先设置预览界面的下载状态
                     self.imagePickerPreviewViewController.downloadStatus = QMUIAssetDownloadStatusDownloading;
                 }
-                // 拉取资源的初期，会有一段时间没有进度，猜测是发出网络请求以及与 iCloud 建立连接的耗时，这时预先给个 0.02 的进度值，看上去好看些
-                float targetProgress = MAX(0.02, progress);
-                if ( targetProgress < cell.progressView.progress ) {
-                    [cell.progressView setProgress:targetProgress animated:NO];
-                } else {
-                    cell.progressView.progress = MAX(0.02, progress);
-                }
                 if (error) {
-                    QMUILog(@"Download iCloud image Failed, current progress is: %f", progress);
+                    QMUILog(@"QMUIImagePickerLibrary", @"Download iCloud image Failed, current progress is: %f", progress);
                     cell.downloadStatus = QMUIAssetDownloadStatusFailed;
                 }
-            });
-        }
+            }
+        });
     }];
 }
 

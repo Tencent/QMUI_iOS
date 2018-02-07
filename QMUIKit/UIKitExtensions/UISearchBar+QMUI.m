@@ -284,7 +284,7 @@ static char kAssociatedObjectKey_textFieldMargins;
     UIImage *searchIconImage = SearchBarSearchIconImage;
     if (searchIconImage) {
         if (!CGSizeEqualToSize(searchIconImage.size, CGSizeMake(13, 13))) {
-            QMUILog(@"搜索框放大镜图片（SearchBarSearchIconImage）的大小最好为 (13, 13)，否则会失真，目前的大小为 %@", NSStringFromCGSize(searchIconImage.size));
+            NSLog(@"搜索框放大镜图片（SearchBarSearchIconImage）的大小最好为 (13, 13)，否则会失真，目前的大小为 %@", NSStringFromCGSize(searchIconImage.size));
         }
         [self setImage:searchIconImage forSearchBarIcon:UISearchBarIconSearch state:UIControlStateNormal];
     }

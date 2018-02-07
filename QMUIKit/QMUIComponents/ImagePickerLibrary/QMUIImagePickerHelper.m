@@ -9,10 +9,11 @@
 #import "QMUIImagePickerHelper.h"
 #import "QMUICore.h"
 #import "QMUIAssetsManager.h"
+#import "QMUIAsset.h"
 #import <Photos/PHCollection.h>
 #import <Photos/PHFetchResult.h>
 #import "UIImage+QMUI.h"
-
+#import "QMUILog.h"
 
 static NSString * const kLastAlbumKeyPrefix = @"QMUILastestAlbumKeyWith";
 static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLastestAlbumKeyWith";
@@ -84,7 +85,7 @@ static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLa
             assetsGroup = [[QMUIAssetsGroup alloc] initWithPHCollection:phAssetCollection fetchAssetsOptions:phFetchOptions];
         }
     } else {
-        QMUILog(@"Group For localIdentifier is not found! groupIdentifier is %@", groupIdentifier);
+        QMUILog(@"QMUIImagePickerLibrary", @"Group For localIdentifier is not found! groupIdentifier is %@", groupIdentifier);
     }
     return assetsGroup;
 }
@@ -97,6 +98,54 @@ static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLa
     [userDefaults setValue:assetsGroup.phAssetCollection.localIdentifier forKey:lastAlbumKey];
     [userDefaults setInteger:albumContentType forKey:contentTypeOflastAlbumKey];
     [userDefaults synchronize];
+}
+
++ (BOOL)imageAssetsDownloaded:(NSMutableArray<QMUIAsset *> *)imagesAssetArray {
+    for (QMUIAsset *asset in imagesAssetArray) {
+        if (asset.downloadStatus != QMUIAssetDownloadStatusSucceed) {
+            return NO;
+        }
+    }
+    return YES;
+}
+
++ (void)requestImageAssetIfNeeded:(QMUIAsset *)asset completion: (void (^)(QMUIAssetDownloadStatus downloadStatus, NSError *error))completion {
+    if (asset.downloadStatus != QMUIAssetDownloadStatusSucceed) {
+        
+        // 资源加载中
+        if (completion) {
+            completion(QMUIAssetDownloadStatusDownloading, nil);
+        }
+
+        [asset requestOriginImageWithCompletion:^(UIImage *result, NSDictionary<NSString *,id> *info) {
+            BOOL downloadSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            
+            if (downloadSucceed) {
+                // 资源资源已经在本地或下载成功
+                [asset updateDownloadStatusWithDownloadResult:YES];
+                
+                if (completion) {
+                    completion(QMUIAssetDownloadStatusSucceed, nil);
+                }
+                
+            } else if ([info objectForKey:PHImageErrorKey]) {
+                // 下载错误
+                [asset updateDownloadStatusWithDownloadResult:NO];
+                
+                if (completion) {
+                    completion(QMUIAssetDownloadStatusFailed, [info objectForKey:PHImageErrorKey]);
+                }
+            }
+        } withProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
+            NSLog(@"current progress is %f", progress);
+            asset.downloadProgress = progress;
+        }];
+    } else {
+        // 资源资源已经在本地或下载成功
+        if (completion) {
+            completion(QMUIAssetDownloadStatusSucceed, nil);
+        }
+    }
 }
 
 @end

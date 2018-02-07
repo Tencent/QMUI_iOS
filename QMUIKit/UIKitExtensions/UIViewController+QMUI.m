@@ -130,7 +130,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     // 如果当前设备方向和界面支持的方向不一致，则主动进行旋转
     UIDeviceOrientation deviceOrientationToRotate = [self interfaceOrientationMask:self.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientation] ? deviceOrientation : [self deviceOrientationWithInterfaceOrientationMask:self.supportedInterfaceOrientations];
     
-    // 之前没用私有接口修改过，拿就按最标准的方式去旋转
+    // 之前没用私有接口修改过，那就按最标准的方式去旋转
     if (!shouldConsiderBeforeChanging) {
         if ([QMUIHelper rotateToDeviceOrientation:deviceOrientationToRotate]) {
             [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = deviceOrientation;
@@ -245,7 +245,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     if ([self isViewLoaded] && self.view.window) {
         return self;
     } else {
-        QMUILog(@"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view : nil, [self isViewLoaded] ? self.view.window : nil);
+        NSLog(@"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view : nil, [self isViewLoaded] ? self.view.window : nil);
         return nil;
     }
 }

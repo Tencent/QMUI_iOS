@@ -12,6 +12,9 @@
 #import "NSObject+QMUI.h"
 #import "UICollectionView+QMUI.h"
 #import "QMUIEmptyView.h"
+#import "QMUILog.h"
+#import "QMUIPieProgressView.h"
+#import "QMUIButton.h"
 
 @interface QMUIImagePreviewCell : UICollectionViewCell
 
@@ -116,7 +119,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     if (currentImageIndex < [self.collectionView numberOfItemsInSection:0]) {
         [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:currentImageIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:animated];
     } else {
-        QMUILog(@"dataSource 里的图片数量和当前显示出来的图片数量不匹配, collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource numberOfSectionsInCollectionView:self.collectionView]), @(_currentImageIndex));
+        QMUILog(@"QMUIImagePreviewView", @"dataSource 里的图片数量和当前显示出来的图片数量不匹配, collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource numberOfSectionsInCollectionView:self.collectionView]), @(_currentImageIndex));
     }
 }
 
@@ -150,18 +153,19 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     QMUIImagePreviewCell *cell = (QMUIImagePreviewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
     QMUIZoomImageView *zoomView = cell.zoomImageView;
     ((UIActivityIndicatorView *)zoomView.emptyView.loadingView).color = self.loadingColor;
+    zoomView.cloudProgressView.tintColor = self.loadingColor;
+    zoomView.cloudDownloadRetryButton.tintColor = self.loadingColor;
     zoomView.delegate = self;
     
     // 因为 cell 复用的问题，很可能此时会显示一张错误的图片，因此这里要清空所有图片的显示
     zoomView.image = nil;
-    zoomView.livePhoto = nil;
     zoomView.videoPlayerItem = nil;
-    [zoomView showLoading];
-    
+    if (@available(iOS 9.1, *)) {
+        zoomView.livePhoto = nil;
+    }
     if ([self.delegate respondsToSelector:@selector(imagePreviewView:renderZoomImageView:atIndex:)]) {
         [self.delegate imagePreviewView:self renderZoomImageView:zoomView atIndex:indexPath.item];
     }
-    [zoomView hideEmptyView];
     return cell;
 }
 
@@ -229,7 +233,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 
 @implementation QMUIImagePreviewView (QMUIZoomImageView)
 
-- (NSUInteger)indexForZoomImageView:(QMUIZoomImageView *)zoomImageView {
+- (NSInteger)indexForZoomImageView:(QMUIZoomImageView *)zoomImageView {
     if ([zoomImageView.superview.superview isKindOfClass:[QMUIImagePreviewCell class]]) {
         return [self.collectionView indexPathForCell:(QMUIImagePreviewCell *)zoomImageView.superview.superview].item;
     } else {
@@ -273,6 +277,13 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     [self checkIfDelegateMissing];
     if ([self.delegate respondsToSelector:_cmd]) {
         [self.delegate longPressInZoomingImageView:imageView];
+    }
+}
+
+- (void)didTouchICloudRetryButtonInZoomImageView:(QMUIZoomImageView *)imageView {
+    [self checkIfDelegateMissing];
+    if ([self.delegate respondsToSelector:_cmd]) {
+        [self.delegate didTouchICloudRetryButtonInZoomImageView:imageView];
     }
 }
 

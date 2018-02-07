@@ -135,7 +135,7 @@ static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
 
 - (void)alertConvertValueWithView:(UIView *)view {
     if (IS_DEBUG && ![self isUIKitPrivateView] && ![self hasSharedAncestorViewWithView:view]) {
-        QMUILogWarn(@"进行坐标系转换运算的 %@ 和 %@ 不存在共同的父 view，可能导致运算结果不准确（特别是在横屏状态下）", self, view);
+        NSLog(@"进行坐标系转换运算的 %@ 和 %@ 不存在共同的父 view，可能导致运算结果不准确（特别是在横屏状态下）", self, view);
     }
 }
 
@@ -187,6 +187,7 @@ static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
                                                [UIScrollView class],
                                                [UIDatePicker class],
                                                [UIPickerView class],
+                                               [UIVisualEffectView class],
                                                [UIWebView class],
                                                [UIWindow class],
                                                [UINavigationBar class],
@@ -197,11 +198,8 @@ static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
                                                [UIView class],
                                                nil];
     
-    if (NSClassFromString(@"UIStackView")) {
-        [viewSuperclasses addObject:[UIStackView class]];
-    }
-    if (NSClassFromString(@"UIVisualEffectView")) {
-        [viewSuperclasses addObject:[UIVisualEffectView class]];
+    if (@available(iOS 9.0, *)) {
+        [viewSuperclasses insertObject:[UIStackView class] atIndex:0];
     }
     
     for (NSInteger i = 0, l = viewSuperclasses.count; i < l; i++) {
@@ -268,9 +266,11 @@ static char kAssociatedObjectKey_hasDebugColor;
 
 - (void)renderColorWithSubviews:(NSArray *)subviews {
     for (UIView *view in subviews) {
-        if ([view isKindOfClass:[UIStackView class]]) {
-            UIStackView *stackView = (UIStackView *)view;
-            [self renderColorWithSubviews:stackView.arrangedSubviews];
+        if (@available(iOS 9.0, *)) {
+            if ([view isKindOfClass:[UIStackView class]]) {
+                UIStackView *stackView = (UIStackView *)view;
+                [self renderColorWithSubviews:stackView.arrangedSubviews];
+            }
         }
         view.qmui_hasDebugColor = YES;
         view.qmui_shouldShowDebugColor = self.qmui_shouldShowDebugColor;
@@ -302,7 +302,7 @@ static char kAssociatedObjectKey_hasDebugColor;
 }
 
 - (void)QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow {
-    QMUILog(@"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，可能导致界面显示异常，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
+    NSLog(@"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，可能导致界面显示异常，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
 }
 
 @end

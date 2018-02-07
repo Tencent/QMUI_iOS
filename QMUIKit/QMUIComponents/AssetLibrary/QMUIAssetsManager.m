@@ -9,6 +9,7 @@
 #import "QMUIAssetsManager.h"
 #import "QMUICore.h"
 #import "QMUIAsset.h"
+#import "QMUILog.h"
 
 void QMUIImageWriteToSavedPhotosAlbumWithAlbumAssetsGroup(UIImage *image, QMUIAssetsGroup *albumAssetsGroup, QMUIWriteAssetCompletionBlock completionBlock) {
     [[QMUIAssetsManager sharedInstance] saveImageWithImageRef:image.CGImage albumAssetsGroup:albumAssetsGroup orientation:image.imageOrientation completionBlock:completionBlock];
@@ -124,7 +125,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
                                                QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
                                                completionBlock(asset, error);
                                            } else {
-                                               QMUILog(@"Get PHAsset of image error: %@", error);
+                                               QMUILog(@"QMUIAssetLibrary", @"Get PHAsset of image error: %@", error);
                                                completionBlock(nil, error);
                                            }
                                        }];
@@ -144,7 +145,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
                                                QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
                                                completionBlock(asset, error);
                                            } else {
-                                               QMUILog(@"Get PHAsset of image error: %@", error);
+                                               QMUILog(@"QMUIAssetLibrary", @"Get PHAsset of image error: %@", error);
                                                completionBlock(nil, error);
                                            }
                                        }];
@@ -164,7 +165,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
                                                QMUIAsset *asset = [[QMUIAsset alloc] initWithPHAsset:phAsset];
                                                completionBlock(asset, error);
                                            } else {
-                                               QMUILog(@"Get PHAsset of video Error: %@", error);
+                                               QMUILog(@"QMUIAssetLibrary", @"Get PHAsset of video Error: %@", error);
                                                completionBlock(nil, error);
                                            }
                                        }];
@@ -310,7 +311,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
         } else if (imagePathURL) {
             assetChangeRequest = [PHAssetChangeRequest creationRequestForAssetFromImageAtFileURL:imagePathURL];
         } else {
-            QMUILog(@"Creating asset with empty data");
+            QMUILog(@"QMUIAssetLibrary", @"Creating asset with empty data");
             return;
         }
         assetChangeRequest.creationDate = [NSDate date];
@@ -330,7 +331,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
         
     } completionHandler:^(BOOL success, NSError *error) {
         if (!success) {
-            QMUILog(@"Creating asset of image error : %@", error);
+            QMUILog(@"QMUIAssetLibrary", @"Creating asset of image error : %@", error);
         }
         
         if (completionHandler) {
@@ -369,7 +370,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
         
     } completionHandler:^(BOOL success, NSError *error) {
         if (!success) {
-            QMUILog(@"Creating asset of video error: %@", error);
+            QMUILog(@"QMUIAssetLibrary", @"Creating asset of video error: %@", error);
         }
         
         if (completionHandler) {

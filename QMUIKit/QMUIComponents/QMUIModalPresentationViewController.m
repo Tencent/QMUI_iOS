@@ -150,7 +150,9 @@ static QMUIModalPresentationViewController *appearance;
         return;
     }
     
-    [QMUIHelper dimmedApplicationWindow];
+    if (self.isShownInWindowMode) {
+        [QMUIHelper dimmedApplicationWindow];
+    }
     
     void (^didShownCompletion)(BOOL finished) = ^(BOOL finished) {
         if (self.contentViewController) {
@@ -224,7 +226,9 @@ static QMUIModalPresentationViewController *appearance;
         return;
     }
     
-    [QMUIHelper resetDimmedApplicationWindow];
+    if (self.isShownInWindowMode) {
+        [QMUIHelper resetDimmedApplicationWindow];
+    }
     
     if (self.contentViewController) {
         [self.contentViewController beginAppearanceTransition:NO animated:animated];
@@ -477,7 +481,9 @@ static QMUIModalPresentationViewController *appearance;
 
 - (void)showInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL))completion {
     self.appearCompletionBlock = completion;
+    BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
+    EndIgnoreAvailabilityWarning
     [self beginAppearanceTransition:YES animated:animated];
     [view addSubview:self.view];
     [self endAppearanceTransition];

@@ -87,13 +87,13 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 
 @property(nonatomic, strong, readonly) QMUITableView *tableView;
 
-@property(nonatomic, copy) NSArray<NSString *> *items;
+@property(nonatomic, copy) NSArray <NSString *> *items;
 
 /// 表示单选模式下已选中的item序号，默认为QMUIDialogSelectionViewControllerSelectedItemIndexNone。此属性与 `selectedItemIndexes` 互斥。
 @property(nonatomic, assign) NSInteger selectedItemIndex;
 
 /// 表示多选模式下已选中的item序号，默认为nil。此属性与 `selectedItemIndex` 互斥。
-@property(nonatomic, strong) NSMutableSet<NSNumber *> *selectedItemIndexes;
+@property(nonatomic, strong) NSMutableSet <NSNumber *> *selectedItemIndexes;
 
 /// 控制是否允许多选，默认为NO。
 @property(nonatomic, assign) BOOL allowsMultipleSelection;
@@ -103,6 +103,7 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 @property(nonatomic, copy) BOOL (^canSelectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
 @property(nonatomic, copy) void (^didSelectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
 @property(nonatomic, copy) void (^didDeselectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
+
 @end
 
 /**
@@ -110,9 +111,17 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
  * 可通过`enablesSubmitButtonAutomatically`来自动设置`submitButton.enabled`的状态
  */
 @interface QMUIDialogTextFieldViewController : QMUIDialogViewController
-@property(nonatomic, copy) NSString *textFieldTitle; // 输入框的标题
+
+/// 输入框的标题
+@property(nonatomic, copy) NSString *textFieldTitle;
+
+/// 输入框Label
 @property(nonatomic, strong, readonly) QMUILabel *textFieldLabel;
+
+/// 输入框底部分隔线
 @property(nonatomic, strong, readonly) CALayer *textFieldSeparatorLayer;
+
+/// 输入框
 @property(nonatomic, strong, readonly) QMUITextField *textField;
 
 /// 是否自动控制提交按钮的enabled状态，默认为YES，则当输入框内容为空时禁用提交按钮

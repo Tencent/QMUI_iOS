@@ -76,4 +76,18 @@
  */
 + (void)updateLastestAlbumWithAssetsGroup:(QMUIAssetsGroup *)assetsGroup ablumContentType:(QMUIAlbumContentType)albumContentType userIdentify:(NSString *)userIdentify;
 
+/**
+ * 检测一组资源是否全部下载成功，如果有资源仍未从 iCloud 中下载成功，则返回 NO
+ *
+ * 可以用于选择图片后，业务需要自行处理 iCloud 下载的场景。
+ */
++ (BOOL)imageAssetsDownloaded:(NSMutableArray<QMUIAsset *> *)imagesAssetArray;
+
+/**
+ * 检测资源是否已经在本地，如果资源仍未从 iCloud 中成功下载，则会发出请求从 iCloud 加载资源，并通过多次调用 block 返回请求结果
+ *
+ * 可以用于选择图片后，业务需要自行处理 iCloud 下载的场景。
+ */
++ (void)requestImageAssetIfNeeded:(QMUIAsset *)asset completion: (void (^)(QMUIAssetDownloadStatus downloadStatus, NSError *error))completion;
+
 @end

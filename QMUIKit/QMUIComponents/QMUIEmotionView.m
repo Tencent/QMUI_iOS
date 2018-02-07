@@ -249,8 +249,8 @@
     [super layoutSubviews];
     CGRect collectionViewFrame = CGRectInsetEdges(self.bounds, self.qmui_safeAreaInsets);
     BOOL collectionViewSizeChanged = !CGSizeEqualToSize(collectionViewFrame.size, self.collectionView.bounds.size);
+    self.collectionViewLayout.itemSize = collectionViewFrame.size;// 先更新 itemSize 再设置 collectionView.frame，否则会触发系统的 UICollectionViewFlowLayoutBreakForInvalidSizes 断点
     self.collectionView.frame = collectionViewFrame;
-    self.collectionViewLayout.itemSize = self.collectionView.bounds.size;
     
     if (collectionViewSizeChanged) {
         [self pageEmotions];

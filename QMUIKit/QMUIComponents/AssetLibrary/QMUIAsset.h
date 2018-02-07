@@ -42,6 +42,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 
 - (instancetype)initWithPHAsset:(PHAsset *)phAsset;
 
+@property(nonatomic, strong, readonly) PHAsset *phAsset;
 @property(nonatomic, assign, readonly) QMUIAssetDownloadStatus downloadStatus; // 从 iCloud 下载资源大图的状态
 @property(nonatomic, assign) double downloadProgress; // 从 iCloud 下载资源大图的进度
 @property(nonatomic, assign) NSInteger requestID; // 从 iCloud 请求获得资源的大图的请求 ID
@@ -52,7 +53,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 /**
  *  Asset 的缩略图
  *
- *  @param size 指定返回的缩略图的大小
+ *  @param size 指定返回的缩略图的大小，pt 为单位
  *
  *  @return Asset 的缩略图
  */

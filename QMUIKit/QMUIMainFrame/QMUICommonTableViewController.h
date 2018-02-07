@@ -74,7 +74,7 @@ extern NSString *const QMUICommonTableViewControllerSectionFooterIdentifier;
  *
  *  一般情况下，有关tableView的设置属性的代码都应该写在这里。
  */
-- (void)initTableView;
+- (void)initTableView NS_REQUIRES_SUPER;
 
 /**
  *  布局 tableView 的方法独立抽取出来，方便子类在需要自定义 tableView.frame 时能重写并且屏蔽掉 super 的代码。如果不独立一个方法而是放在 viewDidLayoutSubviews 里，子类就很难屏蔽 super 里对 tableView.frame 的修改。

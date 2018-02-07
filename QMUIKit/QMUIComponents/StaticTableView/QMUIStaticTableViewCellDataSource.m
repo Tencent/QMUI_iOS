@@ -11,7 +11,6 @@
 #import "QMUIStaticTableViewCellData.h"
 #import "QMUITableViewCell.h"
 #import "UITableView+QMUIStaticCell.h"
-#import "NSObject+QMUI.h"
 #import <objc/runtime.h>
 
 @interface QMUIStaticTableViewCellDataSource ()
@@ -56,13 +55,13 @@
 
 - (QMUIStaticTableViewCellData *)cellDataAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= self.cellDataSections.count) {
-        QMUILogInfo(@"cellDataWithIndexPath:%@, data not exist in section!", indexPath);
+        NSLog(@"cellDataWithIndexPath:%@, data not exist in section!", indexPath);
         return nil;
     }
     
     NSArray<QMUIStaticTableViewCellData *> *rowDatas = [self.cellDataSections objectAtIndex:indexPath.section];
     if (indexPath.row >= rowDatas.count) {
-        QMUILogInfo(@"cellDataWithIndexPath:%@, data not exist in row!", indexPath);
+        NSLog(@"cellDataWithIndexPath:%@, data not exist in row!", indexPath);
         return nil;
     }
     

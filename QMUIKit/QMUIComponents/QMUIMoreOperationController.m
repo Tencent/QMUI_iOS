@@ -13,6 +13,7 @@
 #import "UIView+QMUI.h"
 #import "NSArray+QMUI.h"
 #import "UIScrollView+QMUI.h"
+#import "QMUILog.h"
 
 static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 
@@ -87,7 +88,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 @property(nonatomic, assign, getter=isShowing, readwrite) BOOL showing;
 @property(nonatomic, assign, getter=isAnimating, readwrite) BOOL animating;
-@property(nonatomic, assign) BOOL hideByCancel;// 是否通过点击取消按钮或者遮罩来隐藏面板，默认为 NO
+@property(nonatomic, assign) BOOL hideByCancel; // 是否通过点击取消按钮或者遮罩来隐藏面板，默认为 NO
 
 @end
 
@@ -139,7 +140,9 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         self.mutableItems = [[NSMutableArray alloc] init];
     }
     
+    BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
+    EndIgnoreAvailabilityWarning
 }
 
 - (void)viewDidLoad {
@@ -185,7 +188,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     if (!self.extendLayer.hidden) {
         self.extendLayer.frame = CGRectMake(0, layoutY, CGRectGetWidth(self.view.bounds), IPhoneXSafeAreaInsets.bottom);
         if (self.view.clipsToBounds) {
-            QMUILog(@"%@ 需要显示 extendLayer，但却被父级 clip 掉了，可能看不到", NSStringFromClass(self.class));
+            QMUILog(@"QMUIMoreOperationController", @"%@ 需要显示 extendLayer，但却被父级 clip 掉了，可能看不到", NSStringFromClass(self.class));
         }
     }
     
@@ -246,9 +249,12 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 }
 
 - (void)showFromBottom {
+    
     if (self.showing || self.animating) {
         return;
     }
+    
+    self.hideByCancel = YES;
     
     __weak __typeof(self)weakSelf = self;
     
@@ -295,22 +301,16 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
             }
         }];
     };
-    
+
     self.animating = YES;
     [modalPresentationViewController showWithAnimated:YES completion:NULL];
 }
 
 - (void)hideToBottom {
-    [self hideToBottomCancelled:NO];
-}
-
-- (void)hideToBottomCancelled:(BOOL)cancelled {
-    
     if (!self.showing || self.animating) {
         return;
     }
-    
-    self.hideByCancel = cancelled;
+    self.hideByCancel = NO;
     [self.qmui_modalPresentationViewController hideWithAnimated:YES completion:NULL];
 }
 
@@ -457,7 +457,10 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 #pragma mark - Event
 
 - (void)handleCancelButtonEvent:(id)sender {
-    [self hideToBottomCancelled:YES];
+    if (!self.showing || self.animating) {
+        return;
+    }
+    [self.qmui_modalPresentationViewController hideWithAnimated:YES completion:NULL];
 }
 
 - (void)handleItemViewEvent:(QMUIMoreOperationItemView *)itemView {
