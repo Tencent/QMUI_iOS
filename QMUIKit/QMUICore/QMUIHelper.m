@@ -9,7 +9,7 @@
 #import "QMUIHelper.h"
 #import "QMUICore.h"
 #import <AVFoundation/AVFoundation.h>
-
+#import <math.h>
 
 NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
 
@@ -511,30 +511,22 @@ NSString *const QMUISpringAnimationKey = @"QMUISpringAnimationKey";
 
 @end
 
-@implementation QMUIHelper (Log)
-
-- (void)printLogWithCalledFunction:(nonnull const char *)func level:(QMUILogLevel)level log:(nonnull NSString *)log, ... {
-    // 不同级别的 log 可通过配置表的开关来控制是否要输出
-    if (level == QMUILogLevelDefault && !ShouldPrintDefaultLog) return;
-    if (level == QMUILogLevelInfo && !ShouldPrintInfoLog) return;
-    if (level == QMUILogLevelWarn && !ShouldPrintWarnLog) return;
-    
-    va_list args;
-    va_start(args, log);
-    NSString *levelString = @[@"QMUILogLevelDefault", @"QMUILogLevelInfo", @"QMUILogLevelWarn"][level];
-    NSString *logString = [[NSString alloc] initWithFormat:log arguments:args];
-    logString = [NSString stringWithFormat:@"[%@] %s, %@", levelString, func, logString];
-    if ([self.helperDelegate respondsToSelector:@selector(QMUIHelperPrintLog:)]) {
-        [self.helperDelegate QMUIHelperPrintLog:logString];
-    } else {
-        NSLog(@"%@", logString);
-    }
-    va_end(args);
-}
-
-@end
-
 @implementation QMUIHelper (SystemVersion)
+
++ (NSInteger)numbericOSVersion {
+    NSString *OSVersion = [[UIDevice currentDevice] systemVersion];
+    NSArray *OSVersionArr = [OSVersion componentsSeparatedByString:@"."];
+    
+    NSInteger numbericOSVersion = 0;
+    NSInteger pos = 0;
+    
+    while ([OSVersionArr count] > pos && pos < 3) {
+        numbericOSVersion += ([[OSVersionArr objectAtIndex:pos] integerValue] * pow(10, (4 - pos * 2)));
+        pos++;
+    }
+    
+    return numbericOSVersion;
+}
 
 + (NSComparisonResult)compareSystemVersion:(NSString *)currentVersion toVersion:(NSString *)targetVersion {
     NSArray *currentVersionArr = [currentVersion componentsSeparatedByString:@"."];
