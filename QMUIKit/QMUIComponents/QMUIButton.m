@@ -13,7 +13,6 @@
 #import "CALayer+QMUI.h"
 #import "UIButton+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
-#import "QMUILog.h"
 
 @interface QMUIButton ()
 
@@ -673,7 +672,7 @@
             self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
             UIImage *backIndicatorImage = NavBarBackIndicatorImage;
             if (!backIndicatorImage) {
-                QMUILogWarn(@"QMUIButton", @"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
+                NSLog(@"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
                 return;
             }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];

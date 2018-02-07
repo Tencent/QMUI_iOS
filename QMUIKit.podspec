@@ -48,7 +48,6 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton.{h,m}'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUITableView' do |sss|
@@ -158,7 +157,6 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIPopupContainerView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIPopupContainerView.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUIPopupMenuView' do |sss|
@@ -275,7 +273,6 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIStaticTableView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/StaticTableView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
   end
