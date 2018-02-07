@@ -1,0 +1,86 @@
+//
+//  QMUILayouter.m
+//  qmui
+//
+//  Created by MoLice on 2017/8/1.
+//  Copyright © 2017年 QMUI Team. All rights reserved.
+//
+
+#import "QMUILayouter.h"
+#import "QMUICore.h"
+
+@implementation UIView (QMUI_Layouter)
+
+- (CGFloat)QMUIG(top) {
+    return CGRectGetMinY(self.frame);
+}
+
+#ifdef QMUILayouterUsingFrameworkPrefix
+- (void)setQmui_top:(CGFloat)top {
+#else
+- (void)setTop:(CGFloat)top {
+#endif
+    self.frame = CGRectSetY(self.frame, top);
+}
+
+- (CGFloat)QMUIG(left) {
+    return CGRectGetMinX(self.frame);
+}
+
+#ifdef QMUILayouterUsingFrameworkPrefix
+- (void)setQmui_left:(CGFloat)left {
+#else
+- (void)setLeft:(CGFloat)left {
+#endif
+    self.frame = CGRectSetX(self.frame, left);
+}
+
+- (CGFloat)QMUIG(bottom) {
+    return CGRectGetMaxY(self.frame);
+}
+    
+#ifdef QMUILayouterUsingFrameworkPrefix
+- (void)setQmui_bottom:(CGFloat)bottom {
+#else
+- (void)setBottom:(CGFloat)bottom {
+#endif
+    self.frame = CGRectSetY(self.frame, bottom - CGRectGetHeight(self.frame));
+}
+
+- (CGFloat)QMUIG(right) {
+    return CGRectGetMaxX(self.frame);
+}
+
+#ifdef QMUILayouterUsingFrameworkPrefix
+- (void)setQmui_right:(CGFloat)right {
+#else
+- (void)setRight:(CGFloat)right {
+#endif
+    self.frame = CGRectSetX(self.frame, right - CGRectGetWidth(self.frame));
+}
+
+- (CGFloat)QMUIG(width) {
+    return CGRectGetWidth(self.frame);
+}
+            
+#ifdef QMUILayouterUsingFrameworkPrefix
+- (void)setQmui_width:(CGFloat)width {
+#else
+- (void)setWidth:(CGFloat)width {
+#endif
+    self.frame = CGRectSetWidth(self.frame, width);
+}
+
+- (CGFloat)QMUIG(height) {
+    return CGRectGetHeight(self.frame);
+}
+                
+#ifdef QMUILayouterUsingFrameworkPrefix
+- (void)setQmui_height:(CGFloat)height {
+#else
+- (void)setHeight:(CGFloat)height {
+#endif
+    self.frame = CGRectSetHeight(self.frame, height);
+}
+
+@end

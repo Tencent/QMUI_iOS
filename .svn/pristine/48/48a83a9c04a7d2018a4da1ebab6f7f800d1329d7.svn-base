@@ -1,0 +1,17 @@
+//
+//  UITableView+QMUIStaticCell.h
+//  qmui
+//
+//  Created by MoLice on 2017/6/20.
+//  Copyright © 2017年 QMUI Team. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+@class QMUIStaticTableViewCellDataSource;
+
+@interface UITableView (StaticCell)
+
+@property(nonatomic, strong) QMUIStaticTableViewCellDataSource *qmui_staticCellDataSource;
+@end

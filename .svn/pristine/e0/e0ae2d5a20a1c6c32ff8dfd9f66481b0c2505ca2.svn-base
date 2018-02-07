@@ -1,0 +1,30 @@
+//
+//  UIView+QMUILayout.h
+//  qmui
+//
+//  Created by molicechen(陈沛钞) on 2017/3/15.
+//  Copyright © 2017年 QMUI Team. All rights reserved.
+//
+
+#import <UIKit/UIKit.h>
+
+@interface UIView (QMUI_Layout)
+
+@property(nonatomic, assign) CGFloat qmui_top;
+@property(nonatomic, assign) CGFloat qmui_left;
+@property(nonatomic, assign) CGFloat qmui_bottom;
+@property(nonatomic, assign) CGFloat qmui_right;
+@property(nonatomic, assign) CGPoint qmui_center;
+@property(nonatomic, assign) CGFloat qmui_centerX;
+@property(nonatomic, assign) CGFloat qmui_centerY;
+@property(nonatomic, assign) CGFloat qmui_width;
+@property(nonatomic, assign) CGFloat qmui_height;
+@property(nonatomic, assign) UIEdgeInsets qmui_margins;
+
+@property(nonatomic, assign) CGFloat qmui_extendToTop;
+@property(nonatomic, assign) CGFloat qmui_extendToLeft;
+@property(nonatomic, assign) CGFloat qmui_extendToBottom;
+@property(nonatomic, assign) CGFloat qmui_extendToRight;
+
+@property(nonatomic, weak) UIView *qmui_sameWidthAndBelowToView;
+@end

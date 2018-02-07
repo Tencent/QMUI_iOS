@@ -1,0 +1,204 @@
+//
+//  QMUIStaticTableViewCellDataSource.m
+//  qmui
+//
+//  Created by MoLice on 2017/6/20.
+//  Copyright © 2017年 QMUI Team. All rights reserved.
+//
+
+#import "QMUIStaticTableViewCellDataSource.h"
+#import "QMUICore.h"
+#import "QMUIStaticTableViewCellData.h"
+#import "QMUITableViewCell.h"
+#import "UITableView+QMUIStaticCell.h"
+#import "NSObject+QMUI.h"
+#import <objc/runtime.h>
+
+@interface QMUIStaticTableViewCellDataSource ()
+
+@property(nonatomic, weak) NSObject<UITableViewDataSource> *dataSource;
+@property(nonatomic, weak) NSObject<UITableViewDelegate> *delegate;
+@end
+
+@implementation QMUIStaticTableViewCellDataSource
+
+- (instancetype)init {
+    if (self = [super init]) {
+    }
+    return self;
+}
+
+- (instancetype)initWithCellDataSections:(NSArray<NSArray<QMUIStaticTableViewCellData *> *> *)cellDataSections {
+    if (self = [super init]) {
+        self.cellDataSections = cellDataSections;
+    }
+    return self;
+}
+
+- (void)setTableView:(UITableView *)tableView {
+    _tableView = tableView;
+    self.dataSource = (NSObject<UITableViewDataSource> *)tableView.dataSource;
+    self.delegate = (NSObject<UITableViewDelegate> *)tableView.delegate;
+}
+
+- (void)addSelector:(SEL)selector withImplementation:(IMP)implementation types:(const char *)types forObject:(NSObject *)object {
+    if (!class_addMethod(object.class, selector, implementation, types)) {
+        QMUILog(@"%@, 尝试为 %@ 添加方法 %@ 失败，可能该类里已经实现了这个方法", NSStringFromClass(self.class), NSStringFromClass(object.class), NSStringFromSelector(selector));
+    }
+}
+
+#pragma mark - DataSource
+
+NSInteger staticCell_numberOfSections (id current_self, SEL current_cmd, UITableView *tableView) {
+    return tableView.qmui_staticCellDataSource.cellDataSections.count;
+}
+
+NSInteger staticCell_numberOfRows (id current_self, SEL current_cmd, UITableView *tableView, NSInteger section) {
+    return tableView.qmui_staticCellDataSource.cellDataSections[section].count;
+}
+
+id staticCell_cellForRow (id current_self, SEL current_cmd, UITableView *tableView, NSIndexPath *indexPath) {
+    QMUITableViewCell *cell = [tableView.qmui_staticCellDataSource cellForRowAtIndexPath:indexPath];
+    return cell;
+}
+
+- (void)setDataSource:(NSObject<UITableViewDataSource> *)dataSource {
+    _dataSource = dataSource;
+    [self addSelector:@selector(numberOfSectionsInTableView:) withImplementation:(IMP)staticCell_numberOfSections types:"l@:@" forObject:dataSource];
+    [self addSelector:@selector(tableView:numberOfRowsInSection:) withImplementation:(IMP)staticCell_numberOfRows types:"l@:@l" forObject:dataSource];
+    [self addSelector:@selector(tableView:cellForRowAtIndexPath:) withImplementation:(IMP)staticCell_cellForRow types:"@@:@@" forObject:dataSource];
+}
+
+#pragma mark - Delegate
+
+void staticCell_didSelectRow (id current_self, SEL current_cmd, UITableView *tableView, NSIndexPath *indexPath) {
+    [tableView.qmui_staticCellDataSource didSelectRowAtIndexPath:indexPath];
+}
+
+void staticCell_accessoryButtonTapped (id current_self, SEL current_cmd, UITableView *tableView, NSIndexPath *indexPath) {
+    [tableView.qmui_staticCellDataSource accessoryButtonTappedForRowWithIndexPath:indexPath];
+}
+
+- (void)setDelegate:(NSObject<UITableViewDelegate> *)delegate {
+    _delegate = delegate;
+    [self addSelector:@selector(tableView:didSelectRowAtIndexPath:) withImplementation:(IMP)staticCell_didSelectRow types:"v@:@@" forObject:delegate];
+    [self addSelector:@selector(tableView:accessoryButtonTappedForRowWithIndexPath:) withImplementation:(IMP)staticCell_accessoryButtonTapped types:"v@:@@" forObject:delegate];
+}
+
+@end
+
+@interface QMUIStaticTableViewCellData (Manual)
+
+@property(nonatomic, strong, readwrite) NSIndexPath *indexPath;
+@end
+
+@implementation QMUIStaticTableViewCellDataSource (Manual)
+
+- (QMUIStaticTableViewCellData *)cellDataAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section >= self.cellDataSections.count) {
+        NSLog(@"cellDataWithIndexPath:%@, data not exist in section!", indexPath);
+        return nil;
+    }
+    
+    NSArray<QMUIStaticTableViewCellData *> *rowDatas = [self.cellDataSections objectAtIndex:indexPath.section];
+    if (indexPath.row >= rowDatas.count) {
+        NSLog(@"cellDataWithIndexPath:%@, data not exist in row!", indexPath);
+        return nil;
+    }
+    
+    QMUIStaticTableViewCellData *cellData = [rowDatas objectAtIndex:indexPath.row];
+    [cellData setIndexPath:indexPath];// 在这里才为 cellData.indexPath 赋值
+    return cellData;
+}
+
+- (NSString *)reuseIdentifierForCellAtIndexPath:(NSIndexPath *)indexPath {
+    QMUIStaticTableViewCellData *data = [self cellDataAtIndexPath:indexPath];
+    return [NSString stringWithFormat:@"cell_%@", @(data.identifier)];
+}
+
+- (QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath ofClass:(Class)cellClass {
+    
+    QMUIStaticTableViewCellData *data = [self cellDataAtIndexPath:indexPath];
+    if (!data) {
+        return nil;
+    }
+    
+    NSString *identifier = [self reuseIdentifierForCellAtIndexPath:indexPath];
+    if (!cellClass) {
+        cellClass = [QMUITableViewCell class];
+    }
+    
+    NSAssert([cellClass isSubclassOfClass:[QMUITableViewCell class]], @"staticTableView不支持非QMUITableViewCell子类的class");
+    
+    QMUITableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:identifier];
+    if (!cell) {
+        cell = [[cellClass alloc] initForTableView:self.tableView withStyle:data.style reuseIdentifier:identifier];
+    }
+    cell.imageView.image = data.image;
+    cell.textLabel.text = data.text;
+    cell.detailTextLabel.text = data.detailText;
+    cell.accessoryType = [QMUIStaticTableViewCellData tableViewCellAccessoryTypeWithStaticAccessoryType:data.accessoryType];
+    
+    // 为某些控件类型的accessory添加控件及相应的事件绑定
+    if (data.accessoryType == QMUIStaticTableViewCellAccessoryTypeSwitch) {
+        UISwitch *switcher;
+        BOOL switcherOn = NO;
+        if ([cell.accessoryView isKindOfClass:[UISwitch class]]) {
+            switcher = (UISwitch *)cell.accessoryView;
+        } else {
+            switcher = [[UISwitch alloc] init];
+        }
+        if ([data.accessoryValueObject isKindOfClass:[NSNumber class]]) {
+            switcherOn = [((NSNumber *)data.accessoryValueObject) boolValue];
+        }
+        switcher.on = switcherOn;
+        [switcher removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
+        [switcher addTarget:data.actionTarget action:data.action forControlEvents:UIControlEventValueChanged];
+        cell.accessoryView = switcher;
+    }
+    
+    // 统一设置selectionStyle
+    if (data.accessoryType == QMUIStaticTableViewCellAccessoryTypeSwitch) {
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+    } else {
+        cell.selectionStyle = UITableViewCellSelectionStyleBlue;
+    }
+    
+    [cell updateCellAppearanceWithIndexPath:indexPath];
+    
+    return cell;
+}
+
+- (QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return [self cellForRowAtIndexPath:indexPath ofClass:[QMUITableViewCell class]];
+}
+
+- (void)didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    QMUIStaticTableViewCellData *cellData = [self cellDataAtIndexPath:indexPath];
+    if (!cellData || !cellData.actionTarget || !cellData.action) {
+        QMUITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
+        if (cell.selectionStyle != UITableViewCellSelectionStyleNone) {
+            [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+        }
+        return;
+    }
+    
+    // 1、分发选中事件（对于switch类型的，交给UISwitch响应，选中cell不响应）
+    if ([cellData.actionTarget respondsToSelector:cellData.action] && cellData.accessoryType != QMUIStaticTableViewCellAccessoryTypeSwitch) {
+        BeginIgnorePerformSelectorLeaksWarning
+        [cellData.actionTarget performSelector:cellData.action withObject:cellData];
+        EndIgnorePerformSelectorLeaksWarning
+    }
+    
+    // 2、处理点击状态（对checkmark类型的cell，选中后自动反选）
+    if (cellData.accessoryType == QMUIStaticTableViewCellAccessoryTypeCheckmark) {
+        [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+    }
+}
+
+- (void)accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
+    // TODO: molice
+    NSLog(@"点击到啦！！！");
+}
+
+@end

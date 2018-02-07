@@ -1,0 +1,30 @@
+echo "MACH_O_TYPE = "$MACH_O_TYPE
+if [ "$MACH_O_TYPE" == "staticlib" ]; then
+
+  # libQMUI.a
+
+  echo "TODO molice"
+else
+
+  # QMUIKit.framework
+
+  publicHeaderFilePath=$BUILT_PRODUCTS_DIR"/"$PUBLIC_HEADERS_FOLDER_PATH
+  umbrellaHeaderFileName="QMUIKit.h"
+  umbrellaHeaderFilePath=$publicHeaderFilePath"/"$umbrellaHeaderFileName
+  umbrellaFileContent="/// Automatically created by script in Build Phases\n\n#import <UIKit/UIKit.h>\n#import \"QMUICore.h\"\n"
+  echo "publicHeaderFilePath = "$publicHeaderFilePath
+  echo "umbrellaHeaderFilePath = "$umbrellaHeaderFilePath
+  for file in $publicHeaderFilePath/*
+  do
+    fileName=${file##*/}
+    if [ "$fileName" == "$umbrellaHeaderFileName" ]; then
+      echo "" # skip QMUIKit.h
+    else
+      fileImport="#import \""$fileName"\""
+      umbrellaFileContent=$umbrellaFileContent$fileImport"\n"
+    fi
+  done
+  echo -e $umbrellaFileContent
+  echo -e $umbrellaFileContent > $umbrellaHeaderFilePath
+fi
+

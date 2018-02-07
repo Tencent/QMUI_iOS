@@ -1,0 +1,174 @@
+//
+//  QMUILog.m
+//  QMUIKit
+//
+//  Created by MoLice on 2018/1/22.
+//  Copyright © 2018年 QMUI Team. All rights reserved.
+//
+
+#import "QMUILog.h"
+#import "QMUICore.h"
+
+@implementation QMUILogItem
+
++ (instancetype)logItemWithLevel:(QMUILogLevel)level name:(NSString *)name logString:(NSString *)logString, ... {
+    QMUILogItem *logItem = [[QMUILogItem alloc] init];
+    logItem.level = level;
+    logItem.name = name;
+    
+    QMUILogNameManager *logNameManager = [QMUILogger sharedInstance].logNameManager;
+    if ([logNameManager containsLogName:name]) {
+        logItem.enabled = [logNameManager enabledForLogName:name];
+    } else {
+        [logNameManager setEnabled:YES forLogName:name];
+        logItem.enabled = YES;
+    }
+    
+    va_list args;
+    va_start(args, logString);
+    logItem.logString = [[NSString alloc] initWithFormat:logString arguments:args];
+    va_end(args);
+    
+    return logItem;
+}
+
+- (instancetype)init {
+    if (self = [super init]) {
+        self.enabled = YES;
+    }
+    return self;
+}
+
+- (NSString *)levelDisplayString {
+    switch (self.level) {
+        case QMUILogLevelInfo:
+            return @"QMUILogLevelInfo";
+        case QMUILogLevelWarn:
+            return @"QMUILogLevelWarn";
+        default:
+            return @"QMUILogLevelDefault";
+    }
+}
+
+- (NSString *)print {
+    return [NSString stringWithFormat:@"%@ | %@ | %@", self.levelDisplayString, self.name.length > 0 ? self.name : @"NoName", self.logString];
+}
+
+@end
+
+@interface QMUILogNameManager ()
+
+@property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *mutableAllNames;
+@end
+
+@implementation QMUILogNameManager
+
+- (instancetype)init {
+    if (self = [super init]) {
+        self.mutableAllNames = [[NSMutableDictionary alloc] init];
+    }
+    return self;
+}
+
+- (NSDictionary<NSString *,NSNumber *> *)allNames {
+    if (self.mutableAllNames.count) {
+        return [self.mutableAllNames copy];
+    }
+    return nil;
+}
+
+- (BOOL)containsLogName:(NSString *)logName {
+    if (logName.length > 0) {
+        return !!self.mutableAllNames[logName];
+    }
+    return NO;
+}
+
+- (void)setEnabled:(BOOL)enabled forLogName:(NSString *)logName {
+    if (logName.length > 0) {
+        self.mutableAllNames[logName] = @(enabled);
+        if ([[QMUILogger sharedInstance].delegate respondsToSelector:@selector(QMUILogName:didChangeEnabled:)]) {
+            [[QMUILogger sharedInstance].delegate QMUILogName:logName didChangeEnabled:enabled];
+        }
+    }
+}
+
+- (BOOL)enabledForLogName:(NSString *)logName {
+    if (logName.length > 0) {
+        if ([self containsLogName:logName]) {
+            return [self.mutableAllNames[logName] boolValue];
+        }
+    }
+    return YES;
+}
+
+- (void)removeLogName:(NSString *)logName {
+    if (logName.length > 0) {
+        [self.mutableAllNames removeObjectForKey:logName];
+        if ([[QMUILogger sharedInstance].delegate respondsToSelector:@selector(QMUILogNameDidRemove:)]) {
+            [[QMUILogger sharedInstance].delegate QMUILogNameDidRemove:logName];
+        }
+    }
+}
+
+- (void)removeAllNames {
+    BOOL shouldCallDelegate = [[QMUILogger sharedInstance].delegate respondsToSelector:@selector(QMUILogNameDidRemove:)];
+    NSDictionary<NSString *, NSNumber *> *allNames = nil;
+    if (shouldCallDelegate) {
+        allNames = self.allNames;
+    }
+    
+    [self.mutableAllNames removeAllObjects];
+    
+    if (shouldCallDelegate) {
+        for (NSString *logName in allNames.allKeys) {
+            [[QMUILogger sharedInstance].delegate QMUILogNameDidRemove:logName];
+        }
+    }
+}
+
+@end
+
+@implementation QMUILogger
+
++ (instancetype)sharedInstance {
+    static dispatch_once_t onceToken;
+    static QMUILogger *instance = nil;
+    dispatch_once(&onceToken,^{
+        instance = [[super allocWithZone:NULL] init];
+    });
+    return instance;
+}
+
++ (id)allocWithZone:(struct _NSZone *)zone{
+    return [self sharedInstance];
+}
+
+- (instancetype)init {
+    if (self = [super init]) {
+        self.logNameManager = [[QMUILogNameManager alloc] init];
+    }
+    return self;
+}
+
+- (void)printLogWithFile:(const char *)file line:(int)line func:(const char *)func logItem:(QMUILogItem *)logItem {
+    // 禁用了某个 name 则直接退出
+    if (!logItem.enabled) return;
+    
+    // 不同级别的 log 可通过配置表的开关来控制是否要输出
+    if (logItem.level == QMUILogLevelDefault && !ShouldPrintDefaultLog) return;
+    if (logItem.level == QMUILogLevelInfo && !ShouldPrintInfoLog) return;
+    if (logItem.level == QMUILogLevelWarn && !ShouldPrintWarnLog) return;
+    
+    NSString *fileString = [NSString stringWithFormat:@"%s", file];
+    NSString *funcString = [NSString stringWithFormat:@"%s", func];
+    NSString *defaultString = [NSString stringWithFormat:@"%@:%@ | %@", funcString, @(line), [logItem print]];
+    
+    if ([self.delegate respondsToSelector:@selector(printQMUILogWithFile:line:func:logItem:defaultString:)]) {
+        [self.delegate printQMUILogWithFile:fileString line:line func:funcString logItem:logItem defaultString:defaultString];
+    } else {
+        NSLog(@"%@", defaultString);
+    }
+}
+
+@end

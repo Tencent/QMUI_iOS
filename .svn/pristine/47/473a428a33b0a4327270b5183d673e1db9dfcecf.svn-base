@@ -1,0 +1,28 @@
+//
+//  QMUILayouter.h
+//  qmui
+//
+//  Created by MoLice on 2017/8/1.
+//  Copyright © 2017年 QMUI Team. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#ifdef QMUILayouterUsingFrameworkPrefix
+#define QMUIP(_propertyName) qmui_##_propertyName
+#define QMUIG(_propertyName) qmui_##_propertyName
+#else
+#define QMUIP(_propertyName) _propertyName
+#define QMUIG(_propertyName) _propertyName
+#endif
+
+@interface UIView (QMUI_Layouter)
+
+@property(nonatomic, assign) CGFloat QMUIP(top);
+@property(nonatomic, assign) CGFloat QMUIP(left);
+@property(nonatomic, assign) CGFloat QMUIP(bottom);
+@property(nonatomic, assign) CGFloat QMUIP(right);
+@property(nonatomic, assign) CGFloat QMUIP(width);
+@property(nonatomic, assign) CGFloat QMUIP(height);
+@end

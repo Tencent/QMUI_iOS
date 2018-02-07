@@ -1,0 +1,92 @@
+//
+//  QMUILog.h
+//  QMUIKit
+//
+//  Created by MoLice on 2018/1/22.
+//  Copyright © 2018年 QMUI Team. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+
+/// 以下是 QMUI 提供的打 log 的方法，仅用于 QMUI 项目内，业务项目可通过 QMUIHelperDelegate 来自定义 log 的输出方式（例如 Release 可将 log 记录到自己的日志文件里）
+/// 按照重要程度从低到高排列是：info、default、warn，每一个级别都可以通过修改配置表的开关来控制这个级别的 log 是否要输出
+/// QMUILog 默认会自动将当前打 log 的方法名记录下来，所以你的 log 内容可以不需要包含这部分的内容
+#define QMUILog(_name, ...) [[QMUILogger sharedInstance] printLogWithFile:__FILE__ line:__LINE__ func:__FUNCTION__ logItem:[QMUILogItem logItemWithLevel:QMUILogLevelDefault name:_name logString:__VA_ARGS__]]
+#define QMUILogInfo(_name, ...) [[QMUILogger sharedInstance] printLogWithFile:__FILE__ line:__LINE__ func:__FUNCTION__ logItem:[QMUILogItem logItemWithLevel:QMUILogLevelInfo name:_name logString:__VA_ARGS__]]
+#define QMUILogWarn(_name, ...) [[QMUILogger sharedInstance] printLogWithFile:__FILE__ line:__LINE__ func:__FUNCTION__ logItem:[QMUILogItem logItemWithLevel:QMUILogLevelWarn name:_name logString:__VA_ARGS__]]
+
+typedef NS_ENUM(NSUInteger, QMUILogLevel) {
+    QMUILogLevelDefault,    // 当使用 QMUILog() 时使用的等级
+    QMUILogLevelInfo,       // 当使用 QMUILogInfo() 时使用的等级，比 QMUILogLevelDefault 要轻量，适用于一些无关紧要的信息
+    QMUILogLevelWarn        // 当使用 QMUILogWarn() 时使用的等级，最重，适用于一些异常或者严重错误的场景
+};
+
+@class QMUILogItem;
+
+@protocol QMUILoggerDelegate <NSObject>
+
+@optional
+
+/**
+ *  当每一个 enabled 的 QMUILog 被使用时都会走到这里，可以由业务自行决定要如何处理这些 log，如果没实现这个方法，默认用 NSLog() 打印内容
+ *  @param file 当前的文件的本地完整路径，可通过 file.lastPathComponent 获取文件名
+ *  @param line 当前 log 命令在该文件里的代码行数
+ *  @param func 当前 log 命令所在的方法名
+ *  @param logItem 当前 log 命令对应的 QMUILogItem，可得知该 log 的 level
+ *  @param defaultString QMUI 默认拼好的 log 内容
+ */
+- (void)printQMUILogWithFile:(nonnull NSString *)file line:(int)line func:(nullable NSString *)func logItem:(nullable QMUILogItem *)logItem defaultString:(nullable NSString *)defaultString;
+
+/**
+ *  当某个 logName 的 enabled 发生变化时，通知到 delegate。注意如果是新创建某个 logName 也会走到这里。
+ *  @param logName 变化的 logName
+ *  @param enabled 变化后的值
+ */
+- (void)QMUILogName:(nonnull NSString *)logName didChangeEnabled:(BOOL)enabled;
+
+/**
+ *  某个 logName 被删除时通知到 delegate
+ *  @param logName 被删除的 logName
+ */
+- (void)QMUILogNameDidRemove:(nonnull NSString *)logName;
+
+@end
+
+/// 每一条 QMUILog 日志都以 QMUILogItem 的形式包装起来
+@interface QMUILogItem : NSObject
+
+/// 日志的等级，可通过 QMUIConfigurationTemplate 配置表控制全局每个 level 是否可用
+@property(nonatomic, assign) QMUILogLevel level;
+
+/// 可利用 name 字段为日志分类，QMUILogNameManager 可全局控制某一个 name 是否可用
+@property(nullable, nonatomic, copy) NSString *name;
+
+/// 日志的内容
+@property(nonnull, nonatomic, copy) NSString *logString;
+
+/// 当前 logItem 对应的 name 是否可用，可通过 QMUILogNameManager 控制，默认为 YES
+@property(nonatomic, assign) BOOL enabled;
+
++ (nonnull instancetype)logItemWithLevel:(QMUILogLevel)level name:(nullable NSString *)name logString:(nonnull NSString *)logString, ... NS_FORMAT_FUNCTION(3, 4);
+@end
+
+/// log.name 的管理器，由它来管理每一个 name 是否可用、以及清理不需要的 name
+@interface QMUILogNameManager : NSObject
+
+/// 获取当前所有 logName，key 为 logName 名，value 为 name 的 enabled 状态，可通过 value.boolValue 读取它的值
+@property(nullable, nonatomic, copy, readonly) NSDictionary<NSString *, NSNumber *> *allNames;
+- (BOOL)containsLogName:(nullable NSString *)logName;
+- (void)setEnabled:(BOOL)enabled forLogName:(nullable NSString *)logName;
+- (BOOL)enabledForLogName:(nullable NSString *)logName;
+- (void)removeLogName:(nullable NSString *)logName;
+- (void)removeAllNames;
+@end
+
+@interface QMUILogger : NSObject
+
+@property(nullable, nonatomic, weak) id<QMUILoggerDelegate> delegate;
+@property(nonnull, nonatomic, strong) QMUILogNameManager *logNameManager;
+
++ (nonnull instancetype)sharedInstance;
+- (void)printLogWithFile:(nullable const char *)file line:(int)line func:(nonnull const char *)func logItem:(nullable QMUILogItem *)logItem;
+@end

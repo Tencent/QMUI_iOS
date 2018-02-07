@@ -1,0 +1,32 @@
+#!python
+
+import os
+
+if os.getenv('MACH_O_TYPE') == 'staticlib':
+
+  # libQMUI.a
+  print 'staticlib'
+
+else:
+
+  # QMUIKit.framework
+  publicHeaderFilePath = str(os.getenv('BUILT_PRODUCTS_DIR')) + '/' + os.getenv('PUBLIC_HEADERS_FOLDER_PATH') 
+  umbrellaHeaderFileName = 'QMUIKit.h'
+  umbrellaHeaderFilePath = publicHeaderFilePath + '/' + umbrellaHeaderFileName
+  umbrellaFileContent = '''/// Automatically created by script in Build Phases
+
+#import <UIKit/UIKit.h>
+#import "QMUICore.h"
+'''
+
+  onlyfiles = [ f for f in os.listdir(publicHeaderFilePath) if os.path.isfile(os.path.join(publicHeaderFilePath, f))]
+  for filename in onlyfiles:
+    if filename != umbrellaHeaderFileName:
+      umbrellaFileContent += '#import "%s"\n' % filename
+
+  f = open(umbrellaHeaderFilePath, 'r+')
+  f.seek(0)
+  f.write(umbrellaFileContent)
+  f.truncate()
+  f.close()
+
