@@ -10,7 +10,7 @@
 
 @interface UILabel (QMUI)
 
-- (instancetype)initWithFont:(UIFont *)font textColor:(UIColor *)textColor;
+- (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor;
 
 /**
  * @brief 在需要特殊样式时，可通过此属性直接给整个 label 添加 NSAttributeName 系列样式，然后 setText 即可，无需使用繁琐的 attributedText
