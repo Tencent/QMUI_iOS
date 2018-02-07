@@ -7,6 +7,17 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CD046C412018668900092035 /* QMUILogItem.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C3F2018668900092035 /* QMUILogItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD046C422018668900092035 /* QMUILogItem.m in Sources */ = {isa = PBXBuildFile; fileRef = CD046C402018668900092035 /* QMUILogItem.m */; };
+		CD046C452018670900092035 /* QMUILogNameManager.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C432018670900092035 /* QMUILogNameManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD046C462018670900092035 /* QMUILogNameManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CD046C442018670900092035 /* QMUILogNameManager.m */; };
+		CD046C492018688F00092035 /* QMUILogger.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C472018688F00092035 /* QMUILogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD046C4A2018688F00092035 /* QMUILogger.m in Sources */ = {isa = PBXBuildFile; fileRef = CD046C482018688F00092035 /* QMUILogger.m */; };
+		CD046C4D2018698200092035 /* QMUILog.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C4B2018698200092035 /* QMUILog.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD046C51201879B900092035 /* QMUILogManagerViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C4F201879B900092035 /* QMUILogManagerViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD046C52201879B900092035 /* QMUILogManagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD046C50201879B900092035 /* QMUILogManagerViewController.m */; };
+		CD1817E42010CC4000F8CDEC /* NSNumber+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1817E22010CC4000F8CDEC /* NSNumber+QMUI.m */; };
+		CD1817E52010CC4000F8CDEC /* NSNumber+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD1817E32010CC4000F8CDEC /* NSNumber+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD6631DB1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6631D91FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD6631DC1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6631DA1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m */; };
 		CD84F31D1E52DBEA00546111 /* UITabBar+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD84F31B1E52DBEA00546111 /* UITabBar+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -191,6 +202,17 @@
 		165F43DC1ADB786E0057EF6A /* QMUIViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIViewController.h; sourceTree = "<group>"; };
 		165F43DD1ADB786E0057EF6A /* QMUIViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIViewController.m; sourceTree = "<group>"; };
 		6D03A56D1B53895D003BDDE4 /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
+		CD046C3F2018668900092035 /* QMUILogItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUILogItem.h; sourceTree = "<group>"; };
+		CD046C402018668900092035 /* QMUILogItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUILogItem.m; sourceTree = "<group>"; };
+		CD046C432018670900092035 /* QMUILogNameManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUILogNameManager.h; sourceTree = "<group>"; };
+		CD046C442018670900092035 /* QMUILogNameManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUILogNameManager.m; sourceTree = "<group>"; };
+		CD046C472018688F00092035 /* QMUILogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUILogger.h; sourceTree = "<group>"; };
+		CD046C482018688F00092035 /* QMUILogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUILogger.m; sourceTree = "<group>"; };
+		CD046C4B2018698200092035 /* QMUILog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUILog.h; sourceTree = "<group>"; };
+		CD046C4F201879B900092035 /* QMUILogManagerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUILogManagerViewController.h; sourceTree = "<group>"; };
+		CD046C50201879B900092035 /* QMUILogManagerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUILogManagerViewController.m; sourceTree = "<group>"; };
+		CD1817E22010CC4000F8CDEC /* NSNumber+QMUI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+QMUI.m"; sourceTree = "<group>"; };
+		CD1817E32010CC4000F8CDEC /* NSNumber+QMUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNumber+QMUI.h"; sourceTree = "<group>"; };
 		CD44C1C81956D5970098D0A2 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		CD44C1CA1956D5970098D0A2 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		CD44C1CC1956D5970098D0A2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -396,6 +418,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CD046C3E2018665F00092035 /* Log */ = {
+			isa = PBXGroup;
+			children = (
+				CD046C4B2018698200092035 /* QMUILog.h */,
+				CD046C3F2018668900092035 /* QMUILogItem.h */,
+				CD046C402018668900092035 /* QMUILogItem.m */,
+				CD046C432018670900092035 /* QMUILogNameManager.h */,
+				CD046C442018670900092035 /* QMUILogNameManager.m */,
+				CD046C472018688F00092035 /* QMUILogger.h */,
+				CD046C482018688F00092035 /* QMUILogger.m */,
+				CD046C4F201879B900092035 /* QMUILogManagerViewController.h */,
+				CD046C50201879B900092035 /* QMUILogManagerViewController.m */,
+			);
+			path = Log;
+			sourceTree = "<group>";
+		};
 		CD44C1BC1956D5970098D0A2 = {
 			isa = PBXGroup;
 			children = (
@@ -476,6 +514,8 @@
 		CDB8CA751DCC870700769DF0 /* UIKitExtensions */ = {
 			isa = PBXGroup;
 			children = (
+				CD1817E32010CC4000F8CDEC /* NSNumber+QMUI.h */,
+				CD1817E22010CC4000F8CDEC /* NSNumber+QMUI.m */,
 				CDB8CA761DCC870700769DF0 /* CALayer+QMUI.h */,
 				CDB8CA771DCC870700769DF0 /* CALayer+QMUI.m */,
 				CDD12D3A1FBB320E00114EA9 /* NSArray+QMUI.h */,
@@ -549,6 +589,7 @@
 			children = (
 				CDC86F401F68D5F9000E8829 /* AssetLibrary */,
 				CDC86F471F68D5F9000E8829 /* ImagePickerLibrary */,
+				CD046C3E2018665F00092035 /* Log */,
 				CDC86F521F68D5F9000E8829 /* NavigationBarTransition */,
 				CDC86F571F68D5F9000E8829 /* QMUIAlertController.h */,
 				CDC86F581F68D5F9000E8829 /* QMUIAlertController.m */,
@@ -560,6 +601,8 @@
 				CDC86F5E1F68D5F9000E8829 /* QMUICollectionViewPagingLayout.m */,
 				CDC86F5F1F68D5F9000E8829 /* QMUIDialogViewController.h */,
 				CDC86F601F68D5F9000E8829 /* QMUIDialogViewController.m */,
+				CDC86F811F68D5F9000E8829 /* QMUIEmotionInputManager.h */,
+				CDC86F821F68D5F9000E8829 /* QMUIEmotionInputManager.m */,
 				CDC86F611F68D5F9000E8829 /* QMUIEmotionView.h */,
 				CDC86F621F68D5F9000E8829 /* QMUIEmotionView.m */,
 				CDC86F631F68D5F9000E8829 /* QMUIEmptyView.h */,
@@ -592,8 +635,6 @@
 				CDC86F7E1F68D5F9000E8829 /* QMUIPopupContainerView.m */,
 				CDC86F7F1F68D5F9000E8829 /* QMUIPopupMenuView.h */,
 				CDC86F801F68D5F9000E8829 /* QMUIPopupMenuView.m */,
-				CDC86F811F68D5F9000E8829 /* QMUIEmotionInputManager.h */,
-				CDC86F821F68D5F9000E8829 /* QMUIEmotionInputManager.m */,
 				CDC86F831F68D5F9000E8829 /* QMUISearchBar.h */,
 				CDC86F841F68D5F9000E8829 /* QMUISearchBar.m */,
 				CDC86F851F68D5F9000E8829 /* QMUISearchController.h */,
@@ -732,6 +773,12 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD046C51201879B900092035 /* QMUILogManagerViewController.h in Headers */,
+				CD046C4D2018698200092035 /* QMUILog.h in Headers */,
+				CD046C452018670900092035 /* QMUILogNameManager.h in Headers */,
+				CD046C412018668900092035 /* QMUILogItem.h in Headers */,
+				CD046C492018688F00092035 /* QMUILogger.h in Headers */,
+				CD1817E52010CC4000F8CDEC /* NSNumber+QMUI.h in Headers */,
 				CDB8CBC51DCC870800769DF0 /* UINavigationController+QMUI.h in Headers */,
 				CDB8CBBD1DCC870800769DF0 /* UILabel+QMUI.h in Headers */,
 				CDB8CBC91DCC870800769DF0 /* UIScrollView+QMUI.h in Headers */,
@@ -926,6 +973,7 @@
 				CDB8CBD81DCC870800769DF0 /* UITableView+QMUI.m in Sources */,
 				CDB8CBE41DCC870800769DF0 /* UIWindow+QMUI.m in Sources */,
 				CDB8CBC81DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
+				CD046C4A2018688F00092035 /* QMUILogger.m in Sources */,
 				CDB8CBCC1DCC870800769DF0 /* UIScrollView+QMUI.m in Sources */,
 				CDB8CBA81DCC870700769DF0 /* UICollectionView+QMUI.m in Sources */,
 				CDB8CBD41DCC870800769DF0 /* UITabBarItem+QMUI.m in Sources */,
@@ -962,8 +1010,10 @@
 				CDC870091F68D63B000E8829 /* QMUIEmotionView.m in Sources */,
 				CDC8700A1F68D63B000E8829 /* QMUIEmptyView.m in Sources */,
 				CDC8700B1F68D63B000E8829 /* QMUIFloatLayoutView.m in Sources */,
+				CD046C422018668900092035 /* QMUILogItem.m in Sources */,
 				CDC8700C1F68D63B000E8829 /* QMUIGridView.m in Sources */,
 				CDC8700D1F68D63B000E8829 /* QMUIImagePreviewView.m in Sources */,
+				CD046C462018670900092035 /* QMUILogNameManager.m in Sources */,
 				CDC8700E1F68D63B000E8829 /* QMUIImagePreviewViewController.m in Sources */,
 				CDC8700F1F68D63B000E8829 /* QMUIKeyboardManager.m in Sources */,
 				CDC870101F68D63B000E8829 /* QMUILabel.m in Sources */,
@@ -976,9 +1026,11 @@
 				CDC870161F68D63B000E8829 /* QMUIPieProgressView.m in Sources */,
 				CDC870171F68D63B000E8829 /* QMUIPopupContainerView.m in Sources */,
 				CDC870181F68D63B000E8829 /* QMUIPopupMenuView.m in Sources */,
+				CD046C52201879B900092035 /* QMUILogManagerViewController.m in Sources */,
 				CDC870191F68D63B000E8829 /* QMUIEmotionInputManager.m in Sources */,
 				CDC8701A1F68D63B000E8829 /* QMUISearchBar.m in Sources */,
 				CDC8701B1F68D63B000E8829 /* QMUISearchController.m in Sources */,
+				CD1817E42010CC4000F8CDEC /* NSNumber+QMUI.m in Sources */,
 				CDC8701C1F68D63B000E8829 /* QMUISegmentedControl.m in Sources */,
 				CDC8701D1F68D63B000E8829 /* QMUISlider.m in Sources */,
 				CDC8701E1F68D63B000E8829 /* QMUITableView.m in Sources */,

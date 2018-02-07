@@ -84,7 +84,7 @@ typedef NS_ENUM (NSUInteger, QMUIImagePreviewMediaType) {
  *  获取某个 QMUIZoomImageView 所对应的 index
  *  @return zoomImageView 对应的 index，若当前的 zoomImageView 不可见，会返回 0
  */
-- (NSUInteger)indexForZoomImageView:(QMUIZoomImageView *)zoomImageView;
+- (NSInteger)indexForZoomImageView:(QMUIZoomImageView *)zoomImageView;
 
 /**
  *  获取某个 index 对应的 zoomImageView

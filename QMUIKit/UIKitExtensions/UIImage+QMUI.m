@@ -30,6 +30,11 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return [NSString stringWithFormat:@"%@, scale = %@", [self qmui_description], @(self.scale)];
 }
 
+- (CGSize)qmui_sizeInPixel {
+    CGSize size = CGSizeMake(self.size.width * self.scale, self.size.height * self.scale);
+    return size;
+}
+
 - (UIColor *)qmui_averageColor {
 	unsigned char rgba[4] = {};
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
@@ -175,22 +180,28 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return imageOut;
 }
 
-- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size {
-    return [self qmui_imageWithScaleToSize:size contentMode:UIViewContentModeScaleAspectFit];
+- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size {
+    return [self qmui_imageResizedInLimitedSize:size contentMode:UIViewContentModeScaleAspectFit];
 }
 
-- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode {
-    return [self qmui_imageWithScaleToSize:size contentMode:contentMode scale:self.scale];
+- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size contentMode:(UIViewContentMode)contentMode {
+    return [self qmui_imageResizedInLimitedSize:size contentMode:contentMode scale:self.scale];
 }
 
-- (UIImage *)qmui_imageWithScaleToSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
+- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
     size = CGSizeFlatSpecificScale(size, scale);
     CGContextInspectSize(size);
     CGSize imageSize = self.size;
-    CGRect drawingRect = CGRectZero;
+    CGRect drawingRect = CGRectZero;// 图片绘制的 rect
+    CGSize contextSize = CGSizeZero;// 画布的大小
+    
+    if (CGSizeEqualToSize(size, imageSize) && scale == self.scale) {
+        return self;
+    }
     
     if (contentMode == UIViewContentModeScaleToFill) {
         drawingRect = CGRectMakeWithSize(size);
+        contextSize = size;
     } else {
         CGFloat horizontalRatio = size.width / imageSize.width;
         CGFloat verticalRatio = size.height / imageSize.height;
@@ -201,11 +212,14 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             // 默认按 UIViewContentModeScaleAspectFit
             ratio = fmin(horizontalRatio, verticalRatio);
         }
-        drawingRect.size.width = flatSpecificScale(imageSize.width * ratio, scale);
-        drawingRect.size.height = flatSpecificScale(imageSize.height * ratio, scale);
+        CGSize resizedSize = CGSizeMake(flatSpecificScale(imageSize.width * ratio, scale), flatSpecificScale(imageSize.height * ratio, scale));
+        contextSize = CGSizeMake(fmin(size.width, resizedSize.width), fmin(size.height, resizedSize.height));
+        drawingRect.origin.x = CGFloatGetCenter(contextSize.width, resizedSize.width);
+        drawingRect.origin.y = CGFloatGetCenter(contextSize.height, resizedSize.height);
+        drawingRect.size = resizedSize;
     }
     
-    UIGraphicsBeginImageContextWithOptions(drawingRect.size, self.qmui_opaque, scale);
+    UIGraphicsBeginImageContextWithOptions(contextSize, self.qmui_opaque, scale);
     CGContextRef context = UIGraphicsGetCurrentContext();
     CGContextInspectContext(context);
     [self drawInRect:drawingRect];

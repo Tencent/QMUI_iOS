@@ -14,6 +14,10 @@
 #import "NSAttributedString+QMUI.h"
 #endif
 
+#if __has_include("NSNumber+QMUI.h")
+#import "NSNumber+QMUI.h"
+#endif
+
 #if __has_include("NSObject+QMUI.h")
 #import "NSObject+QMUI.h"
 #endif
@@ -142,6 +146,26 @@
 #import "QMUILabel.h"
 #endif
 
+#if __has_include("QMUILog.h")
+#import "QMUILog.h"
+#endif
+
+#if __has_include("QMUILogger.h")
+#import "QMUILogger.h"
+#endif
+
+#if __has_include("QMUILogItem.h")
+#import "QMUILogItem.h"
+#endif
+
+#if __has_include("QMUILogManagerViewController.h")
+#import "QMUILogManagerViewController.h"
+#endif
+
+#if __has_include("QMUILogNameManager.h")
+#import "QMUILogNameManager.h"
+#endif
+
 #if __has_include("QMUIMarqueeLabel.h")
 #import "QMUIMarqueeLabel.h"
 #endif
@@ -176,6 +200,10 @@
 
 #if __has_include("QMUIPopupMenuView.h")
 #import "QMUIPopupMenuView.h"
+#endif
+
+#if __has_include("QMUIQQEmotionManager.h")
+#import "QMUIQQEmotionManager.h"
 #endif
 
 #if __has_include("QMUISearchBar.h")

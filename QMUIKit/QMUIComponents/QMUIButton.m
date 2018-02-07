@@ -13,6 +13,7 @@
 #import "CALayer+QMUI.h"
 #import "UIButton+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
+#import "QMUILog.h"
 
 @interface QMUIButton ()
 
@@ -71,7 +72,7 @@
     BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
     CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
     CGSize titleTotalSize = CGSizeZero;// 包含 titleEdgeInsets 那些空间
-    CGFloat spacingBetweenImageAndTitle = isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0;// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
+    CGFloat spacingBetweenImageAndTitle = flat(isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0);// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
     UIEdgeInsets contentEdgeInsets = UIEdgeInsetsRemoveFloatMin(self.contentEdgeInsets);
     CGSize resultSize = CGSizeZero;
     CGSize contentLimitSize = CGSizeMake(size.width - UIEdgeInsetsGetHorizontalValue(contentEdgeInsets), size.height - UIEdgeInsetsGetVerticalValue(contentEdgeInsets));
@@ -145,7 +146,7 @@
     CGSize titleLimitSize = CGSizeZero;
     CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
     CGSize titleTotalSize = CGSizeZero;// 包含 titleEdgeInsets 那些空间
-    CGFloat spacingBetweenImageAndTitle = isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0;// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
+    CGFloat spacingBetweenImageAndTitle = flat(isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0);// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
     CGRect imageFrame = CGRectZero;
     CGRect titleFrame = CGRectZero;
     UIEdgeInsets contentEdgeInsets = UIEdgeInsetsRemoveFloatMin(self.contentEdgeInsets);
@@ -384,7 +385,7 @@
                         // 图片按自身大小显示，剩余空间由标题占满
                         imageFrame = CGRectSetX(imageFrame, CGRectGetWidth(self.bounds) - contentEdgeInsets.right - self.imageEdgeInsets.right - CGRectGetWidth(imageFrame));
                         titleFrame = CGRectSetX(titleFrame, contentEdgeInsets.left + self.titleEdgeInsets.left);
-                        titleFrame = CGRectSetWidth(titleFrame, CGRectGetMinX(imageFrame) - self.imageEdgeInsets.left - self.spacingBetweenImageAndTitle - self.titleEdgeInsets.right - CGRectGetMinX(titleFrame));
+                        titleFrame = CGRectSetWidth(titleFrame, CGRectGetMinX(imageFrame) - self.imageEdgeInsets.left - spacingBetweenImageAndTitle - self.titleEdgeInsets.right - CGRectGetMinX(titleFrame));
                         
                     } else if (isImageViewShowing) {
                         imageFrame = CGRectSetX(imageFrame, contentEdgeInsets.left + self.imageEdgeInsets.left);
@@ -672,7 +673,7 @@
             self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
             UIImage *backIndicatorImage = NavBarBackIndicatorImage;
             if (!backIndicatorImage) {
-                QMUILogWarn(@"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
+                QMUILogWarn(@"QMUIButton", @"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
                 return;
             }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];

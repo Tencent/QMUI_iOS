@@ -30,7 +30,7 @@
     
     // iOS 10 以上使用常规写法
     UIFont *font = nil;
-    if ([self.class respondsToSelector:@selector(systemFontOfSize:weight:)]) {
+    if (@available(iOS 8.2, *)) {
         font = [UIFont systemFontOfSize:size weight:isLight ? UIFontWeightLight : (isBold ? UIFontWeightBold : UIFontWeightRegular)];
         
         // 后面那些都是对斜体的操作，所以如果不需要斜体就直接 return

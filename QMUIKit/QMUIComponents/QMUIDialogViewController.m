@@ -351,7 +351,7 @@ EndIgnoreClangWarning
 
 - (QMUIButton *)generateButtonWithText:(NSString *)buttonText {
     QMUIButton *button = [[QMUIButton alloc] init];
-    button.titleLabel.font = UIFontBoldMake(15);
+    button.titleLabel.font = UIFontBoldMake((IS_35INCH_SCREEN || IS_40INCH_SCREEN) ? 14 : 15);
     button.adjustsTitleTintColorAutomatically = YES;
     button.backgroundColor = self.buttonBackgroundColor;
     button.highlightedBackgroundColor = self.buttonHighlightedBackgroundColor;
@@ -581,6 +581,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 }
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
+
 - (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
     CGFloat contentViewVerticalMargin = UIEdgeInsetsGetVerticalValue(self.contentViewMargins);
     CGFloat footerHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0;
@@ -593,9 +594,11 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 @end
 
 @interface QMUIDialogTextFieldViewController ()
+
 @property(nonatomic, strong, readwrite) QMUILabel *textFieldLabel;
 @property(nonatomic, strong, readwrite) CALayer *textFieldSeparatorLayer;
 @property(nonatomic, strong, readwrite) QMUITextField *textField;
+
 @end
 
 @implementation QMUIDialogTextFieldViewController
