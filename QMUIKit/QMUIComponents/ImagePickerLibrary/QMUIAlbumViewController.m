@@ -47,20 +47,17 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
     });
 }
 
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        
-        self.albumImageSize = [QMUIAlbumTableViewCell appearance].albumImageSize;
-        self.albumImageMarginLeft = [QMUIAlbumTableViewCell appearance].albumImageMarginLeft;
-        self.albumNameFontSize = [QMUIAlbumTableViewCell appearance].albumNameFontSize;
-        self.albumNameInsets = [QMUIAlbumTableViewCell appearance].albumNameInsets;
-        self.albumAssetsNumberFontSize = [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize;
-        
-        self.imageView.contentMode = UIViewContentModeScaleAspectFill;
-        self.imageView.clipsToBounds = YES;
-        self.detailTextLabel.textColor = UIColorGrayDarken;
-    }
-    return self;
+- (void)didInitializedWithStyle:(UITableViewCellStyle)style {
+    [super didInitializedWithStyle:style];
+    self.albumImageSize = [QMUIAlbumTableViewCell appearance].albumImageSize;
+    self.albumImageMarginLeft = [QMUIAlbumTableViewCell appearance].albumImageMarginLeft;
+    self.albumNameFontSize = [QMUIAlbumTableViewCell appearance].albumNameFontSize;
+    self.albumNameInsets = [QMUIAlbumTableViewCell appearance].albumNameInsets;
+    self.albumAssetsNumberFontSize = [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize;
+    
+    self.imageView.contentMode = UIViewContentModeScaleAspectFill;
+    self.imageView.clipsToBounds = YES;
+    self.detailTextLabel.textColor = UIColorGrayDarken;
 }
 
 - (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath {

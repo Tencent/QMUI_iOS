@@ -137,7 +137,7 @@ static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLa
                 }
             }
         } withProgressHandler:^(double progress, NSError * _Nullable error, BOOL * _Nonnull stop, NSDictionary * _Nullable info) {
-            NSLog(@"current progress is %f", progress);
+            QMUILog(@"QMUIImagePickerLibrary", @"current progress is %f", progress);
             asset.downloadProgress = progress;
         }];
     } else {

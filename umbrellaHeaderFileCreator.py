@@ -17,6 +17,7 @@ umbrellaFileContent = '''/// Automatically created by script in Build Phases
 '''
 
 onlyfiles = [ f for f in os.listdir(publicHeaderFilePath) if os.path.isfile(os.path.join(publicHeaderFilePath, f))]
+onlyfiles.sort()
 for filename in onlyfiles:
   if filename != umbrellaHeaderFileName:
     umbrellaFileContent += '''#if __has_include("%s")

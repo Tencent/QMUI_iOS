@@ -53,7 +53,7 @@
     return self.mutableAllKeys;
 }
 
-- (instancetype)objectForKey:(id)key {
+- (id)objectForKey:(id)key {
     return [self.mutableDictionary objectForKey:key];
 }
 

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "QMUIKit"
-  s.version          = "2.4.0"
+  s.version          = "2.5.0"
   s.summary          = "致力于提高项目 UI 开发效率的解决方案"
   s.description      = <<-DESC
                        QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设计目的是用于辅助快速搭建一个具备基本设计还原效果的 iOS 项目，同时利用自身提供的丰富控件及兼容处理， 让开发者能专注于业务需求而无需耗费精力在基础代码的设计上。不管是新项目的创建，或是已有项目的维护，均可使开发效率和项目质量得到大幅度提升。
@@ -35,6 +35,8 @@ Pod::Spec.new do |s|
     ss.dependency 'QMUIKit/QMUIComponents/QMUITableViewHeaderFooterView'
     ss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
     ss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUILog'
+    ss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
   end
 
   s.subspec 'QMUIComponents' do |ss|
@@ -48,6 +50,7 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUITableView' do |sss|
@@ -69,9 +72,14 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIKeyboardManager' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIKeyboardManager.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     # 从这里开始就是非必须的组件
+    
+    ss.subspec 'QMUIMultipleDelegates' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIMultipleDelegates/*.{h,m}'
+    end
     
     ss.subspec 'QMUIAlertController' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIAlertController.{h,m}'
@@ -83,6 +91,15 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUICellHeightCache' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUICellHeightCache.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewProtocols'
+    end
+
+    ss.subspec 'QMUICellHeightKeyCache' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUICellHeightKeyCache/*.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewProtocols'
+    end
+
+    ss.subspec 'QMUICellSizeKeyCache' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUICellSizeKeyCache/*.{h,m}'
     end
 
     ss.subspec 'QMUICollectionViewPagingLayout' do |sss|
@@ -105,6 +122,7 @@ Pod::Spec.new do |s|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIEmotionView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
       sss.dependency 'QMUIKit/QMUIResources'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUIFloatLayoutView' do |sss|
@@ -157,6 +175,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIPopupContainerView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIPopupContainerView.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUIPopupMenuView' do |sss|
@@ -200,15 +219,19 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUITestView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUITestView.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
     ss.subspec 'QMUITextField' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUITextField.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
     ss.subspec 'QMUITextView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUITextView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
     ss.subspec 'QMUITips' do |sss|
@@ -251,10 +274,13 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUILog' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/Log/*.{h,m}'
+    end
+
+    ss.subspec 'QMUILogManagerViewController' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUILogManagerViewController.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIStaticTableView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUICellHeightCache'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIPopupMenuView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUISearchController'
     end
@@ -273,6 +299,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIStaticTableView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/StaticTableView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
     end
 
   end

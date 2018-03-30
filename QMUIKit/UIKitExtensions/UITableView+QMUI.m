@@ -17,23 +17,24 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(initWithFrame:style:), @selector(qmui_initWithFrame:style:));
-        ReplaceMethod([self class], @selector(sizeThatFits:), @selector(qmui_sizeThatFits:));
+        ExchangeImplementations([self class], @selector(initWithFrame:style:), @selector(qmui_initWithFrame:style:));
+        ExchangeImplementations([self class], @selector(sizeThatFits:), @selector(qmui_sizeThatFits:));
     });
 }
 
 - (instancetype)qmui_initWithFrame:(CGRect)frame style:(UITableViewStyle)style {
     [self qmui_initWithFrame:frame style:style];
     
-    // iOS 11 之后 estimatedRowHeight 默认值变成 UITableViewAutomaticDimension 了，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地禁掉所有 UITableView 的 estimatedXxxHeight
-    if (!TableViewEstimatedHeightEnabled) {
+    // iOS 11 之后 estimatedRowHeight 如果值为 UITableViewAutomaticDimension，estimate 效果也会生效（iOS 11 以前要 > 0 才会生效）。
+    // 而当使用 estimate 效果时，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地统一控制所有 UITableView（包括系统默认的）的 estimatedRowHeight 效果的开关
+    if (TableViewEstimatedHeightEnabled) {
+        self.estimatedRowHeight = TableViewCellNormalHeight;
+        self.estimatedSectionHeaderHeight = TableViewCellNormalHeight;
+        self.estimatedSectionFooterHeight = TableViewCellNormalHeight;
+    } else {
         self.estimatedRowHeight = 0;
         self.estimatedSectionHeaderHeight = 0;
         self.estimatedSectionFooterHeight = 0;
-    } else {
-        self.estimatedRowHeight = UITableViewAutomaticDimension;
-        self.estimatedSectionHeaderHeight = UITableViewAutomaticDimension;
-        self.estimatedSectionFooterHeight = UITableViewAutomaticDimension;
     }
     return self;
 }
@@ -45,6 +46,9 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 }
 
 - (void)qmui_styledAsQMUITableView {
+    
+    self.rowHeight = TableViewCellNormalHeight;
+    
     UIColor *backgroundColor = nil;
     if (self.style == UITableViewStylePlain) {
         backgroundColor = TableViewBackgroundColor;
@@ -56,7 +60,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
         self.backgroundColor = backgroundColor;
     }
     self.separatorColor = TableViewSeparatorColor;
-    self.backgroundView = [[UIView alloc] init]; // 设置一个空的 backgroundView，去掉系统的，以使 backgroundColor 生效
+    self.backgroundView = [[UIView alloc] init]; // 设置一个空的 backgroundView，去掉系统自带的，以使 backgroundColor 生效
     
     self.sectionIndexColor = TableSectionIndexColor;
     self.sectionIndexTrackingBackgroundColor = TableSectionIndexTrackingBackgroundColor;

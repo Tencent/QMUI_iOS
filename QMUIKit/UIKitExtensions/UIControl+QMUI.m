@@ -81,12 +81,12 @@ static char kAssociatedObjectKey_outsideEdge;
         SEL setHighlightedSelector = @selector(setHighlighted:);
         SEL swizzled_setHighlightedSelector = @selector(qmui_setHighlighted:);
         
-        ReplaceMethod(clz, beginSelector, swizzled_beginSelector);
-        ReplaceMethod(clz, moveSelector, swizzled_moveSelector);
-        ReplaceMethod(clz, endSelector, swizzled_endSelector);
-        ReplaceMethod(clz, cancelSelector, swizzled_cancelSelector);
-        ReplaceMethod(clz, pointInsideSelector, swizzled_pointInsideSelector);
-        ReplaceMethod(clz, setHighlightedSelector, swizzled_setHighlightedSelector);
+        ExchangeImplementations(clz, beginSelector, swizzled_beginSelector);
+        ExchangeImplementations(clz, moveSelector, swizzled_moveSelector);
+        ExchangeImplementations(clz, endSelector, swizzled_endSelector);
+        ExchangeImplementations(clz, cancelSelector, swizzled_cancelSelector);
+        ExchangeImplementations(clz, pointInsideSelector, swizzled_pointInsideSelector);
+        ExchangeImplementations(clz, setHighlightedSelector, swizzled_setHighlightedSelector);
         
     });
 }

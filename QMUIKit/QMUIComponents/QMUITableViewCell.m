@@ -47,41 +47,6 @@
     return self;
 }
 
-- (void)didInitializedWithStyle:(UITableViewCellStyle)style {
-    _cellPosition = QMUITableViewCellPositionNone;
-    
-    _style = style;
-    _enabled = YES;
-    _accessoryHitTestEdgeInsets = UIEdgeInsetsMake(-12, -12, -12, -12);
-    
-    self.textLabel.font = UIFontMake(16);
-    self.textLabel.backgroundColor = UIColorClear;
-    UIColor *titleLabelColor = TableViewCellTitleLabelColor;
-    if (titleLabelColor) {
-        self.textLabel.textColor = titleLabelColor;
-    }
-    
-    self.detailTextLabel.font = UIFontMake(15);
-    self.detailTextLabel.backgroundColor = UIColorClear;
-    UIColor *detailLabelColor = TableViewCellDetailLabelColor;
-    if (detailLabelColor) {
-        self.detailTextLabel.textColor = detailLabelColor;
-    }
-    
-    UIColor *selectedBackgroundColor = TableViewCellSelectedBackgroundColor;
-    if (selectedBackgroundColor) {
-        UIView *selectedBackgroundView = [[UIView alloc] init];
-        selectedBackgroundView.backgroundColor = selectedBackgroundColor;
-        self.selectedBackgroundView = selectedBackgroundView;
-    }
-    
-    // 因为在hitTest里扩大了accessoryView的响应范围，因此提高了系统一个与此相关的bug的出现几率，所以又在scrollView.delegate里做一些补丁性质的东西来修复
-    if ([self.subviews.firstObject isKindOfClass:[UIScrollView class]]) {
-        UIScrollView *scrollView = (UIScrollView *)[self.subviews objectAtIndex:0];
-        scrollView.delegate = self;
-    }
-}
-
 - (void)dealloc {
     self.parentTableView = nil;
 }
@@ -339,6 +304,41 @@
 @end
 
 @implementation QMUITableViewCell(QMUISubclassingHooks)
+
+- (void)didInitializedWithStyle:(UITableViewCellStyle)style {
+    _cellPosition = QMUITableViewCellPositionNone;
+    
+    _style = style;
+    _enabled = YES;
+    _accessoryHitTestEdgeInsets = UIEdgeInsetsMake(-12, -12, -12, -12);
+    
+    self.textLabel.font = UIFontMake(16);
+    self.textLabel.backgroundColor = UIColorClear;
+    UIColor *titleLabelColor = TableViewCellTitleLabelColor;
+    if (titleLabelColor) {
+        self.textLabel.textColor = titleLabelColor;
+    }
+    
+    self.detailTextLabel.font = UIFontMake(15);
+    self.detailTextLabel.backgroundColor = UIColorClear;
+    UIColor *detailLabelColor = TableViewCellDetailLabelColor;
+    if (detailLabelColor) {
+        self.detailTextLabel.textColor = detailLabelColor;
+    }
+    
+    UIColor *selectedBackgroundColor = TableViewCellSelectedBackgroundColor;
+    if (selectedBackgroundColor) {
+        UIView *selectedBackgroundView = [[UIView alloc] init];
+        selectedBackgroundView.backgroundColor = selectedBackgroundColor;
+        self.selectedBackgroundView = selectedBackgroundView;
+    }
+    
+    // 因为在hitTest里扩大了accessoryView的响应范围，因此提高了系统一个与此相关的bug的出现几率，所以又在scrollView.delegate里做一些补丁性质的东西来修复
+    if ([self.subviews.firstObject isKindOfClass:[UIScrollView class]]) {
+        UIScrollView *scrollView = (UIScrollView *)[self.subviews objectAtIndex:0];
+        scrollView.delegate = self;
+    }
+}
 
 - (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath {
     // 子类继承

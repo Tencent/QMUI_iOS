@@ -11,6 +11,8 @@
 #import "NSObject+QMUI.h"
 #import "NSString+QMUI.h"
 #import "UITextView+QMUI.h"
+#import "QMUILog.h"
+#import "QMUIMultipleDelegates.h"
 
 /// 系统 textView 默认的字号大小，用于 placeholder 默认的文字大小。实测得到，请勿修改。
 const CGFloat kSystemTextViewDefaultFontPointSize = 12.0f;
@@ -18,14 +20,19 @@ const CGFloat kSystemTextViewDefaultFontPointSize = 12.0f;
 /// 当系统的 textView.textContainerInset 为 UIEdgeInsetsZero 时，文字与 textView 边缘的间距。实测得到，请勿修改（在输入框font大于13时准确，小于等于12时，y有-1px的偏差）。
 const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
+// 私有的类，专用于实现 QMUITextViewDelegate，避免 self.delegate = self 的写法（以前是 QMUITextView 自己实现了 delegate）
+@interface _QMUITextViewDelegator : NSObject <QMUITextViewDelegate>
+
+@property(nonatomic, weak) QMUITextView *textView;
+@end
+
 @interface QMUITextView ()
 
 @property(nonatomic, assign) BOOL debug;
+@property(nonatomic, strong) _QMUITextViewDelegator *delegator;
 @property(nonatomic, assign) BOOL shouldRejectSystemScroll;// 如果在 handleTextChanged: 里主动调整 contentOffset，则为了避免被系统的自动调整覆盖，会利用这个标记去屏蔽系统对 setContentOffset: 的调用
 
 @property(nonatomic, strong) UILabel *placeholderLabel;
-
-@property(nonatomic, weak)   id<QMUITextViewDelegate> originalDelegate;
 
 @end
 
@@ -51,7 +58,12 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
 - (void)didInitialized {
     self.debug = NO;
-    self.delegate = self;
+    
+    self.qmui_multipleDelegatesEnabled = YES;
+    self.delegator = [[_QMUITextViewDelegator alloc] init];
+    self.delegator.textView = self;
+    self.delegate = self.delegator;
+    
     self.scrollsToTop = NO;
     self.placeholderColor = UIColorPlaceholder;
     self.placeholderMargins = UIEdgeInsetsZero;
@@ -75,7 +87,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     self.delegate = nil;
-    self.originalDelegate = nil;
 }
 
 - (NSString *)description {
@@ -239,12 +250,12 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             
             CGFloat resultHeight = [textView sizeThatFits:CGSizeMake(CGRectGetWidth(self.bounds), CGFLOAT_MAX)].height;
             
-            if (self.debug) NSLog(@"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
+            if (self.debug) QMUILog(NSStringFromClass(self.class), @"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
             
             
             // 通知delegate去更新textView的高度
-            if ([textView.originalDelegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)] && resultHeight != CGRectGetHeight(self.bounds)) {
-                [textView.originalDelegate textView:self newHeightAfterTextChanged:resultHeight];
+            if ([textView.delegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)] && resultHeight != CGRectGetHeight(self.bounds)) {
+                [textView.delegate textView:self newHeightAfterTextChanged:resultHeight];
             }
         }
         
@@ -291,6 +302,24 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     return self.shouldCountingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
 }
 
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated {
+    if (!self.shouldRejectSystemScroll) {
+        [super setContentOffset:contentOffset animated:animated];
+        if (self.debug) QMUILog(NSStringFromClass(self.class), @"%@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
+    } else {
+        if (self.debug) QMUILog(NSStringFromClass(self.class), @"被屏蔽的 %@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
+    }
+}
+
+- (void)setContentOffset:(CGPoint)contentOffset {
+    if (!self.shouldRejectSystemScroll) {
+        [super setContentOffset:contentOffset];
+        if (self.debug) QMUILog(NSStringFromClass(self.class), @"%@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
+    } else {
+        if (self.debug) QMUILog(NSStringFromClass(self.class), @"被屏蔽的 %@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
+    }
+}
+
 #pragma mark - <UIResponderStandardEditActions>
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
@@ -311,14 +340,18 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     }
 }
 
+@end
+
+@implementation _QMUITextViewDelegator
+
 #pragma mark - <QMUITextViewDelegate>
 
 - (BOOL)textView:(QMUITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text {
-    if (self.debug) NSLog(@"textView.text(%@ | %@) = %@\nmarkedTextRange = %@\nrange = %@\ntext = %@", @(textView.text.length), @(textView.text.qmui_lengthWhenCountingNonASCIICharacterAsTwo), textView.text, textView.markedTextRange, NSStringFromRange(range), text);
+    if (self.textView.debug) QMUILog(NSStringFromClass(self.class), @"textView.text(%@ | %@) = %@\nmarkedTextRange = %@\nrange = %@\ntext = %@", @(textView.text.length), @(textView.text.qmui_lengthWhenCountingNonASCIICharacterAsTwo), textView.text, textView.markedTextRange, NSStringFromRange(range), text);
     
     if ([text isEqualToString:@"\n"]) {
-        if ([self.delegate respondsToSelector:@selector(textViewShouldReturn:)]) {
-            BOOL shouldReturn = [self.delegate textViewShouldReturn:self];
+        if ([textView.delegate respondsToSelector:@selector(textViewShouldReturn:)]) {
+            BOOL shouldReturn = [textView.delegate textViewShouldReturn:textView];
             if (shouldReturn) {
                 return NO;
             }
@@ -330,49 +363,36 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 这里不会限制，而是放在 didChange 那里限制。
         BOOL isDeleting = range.length > 0 && text.length <= 0;
         if (isDeleting || textView.markedTextRange) {
-            
-            if ([textView.originalDelegate respondsToSelector:_cmd]) {
-                return [textView.originalDelegate textView:textView shouldChangeTextInRange:range replacementText:text];
-            }
-            
             return YES;
         }
         
-        NSUInteger rangeLength = self.shouldCountingNonASCIICharacterAsTwo ? [textView.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
-        BOOL textWillOutofMaximumTextLength = [self lengthWithString:textView.text] - rangeLength + [self lengthWithString:text] > textView.maximumTextLength;
+        NSUInteger rangeLength = textView.shouldCountingNonASCIICharacterAsTwo ? [textView.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
+        BOOL textWillOutofMaximumTextLength = [textView lengthWithString:textView.text] - rangeLength + [textView lengthWithString:text] > textView.maximumTextLength;
         if (textWillOutofMaximumTextLength) {
             // 当输入的文本达到最大长度限制后，此时继续点击 return 按钮（相当于尝试插入“\n”），就会认为总文字长度已经超过最大长度限制，所以此次 return 按钮的点击被拦截，外界无法感知到有这个 return 事件发生，所以这里为这种情况做了特殊保护
-            if ([self lengthWithString:textView.text] - rangeLength == textView.maximumTextLength && [text isEqualToString:@"\n"]) {
-                if ([textView.originalDelegate respondsToSelector:_cmd]) {
-                    // 不管外面 return YES 或 NO，都不允许输入了，否则会超出 maximumTextLength。
-                    [textView.originalDelegate textView:textView shouldChangeTextInRange:range replacementText:text];
-                    return NO;
-                }
+            if ([textView lengthWithString:textView.text] - rangeLength == textView.maximumTextLength && [text isEqualToString:@"\n"]) {
+                return NO;
             }
             // 将要插入的文字裁剪成多长，就可以让它插入了
-            NSInteger substringLength = textView.maximumTextLength - [self lengthWithString:textView.text] + rangeLength;
+            NSInteger substringLength = textView.maximumTextLength - [textView lengthWithString:textView.text] + rangeLength;
             
-            if (substringLength > 0 && [self lengthWithString:text] > substringLength) {
-                NSString *allowedText = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
-                if ([self lengthWithString:allowedText] <= substringLength) {
+            if (substringLength > 0 && [textView lengthWithString:text] > substringLength) {
+                NSString *allowedText = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo];
+                if ([textView lengthWithString:allowedText] <= substringLength) {
                     textView.text = [textView.text stringByReplacingCharactersInRange:range withString:allowedText];
                     textView.selectedRange = NSMakeRange(range.location + substringLength, 0);
                     
-                    if (!textView.shouldResponseToProgrammaticallyTextChanges) {
-                        [textView.originalDelegate textViewDidChange:textView];
+                    if (!textView.shouldResponseToProgrammaticallyTextChanges && [textView.delegate respondsToSelector:@selector(textViewDidChange:)]) {
+                        [textView.delegate textViewDidChange:textView];
                     }
                 }
             }
             
-            if ([self.originalDelegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
-                [self.originalDelegate textView:textView didPreventTextChangeInRange:range replacementText:text];
+            if ([textView.delegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
+                [textView.delegate textView:textView didPreventTextChangeInRange:range replacementText:text];
             }
             return NO;
         }
-    }
-    
-    if ([textView.originalDelegate respondsToSelector:_cmd]) {
-        return [textView.originalDelegate textView:textView shouldChangeTextInRange:range replacementText:text];
     }
     
     return YES;
@@ -382,82 +402,19 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     // 1、iOS 10 以下的版本，从中文输入法的候选词里选词输入，是不会走到 textView:shouldChangeTextInRange:replacementText: 的，所以要在这里截断文字
     // 2、如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 那边不会限制，而是放在 didChange 这里限制。
     if (!textView.markedTextRange) {
-        if ([self lengthWithString:textView.text] > textView.maximumTextLength) {
+        if ([textView lengthWithString:textView.text] > textView.maximumTextLength) {
             
-            textView.text = [textView.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:self.shouldCountingNonASCIICharacterAsTwo];
+            textView.text = [textView.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo];
             
-            if ([self.originalDelegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
+            if ([textView.delegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
                 // 如果是在这里被截断，是无法得知截断前光标所处的位置及要输入的文本的，所以只能将当前的 selectedRange 传过去，而 replacementText 为 nil
-                [self.originalDelegate textView:textView didPreventTextChangeInRange:textView.selectedRange replacementText:nil];
+                [textView.delegate textView:textView didPreventTextChangeInRange:textView.selectedRange replacementText:nil];
             }
             
             if (textView.shouldResponseToProgrammaticallyTextChanges) {
                 return;
             }
         }
-    }
-    if ([textView.originalDelegate respondsToSelector:_cmd]) {
-        [textView.originalDelegate textViewDidChange:textView];
-    }
-}
-
-#pragma mark - Delegate Proxy
-
-- (void)setDelegate:(id<QMUITextViewDelegate>)delegate {
-    self.originalDelegate = delegate != self ? delegate : nil;
-    [super setDelegate:delegate ? self : nil];
-}
-
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
-    NSMethodSignature *a = [super methodSignatureForSelector:aSelector];
-    NSMethodSignature *b = [(id)self.originalDelegate methodSignatureForSelector:aSelector];
-    NSMethodSignature *result = a ? a : b;
-    return result;
-}
-
-- (void)forwardInvocation:(NSInvocation *)anInvocation {
-    if ([(id)self.originalDelegate respondsToSelector:anInvocation.selector]) {
-        [anInvocation invokeWithTarget:(id)self.originalDelegate];
-    }
-}
-
-- (BOOL)respondsToSelector:(SEL)aSelector {
-    BOOL a = [super respondsToSelector:aSelector];
-    BOOL c = [self.originalDelegate respondsToSelector:aSelector];
-    BOOL result = a || c;
-    return result;
-}
-
-// 下面这两个方法比较特殊，无法通过 forwardInvocation: 的方式把消息发送给 self.originalDelegate，只会直接被调用，所以只能在 QMUITextView 内部实现这连个方法然后调用 originalDelegate 的对应方法
-// 注意，测过 UITextView 默认没有实现任何 UIScrollViewDelegate 方法 from 2016-11-01 in iOS 10.1 by molice
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if ([self.originalDelegate respondsToSelector:_cmd]) {
-        [self.originalDelegate scrollViewDidScroll:scrollView];
-    }
-}
-
-- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated {
-    if (!self.shouldRejectSystemScroll) {
-        [super setContentOffset:contentOffset animated:animated];
-        if (self.debug) NSLog(@"%@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
-    } else {
-        if (self.debug) NSLog(@"被屏蔽的 %@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
-    }
-}
-
-- (void)setContentOffset:(CGPoint)contentOffset {
-    if (!self.shouldRejectSystemScroll) {
-        [super setContentOffset:contentOffset];
-        if (self.debug) NSLog(@"%@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
-    } else {
-        if (self.debug) NSLog(@"被屏蔽的 %@, contentOffset.y = %.2f", NSStringFromSelector(_cmd), contentOffset.y);
-    }
-}
-
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView {
-    if ([self.originalDelegate respondsToSelector:_cmd]) {
-        [self.originalDelegate scrollViewDidZoom:scrollView];
     }
 }
 

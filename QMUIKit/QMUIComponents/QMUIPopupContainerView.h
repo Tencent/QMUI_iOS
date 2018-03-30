@@ -25,7 +25,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  * 2. 选择一种显示方式：
  * 2.1 如果要添加到某个 UIView 上，则先设置浮层 hidden = YES，然后调用 addSubview: 把浮层添加到目标 UIView 上。
  * 2.2 如果是轻量的场景用完即走，则 init 完浮层即可，无需设置 hidden，也无需调用 addSubview:，在后面第 4 步里会自动把浮层添加到 UIWindow 上显示出来。
- * 3. 在适当的时机（例如 layoutSubviews: 或 viewDidLayoutSubviews:）调用 layoutWithTargetView: 让浮层参考目标 view 布局，或者调用 layoutWithTargetRectInScreenCoordinate: 让浮层参考基于屏幕坐标系里的一个 rect 来布局。
+ * 3. 在适当的时机（例如 layoutSubviews: 或 viewDidLayoutSubviews: 或在 show 之前）调用 layoutWithTargetView: 让浮层参考目标 view 布局，或者调用 layoutWithTargetRectInScreenCoordinate: 让浮层参考基于屏幕坐标系里的一个 rect 来布局。
  * 4. 调用 showWithAnimated: 或 showWithAnimated:completion: 显示浮层。
  * 5. 调用 hideWithAnimated: 或 hideWithAnimated:completion: 隐藏浮层。
  *

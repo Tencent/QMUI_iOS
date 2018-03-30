@@ -142,6 +142,22 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 @property(nonatomic, assign) BOOL needsAccessoryPlaceholderSpace;
 
 /*
+ *  同 accessoryView，用于 subtitle 的 AccessoryView
+ *  @warn 为了美观考虑，该属性只对 QMUINavigationTitleViewStyleSubTitleVertical 有效
+ */
+@property(nonatomic, strong) UIView *subAccessoryView;
+
+/*
+ *  用于微调 subAccessoryView 的位置
+ */
+@property(nonatomic, assign) CGPoint subAccessoryViewOffset UI_APPEARANCE_SELECTOR;
+
+/*
+ *  同 needsAccessoryPlaceholderSpace，用于 subtitle
+ */
+@property(nonatomic, assign) BOOL needsSubAccessoryPlaceholderSpace;
+
+/*
  *  初始化方法
  */
 - (instancetype)initWithStyle:(QMUINavigationTitleViewStyle)style;

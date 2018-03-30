@@ -117,6 +117,22 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  */
 - (UIImage *)qmui_imageWithClippedRect:(CGRect)rect;
 
+
+/**
+ *  切割出在指定圆角的图片
+ *
+ *  @param cornerRadius 要切割的圆角值
+ *
+ *  @return 切割后的新图片
+ */
+- (UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius;
+
+/**
+ *  同上，可以设置 scale
+ */
+
+- (UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius scale:(CGFloat)scale;
+
 /**
  *  将原图以 UIViewContentModeScaleAspectFit 的策略缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片，缩放后的图片的倍数保持与原图一致。
  *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 contentMode 不同而不同，但必定不会超过 size。

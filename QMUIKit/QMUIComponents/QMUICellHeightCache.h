@@ -9,14 +9,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface QMUICellHeightCache : NSObject
-
-@end
-
 /**
  *  通过业务定义的一个 key 来缓存 cell 的高度，需搭配 UITableView 或 UICollectionView 使用。
  */
-@interface QMUICellHeightKeyCache : NSObject
+@interface QMUICellHeightCache : NSObject
 
 - (BOOL)existsHeightForKey:(id<NSCopying>)key;
 - (void)cacheHeight:(CGFloat)height byKey:(id<NSCopying>)key;
@@ -90,7 +86,7 @@
 /**
  *  通过 qmui_tableView:cellWithIdentifier: 得到 identifier 对应的 cell 实例，并在 configuration 里对 cell 进行渲染后，得到 cell 的高度。
  *
- *  以自定义的 key 为单位进行缓存，相同的 key 高度将不会重复计算，若需刷新高度，请参考 QMUICellHeightKeyCache
+ *  以自定义的 key 为单位进行缓存，相同的 key 高度将不会重复计算，若需刷新高度，请参考 QMUICellHeightCache
  *
  *  @param  identifier cell 的 identifier
  *  @param  configuration 用于渲染 cell 的block，一般与 tableView:cellForRowAtIndexPath: 里渲染 cell 的代码一样
@@ -101,7 +97,7 @@
 
 @interface UITableView (QMUIKeyedHeightCache)
 
-@property(nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
+@property(nonatomic, strong, readonly) QMUICellHeightCache *qmui_keyedHeightCache;
 
 @end
 
@@ -127,7 +123,7 @@
 
 @interface UICollectionView (QMUIKeyedHeightCache)
 
-@property(nonatomic, strong, readonly) QMUICellHeightKeyCache *qmui_keyedHeightCache;
+@property(nonatomic, strong, readonly) QMUICellHeightCache *qmui_keyedHeightCache;
 
 @end
 

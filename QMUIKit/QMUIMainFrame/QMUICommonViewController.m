@@ -103,6 +103,10 @@
     [self setToolbarItemsIsInEditMode:NO animated:NO];
 }
 
+- (void)dealloc {
+    // iOS 9 以后，系统会在一个 object 被 release 的时候自动移除 observer，所以这句代码只为 iOS 8 使用
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
 
 #pragma mark - 空列表视图 QMUIEmptyView
 

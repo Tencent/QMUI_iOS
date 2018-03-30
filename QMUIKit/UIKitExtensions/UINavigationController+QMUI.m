@@ -35,8 +35,8 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(viewDidLoad), @selector(qmui_viewDidLoad));
-        ReplaceMethod([self class], @selector(navigationBar:shouldPopItem:), @selector(qmui_navigationBar:shouldPopItem:));
+        ExchangeImplementations([self class], @selector(viewDidLoad), @selector(qmui_viewDidLoad));
+        ExchangeImplementations([self class], @selector(navigationBar:shouldPopItem:), @selector(qmui_navigationBar:shouldPopItem:));
     });
 }
 

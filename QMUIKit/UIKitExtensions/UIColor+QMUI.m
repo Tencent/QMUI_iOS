@@ -16,7 +16,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 使用 [UIColor colorWithRed:green:blue:alpha:] 或 [UIColor colorWithHue:saturation:brightness:alpha:] 方法创建的颜色是 UIDeviceRGBColor 类型的而不是 UIColor 类型的
-        ReplaceMethod([UIColor colorWithRed:1 green:1 blue:1 alpha:1].class, @selector(description), @selector(qmui_description));
+        ExchangeImplementations([UIColor colorWithRed:1 green:1 blue:1 alpha:1].class, @selector(description), @selector(qmui_description));
     });
 }
 

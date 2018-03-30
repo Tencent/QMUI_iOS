@@ -43,7 +43,8 @@
 /// 渐变遮罩内边缘的颜色，一般是 fadeStartColor 的 alpha 通道为 0 的色值
 @property(nonatomic, strong) IBInspectable UIColor *fadeEndColor;
 
-/// 文字是否要在渐隐区域之后显示，默认为 NO，如果想避免停靠在初始位置时文字被遮罩盖住，可以把它改为 YES。
+/// YES 表示文字会在打开 shouldFadeAtEdge 的情况下，从左边的渐隐区域之后显示，NO 表示不管有没有打开 shouldFadeAtEdge，都会从 label 的边缘开始显示。默认为 NO。
+/// @note 如果文字宽度本身就没超过 label 宽度（也即无需滚动），此时必定不会显示渐隐，则这个属性不会影响文字的显示位置。
 @property(nonatomic, assign) IBInspectable BOOL textStartAfterFade;
 @end
 

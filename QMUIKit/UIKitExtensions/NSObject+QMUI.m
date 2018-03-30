@@ -13,7 +13,11 @@
 @implementation NSObject (QMUI)
 
 - (BOOL)qmui_hasOverrideMethod:(SEL)selector ofSuperclass:(Class)superclass {
-    if (![[self class] isSubclassOfClass:superclass]) {
+    return [NSObject qmui_hasOverrideMethod:selector forClass:self.class ofSuperclass:superclass];
+}
+
++ (BOOL)qmui_hasOverrideMethod:(SEL)selector forClass:(Class)aClass ofSuperclass:(Class)superclass {
+    if (![aClass isSubclassOfClass:superclass]) {
         return NO;
     }
     
@@ -22,7 +26,7 @@
     }
     
     Method superclassMethod = class_getInstanceMethod(superclass, selector);
-    Method instanceMethod = class_getInstanceMethod([self class], selector);
+    Method instanceMethod = class_getInstanceMethod(aClass, selector);
     if (!instanceMethod || instanceMethod == superclassMethod) {
         return NO;
     }

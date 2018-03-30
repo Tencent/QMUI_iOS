@@ -16,9 +16,9 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(setPlaceholder:), @selector(qmui_setPlaceholder:));
-        ReplaceMethod([self class], @selector(layoutSubviews), @selector(qmui_layoutSubviews));
-        ReplaceMethod([self class], @selector(setFrame:), @selector(qmui_setFrame:));
+        ExchangeImplementations([self class], @selector(setPlaceholder:), @selector(qmui_setPlaceholder:));
+        ExchangeImplementations([self class], @selector(layoutSubviews), @selector(qmui_layoutSubviews));
+        ExchangeImplementations([self class], @selector(setFrame:), @selector(qmui_setFrame:));
     });
 }
 

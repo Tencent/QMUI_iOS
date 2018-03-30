@@ -72,7 +72,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         _style = style;
         self.velocityForEnsurePageDown = 0.4;
         self.allowsMultipleItemScroll = YES;
-        self.mutipleItemScrollVelocityLimit = 0.7;
+        self.multipleItemScrollVelocityLimit = 0.7;
         self.maximumScale = 1.0;
         self.minimumScale = 0.94;
         self.rotationRatio = .5;
@@ -169,7 +169,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
 - (CGPoint)targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset withScrollingVelocity:(CGPoint)velocity {
     CGFloat itemSpacing = _finalItemSize.width + self.minimumLineSpacing;
     
-    if (!self.allowsMultipleItemScroll || fabs(velocity.x) <= fabs(self.mutipleItemScrollVelocityLimit)) {
+    if (!self.allowsMultipleItemScroll || fabs(velocity.x) <= fabs(self.multipleItemScrollVelocityLimit)) {
         // 只滚动一页
         
         if (fabs(velocity.x) > self.velocityForEnsurePageDown) {

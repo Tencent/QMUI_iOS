@@ -8,6 +8,22 @@
 
 #import "QMUIKeyboardManager.h"
 #import "QMUICore.h"
+#import "QMUILog.h"
+
+
+@interface QMUIKeyboardManager ()
+
+@property(nonatomic, strong) NSMutableArray <NSValue *> *targetResponderValues;
+
+@property(nonatomic, strong) QMUIKeyboardUserInfo *keyboardMoveUserInfo;
+@property(nonatomic, assign) CGRect keyboardMoveBeginRect;
+
+@property(nonatomic, weak) UIResponder *currentResponder;
+@property(nonatomic, weak) UIResponder *currentResponderWhenResign;
+
+@property(nonatomic, assign) BOOL debug;
+
+@end
 
 
 @interface UIView (KeyboardManager)
@@ -32,20 +48,13 @@
 @end
 
 
-@interface UIResponder (KeyboardManager)
-
-// 系统自己的isFirstResponder有延迟，这里手动记录UIResponder是否isFirstResponder
-@property(nonatomic, assign) BOOL keyboardManager_isFirstResponder;
-
-@end
-
 @implementation UIResponder (KeyboardManager)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(becomeFirstResponder), @selector(keyboardManager_becomeFirstResponder));
-        ReplaceMethod([self class], @selector(resignFirstResponder), @selector(keyboardManager_resignFirstResponder));
+        ExchangeImplementations([self class], @selector(becomeFirstResponder), @selector(keyboardManager_becomeFirstResponder));
+        ExchangeImplementations([self class], @selector(resignFirstResponder), @selector(keyboardManager_resignFirstResponder));
     });
 }
 
@@ -56,6 +65,11 @@
 
 - (BOOL)keyboardManager_resignFirstResponder {
     self.keyboardManager_isFirstResponder = NO;
+    if (self.isFirstResponder &&
+        self.qmui_keyboardManager &&
+        [self.qmui_keyboardManager.allTargetResponders containsObject:self]) {
+        self.qmui_keyboardManager.currentResponderWhenResign = self;
+    }
     return [self keyboardManager_resignFirstResponder];
 }
 
@@ -65,6 +79,14 @@
 
 - (BOOL)keyboardManager_isFirstResponder {
     return [objc_getAssociatedObject(self, _cmd) boolValue];
+}
+
+- (void)setQmui_keyboardManager:(QMUIKeyboardManager *)keyboardManager {
+    objc_setAssociatedObject(self, @selector(qmui_keyboardManager), keyboardManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (QMUIKeyboardManager *)qmui_keyboardManager {
+    return objc_getAssociatedObject(self, _cmd);
 }
 
 @end
@@ -159,6 +181,7 @@
 @interface QMUIKeyboardViewFrameObserver : NSObject
 
 @property(nonatomic, copy) void (^keyboardViewChangeFrameBlock)(UIView *keyboardView);
+
 - (void)addToKeyboardView:(UIView *)keyboardView;
 + (instancetype)observerForView:(UIView *)keyboardView;
 
@@ -237,19 +260,6 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 @end
 
 
-@interface QMUIKeyboardManager ()
-
-@property(nonatomic, strong) NSMutableArray <NSValue *> *targetResponderValues;
-
-@property(nonatomic, strong) QMUIKeyboardUserInfo *keyboardMoveUserInfo;
-@property(nonatomic, assign) CGRect keyboardMoveBeginRect;
-
-@property(nonatomic, assign) BOOL debug;
-
-@end
-
-static UIResponder *kCurrentResponder = nil;
-
 @implementation QMUIKeyboardManager
 
 // 1、系统键盘app启动第一次使用键盘的时候，会调用两轮键盘通知事件，之后就只会调用一次。而搜狗等第三方输入法的键盘，目前发现每次都会调用三次键盘通知事件。总之，键盘的通知事件是不确定的。
@@ -296,6 +306,7 @@ static UIResponder *kCurrentResponder = nil;
     if (!targetResponder || ![targetResponder isKindOfClass:[UIResponder class]]) {
         return NO;
     }
+    targetResponder.qmui_keyboardManager = self;
     [self.targetResponderValues addObject:[self packageTargetResponder:targetResponder]];
     return YES;
 }
@@ -312,6 +323,14 @@ static UIResponder *kCurrentResponder = nil;
         }
     }
     return [targetResponders copy];
+}
+
+- (BOOL)removeTargetResponder:(UIResponder *)targetResponder {
+    if (targetResponder && [self.targetResponderValues containsObject:[self packageTargetResponder:targetResponder]]) {
+        [self.targetResponderValues removeObject:[self packageTargetResponder:targetResponder]];
+        return YES;
+    }
+    return NO;
 }
 
 - (NSValue *)packageTargetResponder:(UIResponder *)targetResponder {
@@ -346,8 +365,7 @@ static UIResponder *kCurrentResponder = nil;
 - (void)keyboardWillShowNotification:(NSNotification *)notification {
     
     if (self.debug) {
-        NSLog(@"keyboardWillShowNotification - %@", self);
-        NSLog(@"\n");
+        QMUILog(NSStringFromClass(self.class), @"keyboardWillShowNotification - %@", self);
     }
     
     if (![self shouldReceiveShowNotification]) {
@@ -355,7 +373,7 @@ static UIResponder *kCurrentResponder = nil;
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
-    userInfo.targetResponder = kCurrentResponder ?: nil;
+    userInfo.targetResponder = self.currentResponder ?: nil;
     
     if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardWillShowWithUserInfo:)]) {
         [self.delegate keyboardWillShowWithUserInfo:userInfo];
@@ -371,15 +389,14 @@ static UIResponder *kCurrentResponder = nil;
 - (void)keyboardDidShowNotification:(NSNotification *)notification {
     
     if (self.debug) {
-        NSLog(@"keyboardDidShowNotification - %@", self);
-        NSLog(@"\n");
+        QMUILog(NSStringFromClass(self.class), @"keyboardDidShowNotification - %@", self);
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
-    userInfo.targetResponder = kCurrentResponder ?: nil;
+    userInfo.targetResponder = self.currentResponder ?: nil;
     
     id firstResponder = [[UIApplication sharedApplication].keyWindow qmui_findFirstResponder];
-    BOOL shouldReceiveDidShowNotification = self.targetResponderValues.count <= 0 || (firstResponder && firstResponder == kCurrentResponder);
+    BOOL shouldReceiveDidShowNotification = self.targetResponderValues.count <= 0 || (firstResponder && firstResponder == self.currentResponder);
     
     if (shouldReceiveDidShowNotification) {
         
@@ -398,8 +415,7 @@ static UIResponder *kCurrentResponder = nil;
 - (void)keyboardWillHideNotification:(NSNotification *)notification {
     
     if (self.debug) {
-        NSLog(@"keyboardWillHideNotification - %@", self);
-        NSLog(@"\n");
+        QMUILog(NSStringFromClass(self.class), @"keyboardWillHideNotification - %@", self);
     }
     
     if (![self shouldReceiveHideNotification]) {
@@ -407,7 +423,7 @@ static UIResponder *kCurrentResponder = nil;
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
-    userInfo.targetResponder = kCurrentResponder ?: nil;
+    userInfo.targetResponder = self.currentResponder ?: nil;
     
     if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardWillHideWithUserInfo:)]) {
         [self.delegate keyboardWillHideWithUserInfo:userInfo];
@@ -423,12 +439,11 @@ static UIResponder *kCurrentResponder = nil;
 - (void)keyboardDidHideNotification:(NSNotification *)notification {
     
     if (self.debug) {
-        NSLog(@"keyboardDidHideNotification - %@", self);
-        NSLog(@"\n");
+        QMUILog(NSStringFromClass(self.class), @"keyboardDidHideNotification - %@", self);
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
-    userInfo.targetResponder = kCurrentResponder ?: nil;
+    userInfo.targetResponder = self.currentResponder ?: nil;
     
     if ([self shouldReceiveHideNotification]) {
         if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardDidHideWithUserInfo:)]) {
@@ -436,13 +451,13 @@ static UIResponder *kCurrentResponder = nil;
         }
     }
     
-    if (kCurrentResponder && !kCurrentResponder.keyboardManager_isFirstResponder && !IS_IPAD) {
-        kCurrentResponder = nil;
+    if (self.currentResponder && !self.currentResponder.keyboardManager_isFirstResponder && !IS_IPAD) {
+        self.currentResponder = nil;
     }
     
     // 额外处理iPad浮动键盘
 //    if (IS_IPAD) {
-//        if (self.targetResponderValues.count <= 0 || kCurrentResponder) {
+//        if (self.targetResponderValues.count <= 0 || self.currentResponder) {
 //            self.keyboardMoveUserInfo = userInfo;
 //            [self keyboardDidChangedFrame:[self.class keyboardView]];
 //        }
@@ -452,16 +467,15 @@ static UIResponder *kCurrentResponder = nil;
 - (void)keyboardWillChangeFrameNotification:(NSNotification *)notification {
     
     if (self.debug) {
-        NSLog(@"keyboardWillChangeFrameNotification - %@", self);
-        NSLog(@"\n");
+        QMUILog(NSStringFromClass(self.class), @"keyboardWillChangeFrameNotification - %@", self);
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     
     if ([self shouldReceiveShowNotification]) {
-        userInfo.targetResponder = kCurrentResponder ?: nil;
+        userInfo.targetResponder = self.currentResponder ?: nil;
     } else if ([self shouldReceiveHideNotification]) {
-        userInfo.targetResponder = kCurrentResponder ?: nil;
+        userInfo.targetResponder = self.currentResponder ?: nil;
     } else {
         return;
     }
@@ -480,16 +494,15 @@ static UIResponder *kCurrentResponder = nil;
 - (void)keyboardDidChangeFrameNotification:(NSNotification *)notification {
     
     if (self.debug) {
-        NSLog(@"keyboardDidChangeFrameNotification - %@", self);
-        NSLog(@"\n");
+        QMUILog(NSStringFromClass(self.class), @"keyboardDidChangeFrameNotification - %@", self);
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     
     if ([self shouldReceiveShowNotification]) {
-        userInfo.targetResponder = kCurrentResponder ?: nil;
+        userInfo.targetResponder = self.currentResponder ?: nil;
     } else if ([self shouldReceiveHideNotification]) {
-        userInfo.targetResponder = kCurrentResponder ?: nil;
+        userInfo.targetResponder = self.currentResponder ?: nil;
     } else {
         return;
     }
@@ -514,12 +527,14 @@ static UIResponder *kCurrentResponder = nil;
 
 - (BOOL)shouldReceiveShowNotification {
     
-    kCurrentResponder = [[UIApplication sharedApplication].keyWindow qmui_findFirstResponder];
+    // 这里有BUG，如果点击了webview导致键盘下降，这个时候运行shouldReceiveHideNotification就会判断错误
+    self.currentResponder = self.currentResponderWhenResign ?: [[UIApplication sharedApplication].keyWindow qmui_findFirstResponder];
+    self.currentResponderWhenResign = nil;
     
     if (self.targetResponderValues.count <= 0) {
         return YES;
     } else {
-        return kCurrentResponder && [self.targetResponderValues containsObject:[self packageTargetResponder:kCurrentResponder]];
+        return self.currentResponder && [self.targetResponderValues containsObject:[self packageTargetResponder:self.currentResponder]];
     }
 }
 
@@ -527,8 +542,8 @@ static UIResponder *kCurrentResponder = nil;
     if (self.targetResponderValues.count <= 0) {
         return YES;
     } else {
-        if (kCurrentResponder) {
-            return [self.targetResponderValues containsObject:[self packageTargetResponder:kCurrentResponder]];
+        if (self.currentResponder) {
+            return [self.targetResponderValues containsObject:[self packageTargetResponder:self.currentResponder]];
         } else {
             return NO;
         }
@@ -592,28 +607,27 @@ static UIResponder *kCurrentResponder = nil;
         keyboardMoveUserInfo.endFrame = endFrame;
         
         if (self.debug) {
-            NSLog(@"keyboardDidMoveNotification - %@", self);
-            NSLog(@"\n");
+            QMUILog(NSStringFromClass(self.class), @"keyboardDidMoveNotification - %@", self);
         }
         
         [self.delegate keyboardWillChangeFrameWithUserInfo:keyboardMoveUserInfo];
         
         self.keyboardMoveBeginRect = endFrame;
         
-        if (kCurrentResponder) {
+        if (self.currentResponder) {
             UIWindow *mainWindow = [UIApplication sharedApplication].keyWindow ?: [[UIApplication sharedApplication] windows].firstObject;
             if (mainWindow) {
                 CGRect keyboardRect = keyboardMoveUserInfo.endFrame;
                 CGFloat distanceFromBottom = [QMUIKeyboardManager distanceFromMinYToBottomInView:mainWindow keyboardRect:keyboardRect];
                 if (distanceFromBottom < keyboardRect.size.height) {
-                    if (!kCurrentResponder.keyboardManager_isFirstResponder) {
+                    if (!self.currentResponder.keyboardManager_isFirstResponder) {
                         // willHide
-                        kCurrentResponder = nil;
+                        self.currentResponder = nil;
                     }
-                } else if (distanceFromBottom > keyboardRect.size.height && !kCurrentResponder.isFirstResponder) {
-                    if (!kCurrentResponder.keyboardManager_isFirstResponder) {
+                } else if (distanceFromBottom > keyboardRect.size.height && !self.currentResponder.isFirstResponder) {
+                    if (!self.currentResponder.keyboardManager_isFirstResponder) {
                         // 浮动
-                        kCurrentResponder = nil;
+                        self.currentResponder = nil;
                     }
                 }
             }
@@ -899,13 +913,13 @@ static UIResponder *kCurrentResponder = nil;
     return objc_getAssociatedObject(self, _cmd);
 }
 
-- (void)setQmui_keyboardManager:(QMUIKeyboardManager *)keyboardManager {
-    objc_setAssociatedObject(self, @selector(qmui_keyboardManager), keyboardManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (QMUIKeyboardManager *)qmui_keyboardManager {
-    return objc_getAssociatedObject(self, _cmd);
-}
+//- (void)setQmui_keyboardManager:(QMUIKeyboardManager *)keyboardManager {
+//    objc_setAssociatedObject(self, @selector(qmui_keyboardManager), keyboardManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+//}
+//
+//- (QMUIKeyboardManager *)qmui_keyboardManager {
+//    return objc_getAssociatedObject(self, _cmd);
+//}
 
 - (void)initKeyboardManagerIfNeeded {
     if (!self.qmui_keyboardManager) {
@@ -1028,13 +1042,13 @@ static UIResponder *kCurrentResponder = nil;
     return objc_getAssociatedObject(self, _cmd);
 }
 
-- (void)setQmui_keyboardManager:(QMUIKeyboardManager *)keyboardManager {
-    objc_setAssociatedObject(self, @selector(qmui_keyboardManager), keyboardManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (QMUIKeyboardManager *)qmui_keyboardManager {
-    return objc_getAssociatedObject(self, _cmd);
-}
+//- (void)setQmui_keyboardManager:(QMUIKeyboardManager *)keyboardManager {
+//    objc_setAssociatedObject(self, @selector(qmui_keyboardManager), keyboardManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+//}
+//
+//- (QMUIKeyboardManager *)qmui_keyboardManager {
+//    return objc_getAssociatedObject(self, _cmd);
+//}
 
 - (void)initKeyboardManagerIfNeeded {
     if (!self.qmui_keyboardManager) {

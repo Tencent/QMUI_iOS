@@ -159,6 +159,8 @@
 
 #pragma mark - 方法-创建器
 
+#define CGSizeMax CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)
+
 // 使用文件名(不带后缀名)创建一个UIImage对象，会被系统缓存，适用于大量复用的小资源图
 // 使用这个 API 而不是 imageNamed: 是因为后者在 iOS 8 下反而存在性能问题（by molice 不确定 iOS 9 及以后的版本是否还有这个问题）
 #define UIImageMake(img) [UIImage imageNamed:img inBundle:nil compatibleWithTraitCollection:nil]
@@ -195,21 +197,44 @@
 
 #pragma mark - 方法-C对象、结构操作
 
+/**
+ *  如果 fromClass 里存在 originSelector，则这个函数会将 fromClass 里的 originSelector 与 toClass 里的 newSelector 交换实现。
+ *  如果 fromClass 里不存在 originSelecotr，则这个函数会为 fromClass 增加方法 originSelector，并且该方法会使用 toClass 的 newSelector 方法的实现，而 toClass 的 newSelector 方法的实现则会被替换为空内容
+ *  @param _fromClass 要被替换的 class，不能为空
+ *  @param _originSelector 要被替换的 class 的 selector，可为空，为空则相当于为 fromClass 新增这个方法
+ *  @param _toClass 要拿这个 class 的方法来替换
+ *  @param _newSelector 要拿 toClass 里的这个方法来替换 originSelector
+ *  @return 是否成功替换（或增加）
+ */
 CG_INLINE BOOL
-ReplaceMethod(Class _class, SEL _originSelector, SEL _newSelector) {
-    Method oriMethod = class_getInstanceMethod(_class, _originSelector);
-    Method newMethod = class_getInstanceMethod(_class, _newSelector);
-    if (!newMethod) {
-        // class 里不存在该方法的实现
+ExchangeImplementationsInTwoClasses(Class _fromClass, SEL _originSelector, Class _toClass, SEL _newSelector) {
+    if (!_fromClass || !_toClass) {
         return NO;
     }
-    BOOL isAddedMethod = class_addMethod(_class, _originSelector, method_getImplementation(newMethod), method_getTypeEncoding(newMethod));
+    
+    Method oriMethod = class_getInstanceMethod(_fromClass, _originSelector);
+    Method newMethod = class_getInstanceMethod(_toClass, _newSelector);
+    if (!newMethod) {
+        // toClass 里不存在该方法的实现，无法替换
+        return NO;
+    }
+    
+    BOOL isAddedMethod = class_addMethod(_fromClass, _originSelector, method_getImplementation(newMethod), method_getTypeEncoding(newMethod));
     if (isAddedMethod) {
-        class_replaceMethod(_class, _newSelector, method_getImplementation(oriMethod), method_getTypeEncoding(oriMethod));
+        // 如果 class_addMethod 成功了，说明之前 fromClass 里并不存在 originSelector，所以要用一个空的方法代替它，以避免 class_replaceMethod 后，后续 toClass 的这个方法被调用时可能会 crash
+        IMP oriMethodIMP = method_getImplementation(oriMethod) ?: imp_implementationWithBlock(^(id selfObject) {});
+        const char *oriMethodTypeEncoding = method_getTypeEncoding(oriMethod) ?: "v@:";
+        class_replaceMethod(_toClass, _newSelector, oriMethodIMP, oriMethodTypeEncoding);
     } else {
         method_exchangeImplementations(oriMethod, newMethod);
     }
     return YES;
+}
+
+/// 交换同一个 class 里的 originSelector 和 newSelector 的实现，如果原本不存在 originSelector，则相当于给 class 新增一个叫做 originSelector 的方法
+CG_INLINE BOOL
+ExchangeImplementations(Class _class, SEL _originSelector, SEL _newSelector) {
+    return ExchangeImplementationsInTwoClasses(_class, _originSelector, _class, _newSelector);
 }
 
 #pragma mark - CGFloat
@@ -278,7 +303,7 @@ CG_INLINE CGFloat
 CGFloatToFixed(CGFloat value, NSUInteger precision) {
     NSString *formatString = [NSString stringWithFormat:@"%%.%@f", @(precision)];
     NSString *toString = [NSString stringWithFormat:formatString, value];
-    #if defined(__LP64__) && __LP64__
+    #if CGFLOAT_IS_DOUBLE
     CGFloat result = [toString doubleValue];
     #else
     CGFloat result = [toString floatValue];

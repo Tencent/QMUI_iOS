@@ -22,7 +22,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(description), @selector(qmui_description));
+        ExchangeImplementations([self class], @selector(description), @selector(qmui_description));
     });
 }
 
@@ -177,6 +177,25 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     CGImageRef imageRef = CGImageCreateWithImageInRect(self.CGImage, scaledRect);
     UIImage *imageOut = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
     CGImageRelease(imageRef);
+    return imageOut;
+}
+
+- (UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius {
+    return [self qmui_imageWithClippedCornerRadius:cornerRadius scale:self.scale];
+}
+
+- (UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius scale:(CGFloat)scale {
+    CGRect imageRect = CGRectMakeWithSize(self.size);
+    if (cornerRadius <= 0) {
+        return self;
+    }
+    
+    UIGraphicsBeginImageContextWithOptions(self.size, NO, scale);
+    [[UIBezierPath bezierPathWithRoundedRect:imageRect cornerRadius:cornerRadius] addClip];
+    [self drawInRect:imageRect];
+    UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
     return imageOut;
 }
 
@@ -619,7 +638,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 + (UIImage *)qmui_imageWithAttributedString:(NSAttributedString *)attributedString {
-    CGSize stringSize = [attributedString boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
+    CGSize stringSize = [attributedString boundingRectWithSize:CGSizeMax options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
     stringSize = CGSizeCeil(stringSize);
     UIGraphicsBeginImageContextWithOptions(stringSize, NO, 0);
     CGContextRef context = UIGraphicsGetCurrentContext();

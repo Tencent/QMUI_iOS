@@ -31,7 +31,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     dispatch_once(&onceToken, ^{
         
         // 为 description 增加更丰富的信息
-        ReplaceMethod([UIViewController class], @selector(description), @selector(qmui_description));
+        ExchangeImplementations([UIViewController class], @selector(description), @selector(qmui_description));
         
         // 兼容 iOS 9.0 以下的版本对 loadViewIfNeeded 方法的调用
         if (![[UIViewController class] instancesRespondToSelector:@selector(loadViewIfNeeded)]) {
@@ -42,11 +42,8 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
         // 修复 iOS 11 scrollView 无法自动适配不透明的 tabBar，导致底部 inset 错误的问题
         // https://github.com/QMUI/QMUI_iOS/issues/218
         if (@available(iOS 11, *)) {
-            ReplaceMethod([UIViewController class], @selector(initWithNibName:bundle:), @selector(qmui_initWithNibName:bundle:));
+            ExchangeImplementations([UIViewController class], @selector(initWithNibName:bundle:), @selector(qmui_initWithNibName:bundle:));
         }
-        
-        // 实现 AutomaticallyRotateDeviceOrientation 开关的功能
-        ReplaceMethod([UIViewController class], @selector(viewWillAppear:), @selector(qmui_viewWillAppear:));
     });
 }
 
@@ -111,38 +108,6 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
         CGFloat additionalSafeAreaInsetsBottom = correctSafeAreaInsetsBottom - tabBar.safeAreaInsets.bottom;
         self.additionalSafeAreaInsets = UIEdgeInsetsSetBottom(self.additionalSafeAreaInsets, additionalSafeAreaInsetsBottom);
     }
-}
-
-- (void)qmui_viewWillAppear:(BOOL)animated {
-    [self qmui_viewWillAppear:animated];
-    if (!AutomaticallyRotateDeviceOrientation) {
-        return;
-    }
-    
-    UIInterfaceOrientation statusBarOrientation = [[UIApplication sharedApplication] statusBarOrientation];
-    UIDeviceOrientation deviceOrientationBeforeChangingByHelper = [QMUIHelper sharedInstance].orientationBeforeChangingByHelper;
-    BOOL shouldConsiderBeforeChanging = deviceOrientationBeforeChangingByHelper != UIDeviceOrientationUnknown;
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-    
-    // 虽然这两者的 unknow 值是相同的，但在启动 App 时可能只有其中一个是 unknown
-    if (statusBarOrientation == UIInterfaceOrientationUnknown || deviceOrientation == UIDeviceOrientationUnknown) return;
-    
-    // 如果当前设备方向和界面支持的方向不一致，则主动进行旋转
-    UIDeviceOrientation deviceOrientationToRotate = [self interfaceOrientationMask:self.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientation] ? deviceOrientation : [self deviceOrientationWithInterfaceOrientationMask:self.supportedInterfaceOrientations];
-    
-    // 之前没用私有接口修改过，那就按最标准的方式去旋转
-    if (!shouldConsiderBeforeChanging) {
-        if ([QMUIHelper rotateToDeviceOrientation:deviceOrientationToRotate]) {
-            [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = deviceOrientation;
-        } else {
-            [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = UIDeviceOrientationUnknown;
-        }
-        return;
-    }
-    
-    // 用私有接口修改过方向，但下一个界面和当前界面方向不相同，则要把修改前记录下来的那个设备方向考虑进来
-    deviceOrientationToRotate = [self interfaceOrientationMask:self.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientationBeforeChangingByHelper] ? deviceOrientationBeforeChangingByHelper : [self deviceOrientationWithInterfaceOrientationMask:self.supportedInterfaceOrientations];
-    [QMUIHelper rotateToDeviceOrientation:deviceOrientationToRotate];
 }
 
 - (UIDeviceOrientation)deviceOrientationWithInterfaceOrientationMask:(UIInterfaceOrientationMask)mask {
@@ -242,7 +207,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
         return [((UITabBarController *)self).selectedViewController qmui_visibleViewControllerIfExist];
     }
     
-    if ([self isViewLoaded] && self.view.window) {
+    if ([self qmui_isViewLoadedAndVisible]) {
         return self;
     } else {
         NSLog(@"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view : nil, [self isViewLoaded] ? self.view.window : nil);
@@ -321,7 +286,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod(self.class, @selector(viewDidAppear:), @selector(qmui_viewDidAppear:));
+        ExchangeImplementations(self.class, @selector(viewDidAppear:), @selector(qmui_viewDidAppear:));
     });
 }
 
@@ -399,6 +364,65 @@ static char kAssociatedObjectKey_dataLoaded;
 
 @end
 
+@implementation UIViewController (RotateDeviceOrientation)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // 实现 AutomaticallyRotateDeviceOrientation 开关的功能
+        ExchangeImplementations([UIViewController class], @selector(viewWillAppear:), @selector(rotate_viewWillAppear:));
+    });
+}
+
+- (void)rotate_viewWillAppear:(BOOL)animated {
+    [self rotate_viewWillAppear:animated];
+    if (!AutomaticallyRotateDeviceOrientation) {
+        return;
+    }
+    
+    // 某些情况下的 UIViewController 不具备决定设备方向的权利，具体请看 https://github.com/QMUI/QMUI_iOS/issues/291
+    if (![self qmui_shouldForceRotateDeviceOrientation]) {
+        BOOL isRootViewController = [self isViewLoaded] && self.view.window.rootViewController == self;
+        BOOL isChildViewController = [self.tabBarController.viewControllers containsObject:self] || [self.navigationController.viewControllers containsObject:self] || [self.splitViewController.viewControllers containsObject:self];
+        BOOL hasRightsOfRotateDeviceOrientaion = isRootViewController || isChildViewController;
+        if (!hasRightsOfRotateDeviceOrientaion) {
+            return;
+        }
+    }
+    
+    
+    UIInterfaceOrientation statusBarOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+    UIDeviceOrientation deviceOrientationBeforeChangingByHelper = [QMUIHelper sharedInstance].orientationBeforeChangingByHelper;
+    BOOL shouldConsiderBeforeChanging = deviceOrientationBeforeChangingByHelper != UIDeviceOrientationUnknown;
+    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    
+    // 虽然这两者的 unknow 值是相同的，但在启动 App 时可能只有其中一个是 unknown
+    if (statusBarOrientation == UIInterfaceOrientationUnknown || deviceOrientation == UIDeviceOrientationUnknown) return;
+    
+    // 如果当前设备方向和界面支持的方向不一致，则主动进行旋转
+    UIDeviceOrientation deviceOrientationToRotate = [self interfaceOrientationMask:self.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientation] ? deviceOrientation : [self deviceOrientationWithInterfaceOrientationMask:self.supportedInterfaceOrientations];
+    
+    // 之前没用私有接口修改过，那就按最标准的方式去旋转
+    if (!shouldConsiderBeforeChanging) {
+        if ([QMUIHelper rotateToDeviceOrientation:deviceOrientationToRotate]) {
+            [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = deviceOrientation;
+        } else {
+            [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = UIDeviceOrientationUnknown;
+        }
+        return;
+    }
+    
+    // 用私有接口修改过方向，但下一个界面和当前界面方向不相同，则要把修改前记录下来的那个设备方向考虑进来
+    deviceOrientationToRotate = [self interfaceOrientationMask:self.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientationBeforeChangingByHelper] ? deviceOrientationBeforeChangingByHelper : [self deviceOrientationWithInterfaceOrientationMask:self.supportedInterfaceOrientations];
+    [QMUIHelper rotateToDeviceOrientation:deviceOrientationToRotate];
+}
+
+- (BOOL)qmui_shouldForceRotateDeviceOrientation {
+    return NO;
+}
+
+@end
+
 @implementation QMUIHelper (ViewController)
 
 + (nullable UIViewController *)visibleViewController {
@@ -421,10 +445,10 @@ static char kAssociatedObjectKey_dataLoaded;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (@available(iOS 11, *)) {
-            ReplaceMethod([self class], @selector(setHidden:), @selector(nav_setHidden:));
-            ReplaceMethod([self class], @selector(setBackgroundImage:), @selector(nav_setBackgroundImage:));
-            ReplaceMethod([self class], @selector(setTranslucent:), @selector(nav_setTranslucent:));
-            ReplaceMethod([self class], @selector(setFrame:), @selector(nav_setFrame:));
+            ExchangeImplementations([self class], @selector(setHidden:), @selector(nav_setHidden:));
+            ExchangeImplementations([self class], @selector(setBackgroundImage:), @selector(nav_setBackgroundImage:));
+            ExchangeImplementations([self class], @selector(setTranslucent:), @selector(nav_setTranslucent:));
+            ExchangeImplementations([self class], @selector(setFrame:), @selector(nav_setFrame:));
         }
     });
 }

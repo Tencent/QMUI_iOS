@@ -16,8 +16,8 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 类簇对不同的init方法对应不同的私有class，所以要用实例来得到真正的class
-        ReplaceMethod([[[NSAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmui_initWithString:));
-        ReplaceMethod([[[NSAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmui_initWithString:attributes:));
+        ExchangeImplementations([[[NSAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmui_initWithString:));
+        ExchangeImplementations([[[NSAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmui_initWithString:attributes:));
     });
 }
 
@@ -72,8 +72,8 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 类簇对不同的init方法对应不同的私有class，所以要用实例来得到真正的class
-        ReplaceMethod([[[NSMutableAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmui_initWithString:));
-        ReplaceMethod([[[NSMutableAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmui_initWithString:attributes:));
+        ExchangeImplementations([[[NSMutableAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmui_initWithString:));
+        ExchangeImplementations([[[NSMutableAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmui_initWithString:attributes:));
     });
 }
 

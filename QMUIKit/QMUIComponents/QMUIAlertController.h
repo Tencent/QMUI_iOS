@@ -126,6 +126,15 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// alert头部title和message之间的间距，默认3pt
 @property(nonatomic, assign) CGFloat alertTitleMessageSpacing UI_APPEARANCE_SELECTOR;
 
+/// alert 内部 textField 的字体
+@property(nonatomic, strong) UIFont *alertTextFieldFont UI_APPEARANCE_SELECTOR;
+
+/// alert 内部 textField 的文字颜色
+@property(nonatomic, strong) UIColor *alertTextFieldTextColor UI_APPEARANCE_SELECTOR;
+
+/// alert 内部 textField 的边框颜色，如果不需要边框，可设置为 nil
+@property(nonatomic, strong) UIColor *alertTextFieldBorderColor UI_APPEARANCE_SELECTOR;
+
 
 /// sheet距离屏幕四边的间距，默认UIEdgeInsetsMake(10, 10, 10, 10)。
 @property(nonatomic, assign) UIEdgeInsets sheetContentMargin UI_APPEARANCE_SELECTOR;
@@ -196,6 +205,9 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 
 /// 增加一个输入框
 - (void)addTextFieldWithConfigurationHandler:(void (^)(QMUITextField *textField))configurationHandler;
+
+/// 是否应该自动管理输入框的键盘 Return 事件（切换多个输入框的焦点、自动响应某个按钮等），默认为 YES。你也可以通过 UITextFieldDelegate 自己管理，此时请将此属性置为 NO。
+@property(nonatomic, assign) BOOL shouldManageTextFieldsReturnEventAutomatically;
 
 /// 增加一个自定义的view作为`QMUIAlertController`的customView
 - (void)addCustomView:(UIView *)view;

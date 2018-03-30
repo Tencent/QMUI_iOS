@@ -24,9 +24,9 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(setItems:animated:), @selector(qmui_setItems:animated:));
-        ReplaceMethod([self class], @selector(setSelectedItem:), @selector(qmui_setSelectedItem:));
-        ReplaceMethod([self class], @selector(setFrame:), @selector(qmui_setFrame:));
+        ExchangeImplementations([self class], @selector(setItems:animated:), @selector(qmui_setItems:animated:));
+        ExchangeImplementations([self class], @selector(setSelectedItem:), @selector(qmui_setSelectedItem:));
+        ExchangeImplementations([self class], @selector(setFrame:), @selector(qmui_setFrame:));
     });
 }
 

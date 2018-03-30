@@ -311,10 +311,6 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     return [[UITableViewCell alloc] init];
 }
 
-- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    return TableViewCellNormalHeight;
-}
-
 @end
 
 

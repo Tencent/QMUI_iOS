@@ -319,7 +319,7 @@ EndIgnoreClangWarning
     }
 }
 
-- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *))block {
+- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *))block {
     if (_cancelButton) {
         [_cancelButton removeFromSuperview];
     }
@@ -334,7 +334,7 @@ EndIgnoreClangWarning
     self.cancelButtonBlock = block;
 }
 
-- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block {
+- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block {
     if (_submitButton) {
         [_submitButton removeFromSuperview];
     }
@@ -446,6 +446,12 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.alwaysBounceVertical = NO;
+    
+    // 因为要根据 tableView sizeThatFits: 算出 dialog 的高度，所以禁用 estimated 特性，不然算出来结果不准确
+    self.tableView.estimatedRowHeight = 0;
+    self.tableView.estimatedSectionHeaderHeight = 0;
+    self.tableView.estimatedSectionFooterHeight = 0;
+    
     [self.view addSubview:self.tableView];
 }
 
@@ -593,7 +599,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 @end
 
-@interface QMUIDialogTextFieldViewController ()
+@interface QMUIDialogTextFieldViewController ()<QMUITextFieldDelegate>
 
 @property(nonatomic, strong, readwrite) QMUILabel *textFieldLabel;
 @property(nonatomic, strong, readwrite) CALayer *textFieldSeparatorLayer;
@@ -605,6 +611,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 - (void)didInitialized {
     [super didInitialized];
+    self.shouldManageTextFieldsReturnEventAutomatically = YES;
     self.enablesSubmitButtonAutomatically = YES;
     BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
@@ -615,6 +622,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     [super initSubviews];
     
     self.textField = [[QMUITextField alloc] init];
+    self.textField.delegate = self;
     self.textField.backgroundColor = UIColorWhite;
     self.textField.textInsets = UIEdgeInsetsMake(self.textField.textInsets.top, 16, self.textField.textInsets.bottom, 16);
     self.textField.returnKeyType = UIReturnKeyDone;
@@ -717,7 +725,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
 }
 
-- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block {
+- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block {
     [super addSubmitButtonWithText:buttonText block:block];
     [self updateSubmitButtonEnables];
 }
@@ -729,6 +737,33 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     CGFloat textFieldTitleHeight = 29.0;
     
     return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + UIEdgeInsetsGetVerticalValue(self.contentViewMargins) + (!self.textFieldLabel.hidden ? textFieldTitleHeight : 0) + textFieldHeight + (!self.footerView.hidden ?  CGRectGetHeight(self.footerView.frame) : 0));
+}
+
+#pragma mark - <QMUITextFieldDelegate>
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    if (!self.shouldManageTextFieldsReturnEventAutomatically) {
+        return NO;
+    }
+    
+    if (textField != self.textField) {
+        return NO;
+    }
+    
+    // 有 submitButton 则响应它，没有的话响应 cancel，再没有就降下键盘即可（体验与 UIAlertController 一致）
+    
+    if (self.submitButton.enabled) {
+        [self.submitButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+        return NO;
+    }
+    
+    if (self.cancelButton) {
+        [self.cancelButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+        return NO;
+    }
+    
+    [self.view endEditing:YES];
+    return NO;
 }
 
 @end

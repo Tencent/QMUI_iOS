@@ -144,6 +144,9 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.alertButtonHighlightBackgroundColor = UIColorMake(232, 232, 232);
         alertControllerAppearance.alertHeaderInsets = UIEdgeInsetsMake(20, 16, 20, 16);
         alertControllerAppearance.alertTitleMessageSpacing = 3;
+        alertControllerAppearance.alertTextFieldFont = UIFontMake(14);
+        alertControllerAppearance.alertTextFieldTextColor = UIColorBlack;
+        alertControllerAppearance.alertTextFieldBorderColor = UIColorMake(210, 210, 210);
         
         alertControllerAppearance.sheetContentMargin = UIEdgeInsetsMake(10, 10, 10, 10);
         alertControllerAppearance.sheetContentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(alertControllerAppearance.sheetContentMargin);
@@ -171,7 +174,7 @@ static QMUIAlertController *alertControllerAppearance;
 
 #pragma mark - QMUIAlertController
 
-@interface QMUIAlertController () <QMUIAlertActionDelegate, QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate>
+@interface QMUIAlertController () <QMUIAlertActionDelegate, QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate, QMUITextFieldDelegate>
 
 @property(nonatomic, assign, readwrite) QMUIAlertControllerStyle preferredStyle;
 @property(nonatomic, strong, readwrite) QMUIModalPresentationViewController *modalPresentationViewController;
@@ -245,6 +248,9 @@ static QMUIAlertController *alertControllerAppearance;
         self.alertButtonHighlightBackgroundColor = [QMUIAlertController appearance].alertButtonHighlightBackgroundColor;
         self.alertHeaderInsets = [QMUIAlertController appearance].alertHeaderInsets;
         self.alertTitleMessageSpacing = [QMUIAlertController appearance].alertTitleMessageSpacing;
+        self.alertTextFieldFont = [QMUIAlertController appearance].alertTextFieldFont;
+        self.alertTextFieldTextColor = [QMUIAlertController appearance].alertTextFieldTextColor;
+        self.alertTextFieldBorderColor = [QMUIAlertController appearance].alertTextFieldBorderColor;
         
         self.sheetContentMargin = [QMUIAlertController appearance].sheetContentMargin;
         self.sheetContentMaximumWidth = [QMUIAlertController appearance].sheetContentMaximumWidth;
@@ -265,6 +271,8 @@ static QMUIAlertController *alertControllerAppearance;
         self.sheetTitleMessageSpacing = [QMUIAlertController appearance].sheetTitleMessageSpacing;
         self.isExtendBottomLayout = [QMUIAlertController appearance].isExtendBottomLayout;
     }
+    
+    self.shouldManageTextFieldsReturnEventAutomatically = YES;
 }
 
 - (void)setAlertButtonAttributes:(NSDictionary<NSString *,id> *)alertButtonAttributes {
@@ -424,6 +432,27 @@ static QMUIAlertController *alertControllerAppearance;
     }
 }
 
+- (void)setAlertTextFieldFont:(UIFont *)alertTextFieldFont {
+    _alertTextFieldFont = alertTextFieldFont;
+    [self.textFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+        textField.font = alertTextFieldFont;
+    }];
+}
+
+- (void)setAlertTextFieldBorderColor:(UIColor *)alertTextFieldBorderColor {
+    _alertTextFieldBorderColor = alertTextFieldBorderColor;
+    [self.textFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+        textField.layer.borderColor = alertTextFieldBorderColor.CGColor;
+    }];
+}
+
+- (void)setAlertTextFieldTextColor:(UIColor *)alertTextFieldTextColor {
+    _alertTextFieldTextColor = alertTextFieldTextColor;
+    [self.textFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+        textField.textColor = alertTextFieldTextColor;
+    }];
+}
+
 + (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     QMUIAlertController *alertController = [[self alloc] initWithTitle:title message:message preferredStyle:preferredStyle];
     if (alertController) {
@@ -553,8 +582,8 @@ static QMUIAlertController *alertControllerAppearance;
                 CGFloat halfWidth = CGRectGetWidth(self.buttonScrollView.bounds) / 2;
                 QMUIAlertAction *action1 = newOrderActions[0];
                 QMUIAlertAction *action2 = newOrderActions[1];
-                CGSize actionSize1 = [action1.button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
-                CGSize actionSize2 = [action2.button sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+                CGSize actionSize1 = [action1.button sizeThatFits:CGSizeMax];
+                CGSize actionSize2 = [action2.button sizeThatFits:CGSizeMax];
                 if (actionSize1.width < halfWidth && actionSize2.width < halfWidth) {
                     verticalLayout = NO;
                 }
@@ -920,14 +949,15 @@ static QMUIAlertController *alertControllerAppearance;
         [NSException raise:@"QMUIAlertController使用错误" format:@"Sheet类型不运行添加UITextField"];
     }
     QMUITextField *textField = [[QMUITextField alloc] init];
+    textField.delegate = self;
     textField.borderStyle = UITextBorderStyleNone;
     textField.backgroundColor = UIColorWhite;
     textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
-    textField.font = UIFontMake(14);
-    textField.textColor = UIColorBlack;
+    textField.font = self.alertTextFieldFont;
+    textField.textColor = self.alertTextFieldTextColor;
     textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     textField.clearButtonMode = UITextFieldViewModeWhileEditing;
-    textField.layer.borderColor = UIColorMake(210, 210, 210).CGColor;
+    textField.layer.borderColor = self.alertTextFieldBorderColor.CGColor;
     textField.layer.borderWidth = PixelOne;
     [self.headerScrollView addSubview:textField];
     [self.alertTextFields addObject:textField];
@@ -994,8 +1024,8 @@ static QMUIAlertController *alertControllerAppearance;
     }
 }
 
-- (NSArray *)actions {
-    return self.alertActions;
+- (NSArray<QMUIAlertAction *> *)actions {
+    return [self.alertActions copy];
 }
 
 - (void)updateAction {
@@ -1056,8 +1086,8 @@ static QMUIAlertController *alertControllerAppearance;
     }
 }
 
-- (NSArray *)textFields {
-    return self.alertTextFields;
+- (NSArray<QMUITextField *> *)textFields {
+    return [self.alertTextFields copy];
 }
 
 - (void)handleMaskViewEvent:(id)sender {
@@ -1083,6 +1113,38 @@ static QMUIAlertController *alertControllerAppearance;
     [self hideWithAnimated:NO completion:NULL];
 }
 
+#pragma mark - <QMUITextFieldDelegate>
+
+- (BOOL)textFieldShouldReturn:(QMUITextField *)textField {
+    if (!self.shouldManageTextFieldsReturnEventAutomatically) {
+        return NO;
+    }
+    
+    if (![self.textFields containsObject:textField]) {
+        return NO;
+    }
+    
+    // 最后一个输入框，默认的 return 行为与 iOS 9-11 保持一致，也即：
+    // 如果 action = 1，则自动响应这个 action 的事件
+    // 如果 action = 2，并且其中有一个是 Cancel，则响应另一个 action 的事件，如果其中不存在 Cancel，则降下键盘，不响应任何 action
+    // 如果 action > 2，则降下键盘，不响应任何 action
+    if (textField == self.textFields.lastObject) {
+        if (self.actions.count == 1) {
+            [self.actions.firstObject.button sendActionsForControlEvents:UIControlEventTouchUpInside];
+        } else if (self.actions.count == 2) {
+            if (self.cancelAction) {
+                QMUIAlertAction *targetAction = self.actions.firstObject == self.cancelAction ? self.actions.lastObject : self.actions.firstObject;
+                [targetAction.button sendActionsForControlEvents:UIControlEventTouchUpInside];
+            }
+        }
+        [self.view endEditing:YES];
+        return NO;
+    }
+    // 非最后一个输入框，则默认的 return 行为是聚焦到下一个输入框
+    NSUInteger index = [self.textFields indexOfObject:textField];
+    [self.textFields[index + 1] becomeFirstResponder];
+    return NO;
+}
 
 @end
 

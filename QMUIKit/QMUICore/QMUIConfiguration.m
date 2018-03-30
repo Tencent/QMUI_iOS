@@ -13,6 +13,8 @@
 #import "UIViewController+QMUI.h"
 #import <objc/runtime.h>
 
+const CGSize kUINavigationBarBackIndicatorImageSize = {13, 21}; // 在iOS 8-11 上实际测量得到
+
 @implementation QMUIConfiguration
 
 + (instancetype)sharedInstance {
@@ -47,7 +49,8 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         numberOfClasses = objc_getClassList(classes, numberOfClasses);
         for (int i = 0; i < numberOfClasses; i++) {
             Class class = classes[i];
-            if ([NSStringFromClass(class) hasPrefix:@"QMUIConfigurationTemplate"] && [class conformsToProtocol:protocol]) {
+            // 这里用 containsString 是考虑到 Swift 里 className 由“项目前缀+class 名”组成，如果用 hasPrefix 就无法判断了
+            if ([NSStringFromClass(class) containsString:@"QMUIConfigurationTemplate"] && [class conformsToProtocol:protocol]) {
                 if ([class instancesRespondToSelector:@selector(shouldApplyTemplateAutomatically)]) {
                     id<QMUIConfigurationTemplateProtocol> template = [[class alloc] init];
                     if ([template shouldApplyTemplateAutomatically]) {
@@ -138,6 +141,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.navBarLargeTitleColor = nil;
     self.navBarLargeTitleFont = nil;
     self.navBarBackButtonTitlePositionAdjustment = UIOffsetZero;
+    self.sizeNavBarBackIndicatorImageAutomatically = YES;
     self.navBarBackIndicatorImage = nil;
     self.navBarCloseButtonImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavClose size:CGSizeMake(16, 16) tintColor:self.navBarTintColor];
     
@@ -193,7 +197,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.tableSectionIndexTrackingBackgroundColor = nil;
     self.tableViewSeparatorColor = self.separatorColor;
     
-    self.tableViewCellNormalHeight = 44;
+    self.tableViewCellNormalHeight = UITableViewAutomaticDimension;
     self.tableViewCellTitleLabelColor = nil;
     self.tableViewCellDetailLabelColor = nil;
     self.tableViewCellBackgroundColor = self.whiteColor;
@@ -338,6 +342,13 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     }
 }
 
+- (void)setSizeNavBarBackIndicatorImageAutomatically:(BOOL)sizeNavBarBackIndicatorImageAutomatically {
+    _sizeNavBarBackIndicatorImageAutomatically = sizeNavBarBackIndicatorImageAutomatically;
+    if (sizeNavBarBackIndicatorImageAutomatically && self.navBarBackIndicatorImage && !CGSizeEqualToSize(self.navBarBackIndicatorImage.size, kUINavigationBarBackIndicatorImageSize)) {
+        self.navBarBackIndicatorImage = self.navBarBackIndicatorImage;// 重新设置一次，以触发自动调整大小
+    }
+}
+
 - (void)setNavBarBackIndicatorImage:(UIImage *)navBarBackIndicatorImage {
     _navBarBackIndicatorImage = navBarBackIndicatorImage;
     
@@ -346,14 +357,16 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         UINavigationBar *navigationBar = [QMUIHelper visibleViewController].navigationController.navigationBar;
         
         // 返回按钮的图片frame是和系统默认的返回图片的大小一致的（13, 21），所以用自定义返回箭头时要保证图片大小与系统的箭头大小一样，否则无法对齐
-        CGSize systemBackIndicatorImageSize = CGSizeMake(13, 21); // 在iOS 8-11 上实际测量得到
-        CGSize customBackIndicatorImageSize = _navBarBackIndicatorImage.size;
-        if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
-            CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
-            _navBarBackIndicatorImage = [[_navBarBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
-                                                                                                                          0,
-                                                                                                                          imageExtensionVerticalFloat,
-                                                                                                                          systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)] imageWithRenderingMode:_navBarBackIndicatorImage.renderingMode];
+        if (self.sizeNavBarBackIndicatorImageAutomatically) {
+            CGSize systemBackIndicatorImageSize = kUINavigationBarBackIndicatorImageSize;
+            CGSize customBackIndicatorImageSize = _navBarBackIndicatorImage.size;
+            if (!CGSizeEqualToSize(customBackIndicatorImageSize, systemBackIndicatorImageSize)) {
+                CGFloat imageExtensionVerticalFloat = CGFloatGetCenter(systemBackIndicatorImageSize.height, customBackIndicatorImageSize.height);
+                _navBarBackIndicatorImage = [[_navBarBackIndicatorImage qmui_imageWithSpacingExtensionInsets:UIEdgeInsetsMake(imageExtensionVerticalFloat,
+                                                                                                                              0,
+                                                                                                                              imageExtensionVerticalFloat,
+                                                                                                                              systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)] imageWithRenderingMode:_navBarBackIndicatorImage.renderingMode];
+            }
         }
         
         navBarAppearance.backIndicatorImage = _navBarBackIndicatorImage;
