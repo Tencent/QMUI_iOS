@@ -50,6 +50,9 @@ typedef NS_ENUM(NSInteger, QMUIStaticTableViewCellAccessoryType) {
 /// cell 的详细文字，将会被设置到 cell.detailTextLabel.text，所以要求 cellData.style 的值必须是带 detailTextLabel 类型的 style
 @property(nonatomic, copy) NSString *detailText;
 
+/// 会自动在 tableView:cellForRowAtIndexPath: 里调用，这样就不需要实现 cellForRow
+@property(nonatomic, copy) void (^cellForRowBlock)(UITableView *tableView, __kindof QMUITableViewCell *cell, QMUIStaticTableViewCellData *cellData);
+
 /// 当 cell 的点击事件被触发时，要由哪个对象来接收
 @property(nonatomic, assign) id didSelectTarget;
 

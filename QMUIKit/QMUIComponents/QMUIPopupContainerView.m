@@ -10,6 +10,7 @@
 #import "QMUICore.h"
 #import "QMUICommonViewController.h"
 #import "UIViewController+QMUI.h"
+#import "QMUILog.h"
 
 @interface QMUIPopupContainerViewWindow : UIWindow
 
@@ -62,8 +63,9 @@
     }
     
     // https://github.com/QMUI/QMUI_iOS/issues/76
-    BOOL shouldLayoutInPopupWindow = self.popupWindow && CGSizeEqualToSize(self.popupWindow.bounds.size, [[[UIApplication sharedApplication] delegate] window].bounds.size);
-    return shouldLayoutInPopupWindow ? self.popupWindow : [[[UIApplication sharedApplication] delegate] window];
+    BOOL shouldLayoutBaseOnPopupWindow = self.popupWindow && CGSizeEqualToSize(self.popupWindow.bounds.size, [[[UIApplication sharedApplication] delegate] window].bounds.size);
+    UIWindow *window = shouldLayoutBaseOnPopupWindow ? self.popupWindow : [[[UIApplication sharedApplication] delegate] window];
+    return window.rootViewController.view;
 }
 
 - (UIImageView *)imageView {
@@ -273,7 +275,7 @@
         tipSize.height = self.maximumHeight;
         _currentLayoutDirection = maximumHeightAbove > maximumHeightBelow ? QMUIPopupContainerViewLayoutDirectionAbove : QMUIPopupContainerViewLayoutDirectionBelow;
         
-        NSLog(@"%@, 因为上下都不够空间，所以最大高度被强制改为%@, 位于目标的%@", self, @(self.maximumHeight), maximumHeightAbove > maximumHeightBelow ? @"上方" : @"下方");
+        QMUILog(NSStringFromClass(self.class), @"%@, 因为上下都不够空间，所以最大高度被强制改为%@, 位于目标的%@", self, @(self.maximumHeight), maximumHeightAbove > maximumHeightBelow ? @"上方" : @"下方");
         
     } else if (_currentLayoutDirection == QMUIPopupContainerViewLayoutDirectionAbove && !canShowAtAbove) {
         _currentLayoutDirection = QMUIPopupContainerViewLayoutDirectionBelow;

@@ -12,6 +12,7 @@
 #import "QMUITableViewCell.h"
 #import "UITableView+QMUIStaticCell.h"
 #import <objc/runtime.h>
+#import "QMUILog.h"
 
 @interface QMUIStaticTableViewCellDataSource ()
 @end
@@ -39,9 +40,18 @@
 // 在 UITableView (QMUI_StaticCell) 那边会把 tableView 的 property 改为 readwrite，所以这里补上 setter
 - (void)setTableView:(UITableView *)tableView {
     _tableView = tableView;
-    // 触发 UITableView (QMUI_StaticCell) 里重写的 setter 里的逻辑
-    tableView.delegate = tableView.delegate;
-    tableView.dataSource = tableView.dataSource;
+    // 触发 UITableView (QMUI_StaticCell) 里重写的 setter 里的逻辑，iOS 8 要先置为 nil 再设置才能生效
+    if (@available(iOS 9.0, *)) {
+        tableView.delegate = tableView.delegate;
+        tableView.dataSource = tableView.dataSource;
+    } else {
+        id<UITableViewDelegate> tempDelegate = tableView.delegate;
+        id<UITableViewDataSource> tempDataSource = tableView.dataSource;
+        tableView.delegate = nil;
+        tableView.dataSource = nil;
+        tableView.delegate = tempDelegate;
+        tableView.dataSource = tempDataSource;
+    }
 }
 
 @end
@@ -55,13 +65,13 @@
 
 - (QMUIStaticTableViewCellData *)cellDataAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= self.cellDataSections.count) {
-        NSLog(@"cellDataWithIndexPath:%@, data not exist in section!", indexPath);
+        QMUILog(NSStringFromClass(self.class), @"cellDataWithIndexPath:%@, data not exist in section!", indexPath);
         return nil;
     }
     
     NSArray<QMUIStaticTableViewCellData *> *rowDatas = [self.cellDataSections objectAtIndex:indexPath.section];
     if (indexPath.row >= rowDatas.count) {
-        NSLog(@"cellDataWithIndexPath:%@, data not exist in row!", indexPath);
+        QMUILog(NSStringFromClass(self.class), @"cellDataWithIndexPath:%@, data not exist in row!", indexPath);
         return nil;
     }
     
@@ -119,6 +129,10 @@
     }
     
     [cell updateCellAppearanceWithIndexPath:indexPath];
+    
+    if (data.cellForRowBlock) {
+        data.cellForRowBlock(self.tableView, cell, data);
+    }
     
     return cell;
 }

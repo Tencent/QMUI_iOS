@@ -13,6 +13,7 @@
 #import "CALayer+QMUI.h"
 #import "UIButton+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
+#import "QMUILog.h"
 
 @interface QMUIButton ()
 
@@ -64,7 +65,7 @@
 - (CGSize)sizeThatFits:(CGSize)size {
     // 如果调用 sizeToFit，那么传进来的 size 就是当前按钮的 size，此时的计算不要去限制宽高
     if (CGSizeEqualToSize(self.bounds.size, size)) {
-        size = CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX);
+        size = CGSizeMax;
     }
     
     BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
@@ -129,7 +130,7 @@
 }
 
 - (CGSize)intrinsicContentSize {
-    return [self sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+    return [self sizeThatFits:CGSizeMax];
 }
 
 - (void)layoutSubviews {
@@ -672,7 +673,7 @@
             self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
             UIImage *backIndicatorImage = NavBarBackIndicatorImage;
             if (!backIndicatorImage) {
-                NSLog(@"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
+                QMUILogWarn(NSStringFromClass(self.class), @"NavBarBackIndicatorImage 为 nil，无法创建正确的 QMUINavigationButtonTypeBack 按钮");
                 return;
             }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];

@@ -95,7 +95,8 @@
 #define NavBarLargeTitleColor                           [QMUICMI navBarLargeTitleColor]
 #define NavBarLargeTitleFont                            [QMUICMI navBarLargeTitleFont]
 #define NavBarBarBackButtonTitlePositionAdjustment      [QMUICMI navBarBackButtonTitlePositionAdjustment]
-#define NavBarBackIndicatorImage                        [QMUICMI navBarBackIndicatorImage]                          // 自定义的返回按钮，尺寸建议与系统的返回按钮尺寸一致（iOS8下实测系统大小是(13, 21)），可提高性能
+#define NavBarBackIndicatorImage                        [QMUICMI navBarBackIndicatorImage]
+#define SizeNavBarBackIndicatorImageAutomatically       [QMUICMI sizeNavBarBackIndicatorImageAutomatically]
 #define NavBarCloseButtonImage                          [QMUICMI navBarCloseButtonImage]
 
 #define NavBarLoadingMarginRight                        [QMUICMI navBarLoadingMarginRight]                          // titleView里左边的loading的右边距
@@ -156,7 +157,7 @@
 #define TableViewCellBackgroundColor               [QMUICMI tableViewCellBackgroundColor]               // 列表 cell 的背景色
 #define TableViewCellSelectedBackgroundColor       [QMUICMI tableViewCellSelectedBackgroundColor]       // 列表 cell 按下时的背景色
 #define TableViewCellWarningBackgroundColor        [QMUICMI tableViewCellWarningBackgroundColor]        // 列表 cell 在未读状态下的背景色
-#define TableViewCellNormalHeight                  [QMUICMI tableViewCellNormalHeight]                  // 默认 cell 的高度
+#define TableViewCellNormalHeight                  [QMUICMI tableViewCellNormalHeight]                  // QMUITableView 的默认 cell 高度
 
 #define TableViewCellDisclosureIndicatorImage      [QMUICMI tableViewCellDisclosureIndicatorImage]      // 列表 cell 右边的箭头图片
 #define TableViewCellCheckmarkImage                [QMUICMI tableViewCellCheckmarkImage]                // 列表 cell 右边的打钩checkmark

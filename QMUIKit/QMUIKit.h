@@ -22,6 +22,10 @@
 #import "NSObject+QMUI.h"
 #endif
 
+#if __has_include("NSObject+QMUIMultipleDelegates.h")
+#import "NSObject+QMUIMultipleDelegates.h"
+#endif
+
 #if __has_include("NSParagraphStyle+QMUI.h")
 #import "NSParagraphStyle+QMUI.h"
 #endif
@@ -56,6 +60,14 @@
 
 #if __has_include("QMUICellHeightCache.h")
 #import "QMUICellHeightCache.h"
+#endif
+
+#if __has_include("QMUICellHeightKeyCache.h")
+#import "QMUICellHeightKeyCache.h"
+#endif
+
+#if __has_include("QMUICellSizeKeyCache.h")
+#import "QMUICellSizeKeyCache.h"
 #endif
 
 #if __has_include("QMUICollectionViewPagingLayout.h")
@@ -150,10 +162,6 @@
 #import "QMUILog.h"
 #endif
 
-#if __has_include("QMUILogger.h")
-#import "QMUILogger.h"
-#endif
-
 #if __has_include("QMUILogItem.h")
 #import "QMUILogItem.h"
 #endif
@@ -166,6 +174,10 @@
 #import "QMUILogNameManager.h"
 #endif
 
+#if __has_include("QMUILogger.h")
+#import "QMUILogger.h"
+#endif
+
 #if __has_include("QMUIMarqueeLabel.h")
 #import "QMUIMarqueeLabel.h"
 #endif
@@ -176,6 +188,10 @@
 
 #if __has_include("QMUIMoreOperationController.h")
 #import "QMUIMoreOperationController.h"
+#endif
+
+#if __has_include("QMUIMultipleDelegates.h")
+#import "QMUIMultipleDelegates.h"
 #endif
 
 #if __has_include("QMUINavigationController.h")
@@ -302,6 +318,10 @@
 #import "UICollectionView+QMUI.h"
 #endif
 
+#if __has_include("UICollectionView+QMUICellSizeKeyCache.h")
+#import "UICollectionView+QMUICellSizeKeyCache.h"
+#endif
+
 #if __has_include("UIColor+QMUI.h")
 #import "UIColor+QMUI.h"
 #endif
@@ -360,6 +380,10 @@
 
 #if __has_include("UITableView+QMUI.h")
 #import "UITableView+QMUI.h"
+#endif
+
+#if __has_include("UITableView+QMUICellHeightKeyCache.h")
+#import "UITableView+QMUICellHeightKeyCache.h"
 #endif
 
 #if __has_include("UITableView+QMUIStaticCell.h")

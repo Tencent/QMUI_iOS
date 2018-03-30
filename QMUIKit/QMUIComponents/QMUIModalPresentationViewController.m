@@ -131,6 +131,8 @@ static QMUIModalPresentationViewController *appearance;
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    self.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
+    
     if (self.shownInWindowMode) {
         // 只有使用showWithAnimated:completion:显示出来的浮层，才需要修改之前就记住的animated的值
         animated = self.appearAnimated;
@@ -423,7 +425,6 @@ static QMUIModalPresentationViewController *appearance;
         self.containerWindow.windowLevel = UIWindowLevelQMUIAlertView;
         self.containerWindow.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
     }
-    self.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
     self.containerWindow.rootViewController = self;
     [self.containerWindow makeKeyAndVisible];
 }

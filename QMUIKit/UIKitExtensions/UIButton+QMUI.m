@@ -14,8 +14,8 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(setTitle:forState:), @selector(qmui_setTitle:forState:));
-        ReplaceMethod([self class], @selector(setTitleColor:forState:), @selector(qmui_setTitleColor:forState:));
+        ExchangeImplementations([self class], @selector(setTitle:forState:), @selector(qmui_setTitle:forState:));
+        ExchangeImplementations([self class], @selector(setTitleColor:forState:), @selector(qmui_setTitleColor:forState:));
     });
 }
 

@@ -278,7 +278,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @interface UIViewController (QMUIModalPresentationViewController)
 
 /**
- *  获取弹出当前 vieController 的 QMUIModalPresentationViewController
+ *  获取弹出当前 vieController 的 QMUIModalPresentationViewController，注意需要 modalPresentationViewController show 之后这个属性才会被赋值。
  */
 @property(nonatomic, weak, readonly) QMUIModalPresentationViewController *qmui_modalPresentationViewController;
 @end

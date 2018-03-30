@@ -46,7 +46,7 @@
 }
 
 - (BOOL)touchesShouldCancelInContentView:(UIView *)view {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(tableView:touchesShouldCancelInContentView:)]) {
+    if ([self.delegate respondsToSelector:@selector(tableView:touchesShouldCancelInContentView:)]) {
         return [self.delegate tableView:self touchesShouldCancelInContentView:view];
     }
     // 默认情况下只有当view是非UIControl的时候才会返回yes，这里统一对UIButton也返回yes

@@ -12,11 +12,7 @@
 #import "UIScrollView+QMUI.h"
 #import "UIView+QMUI.h"
 
-@implementation QMUICellHeightCache
-
-@end
-
-@implementation QMUICellHeightKeyCache {
+@implementation QMUICellHeightCache {
     NSMutableDictionary *_mutableHeightsByKeyForPortrait;
     NSMutableDictionary *_mutableHeightsByKeyForLandscape;
 }
@@ -167,10 +163,10 @@
 
 @implementation UITableView (QMUIKeyedHeightCache)
 
-- (QMUICellHeightKeyCache *)qmui_keyedHeightCache {
-    QMUICellHeightKeyCache *cache = objc_getAssociatedObject(self, _cmd);
+- (QMUICellHeightCache *)qmui_keyedHeightCache {
+    QMUICellHeightCache *cache = objc_getAssociatedObject(self, _cmd);
     if (!cache) {
-        cache = [[QMUICellHeightKeyCache alloc] init];
+        cache = [[QMUICellHeightCache alloc] init];
         objc_setAssociatedObject(self, _cmd, cache, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return cache;
@@ -214,32 +210,9 @@
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); ++index) {
             SEL originalSelector = selectors[index];
             SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ReplaceMethod([self class], originalSelector, swizzledSelector);
-        }
-        
-        if (@available(iOS 11, *)) {
-            ReplaceMethod([self class], @selector(safeAreaInsetsDidChange), @selector(cellHeightCache_safeAreaInsetsDidChange));
+            ExchangeImplementations([self class], originalSelector, swizzledSelector);
         }
     });
-}
-
-// iOS 11 里，横竖屏带来的 safeAreaInsets 变化时机晚于计算 cell 高度，所以在计算 cell 高度时是获取不到准确的 safeAreaInsets，所以需要在 safeAreaInsetsDidChange 里重新计算
-// 至于为什么只判断水平方向的变化，请看 https://github.com/QMUI/QMUI_iOS/issues/253
-- (void)cellHeightCache_safeAreaInsetsDidChange {
-    UIEdgeInsets safeAreaInsetsBeforeChange = self.qmui_safeAreaInsetsBeforeChange;
-    BOOL horizontalSafeAreaInsetsChanged = safeAreaInsetsBeforeChange.left != self.qmui_safeAreaInsets.left || safeAreaInsetsBeforeChange.right != self.qmui_safeAreaInsets.right;
-
-    [self cellHeightCache_safeAreaInsetsDidChange];
-    
-    if (horizontalSafeAreaInsetsChanged) {
-        if ([self.delegate respondsToSelector:@selector(qmui_willReloadAfterSafeAreaInsetsDidChangeInTableView:)]) {
-            id<QMUICellHeightCache_UITableViewDelegate> delegate = (id<QMUICellHeightCache_UITableViewDelegate>)self.delegate;
-            [delegate qmui_willReloadAfterSafeAreaInsetsDidChangeInTableView:self];
-        }
-        [self.qmui_keyedHeightCache invalidateAllHeightCache];
-        [self.qmui_indexPathHeightCache invalidateAllHeightCache];
-        [self qmui_reloadData];
-    }
 }
 
 - (void)qmui_reloadData {
@@ -445,10 +418,10 @@
 
 @implementation UICollectionView (QMUIKeyedHeightCache)
 
-- (QMUICellHeightKeyCache *)qmui_keyedHeightCache {
-    QMUICellHeightKeyCache *cache = objc_getAssociatedObject(self, _cmd);
+- (QMUICellHeightCache *)qmui_keyedHeightCache {
+    QMUICellHeightCache *cache = objc_getAssociatedObject(self, _cmd);
     if (!cache) {
-        cache = [[QMUICellHeightKeyCache alloc] init];
+        cache = [[QMUICellHeightCache alloc] init];
         objc_setAssociatedObject(self, _cmd, cache, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return cache;
@@ -490,7 +463,7 @@
     for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); ++index) {
         SEL originalSelector = selectors[index];
         SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-        ReplaceMethod([self class], originalSelector, swizzledSelector);
+        ExchangeImplementations([self class], originalSelector, swizzledSelector);
     }
 }
 

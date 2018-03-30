@@ -38,7 +38,7 @@ typedef NS_ENUM(NSInteger, QMUICollectionViewPagingLayoutStyle) {
  *
  *  仅当 allowsMultipleItemScroll 为 YES 时生效
  */
-@property(nonatomic, assign) CGFloat mutipleItemScrollVelocityLimit;
+@property(nonatomic, assign) CGFloat multipleItemScrollVelocityLimit;
 
 @end
 

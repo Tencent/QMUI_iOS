@@ -16,8 +16,8 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(setText:), @selector(qmui_setText:));
-        ReplaceMethod([self class], @selector(setAttributedText:), @selector(qmui_setAttributedText:));
+        ExchangeImplementations([self class], @selector(setText:), @selector(qmui_setText:));
+        ExchangeImplementations([self class], @selector(setAttributedText:), @selector(qmui_setAttributedText:));
     });
 }
 

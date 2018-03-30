@@ -56,6 +56,11 @@
 - (NSArray<UIResponder *> *)allTargetResponders;
 
 /**
+ *  移除 targetResponder 跟 keyboardManager 的关系，如果成功会返回 YES
+ */
+- (BOOL)removeTargetResponder:(UIResponder *)targetResponder;
+
+/**
  *  把键盘的rect转为相对于view的rect。一般用来把键盘的rect转化为相对于当前 self.view 的 rect，然后获取 y 值来布局对应的 view（这里一般不要获取键盘的高度，因为对于iPad的键盘，浮动状态下键盘的高度往往不是我们想要的）。
  *  @param rect 键盘的rect，一般拿 keyboardUserInfo.endFrame
  *  @param view 一个特定的view或者window，如果传入nil则相对有当前的 mainWindow
@@ -212,6 +217,16 @@
 
 @end
 
+@interface UIResponder (KeyboardManager)
+
+/// 系统自己的isFirstResponder有延迟，这里手动记录UIResponder是否isFirstResponder，QMUIKeyboardManager内部自己使用
+@property(nonatomic, assign) BOOL keyboardManager_isFirstResponder;
+
+/// 持有KeyboardManager对象
+@property(nonatomic, strong) QMUIKeyboardManager *qmui_keyboardManager;
+
+@end
+
 @interface UITextField (QMUI_KeyboardManager)
 
 /// 键盘相关block，搭配QMUIKeyboardManager一起使用
@@ -223,7 +238,7 @@
 @property(nonatomic, copy) void (^qmui_keyboardDidHideNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 @property(nonatomic, copy) void (^qmui_keyboardDidChangeFrameNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 
-@property(nonatomic, strong, readonly) QMUIKeyboardManager *qmui_keyboardManager;
+// @property(nonatomic, strong, readonly) QMUIKeyboardManager *qmui_keyboardManager;
 
 @end
 
@@ -238,6 +253,6 @@
 @property(nonatomic, copy) void (^qmui_keyboardDidHideNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 @property(nonatomic, copy) void (^qmui_keyboardDidChangeFrameNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 
-@property(nonatomic, strong, readonly) QMUIKeyboardManager *qmui_keyboardManager;
+// @property(nonatomic, strong, readonly) QMUIKeyboardManager *qmui_keyboardManager;
 
 @end

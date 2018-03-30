@@ -61,8 +61,8 @@
 @property(nonatomic, strong, readonly) QMUIButton *submitButton;
 @property(nonatomic, strong, readonly) CALayer *buttonSeparatorLayer;
 
-- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block;
-- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(QMUIDialogViewController *dialogViewController))block;
+- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block;
+- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block;
 - (void)show;
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
 - (void)hide;
@@ -107,7 +107,7 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 @end
 
 /**
- * 支持单行文本输入的弹窗，可通过`maximumLength`属性来控制最长可输入的字符，超过则无法继续输入。
+ * 支持单行文本输入的弹窗，可通过`textField.maximumLength`来控制最长可输入的字符，超过则无法继续输入。
  * 可通过`enablesSubmitButtonAutomatically`来自动设置`submitButton.enabled`的状态
  */
 @interface QMUIDialogTextFieldViewController : QMUIDialogViewController
@@ -123,6 +123,9 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 
 /// 输入框
 @property(nonatomic, strong, readonly) QMUITextField *textField;
+
+/// 是否应该自动管理输入框的键盘 Return 事件，默认为 YES，YES 表示当点击 Return 按钮时，视为点击了 dialog 的 submit 按钮。你也可以通过 UITextFieldDelegate 自己管理，此时请将此属性置为 NO。
+@property(nonatomic, assign) BOOL shouldManageTextFieldsReturnEventAutomatically;
 
 /// 是否自动控制提交按钮的enabled状态，默认为YES，则当输入框内容为空时禁用提交按钮
 @property(nonatomic, assign) BOOL enablesSubmitButtonAutomatically;

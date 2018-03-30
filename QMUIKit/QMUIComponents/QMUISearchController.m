@@ -257,10 +257,10 @@ EndIgnoreDeprecatedWarning
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod(self.class, @selector(initSubviews), @selector(search_initSubviews));
-        ReplaceMethod(self.class, @selector(viewWillAppear:), @selector(search_viewWillAppear:));
-        ReplaceMethod(self.class, @selector(showEmptyView), @selector(search_showEmptyView));
-        ReplaceMethod(self.class, @selector(hideEmptyView), @selector(search_hideEmptyView));
+        ExchangeImplementations(self.class, @selector(initSubviews), @selector(search_initSubviews));
+        ExchangeImplementations(self.class, @selector(viewWillAppear:), @selector(search_viewWillAppear:));
+        ExchangeImplementations(self.class, @selector(showEmptyView), @selector(search_showEmptyView));
+        ExchangeImplementations(self.class, @selector(hideEmptyView), @selector(search_hideEmptyView));
     });
 }
 

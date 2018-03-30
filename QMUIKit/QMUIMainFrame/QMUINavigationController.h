@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 
-@interface QMUINavigationController : UINavigationController <UINavigationControllerDelegate>
+@interface QMUINavigationController : UINavigationController
 
 /**
  *  初始化时调用的方法，会在 initWithNibName:bundle: 和 initWithCoder: 这两个指定的初始化方法中被调用，所以子类如果需要同时支持两个初始化方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个初始化方法即可。
@@ -174,6 +174,6 @@
  *  配合 QMUINavigationController 使用，当 navController 里的 UIViewController 实现了这个协议时，则可得到协议里各个方法的功能。
  *  QMUICommonViewController、QMUICommonTableViewController 默认实现了这个协议，所以子类无需再手动实现一遍。
  */
-@protocol QMUINavigationControllerDelegate <QMUINavigationControllerTransitionDelegate, QMUINavigationControllerAppearanceDelegate, QMUICustomNavigationBarTransitionDelegate>
+@protocol QMUINavigationControllerDelegate <UINavigationControllerDelegate, QMUINavigationControllerTransitionDelegate, QMUINavigationControllerAppearanceDelegate, QMUICustomNavigationBarTransitionDelegate>
 
 @end

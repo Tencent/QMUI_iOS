@@ -34,6 +34,12 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 + (BOOL)isCurrentSystemLowerThanVersion:(nonnull NSString *)targetVersion;
 @end
 
+@interface QMUIHelper (Runtime)
+
+/// 根据给定的 getter，构造出对应的 setter
++ (nullable SEL)setterFromGetter:(nullable SEL)getter;
+@end
+
 @interface QMUIHelper (DynamicType)
 
 /// 返回当前contentSize的level，这个值可以在设置里面的“字体大小”查看，辅助功能里面有个“更大字体”可以设置更大的字体，不过这里我们这个接口将更大字体都做了统一，都返回“字体大小”里面最大值。

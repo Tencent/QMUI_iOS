@@ -13,6 +13,7 @@
 #import "UIScrollView+QMUI.h"
 #import "UIControl+QMUI.h"
 #import "UIImage+QMUI.h"
+#import "QMUILog.h"
 
 @implementation QMUIEmotion
 
@@ -170,7 +171,7 @@
                 [self.delegate emotionPageView:self didSelectEmotion:emotion atIndex:i];
             }
             if (self.debug) {
-                NSLog(@"点击的是当前页里的第 %@ 个表情，%@", @(i), emotion);
+                QMUILog(NSStringFromClass(self.class), @"点击的是当前页里的第 %@ 个表情，%@", @(i), emotion);
             }
             return;
         }

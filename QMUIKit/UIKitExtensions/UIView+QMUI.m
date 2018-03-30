@@ -29,16 +29,18 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
-        if (@available(iOS 11, *)) {
-            ReplaceMethod([self class], @selector(safeAreaInsetsDidChange), @selector(qmui_safeAreaInsetsDidChange));
-        }
-        
         // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
-        ReplaceMethod([self class], @selector(convertPoint:toView:), @selector(qmui_convertPoint:toView:));
-        ReplaceMethod([self class], @selector(convertPoint:fromView:), @selector(qmui_convertPoint:fromView:));
-        ReplaceMethod([self class], @selector(convertRect:toView:), @selector(qmui_convertRect:toView:));
-        ReplaceMethod([self class], @selector(convertRect:fromView:), @selector(qmui_convertRect:fromView:));
+        SEL selectors[] = {
+            @selector(convertPoint:toView:),
+            @selector(convertPoint:fromView:),
+            @selector(convertRect:toView:),
+            @selector(convertRect:fromView:)
+        };
+        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
+            SEL originalSelector = selectors[index];
+            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+        }
     });
 }
 
@@ -53,25 +55,11 @@
     return UIEdgeInsetsZero;
 }
 
-static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
-- (void)setQmui_safeAreaInsetsBeforeChange:(UIEdgeInsets)qmui_safeAreaInsetsBeforeChange {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_safeAreaInsetsBeforeChange, [NSValue valueWithUIEdgeInsets:qmui_safeAreaInsetsBeforeChange], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (UIEdgeInsets)qmui_safeAreaInsetsBeforeChange {
-    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_safeAreaInsetsBeforeChange)) UIEdgeInsetsValue];
-}
-
-- (void)qmui_safeAreaInsetsDidChange {
-    [self qmui_safeAreaInsetsDidChange];
-    self.qmui_safeAreaInsetsBeforeChange = self.qmui_safeAreaInsets;
-}
-
 - (void)qmui_removeAllSubviews {
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
 
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion {
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion {
     if (animated) {
         [UIView animateWithDuration:duration delay:delay options:options animations:animations completion:completion];
     } else {
@@ -84,7 +72,7 @@ static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
     }
 }
 
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion {
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations completion:(void (^)(BOOL finished))completion {
     if (animated) {
         [UIView animateWithDuration:duration animations:animations completion:completion];
     } else {
@@ -97,12 +85,25 @@ static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
     }
 }
 
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^)(void))animations {
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations {
     if (animated) {
         [UIView animateWithDuration:duration animations:animations];
     } else {
         if (animations) {
             animations();
+        }
+    }
+}
+
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay usingSpringWithDamping:(CGFloat)dampingRatio initialSpringVelocity:(CGFloat)velocity options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion {
+    if (animated) {
+        [UIView animateWithDuration:duration delay:delay usingSpringWithDamping:dampingRatio initialSpringVelocity:velocity options:options animations:animations completion:completion];
+    } else {
+        if (animations) {
+            animations();
+        }
+        if (completion) {
+            completion(YES);
         }
     }
 }
@@ -219,9 +220,9 @@ static char kAssociatedObjectKey_safeAreaInsetsBeforeChange;
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(layoutSubviews), @selector(qmui_debug_layoutSubviews));
-        ReplaceMethod([self class], @selector(addSubview:), @selector(qmui_debug_addSubview:));
-        ReplaceMethod([self class], @selector(becomeFirstResponder), @selector(qmui_debug_becomeFirstResponder));
+        ExchangeImplementations([self class], @selector(layoutSubviews), @selector(qmui_debug_layoutSubviews));
+        ExchangeImplementations([self class], @selector(addSubview:), @selector(qmui_debug_addSubview:));
+        ExchangeImplementations([self class], @selector(becomeFirstResponder), @selector(qmui_debug_becomeFirstResponder));
     });
 }
 
@@ -313,9 +314,9 @@ static char kAssociatedObjectKey_hasDebugColor;
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([self class], @selector(initWithFrame:), @selector(qmui_initWithFrame:));
-        ReplaceMethod([self class], @selector(initWithCoder:), @selector(qmui_initWithCoder:));
-        ReplaceMethod([self class], @selector(layoutSublayersOfLayer:), @selector(qmui_layoutSublayersOfLayer:));
+        ExchangeImplementations([self class], @selector(initWithFrame:), @selector(qmui_initWithFrame:));
+        ExchangeImplementations([self class], @selector(initWithCoder:), @selector(qmui_initWithCoder:));
+        ExchangeImplementations([self class], @selector(layoutSublayersOfLayer:), @selector(qmui_layoutSublayersOfLayer:));
     });
 }
 

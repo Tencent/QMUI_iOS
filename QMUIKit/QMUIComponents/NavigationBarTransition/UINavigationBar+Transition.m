@@ -15,9 +15,9 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         Class cls = [self class];
-        ReplaceMethod(cls, @selector(setShadowImage:), @selector(NavigationBarTransition_setShadowImage:));
-        ReplaceMethod(cls, @selector(setBarTintColor:), @selector(NavigationBarTransition_setBarTintColor:));
-        ReplaceMethod(cls, @selector(setBackgroundImage:forBarMetrics:), @selector(NavigationBarTransition_setBackgroundImage:forBarMetrics:));
+        ExchangeImplementations(cls, @selector(setShadowImage:), @selector(NavigationBarTransition_setShadowImage:));
+        ExchangeImplementations(cls, @selector(setBarTintColor:), @selector(NavigationBarTransition_setBarTintColor:));
+        ExchangeImplementations(cls, @selector(setBackgroundImage:forBarMetrics:), @selector(NavigationBarTransition_setBackgroundImage:forBarMetrics:));
         
     });
 }

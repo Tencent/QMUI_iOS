@@ -559,6 +559,20 @@ NSString *const QMUISpringAnimationKey = @"QMUISpringAnimationKey";
 
 @end
 
+@implementation QMUIHelper (Runtime)
+
++ (SEL)setterFromGetter:(SEL)getter {
+    NSString *getterString = NSStringFromSelector(getter);
+    NSMutableString *setterString = [[NSMutableString alloc] initWithString:@"set"];
+    [setterString appendString:[getterString substringToIndex:1].uppercaseString];
+    [setterString appendString:[getterString substringFromIndex:1]];
+    [setterString appendString:@":"];
+    SEL setter = NSSelectorFromString(setterString);
+    return setter;
+}
+
+@end
+
 @implementation QMUIHelper
 
 + (instancetype)sharedInstance {

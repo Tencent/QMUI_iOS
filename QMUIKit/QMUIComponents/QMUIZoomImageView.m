@@ -129,7 +129,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     
     if (_videoToolbar) {
         _videoToolbar.frame = ({
-            CGFloat height = [_videoToolbar sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)].height;
+            CGFloat height = [_videoToolbar sizeThatFits:CGSizeMax].height;
             CGRectFlatMake(0, CGRectGetHeight(self.bounds) - height, CGRectGetWidth(self.bounds), height);
         });
     }
@@ -1041,12 +1041,12 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     CGFloat contentHeight = [self maxHeightAmongViews:@[self.playButton, self.pauseButton, self.sliderLeftLabel, self.sliderRightLabel, self.slider]];
     
     self.playButton.frame = ({
-        CGSize size = [self.playButton sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+        CGSize size = [self.playButton sizeThatFits:CGSizeMax];
         CGRectFlatMake(self.contentInsets.left, contentHeight / 2 - size.height / 2 + self.contentInsets.top, size.width, size.height);
     });
     
     self.pauseButton.frame = ({
-        CGSize size = [self.pauseButton sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)];
+        CGSize size = [self.pauseButton sizeThatFits:CGSizeMax];
         CGRectFlatMake(CGRectGetMidX(self.playButton.frame) - size.width / 2, CGRectGetMidY(self.playButton.frame) - size.height / 2, size.width, size.height);
     });
     
@@ -1092,7 +1092,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 - (CGFloat)maxHeightAmongViews:(NSArray<UIView *> *)views {
     __block CGFloat maxValue = 0;
     [views enumerateObjectsUsingBlock:^(UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        CGFloat height = [obj sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)].height;
+        CGFloat height = [obj sizeThatFits:CGSizeMax].height;
         maxValue = MAX(height, maxValue);
     }];
     return maxValue;

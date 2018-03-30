@@ -11,7 +11,7 @@
 @implementation NSNumber (QMUI)
 
 - (CGFloat)qmui_CGFloatValue {
-#if defined(__LP64__) && __LP64__
+#if CGFLOAT_IS_DOUBLE
     return self.doubleValue;
 #else
     return self.floatValue;

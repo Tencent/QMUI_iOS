@@ -96,6 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *navBarLargeTitleColor;
 @property(nonatomic, strong, nullable) UIFont   *navBarLargeTitleFont;
 @property(nonatomic, assign) UIOffset           navBarBackButtonTitlePositionAdjustment;
+@property(nonatomic, assign) BOOL               sizeNavBarBackIndicatorImageAutomatically;
 @property(nonatomic, strong, nullable) UIImage  *navBarBackIndicatorImage;
 @property(nonatomic, strong) UIImage            *navBarCloseButtonImage;
 

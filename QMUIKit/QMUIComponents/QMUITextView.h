@@ -46,7 +46,7 @@
  *  3. 支持限制输入的文本的最大长度，默认不限制。
  *  4. 修正系统 UITextView 在输入时自然换行的时候，contentOffset 的滚动位置没有考虑 textContainerInset.bottom
  */
-@interface QMUITextView : UITextView<QMUITextViewDelegate>
+@interface QMUITextView : UITextView
 
 @property(nonatomic, weak) id<QMUITextViewDelegate> delegate;
 

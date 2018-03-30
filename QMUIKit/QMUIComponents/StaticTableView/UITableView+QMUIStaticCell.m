@@ -10,6 +10,7 @@
 #import "QMUICore.h"
 #import "QMUIStaticTableViewCellDataSource.h"
 #import <objc/runtime.h>
+#import "QMUILog.h"
 
 @interface QMUIStaticTableViewCellDataSource ()
 
@@ -21,8 +22,8 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ReplaceMethod([UITableView class], @selector(setDataSource:), @selector(staticCell_setDataSource:));
-        ReplaceMethod([UITableView class], @selector(setDelegate:), @selector(staticCell_setDelegate:));
+        ExchangeImplementations([UITableView class], @selector(setDataSource:), @selector(staticCell_setDataSource:));
+        ExchangeImplementations([UITableView class], @selector(setDelegate:), @selector(staticCell_setDelegate:));
     });
 }
 
@@ -47,7 +48,7 @@ static NSMutableSet<NSString *> *QMUI_staticTableViewAddedClass;
         }
         NSString *identifier = [NSString stringWithFormat:@"%@%@", NSStringFromClass(object.class), NSStringFromSelector(selector)];
         if (![QMUI_staticTableViewAddedClass containsObject:identifier]) {
-            NSLog(@"%@, 尝试为 %@ 添加方法 %@ 失败，可能该类里已经实现了这个方法", NSStringFromClass(self.class), NSStringFromClass(object.class), NSStringFromSelector(selector));
+            QMUILog(NSStringFromClass(self.class), @"尝试为 %@ 添加方法 %@ 失败，可能该类里已经实现了这个方法", NSStringFromClass(object.class), NSStringFromSelector(selector));
             [QMUI_staticTableViewAddedClass addObject:identifier];
         }
     }

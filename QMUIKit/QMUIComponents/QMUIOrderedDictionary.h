@@ -16,6 +16,6 @@
 @property(readonly) NSUInteger count;
 @property(nonatomic, strong, readonly) NSArray *allKeys;
 
-- (instancetype)objectForKey:(id)key;
+- (id)objectForKey:(id)key;
 
 @end

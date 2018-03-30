@@ -13,7 +13,6 @@
 #import "QMUIStaticTableViewCellDataSource.h"
 #import "UITableView+QMUIStaticCell.h"
 #import "QMUITableView.h"
-#import "QMUICellHeightCache.h"
 #import "QMUIPopupMenuView.h"
 #import "UITableView+QMUI.h"
 #import "QMUITableViewCell.h"
@@ -139,8 +138,10 @@
 }
 
 - (void)handleSwitchEvent:(UISwitch *)switchControl {
-    NSIndexPath *indexPath = [self.tableView qmui_indexPathForRowAtView:switchControl];
-    QMUIStaticTableViewCellData *cellData = [self.tableView.qmui_staticCellDataSource cellDataAtIndexPath:indexPath];
+    UITableView *tableView = self.searchController.active ? self.searchController.tableView : self.tableView;
+    NSIndexPath *indexPath = [tableView qmui_indexPathForRowAtView:switchControl];
+    QMUIStaticTableViewCellData *cellData = [tableView.qmui_staticCellDataSource cellDataAtIndexPath:indexPath];
+    cellData.accessoryValueObject = @(switchControl.on);
     [[QMUILogger sharedInstance].logNameManager setEnabled:switchControl.on forLogName:cellData.text];
 }
 
@@ -237,6 +238,10 @@
 }
 
 - (void)willDismissSearchController:(QMUISearchController *)searchController {
+    
+    // 在搜索状态里可能修改了 switch 的值，则退出时强制刷新一下默认状态的列表
+    [self reloadData];
+    
     BOOL oldStatusbarLight = NO;
     if ([self respondsToSelector:@selector(shouldSetStatusBarStyleLight)]) {
         oldStatusbarLight = [self shouldSetStatusBarStyleLight];
