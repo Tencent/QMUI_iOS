@@ -25,7 +25,6 @@
 #import "QMUILog.h"
 
 // 底部工具栏
-#define OperationToolBarViewHeight (44 + IPhoneXSafeAreaInsets.bottom)
 #define OperationToolBarViewPaddingHorizontal 12
 #define ImageCountLabelSize CGSizeMake(18, 18)
 
@@ -206,7 +205,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     }
     CGFloat operationToolBarViewHeight = 0;
     if (self.allowsMultipleSelection) {
-        self.operationToolBarView.frame = CGRectMake(0, CGRectGetHeight(self.view.bounds) - OperationToolBarViewHeight, CGRectGetWidth(self.view.bounds), OperationToolBarViewHeight);
+        operationToolBarViewHeight = ToolBarHeight;
+        self.operationToolBarView.frame = CGRectMake(0, CGRectGetHeight(self.view.bounds) - operationToolBarViewHeight, CGRectGetWidth(self.view.bounds), operationToolBarViewHeight);
         self.previewButton.frame = CGRectSetXY(self.previewButton.frame, OperationToolBarViewPaddingHorizontal, CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame) - IPhoneXSafeAreaInsets.bottom, CGRectGetHeight(self.previewButton.frame)));
         self.sendButton.frame = CGRectMake(CGRectGetWidth(self.operationToolBarView.frame) - OperationToolBarViewPaddingHorizontal - CGRectGetWidth(self.sendButton.frame), CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame) - IPhoneXSafeAreaInsets.bottom, CGRectGetHeight(self.sendButton.frame)), CGRectGetWidth(self.sendButton.frame), CGRectGetHeight(self.sendButton.frame));
         self.imageCountLabel.frame = CGRectMake(CGRectGetMinX(self.sendButton.frame) - ImageCountLabelSize.width - 5, CGRectGetMinY(self.sendButton.frame) + CGFloatGetCenter(CGRectGetHeight(self.sendButton.frame), ImageCountLabelSize.height), ImageCountLabelSize.width, ImageCountLabelSize.height);

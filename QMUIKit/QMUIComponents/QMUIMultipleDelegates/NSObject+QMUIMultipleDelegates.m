@@ -60,7 +60,6 @@ static char kAssociatedObjectKey_qmuiDelegates;
     SEL originDelegateSetter = [QMUIHelper setterFromGetter:getter];
     SEL newDelegateSetter = NSSelectorFromString([NSString stringWithFormat:@"qmuimd_%@", NSStringFromSelector(originDelegateSetter)]);
     Method originMethod = class_getInstanceMethod(class, originDelegateSetter);
-    // 这个 class 原本就没有 setDelegate: 方法，就不支持了
     if (!originMethod) {
         return;
     }
@@ -83,7 +82,15 @@ static char kAssociatedObjectKey_qmuiDelegates;
     
     void (*originSelectorIMP)(id, SEL, id);
     originSelectorIMP = (void (*)(id, SEL, id))method_getImplementation(originMethod);
+    
     BOOL isAddedMethod = class_addMethod(class, newDelegateSetter, imp_implementationWithBlock(^(NSObject *selfObject, id aDelegate){
+        
+        // 这一段保护的原因请查看 https://github.com/QMUI/QMUI_iOS/issues/292
+        if (!selfObject.qmui_multipleDelegatesEnabled || ![selfObject isKindOfClass:class]) {
+            originSelectorIMP(selfObject, originDelegateSetter, aDelegate);
+            return;
+        }
+        
         if (!aDelegate) {
             // 对应 setDelegate:nil，表示清理所有的 delegate
             [selfObject.qmuimd_delegates removeObjectForKey:delegateGetterKey];

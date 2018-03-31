@@ -200,6 +200,7 @@
 /**
  *  如果 fromClass 里存在 originSelector，则这个函数会将 fromClass 里的 originSelector 与 toClass 里的 newSelector 交换实现。
  *  如果 fromClass 里不存在 originSelecotr，则这个函数会为 fromClass 增加方法 originSelector，并且该方法会使用 toClass 的 newSelector 方法的实现，而 toClass 的 newSelector 方法的实现则会被替换为空内容
+ *  @warning 注意如果 fromClass 里的 originSelector 是继承自父类并且 fromClass 也没有重写这个方法，这会导致实际上被替换的是父类，然后父类及父类的所有子类（也即 fromClass 的兄弟类）也受影响，因此使用时请谨记这一点。
  *  @param _fromClass 要被替换的 class，不能为空
  *  @param _originSelector 要被替换的 class 的 selector，可为空，为空则相当于为 fromClass 新增这个方法
  *  @param _toClass 要拿这个 class 的方法来替换
@@ -215,8 +216,13 @@ ExchangeImplementationsInTwoClasses(Class _fromClass, SEL _originSelector, Class
     Method oriMethod = class_getInstanceMethod(_fromClass, _originSelector);
     Method newMethod = class_getInstanceMethod(_toClass, _newSelector);
     if (!newMethod) {
-        // toClass 里不存在该方法的实现，无法替换
         return NO;
+    }
+    
+    Class superclass = class_getSuperclass(_fromClass);
+    BOOL tryToExchangeSuperclassMethod = [superclass instancesRespondToSelector:_originSelector] && (class_getInstanceMethod(superclass, _originSelector) == class_getInstanceMethod(_fromClass, _originSelector));
+    if (tryToExchangeSuperclassMethod) {
+        NSLog(@"注意，%@ 准备替换方法 %@, 但这个方法来自于父类 %@", NSStringFromClass(_fromClass), NSStringFromSelector(_originSelector), NSStringFromClass(superclass));
     }
     
     BOOL isAddedMethod = class_addMethod(_fromClass, _originSelector, method_getImplementation(newMethod), method_getTypeEncoding(newMethod));
