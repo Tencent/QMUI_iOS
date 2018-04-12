@@ -207,6 +207,8 @@ static QMUIAlertController *alertControllerAppearance;
 @property(nonatomic, assign) BOOL isNeedsHideAfterAlertShowed;
 @property(nonatomic, assign) BOOL isAnimatedForHideAfterAlertShowed;
 
+//
+@property(nonatomic, weak) QMUIAlertController *owner;
 @end
 
 @implementation QMUIAlertController {
@@ -492,6 +494,8 @@ static QMUIAlertController *alertControllerAppearance;
         self.title = title;
         self.message = message;
         self.preferredStyle = preferredStyle;
+        
+        self.owner = self;
         
         [self updateHeaderBackgrondColor];
         [self updateEffectBackgroundColor];
@@ -1103,6 +1107,7 @@ static QMUIAlertController *alertControllerAppearance;
         if (alertAction.handler) {
             alertAction.handler(alertAction);
             alertAction.handler = nil;
+            self.owner.alertActions = nil;
         }
     }];
 }
