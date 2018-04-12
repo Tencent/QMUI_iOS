@@ -1108,6 +1108,8 @@ static QMUIAlertController *alertControllerAppearance;
             alertAction.handler(alertAction);
             alertAction.handler = nil;
             self.owner.alertActions = nil;
+            self.owner.destructiveActions = nil;
+            self.owner.cancelAction = nil;
         }
     }];
 }
