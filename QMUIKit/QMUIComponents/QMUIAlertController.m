@@ -207,7 +207,7 @@ static QMUIAlertController *alertControllerAppearance;
 @property(nonatomic, assign) BOOL isNeedsHideAfterAlertShowed;
 @property(nonatomic, assign) BOOL isAnimatedForHideAfterAlertShowed;
 
-//
+// 为了解决循环引用问题所引入的属性
 @property(nonatomic, weak) QMUIAlertController *owner;
 @end
 
