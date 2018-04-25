@@ -49,8 +49,30 @@ Pod::Spec.new do |s|
     end
 
     ss.subspec 'QMUIButton' do |sss|
-      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/*.{h,m}'
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIButton.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
+    end
+
+    ss.subspec 'QMUIFillButton' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIFillButton.{h,m}'
+    end
+
+    ss.subspec 'QMUIGhostButton' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIGhostButton.{h,m}'
+    end
+
+    ss.subspec 'QMUILinkButton' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUILinkButton.{h,m}'
+    end
+
+    ss.subspec 'QMUINavigationButton' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUINavigationButton.{h,m}'
+      sss.dependency 'QMUIKit/QMUIMainFrame'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
+    end
+
+    ss.subspec 'QMUIToolbarButton' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIToolbarButton.{h,m}'
     end
 
     ss.subspec 'QMUITableView' do |sss|
@@ -265,6 +287,7 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIImagePreviewViewController'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUINavigationButton'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIAssetLibrary'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIZoomImageView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIAlertController'
