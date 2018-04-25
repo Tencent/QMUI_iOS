@@ -50,7 +50,7 @@
 }
 
 - (NSArray *)allKeys {
-    return self.mutableAllKeys;
+    return self.mutableAllKeys.copy;
 }
 
 - (id)objectForKey:(id)key {

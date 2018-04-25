@@ -35,6 +35,10 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 
 @class PHAsset;
 
+/**
+ *  相册里某一个资源的包装对象，该资源可能是图片、视频等。
+ *  @note QMUIAsset 重写了 isEqual: 方法，只要两个 QMUIAsset 的 adentifier 相同，则认为是同一个对象，以方便在数组、字典等容器中对大量 QMUIAsset 进行遍历查找等操作。
+ */
 @interface QMUIAsset : NSObject
 
 @property(nonatomic, assign, readonly) QMUIAssetType assetType;
@@ -46,6 +50,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 @property(nonatomic, assign, readonly) QMUIAssetDownloadStatus downloadStatus; // 从 iCloud 下载资源大图的状态
 @property(nonatomic, assign) double downloadProgress; // 从 iCloud 下载资源大图的进度
 @property(nonatomic, assign) NSInteger requestID; // 从 iCloud 请求获得资源的大图的请求 ID
+@property (nonatomic, copy, readonly) NSString *identifier;// Asset 的标识，每个 QMUIAsset 的 identifier 都不同。只要两个 QMUIAsset 的 identifier 相同则认为它们是同一个 asset
 
 /// Asset 的原图（包含系统相册“编辑”功能处理后的效果）
 - (UIImage *)originImage;
@@ -133,13 +138,6 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  * 获取图片的 UIImageOrientation 值，仅 assetType 为 QMUIAssetTypeImage 或 QMUIAssetTypeLivePhoto 时有效
  */
 - (UIImageOrientation)imageOrientation;
-
-/**
- *  Asset 的标识，每个 QMUIAsset 的标识值不相同，该标识值经过 md5 处理，避免了特殊字符
- *
- *  @return Asset 的标识字符串
- */
-- (NSString *)assetIdentity;
 
 /// 更新下载资源的结果
 - (void)updateDownloadStatusWithDownloadResult:(BOOL)succeed;

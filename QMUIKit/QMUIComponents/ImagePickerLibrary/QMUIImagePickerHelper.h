@@ -17,23 +17,6 @@
 @interface QMUIImagePickerHelper : NSObject
 
 /**
- *  判断一个由 QMUIAsset 对象组成的数组中是否包含特定的 QMUIAsset 对象
- *
- *  @param imageAssetArray  一个由 QMUIAsset 对象组成的数组
- *  @param targetImageAsset 需要被判断的 QMUIAsset 对象
- *
- */
-+ (BOOL)imageAssetArray:(NSMutableArray *)imageAssetArray containsImageAsset:(QMUIAsset *)targetImageAsset;
-
-/**
- *  从一个由 QMUIAsset 对象组成的数组中移除特定的 QMUIAsset 对象（如果这个 QMUIAsset 对象不在该数组中，则不作处理）
- *
- *  @param imageAssetArray  一个由 QMUIAsset 对象组成的数组
- *  @param targetImageAsset 需要被移除的 QMUIAsset 对象
- */
-+ (void)imageAssetArray:(NSMutableArray *)imageAssetArray removeImageAsset:(QMUIAsset *)targetImageAsset;
-
-/**
  *  选中图片数量改变时，展示图片数量的 Label 的动画，动画过程如下：
  *  Label 背景色改为透明，同时产生一个与背景颜色和形状、大小都相同的图形置于 Label 底下，做先缩小再放大的 spring 动画
  *  动画结束后移除该图形，并恢复 Label 的背景色
@@ -65,7 +48,7 @@
  *  一个常见的应用场景是选择图片时保存图片所在相册的对应的 QMUIAssetsGroup，并使用用户的 user id 作为区分不同用户的标识，
  *  当用户再次选择图片时可以根据已经保存的 QMUIAssetsGroup 直接进入上次使用过的相册。
  */
-+ (QMUIAssetsGroup *)assetsGroupOfLastestPickerAlbumWithUserIdentify:(NSString *)userIdentify;
++ (QMUIAssetsGroup *)assetsGroupOfLastPickerAlbumWithUserIdentify:(NSString *)userIdentify;
 
 /**
  *  储存一个 QMUIAssetsGroup，从而储存一个对应的相册，与 assetsGroupOfLatestPickerAlbumWithUserIdentify 方法对应使用

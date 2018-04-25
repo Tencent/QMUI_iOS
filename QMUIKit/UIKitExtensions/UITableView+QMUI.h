@@ -9,13 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
-typedef NS_ENUM(NSInteger, QMUITableViewCellPosition) {
-    QMUITableViewCellPositionNone = -1, // 初始化用
-    QMUITableViewCellPositionFirstInSection,
-    QMUITableViewCellPositionMiddleInSection,
-    QMUITableViewCellPositionLastInSection,
-    QMUITableViewCellPositionSingleInSection,
-    QMUITableViewCellPositionNormal,
+/// cell 在当前 section 里的位置，注意判断时要用 (var & xxx) == xxx 的方式
+typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
+    QMUITableViewCellPositionNone               = 0, // 默认
+    QMUITableViewCellPositionFirstInSection     = 1 << 0,
+    QMUITableViewCellPositionMiddleInSection    = 1 << 1,
+    QMUITableViewCellPositionLastInSection      = 1 << 2,
+    QMUITableViewCellPositionSingleInSection    = QMUITableViewCellPositionFirstInSection | QMUITableViewCellPositionLastInSection,
 };
 
 /**

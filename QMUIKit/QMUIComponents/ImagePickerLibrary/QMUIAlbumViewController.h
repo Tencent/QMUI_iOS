@@ -93,6 +93,9 @@ extern const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets;
  */
 @property(nonatomic, assign) BOOL shouldShowDefaultLoadingView;
 
+/// 在 QMUIAlbumViewController 被放到 UINavigationController 里之后，可通过调用这个方法，来尝试直接进入上一次选中的相册列表
+- (void)pickLastAlbumGroupDirectlyIfCan;
+
 @end
 
 

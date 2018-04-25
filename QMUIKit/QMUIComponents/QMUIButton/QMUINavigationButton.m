@@ -1,0 +1,594 @@
+//
+//  QMUINavigationButton.m
+//  QMUIKit
+//
+//  Created by MoLice on 2018/4/9.
+//  Copyright © 2018年 QMUI Team. All rights reserved.
+//
+
+#import "QMUINavigationButton.h"
+#import "QMUICore.h"
+#import "UIImage+QMUI.h"
+#import "UIViewController+QMUI.h"
+#import "QMUINavigationController.h"
+#import "QMUILog.h"
+#import "UIControl+QMUI.h"
+
+typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
+    QMUINavigationButtonPositionNone = -1,  // 不处于navigationBar最左（右）边的按钮，则使用None。用None则不会在alignmentRectInsets里调整位置
+    QMUINavigationButtonPositionLeft,       // 用于leftBarButtonItem，如果用于leftBarButtonItems，则只对最左边的item使用，其他item使用QMUINavigationButtonPositionNone
+    QMUINavigationButtonPositionRight,      // 用于rightBarButtonItem，如果用于rightBarButtonItems，则只对最右边的item使用，其他item使用QMUINavigationButtonPositionNone
+};
+
+@interface QMUINavigationButton()
+
+@property(nonatomic, assign) QMUINavigationButtonPosition buttonPosition;
+@property(nonatomic, strong) UIImage *defaultHighlightedImage;// 在 set normal image 时自动拿 normal image 加 alpha 作为 highlighted image
+@property(nonatomic, strong) UIImage *defaultDisabledImage;// 在 set normal image 时自动拿 normal image 加 alpha 作为 disabled image
+@end
+
+
+@implementation QMUINavigationButton
+
+- (instancetype)init {
+    return [self initWithType:QMUINavigationButtonTypeNormal];
+}
+
+- (instancetype)initWithType:(QMUINavigationButtonType)type {
+    return [self initWithType:type title:nil];
+}
+
+- (instancetype)initWithType:(QMUINavigationButtonType)type title:(NSString *)title {
+    if (self = [super initWithFrame:CGRectZero]) {
+        _type = type;
+        self.buttonPosition = QMUINavigationButtonPositionNone;
+        [self setTitle:title forState:UIControlStateNormal];
+        [self renderButtonStyle];
+        [self sizeToFit];
+    }
+    return self;
+}
+
+- (instancetype)initWithImage:(UIImage *)image {
+    if (self = [self initWithType:QMUINavigationButtonTypeImage]) {
+        [self setImage:image forState:UIControlStateNormal];
+        [self sizeToFit];
+    }
+    return self;
+}
+
+- (void)renderButtonStyle {
+    UIFont *font = NavBarButtonFont;
+    if (font) {
+        self.titleLabel.font = font;
+    }
+    self.titleLabel.backgroundColor = UIColorClear;
+    self.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    self.contentMode = UIViewContentModeCenter;
+    self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    self.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    self.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
+    
+    // 系统默认对 highlighted 和 disabled 的图片的表现是变身色，但 UIBarButtonItem 是 alpha，为了与 UIBarButtonItem  表现一致，这里禁用了 UIButton 默认的行为，然后通过重写 setImage:forState:，自动将 normal image 处理为对应的 highlighted image 和 disabled image
+    self.adjustsImageWhenHighlighted = NO;
+    self.adjustsImageWhenDisabled = NO;
+    
+    if (@available(iOS 11, *)) {
+        self.translatesAutoresizingMaskIntoConstraints = NO;// 打开这个才能让 iOS 11 下的 alignmentRectInsets 生效
+    }
+    
+    switch (self.type) {
+        case QMUINavigationButtonTypeNormal:
+            break;
+        case QMUINavigationButtonTypeImage:
+            // 拓展宽度，以保证用 leftBarButtonItems/rightBarButtonItems 时，按钮与按钮之间间距与系统的保持一致
+            self.contentEdgeInsets = UIEdgeInsetsMake(0, 11, 0, 11);
+            break;
+        case QMUINavigationButtonTypeBold: {
+            font = NavBarButtonFontBold;
+            if (font) {
+                self.titleLabel.font = font;
+            }
+        }
+            break;
+        case QMUINavigationButtonTypeBack: {
+            UIImage *backIndicatorImage = NavBarBackIndicatorImage;
+            if (!backIndicatorImage) {
+                // 配置表没有自定义的图片，则按照系统的返回按钮图片样式创建一张
+                backIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(13, 23) lineWidth:3 tintColor:NavBarTintColor];
+            }
+            [self setImage:backIndicatorImage forState:UIControlStateNormal];
+            [self setImage:[backIndicatorImage qmui_imageWithAlpha:NavBarHighlightedAlpha] forState:UIControlStateHighlighted];
+            [self setImage:[backIndicatorImage qmui_imageWithAlpha:NavBarDisabledAlpha] forState:UIControlStateDisabled];
+            
+            self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+            
+            // @warning 这些数值都是每个iOS版本核对过没问题的，如果修改则要检查要每个版本里与系统UIBarButtonItem的布局是否一致
+            UIOffset titleOffsetBaseOnSystem = UIOffsetMake(IOS_VERSION >= 11.0 ? 6 : 7, 0);// 经过这些数值的调整后，自定义返回按钮的位置才能和系统默认返回按钮的位置对准，而配置表里设置的值是在这个调整的基础上再调整
+            UIOffset configurationOffset = NavBarBarBackButtonTitlePositionAdjustment;
+            self.titleEdgeInsets = UIEdgeInsetsMake(titleOffsetBaseOnSystem.vertical + configurationOffset.vertical, titleOffsetBaseOnSystem.horizontal + configurationOffset.horizontal, -titleOffsetBaseOnSystem.vertical - configurationOffset.vertical, -titleOffsetBaseOnSystem.horizontal - configurationOffset.horizontal);
+            self.contentEdgeInsets = UIEdgeInsetsMake(IOS_VERSION < 11.0 ? 1 : 0,// iOS 11 以前，y 值偏移一点
+                                                      0,
+                                                      0,
+                                                      self.titleEdgeInsets.left);
+        }
+            break;
+            
+        default:
+            break;
+    }
+}
+
+- (void)setImage:(UIImage *)image forState:(UIControlState)state {
+    if (image && [self imageForState:state] != image) {
+        if (image.renderingMode == UIImageRenderingModeAutomatic) {
+            // UIBarButtonItem 默认都是跟随 tintColor 的，所以这里让图片也是用 AlwaysTemplate 模式
+            image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        }
+        if (state == UIControlStateNormal) {
+            // 将 normal image 处理成对应的 highlighted image 和 disabled image
+            self.defaultHighlightedImage = [[image qmui_imageWithAlpha:NavBarHighlightedAlpha] imageWithRenderingMode:image.renderingMode];
+            [self setImage:self.defaultHighlightedImage forState:UIControlStateHighlighted];
+            
+            self.defaultDisabledImage = [[image qmui_imageWithAlpha:NavBarDisabledAlpha] imageWithRenderingMode:image.renderingMode];
+            [self setImage:self.defaultDisabledImage forState:UIControlStateDisabled];
+        } else {
+            // 如果业务主动设置了非 normal 状态的 image，则把之前 QMUI 自动加上的两个 image 去掉，相当于认为业务希望完全控制这个按钮在所有 state 下的图片
+            if (image != self.defaultHighlightedImage && image != self.defaultDisabledImage) {
+                if ([self imageForState:UIControlStateHighlighted] == self.defaultHighlightedImage && state != UIControlStateHighlighted) {
+                    [self setImage:nil forState:UIControlStateHighlighted];
+                }
+                if ([self imageForState:UIControlStateDisabled] == self.defaultDisabledImage && state != UIControlStateDisabled) {
+                    [self setImage:nil forState:UIControlStateDisabled];
+                }
+            }
+        }
+    }
+    [super setImage:image forState:state];
+}
+
+// 自定义nav按钮，需要根据这个来修改title的三态颜色。
+- (void)tintColorDidChange {
+    [super tintColorDidChange];
+    [self setTitleColor:self.tintColor forState:UIControlStateNormal];
+    [self setTitleColor:[self.tintColor colorWithAlphaComponent:NavBarHighlightedAlpha] forState:UIControlStateHighlighted];
+    [self setTitleColor:[self.tintColor colorWithAlphaComponent:NavBarDisabledAlpha] forState:UIControlStateDisabled];
+}
+
+// 对按钮内容添加偏移，让UIBarButtonItem适配最新设备的系统行为，统一位置。注意 iOS 11 不会走到这里来
+- (UIEdgeInsets)alignmentRectInsets {
+    
+    UIEdgeInsets insets = [super alignmentRectInsets];
+    
+    if (self.type == QMUINavigationButtonTypeNormal || self.type == QMUINavigationButtonTypeBold) {
+        // 文字类型的按钮，分别对最左、最右那个按钮调整 inset（这里与 UINavigationItem(QMUINavigationButton) 里的 position 赋值配合使用）
+        if (@available(iOS 10, *)) {
+        } else {
+            if (self.buttonPosition == QMUINavigationButtonPositionLeft) {
+                insets.left = 8;
+            } else if (self.buttonPosition == QMUINavigationButtonPositionRight) {
+                insets.right = 8;
+            }
+        }
+        
+        // 对于奇数大小的字号，不同 iOS 版本的偏移策略不同，统一一下
+        if (self.titleLabel.font.pointSize / 2.0 > 0) {
+            if (@available(iOS 11, *)) {
+                insets.top = PixelOne;
+                insets.bottom = -PixelOne;
+            } else {
+                insets.top = -PixelOne;
+                insets.bottom = PixelOne;
+            }
+        }
+    } else if (self.type == QMUINavigationButtonTypeImage) {
+        // 图片类型的按钮，分别对最左、最右那个按钮调整 inset（这里与 UINavigationItem(QMUINavigationButton) 里的 position 赋值配合使用）
+        if (self.buttonPosition == QMUINavigationButtonPositionLeft) {
+            insets.left = 11;
+        } else if (self.buttonPosition == QMUINavigationButtonPositionRight) {
+            insets.right = 11;
+        }
+        
+        insets.top = 1;
+    } else if (self.type == QMUINavigationButtonTypeBack) {
+        insets.top = PixelOne;
+        if (@available(iOS 11, *)) {
+        } else {
+            insets.left = 8;
+        }
+    }
+    
+    return insets;
+}
+
+@end
+
+@implementation UIBarButtonItem (QMUINavigationButton)
+
++ (instancetype)qmui_itemWithButton:(nullable QMUINavigationButton *)button target:(nullable id)target action:(nullable SEL)action {
+    [button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+    return [[UIBarButtonItem alloc] initWithCustomView:button];
+}
+
++ (instancetype)qmui_itemWithImage:(nullable UIImage *)image target:(nullable id)target action:(nullable SEL)action {
+    return [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
+}
+
++ (instancetype)qmui_itemWithTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action {
+    return [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:target action:action];
+}
+
++ (instancetype)qmui_itemWithBoldTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action {
+    return [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStyleDone target:target action:action];
+}
+
++ (instancetype)qmui_backItemWithTarget:(nullable id)target action:(nullable SEL)action {
+    NSString *backTitle = nil;
+    if (NeedsBackBarButtonItemTitle) {
+        backTitle = @"返回"; // 默认文字用返回
+        if ([target isKindOfClass:[UIViewController class]]) {
+            UIViewController *viewController = (UIViewController *)target;
+            UIViewController *previousViewController = viewController.qmui_previousViewController;
+            if (previousViewController.navigationItem.backBarButtonItem) {
+                // 如果前一个界面有主动设置返回按钮的文字，则取这个文字
+                backTitle = previousViewController.navigationItem.backBarButtonItem.title;
+            } else if ([viewController respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+                // 否则看是否有通过 QMUI 提供的接口来设置返回按钮的文字，有就用它的值
+                backTitle = [((UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController) backBarButtonItemTitleWithPreviousViewController:previousViewController];
+            } else if (previousViewController.title) {
+                // 否则取上一个界面的标题
+                backTitle = previousViewController.title;
+            }
+        }
+    } else {
+        backTitle = @" ";
+    }
+    
+    QMUINavigationButton *button = [[QMUINavigationButton alloc] initWithType:QMUINavigationButtonTypeBack title:backTitle];
+    [button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithCustomView:button];
+    return barButtonItem;
+}
+
++ (instancetype)qmui_closeItemWithTarget:(nullable id)target action:(nullable SEL)action {
+    return [[UIBarButtonItem alloc] initWithImage:NavBarCloseButtonImage style:UIBarButtonItemStylePlain target:target action:action];
+}
+
++ (instancetype)qmui_fixedSpaceItemWithWidth:(CGFloat)width {
+    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL];
+    item.width = width;
+    return item;
+}
+
++ (instancetype)qmui_flexibleSpaceItem {
+    return [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL];
+}
+
+@end
+
+@interface UIBarButtonItem (QMUINavigationButton_Private)
+
+/// 判断当前的 UIBarButtonItem 是否是 QMUINavigationButton
+@property(nonatomic, assign, readonly) BOOL qmui_isCustomizedBarButtonItem;
+
+/// 判断当前的 UIBarButtonItem 是否是用 QMUINavigationButton 自定义返回按钮生成的
+@property(nonatomic, assign, readonly) BOOL qmui_isCustomizedBackBarButtonItem;
+
+/// 获取内部的 QMUINavigationButton（如果有的话）
+@property(nonatomic, strong, readonly) QMUINavigationButton *qmui_navigationButton;
+@end
+
+@interface UINavigationItem (QMUINavigationButton)
+
+@property(nonatomic, weak, readonly) UINavigationBar *qmui_navigationBar;
+@property(nonatomic, copy) NSArray<UIBarButtonItem *> *tempLeftBarButtonItems;
+@property(nonatomic, copy) NSArray<UIBarButtonItem *> *tempRightBarButtonItems;
+@end
+
+@interface UIViewController (QMUINavigationButton)
+
+@end
+
+@interface UINavigationBar (QMUINavigationButton)
+
+/// 获取 navigationBar 内部的 contentView
+@property(nonatomic, weak, readonly) UIView *qmui_contentView;
+
+/// 判断当前的 UINavigationBar 的返回按钮是不是自定义的
+@property(nonatomic, assign) BOOL qmui_customizingBackBarButtonItem;
+@end
+
+@implementation UIBarButtonItem (QMUINavigationButton_Private)
+
+- (BOOL)qmui_isCustomizedBarButtonItem {
+    if (!self.customView) {
+        return NO;
+    }
+    return [self.customView isKindOfClass:[QMUINavigationButton class]];
+}
+
+- (BOOL)qmui_isCustomizedBackBarButtonItem {
+    return self.qmui_isCustomizedBarButtonItem && ((QMUINavigationButton *)self.customView).type == QMUINavigationButtonTypeBack;
+}
+
+- (QMUINavigationButton *)qmui_navigationButton {
+    if ([self.customView isKindOfClass:[QMUINavigationButton class]]) {
+        return (QMUINavigationButton *)self.customView;
+    }
+    return nil;
+}
+
+@end
+
+@implementation UINavigationItem (QMUINavigationButton)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        SEL selectors[] = {
+            @selector(setLeftBarButtonItem:animated:),
+            @selector(setLeftBarButtonItems:animated:),
+            @selector(setRightBarButtonItem:animated:),
+            @selector(setRightBarButtonItems:animated:)
+        };
+        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
+            SEL originalSelector = selectors[index];
+            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+        }
+    });
+}
+
+// 监控是否在 iOS 10 及以下，手势返回的过程中，手势返回背后的那个界面修改了 navigationItem，这可能导致 bug：https://github.com/QMUI/QMUI_iOS/issues/302
+- (BOOL)detectSetItemsWhenPopping {
+    if (@available(iOS 11, *)) {
+    } else {
+        if (self.qmui_navigationBar && [self.qmui_navigationBar.delegate isKindOfClass:[UINavigationController class]]) {
+            UINavigationController *navController = (UINavigationController *)self.qmui_navigationBar.delegate;
+            if (navController.topViewController.qmui_willAppearByInteractivePopGestureRecognizer && navController.topViewController.qmui_navigationControllerPopGestureRecognizerChanging) {
+                // 注意，判断条件里的 qmui_navigationControllerPopGestureRecognizerChanging 关键在于，它是在 viewWillAppear: 执行后才被置为 YES，而 QMUICommonViewController 是在 viewWillAppear: 里调用 setNavigationItems:，所以刚好过滤了这种场景。因为测试过，在 viewWillAppear: 里操作 items 是没问题的，但在那之后的操作就会有问题。
+                QMUILog(@"UINavigationItem (QMUINavigationButton)", @"拦截了一次可能产生顶部按钮混乱的操作，navigationController is %@, topViewController is %@", navController, navController.topViewController);
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
+
+- (void)qmui_setLeftBarButtonItem:(UIBarButtonItem *)item animated:(BOOL)animated {
+    if ([self detectSetItemsWhenPopping]) {
+        self.tempLeftBarButtonItems = @[item];
+        return;
+    }
+    
+    [self qmui_setLeftBarButtonItem:item animated:animated];
+    
+    // 自动给 position 赋值
+    item.qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionLeft;
+    
+    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+    if (@available(iOS 11, *)) {
+        UINavigationBar *navigationBar = self.qmui_navigationBar;
+        if (!navigationBar) return;
+        navigationBar.qmui_customizingBackBarButtonItem = item.qmui_isCustomizedBackBarButtonItem;
+    }
+}
+
+- (void)qmui_setLeftBarButtonItems:(NSArray<UIBarButtonItem *> *)items animated:(BOOL)animated {
+    if ([self detectSetItemsWhenPopping]) {
+        self.tempLeftBarButtonItems = items;
+        return;
+    }
+    
+    [self qmui_setLeftBarButtonItems:items animated:animated];
+    
+    // 自动给 position 赋值
+    for (NSInteger i = 0; i < items.count; i++) {
+        if (i == 0) {
+            items[i].qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionLeft;
+        } else {
+            items[i].qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionNone;
+        }
+    }
+    
+    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+    if (@available(iOS 11, *)) {
+        
+        UINavigationBar *navigationBar = self.qmui_navigationBar;
+        if (!navigationBar) return;
+        
+        BOOL customizingBackBarButtonItem = NO;
+        for (UIBarButtonItem *item in items) {
+            if (item.qmui_isCustomizedBackBarButtonItem) {
+                customizingBackBarButtonItem = YES;
+                break;
+            }
+        }
+        navigationBar.qmui_customizingBackBarButtonItem = customizingBackBarButtonItem;
+    }
+}
+
+- (void)qmui_setRightBarButtonItem:(UIBarButtonItem *)item animated:(BOOL)animated {
+    if ([self detectSetItemsWhenPopping]) {
+        self.tempRightBarButtonItems = @[item];
+        return;
+    }
+    
+    [self qmui_setRightBarButtonItem:item animated:animated];
+    
+    // 自动给 position 赋值
+    item.qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionRight;
+}
+
+- (void)qmui_setRightBarButtonItems:(NSArray<UIBarButtonItem *> *)items animated:(BOOL)animated {
+    if ([self detectSetItemsWhenPopping]) {
+        self.tempRightBarButtonItems = items;
+        return;
+    }
+    
+    [self qmui_setRightBarButtonItems:items animated:animated];
+    
+    // 自动给 position 赋值
+    for (NSInteger i = 0; i < items.count; i++) {
+        if (i == 0) {
+            items[i].qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionRight;
+        } else {
+            items[i].qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionNone;
+        }
+    }
+}
+
+- (UINavigationBar *)qmui_navigationBar {
+    // UINavigationItem 内部有个方法可以获取 navigationBar
+    if ([self respondsToSelector:@selector(navigationBar)]) {
+        return [self performSelector:@selector(navigationBar)];
+    }
+    return nil;
+}
+
+static char kAssociatedObjectKey_tempLeftBarButtonItems;
+- (void)setTempLeftBarButtonItems:(NSArray<UIBarButtonItem *> *)tempLeftBarButtonItems {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_tempLeftBarButtonItems, tempLeftBarButtonItems, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (NSArray<UIBarButtonItem *> *)tempLeftBarButtonItems {
+    return (NSArray<UIBarButtonItem *> *)objc_getAssociatedObject(self, &kAssociatedObjectKey_tempLeftBarButtonItems);
+}
+
+static char kAssociatedObjectKey_tempRightBarButtonItems;
+- (void)setTempRightBarButtonItems:(NSArray<UIBarButtonItem *> *)tempRightBarButtonItems {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_tempRightBarButtonItems, tempRightBarButtonItems, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (NSArray<UIBarButtonItem *> *)tempRightBarButtonItems {
+    return (NSArray<UIBarButtonItem *> *)objc_getAssociatedObject(self, &kAssociatedObjectKey_tempRightBarButtonItems);
+}
+
+@end
+
+@implementation UIViewController (QMUINavigationButton)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ExchangeImplementations([self class], @selector(viewDidAppear:), @selector(navigationButton_viewDidAppear:));
+    });
+}
+
+- (void)navigationButton_viewDidAppear:(BOOL)animated {
+    [self navigationButton_viewDidAppear:animated];
+    if (self.navigationItem.tempLeftBarButtonItems) {
+        QMUILog(@"UIViewController (QMUINavigationButton)", @"%@ 在 viewDidAppear: 重新设置了 leftBarButtonItems: %@", NSStringFromClass(self.class), self.navigationItem.tempLeftBarButtonItems);
+        self.navigationItem.leftBarButtonItems = self.navigationItem.tempLeftBarButtonItems;
+        self.navigationItem.tempLeftBarButtonItems = nil;
+    }
+    if (self.navigationItem.tempRightBarButtonItems) {
+        QMUILog(@"UIViewController (QMUINavigationButton)", @"%@ 在 viewDidAppear: 重新设置了 rightBarButtonItems: %@", NSStringFromClass(self.class), self.navigationItem.tempRightBarButtonItems);
+        self.navigationItem.rightBarButtonItems = self.navigationItem.tempRightBarButtonItems;
+        self.navigationItem.tempRightBarButtonItems = nil;
+    }
+}
+
+@end
+
+@implementation UINavigationBar (QMUINavigationButton)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        OverrideImplementation([UINavigationBar class], @selector(pushNavigationItem:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+            return ^(UINavigationBar *selfObject, UINavigationItem *item, BOOL animated) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UINavigationItem *, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, UINavigationItem *, BOOL))originIMP;
+                originSelectorIMP(selfObject, originCMD, item, animated);
+                
+                // avoid superclass
+                if (![selfObject isKindOfClass:originClass]) return;
+                
+                // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+                if (@available(iOS 11, *)) {
+                    selfObject.qmui_customizingBackBarButtonItem = item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                }
+            };
+        });
+        
+        // 对应 UINavigationController setViewControllers:animated:
+        OverrideImplementation([UINavigationBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+            return ^(UINavigationBar *selfObject, NSArray<UINavigationItem *> *items, BOOL animated) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSArray<UINavigationItem *> *, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, NSArray<UINavigationItem *> *, BOOL))originIMP;
+                originSelectorIMP(selfObject, originCMD, items, animated);
+                
+                // avoid superclass
+                if (![selfObject isKindOfClass:originClass]) return;
+                
+                // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+                if (@available(iOS 11, *)) {
+                    selfObject.qmui_customizingBackBarButtonItem = items.lastObject.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                }
+            };
+        });
+        
+        // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
+        if (@available(iOS 11, *)) {
+            Class contentViewClass = NSClassFromString([NSString stringWithFormat:@"_%@%@", NSStringFromClass(self.class), @"ContentView"]);
+            if (contentViewClass) {
+                OverrideImplementation(contentViewClass, @selector(setDirectionalLayoutMargins:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+                    return ^(UIView *selfObject, NSDirectionalEdgeInsets margins) {
+                        
+                        if ([selfObject isKindOfClass:originClass] && selfObject.safeAreaInsets.left == 0 && selfObject.safeAreaInsets.right == 0) {// TODO: molice iPhone X 横屏下，这段代码会导致 margins 不断变大，待解决，目前先屏蔽横屏的情况（也即 safeAreaInsets 左右不为0）
+                            UINavigationBar *navigationBar = (UINavigationBar *)selfObject.superview;
+                            if ([navigationBar isKindOfClass:[UINavigationBar class]]) {
+                                CGFloat leadingMargin = MAX(0, margins.trailing - selfObject.safeAreaInsets.right - (navigationBar.qmui_customizingBackBarButtonItem ? 8 : 0));// 左边的值以右边的值为基准再减去一部分
+                                if (margins.leading != leadingMargin) {
+                                    margins.leading = leadingMargin;
+                                }
+                            }
+                        }
+                        
+                        // call super
+                        void (*originSelectorIMP)(id, SEL, NSDirectionalEdgeInsets);
+                        originSelectorIMP = (void (*)(id, SEL, NSDirectionalEdgeInsets))originIMP;
+                        originSelectorIMP(selfObject, originCMD, margins);
+                    };
+                });
+            }
+        }
+    });
+}
+
+- (UIView *)qmui_contentView {
+    for (UIView *subview in self.subviews) {
+        if ([NSStringFromClass(subview.class) containsString:@"ContentView"]) {
+            return subview;
+        }
+    }
+    return nil;
+}
+
+static char kAssociatedObjectKey_customizingBackBarButtonItem;
+- (void)setQmui_customizingBackBarButtonItem:(BOOL)qmui_customizingBackBarButtonItem {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_customizingBackBarButtonItem, @(qmui_customizingBackBarButtonItem), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (@available(iOS 11, *)) {
+        UIView *contentView = self.qmui_contentView;
+        if (contentView && contentView.safeAreaInsets.left == 0 && contentView.safeAreaInsets.right == 0) {// TODO: molice iPhone X 横屏下，这段代码会导致 margins 不断变大，待解决，目前先屏蔽横屏的情况（也即 safeAreaInsets 左右不为0）
+            NSDirectionalEdgeInsets layoutMargins = contentView.directionalLayoutMargins;
+            CGFloat leadingMargin = MAX(0, layoutMargins.trailing - contentView.safeAreaInsets.right - (qmui_customizingBackBarButtonItem ? 8 : 0));
+            if (layoutMargins.leading != leadingMargin) {
+                layoutMargins.leading = leadingMargin;
+                contentView.directionalLayoutMargins = layoutMargins;
+            }
+        }
+    }
+}
+
+- (BOOL)qmui_customizingBackBarButtonItem {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_customizingBackBarButtonItem)) boolValue];
+}
+
+@end

@@ -302,12 +302,4 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     return YES;
 }
 
-- (UIEdgeInsets)contentInsetsForVideoToolbar:(QMUIZoomImageViewVideoToolbar *)toolbar inZoomingImageView:(QMUIZoomImageView *)zoomImageView {
-    [self checkIfDelegateMissing];
-    if ([self.delegate respondsToSelector:_cmd]) {
-        return [self.delegate contentInsetsForVideoToolbar:toolbar inZoomingImageView:zoomImageView];
-    }
-    return toolbar.contentInsets;
-}
-
 @end

@@ -17,6 +17,7 @@
 #import "UITableView+QMUI.h"
 #import "QMUITableViewCell.h"
 #import "QMUISearchController.h"
+#import "UIBarItem+QMUI.h"
 
 @interface QMUILogManagerViewController ()
 
@@ -171,7 +172,7 @@
                            [self reloadData];
                            [menuView hideWithAnimated:YES];
                        }]];
-    [menuView layoutWithTargetView:[self.navigationItem.rightBarButtonItem valueForKey:@"view"]];
+    [menuView layoutWithTargetView:self.navigationItem.rightBarButtonItem.qmui_view];
     [menuView showWithAnimated:YES];
 }
 

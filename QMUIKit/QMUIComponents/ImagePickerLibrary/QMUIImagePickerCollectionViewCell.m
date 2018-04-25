@@ -13,6 +13,7 @@
 #import "UIControl+QMUI.h"
 #import "UILabel+QMUI.h"
 #import "CALayer+QMUI.h"
+#import "QMUIButton.h"
 
 // checkbox 的 margin 默认值
 const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins = {6, 0, 0, 6};

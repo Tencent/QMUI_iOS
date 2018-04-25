@@ -10,10 +10,13 @@
 #import "QMUICore.h"
 #import "QMUIToastView.h"
 
-@implementation QMUIToastAnimator {
-    BOOL _isShowing;
-    BOOL _isAnimating;
-}
+@interface QMUIToastAnimator ()
+
+@property(nonatomic, assign) BOOL isShowing;
+@property(nonatomic, assign) BOOL isAnimating;
+@end
+
+@implementation QMUIToastAnimator
 
 - (instancetype)init {
     NSAssert(NO, @"请使用initWithToastView:初始化");
@@ -34,13 +37,13 @@
 }
 
 - (void)showWithCompletion:(void (^)(BOOL finished))completion {
-    _isShowing = YES;
-    _isAnimating = YES;
+    self.isShowing = YES;
+    self.isAnimating = YES;
     [UIView animateWithDuration:0.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut|UIViewAnimationOptionBeginFromCurrentState animations:^{
         self.toastView.backgroundView.alpha = 1.0;
         self.toastView.contentView.alpha = 1.0;
     } completion:^(BOOL finished) {
-        _isAnimating = NO;
+        self.isAnimating = NO;
         if (completion) {
             completion(finished);
         }
@@ -48,13 +51,13 @@
 }
 
 - (void)hideWithCompletion:(void (^)(BOOL finished))completion {
-    _isShowing = NO;
-    _isAnimating = YES;
+    self.isShowing = NO;
+    self.isAnimating = YES;
     [UIView animateWithDuration:0.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut|UIViewAnimationOptionBeginFromCurrentState animations:^{
         self.toastView.backgroundView.alpha = 0.0;
         self.toastView.contentView.alpha = 0.0;
     } completion:^(BOOL finished) {
-        _isAnimating = NO;
+        self.isAnimating = NO;
         if (completion) {
             completion(finished);
         }
@@ -62,11 +65,11 @@
 }
 
 - (BOOL)isShowing {
-    return _isShowing;
+    return self.isShowing;
 }
 
 - (BOOL)isAnimating {
-    return _isAnimating;
+    return self.isAnimating;
 }
 
 @end

@@ -369,22 +369,22 @@ static char kAssociatedObjectKey_hasDebugColor;
         path = [UIBezierPath bezierPath];
     }
     
-    if (self.qmui_borderPosition & QMUIBorderViewPositionTop) {
+    if ((self.qmui_borderPosition & QMUIBorderViewPositionTop) == QMUIBorderViewPositionTop) {
         [path moveToPoint:CGPointMake(0, borderWidth / 2)];
         [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), borderWidth / 2)];
     }
     
-    if (self.qmui_borderPosition & QMUIBorderViewPositionLeft) {
+    if ((self.qmui_borderPosition & QMUIBorderViewPositionLeft) == QMUIBorderViewPositionLeft) {
         [path moveToPoint:CGPointMake(borderWidth / 2, 0)];
         [path addLineToPoint:CGPointMake(borderWidth / 2, CGRectGetHeight(self.bounds) - 0)];
     }
     
-    if (self.qmui_borderPosition & QMUIBorderViewPositionBottom) {
+    if ((self.qmui_borderPosition & QMUIBorderViewPositionBottom) == QMUIBorderViewPositionBottom) {
         [path moveToPoint:CGPointMake(0, CGRectGetHeight(self.bounds) - borderWidth / 2)];
         [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) - borderWidth / 2)];
     }
     
-    if (self.qmui_borderPosition & QMUIBorderViewPositionRight) {
+    if ((self.qmui_borderPosition & QMUIBorderViewPositionRight) == QMUIBorderViewPositionRight) {
         [path moveToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, 0)];
         [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, CGRectGetHeight(self.bounds))];
     }

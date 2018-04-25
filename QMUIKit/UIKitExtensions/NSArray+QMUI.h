@@ -19,4 +19,9 @@
  *  将多维数组递归转换成 mutable 多维数组
  */
 - (NSMutableArray *)qmui_mutableCopyNestedArray;
+
+/**
+ *  过滤数组元素，将 block 返回 YES 的 item 重新组装成一个数组返回
+ */
+- (instancetype)qmui_filterWithBlock:(BOOL (^)(id item))block;
 @end

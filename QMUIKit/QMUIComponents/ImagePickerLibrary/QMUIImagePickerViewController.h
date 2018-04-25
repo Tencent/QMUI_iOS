@@ -76,7 +76,7 @@
  *
  *  @see shouldShowDefaultLoadingView
  */
-- (void)imagePickerViewControllerWillFinishLoading:(QMUIImagePickerViewController *)imagePickerViewController;
+- (void)imagePickerViewControllerDidFinishLoading:(QMUIImagePickerViewController *)imagePickerViewController;
 
 @end
 
@@ -96,9 +96,6 @@
 @property(nonatomic, strong, readonly) QMUIButton *sendButton;
 @property(nonatomic, strong, readonly) UILabel *imageCountLabel;
 
-/// 由于组件需要通过本地图片的 QMUIAsset 对象读取图片的详细信息，因此这里的需要传入的是包含一个或多个 QMUIAsset 对象的数组，传入后会赋值到 imagesAssetArray ，并自动刷新 UI 展示
-- (void)refreshWithImagesArray:(NSMutableArray<QMUIAsset *> *)imagesArray;
-
 /// 也可以直接传入 QMUIAssetsGroup，然后读取其中的 QMUIAsset 并储存到 imagesAssetArray 中，传入后会赋值到 QMUIAssetsGroup，并自动刷新 UI 展示
 - (void)refreshWithAssetsGroup:(QMUIAssetsGroup *)assetsGroup;
 
@@ -106,7 +103,7 @@
 @property(nonatomic, strong, readonly) QMUIAssetsGroup *assetsGroup;
 
 /// 当前被选择的图片对应的 QMUIAsset 对象数组
-@property(nonatomic, strong) NSMutableArray<QMUIAsset *> *selectedImageAssetArray;
+@property(nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *selectedImageAssetArray;
 
 /// 是否允许图片多选，默认为 YES。如果为 NO，则不显示 checkbox 和底部工具栏。
 @property(nonatomic, assign) BOOL allowsMultipleSelection;
@@ -125,7 +122,7 @@
 
 /**
  *  加载相册列表时会出现 loading，若需要自定义 loading 的形式，可将该属性置为 NO，默认为 YES。
- *  @see imagePickerViewControllerWillStartLoading: & imagePickerViewControllerWillFinishLoading:
+ *  @see imagePickerViewControllerWillStartLoading: & imagePickerViewControllerDidFinishLoading:
  */
 @property(nonatomic, assign) BOOL shouldShowDefaultLoadingView;
 

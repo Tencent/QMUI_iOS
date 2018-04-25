@@ -9,6 +9,7 @@
 #import "QMUIZoomImageView.h"
 #import "QMUICore.h"
 #import "QMUIEmptyView.h"
+#import "UIView+QMUI.h"
 #import "UIImage+QMUI.h"
 #import "UIColor+QMUI.h"
 #import "UIScrollView+QMUI.h"
@@ -69,8 +70,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        QMUIZoomImageView *appearance = [QMUIZoomImageView appearance];
-        _videoCenteredPlayButtonImage = appearance.videoCenteredPlayButtonImage;
         
         self.contentMode = UIViewContentModeCenter;
         self.maximumZoomScale = 2.0;
@@ -124,13 +123,16 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     CGRect viewportRect = [self finalViewportRect];
     
     if (_videoCenteredPlayButton) {
+        [_videoCenteredPlayButton sizeToFit];
         _videoCenteredPlayButton.center = CGPointMake(CGRectGetMidX(viewportRect), CGRectGetMidY(viewportRect));
     }
     
     if (_videoToolbar) {
         _videoToolbar.frame = ({
-            CGFloat height = [_videoToolbar sizeThatFits:CGSizeMax].height;
-            CGRectFlatMake(0, CGRectGetHeight(self.bounds) - height, CGRectGetWidth(self.bounds), height);
+            UIEdgeInsets margins = UIEdgeInsetsConcat(self.videoToolbarMargins, self.qmui_safeAreaInsets);
+            CGFloat width = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(margins);
+            CGFloat height = [_videoToolbar sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)].height;
+            CGRectFlatMake(margins.left, CGRectGetHeight(self.bounds) - margins.bottom - height, width, height);
         });
     }
     
@@ -589,9 +591,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     }
     _videoToolbar = ({
         QMUIZoomImageViewVideoToolbar * b = [[QMUIZoomImageViewVideoToolbar alloc] init];
-        if ([self.delegate respondsToSelector:@selector(contentInsetsForVideoToolbar:inZoomingImageView:)]) {
-            b.contentInsets = [self.delegate contentInsetsForVideoToolbar:b inZoomingImageView:self];
-        }
         [b.playButton addTarget:self action:@selector(handlePlayButton:) forControlEvents:UIControlEventTouchUpInside];
         [b.pauseButton addTarget:self action:@selector(handlePauseButton) forControlEvents:UIControlEventTouchUpInside];
         [self insertSubview:b belowSubview:self.emptyView];
@@ -610,7 +609,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         b.qmui_outsideEdge = UIEdgeInsetsMake(-60, -60, -60, -60);
         b.tag = kTagForCenteredPlayButton;
         [b setImage:self.videoCenteredPlayButtonImage forState:UIControlStateNormal];
-        [b sizeToFit];
         [b addTarget:self action:@selector(handlePlayButton:) forControlEvents:UIControlEventTouchUpInside];
         b.hidden = YES;
         [self insertSubview:b belowSubview:self.emptyView];
@@ -640,6 +638,11 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     _videoCenteredPlayButton = nil;
     
     self.videoPlayer = nil;
+}
+
+- (void)setVideoToolbarMargins:(UIEdgeInsets)videoToolbarMargins {
+    _videoToolbarMargins = videoToolbarMargins;
+    [self setNeedsLayout];
 }
 
 - (void)setVideoCenteredPlayButtonImage:(UIImage *)videoCenteredPlayButtonImage {
@@ -891,6 +894,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 + (void)setDefaultAppearance {
     QMUIZoomImageView *appearance = [QMUIZoomImageView appearance];
+    appearance.videoToolbarMargins = UIEdgeInsetsMake(0, 25, 25, 18);
     appearance.videoCenteredPlayButtonImage = [QMUIZoomImageViewImageGenerator largePlayImage];
 }
 
@@ -995,12 +999,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        QMUIZoomImageViewVideoToolbar *appearance = [QMUIZoomImageViewVideoToolbar appearance];
-        _contentInsets = appearance.contentInsets;
-        _playButtonImage = appearance.playButtonImage;
-        _pauseButtonImage = appearance.pauseButtonImage;
-        
-        self.backgroundColor = UIColorMakeWithRGBA(.5, 255, 0, 0);
         
         _playButton = [[QMUIButton alloc] init];
         self.playButton.qmui_outsideEdge = UIEdgeInsetsMake(-10, -10, -10, -10);
@@ -1038,11 +1036,11 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    CGFloat contentHeight = [self maxHeightAmongViews:@[self.playButton, self.pauseButton, self.sliderLeftLabel, self.sliderRightLabel, self.slider]];
+    CGFloat contentHeight = CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.paddings);
     
     self.playButton.frame = ({
         CGSize size = [self.playButton sizeThatFits:CGSizeMax];
-        CGRectFlatMake(self.contentInsets.left, contentHeight / 2 - size.height / 2 + self.contentInsets.top, size.width, size.height);
+        CGRectFlatMake(self.paddings.left, CGFloatGetCenter(contentHeight, size.height) + self.paddings.top, size.width, size.height);
     });
     
     self.pauseButton.frame = ({
@@ -1053,26 +1051,26 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     CGFloat timeLabelWidth = 55;
     self.sliderLeftLabel.frame = ({
         CGFloat marginLeft = 19;
-        CGRectFlatMake(CGRectGetMaxX(self.playButton.frame) + marginLeft, self.contentInsets.top, timeLabelWidth, contentHeight);
+        CGRectFlatMake(CGRectGetMaxX(self.playButton.frame) + marginLeft, self.paddings.top, timeLabelWidth, contentHeight);
     });
     self.sliderRightLabel.frame = ({
-        CGRectFlatMake(CGRectGetWidth(self.bounds) - self.contentInsets.right - timeLabelWidth, self.contentInsets.top, timeLabelWidth, contentHeight);
+        CGRectFlatMake(CGRectGetWidth(self.bounds) - self.paddings.right - timeLabelWidth, self.paddings.top, timeLabelWidth, contentHeight);
     });
     self.slider.frame = ({
         CGFloat marginToLabel = 4;
         CGFloat x = CGRectGetMaxX(self.sliderLeftLabel.frame) + marginToLabel;
-        CGRectFlatMake(x, self.contentInsets.top, CGRectGetMinX(self.sliderRightLabel.frame) - marginToLabel - x, contentHeight);
+        CGRectFlatMake(x, self.paddings.top, CGRectGetMinX(self.sliderRightLabel.frame) - marginToLabel - x, contentHeight);
     });
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
     CGFloat contentHeight = [self maxHeightAmongViews:@[self.playButton, self.pauseButton, self.sliderLeftLabel, self.sliderRightLabel, self.slider]];
-    size.height = contentHeight + UIEdgeInsetsGetVerticalValue(self.contentInsets);
+    size.height = contentHeight + UIEdgeInsetsGetVerticalValue(self.paddings);
     return size;
 }
 
-- (void)setContentInsets:(UIEdgeInsets)contentInsets {
-    _contentInsets = contentInsets;
+- (void)setPaddings:(UIEdgeInsets)paddings {
+    _paddings = paddings;
     [self setNeedsLayout];
 }
 
@@ -1115,7 +1113,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 + (void)setDefaultAppearance {
     QMUIZoomImageViewVideoToolbar *appearance = [QMUIZoomImageViewVideoToolbar appearance];
-    appearance.contentInsets = UIEdgeInsetsMake(25, 25, 25, 18);
     appearance.playButtonImage = [QMUIZoomImageViewImageGenerator smallPlayImage];
     appearance.pauseButtonImage = [QMUIZoomImageViewImageGenerator pauseImage];
 }
