@@ -14,5 +14,6 @@
 @interface QMUIMultipleDelegates : NSObject
 
 - (void)addDelegate:(id)delegate;
-- (void)removeDelegate:(id)delegate;
+- (BOOL)removeDelegate:(id)delegate;
+- (void)removeAllDelegates;
 @end

@@ -9,13 +9,13 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
-@interface QMUIOrderedDictionary : NSObject
+@interface QMUIOrderedDictionary<__covariant KeyType, __covariant ObjectType> : NSObject
 
 - (instancetype)initWithKeysAndObjects:(id)firstKey,...;
 
 @property(readonly) NSUInteger count;
-@property(nonatomic, strong, readonly) NSArray *allKeys;
+@property(nonatomic, copy, readonly) NSArray<KeyType> *allKeys;
 
-- (id)objectForKey:(id)key;
+- (ObjectType)objectForKey:(KeyType)key;
 
 @end

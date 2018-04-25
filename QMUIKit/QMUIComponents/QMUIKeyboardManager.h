@@ -39,7 +39,7 @@
 @property(nonatomic, weak, readonly) id<QMUIKeyboardManagerDelegate> delegate;
 
 /**
- *  是否允许触发delegate的回调，某些场景可能要主动停止对键盘事件的响应。
+ *  是否允许触发delegate的回调，常见的场景例如在 UIViewController viewWillAppear: 里打开，在 viewWillDisappear: 里关闭，从而避免在键盘升起的状态下手势返回时界面布局会跟着键盘往下移动。
  *  默认为 YES。
  */
 @property(nonatomic, assign) BOOL delegateEnabled;

@@ -20,28 +20,6 @@ static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLa
 
 @implementation QMUIImagePickerHelper
 
-+ (BOOL)imageAssetArray:(NSMutableArray *)imageAssetArray containsImageAsset:(QMUIAsset *)targetImageAsset {
-    NSString *targetAssetIdentify = [targetImageAsset assetIdentity];
-    for (NSUInteger i = 0; i < [imageAssetArray count]; i++) {
-        QMUIAsset *imageAsset = [imageAssetArray objectAtIndex:i];
-        if ([[imageAsset assetIdentity] isEqualToString:targetAssetIdentify]) {
-            return YES;
-        }
-    }
-    return NO;
-}
-
-+ (void)imageAssetArray:(NSMutableArray *)imageAssetArray removeImageAsset:(QMUIAsset *)targetImageAsset {
-    NSString *targetAssetIdentify = [targetImageAsset assetIdentity];
-    for (NSUInteger i = 0; i < [imageAssetArray count]; i++) {
-        QMUIAsset *imageAsset = [imageAssetArray objectAtIndex:i];
-        if ([[imageAsset assetIdentity] isEqualToString:targetAssetIdentify]) {
-            [imageAssetArray removeObject:imageAsset];
-            break;
-        }
-    }
-}
-
 + (void)springAnimationOfImageSelectedCountChangeWithCountLabel:(UILabel *)label {
     [QMUIHelper actionSpringAnimationForView:label];
 }
@@ -54,7 +32,7 @@ static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLa
     [button.layer removeAnimationForKey:QMUISpringAnimationKey];
 }
 
-+ (QMUIAssetsGroup *)assetsGroupOfLastestPickerAlbumWithUserIdentify:(NSString *)userIdentify {
++ (QMUIAssetsGroup *)assetsGroupOfLastPickerAlbumWithUserIdentify:(NSString *)userIdentify {
     // 获取 NSUserDefaults，里面储存了所有 updateLastestAlbumWithAssetsGroup 的结果
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     // 使用特定的前缀和可以标记不同用户的字符串拼接成 key，用于获取当前用户最近调用 updateLastestAlbumWithAssetsGroup 储存的相册以及对于的 QMUIAlbumContentType 值

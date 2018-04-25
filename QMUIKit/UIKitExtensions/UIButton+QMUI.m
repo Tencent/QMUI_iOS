@@ -9,6 +9,12 @@
 #import "UIButton+QMUI.h"
 #import "QMUICore.h"
 
+@interface UIButton ()
+
+@property(nonatomic, strong) NSMutableDictionary<NSNumber *, NSMutableDictionary<NSNumber *, NSNumber *> *> * qmui_customizeButtonPropDict;
+
+@end
+
 @implementation UIButton (QMUI)
 
 + (void)load {
@@ -16,6 +22,10 @@
     dispatch_once(&onceToken, ^{
         ExchangeImplementations([self class], @selector(setTitle:forState:), @selector(qmui_setTitle:forState:));
         ExchangeImplementations([self class], @selector(setTitleColor:forState:), @selector(qmui_setTitleColor:forState:));
+        ExchangeImplementations([self class], @selector(setTitleShadowColor:forState:), @selector(qmui_setTitleShadowColor:forState:));
+        ExchangeImplementations([self class], @selector(setImage:forState:), @selector(qmui_setImage:forState:));
+        ExchangeImplementations([self class], @selector(setBackgroundImage:forState:), @selector(qmui_setBackgroundImage:forState:));
+        ExchangeImplementations([self class], @selector(setAttributedTitle:forState:), @selector(qmui_setAttributedTitle:forState:));
     });
 }
 
@@ -32,6 +42,81 @@
     [self setTitle:@"测" forState:UIControlStateNormal];
     [self sizeToFit];
     [self setTitle:nil forState:UIControlStateNormal];
+}
+
+- (BOOL)qmui_hasCustomizedButtonPropForState:(UIControlState)state {
+    if (self.qmui_customizeButtonPropDict) {
+        return self.qmui_customizeButtonPropDict[@(state)].count > 0;
+    }
+    
+    return NO;
+}
+
+- (BOOL)qmui_hasCustomizedButtonPropWithType:(QMUICustomizeButtonPropType)type forState:(UIControlState)state {
+    if (self.qmui_customizeButtonPropDict && self.qmui_customizeButtonPropDict[@(state)]) {
+        return [self.qmui_customizeButtonPropDict[@(state)][@(type)] boolValue];
+    }
+    
+    return NO;
+}
+
+#pragma mark - Hook methods
+
+- (void)qmui_setTitle:(NSString *)title forState:(UIControlState)state {
+    [self qmui_setTitle:title forState:state];
+    
+    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitle forState:state value:title];
+    
+    if (!title || !self.qmui_titleAttributes.count) {
+        return;
+    }
+    
+    if (state == UIControlStateNormal) {
+        [self.qmui_titleAttributes enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
+            UIControlState state = [key unsignedIntegerValue];
+            NSString *titleForState = [self titleForState:state];
+            NSAttributedString *string = [[NSAttributedString alloc] initWithString:titleForState attributes:obj];
+            [self setAttributedTitle:[self attributedStringWithEndKernRemoved:string] forState:state];
+        }];
+        return;
+    }
+    
+    if ([self.qmui_titleAttributes objectForKey:@(state)]) {
+        NSAttributedString *string = [[NSAttributedString alloc] initWithString:title attributes:self.qmui_titleAttributes[@(state)]];
+        [self setAttributedTitle:[self attributedStringWithEndKernRemoved:string] forState:state];
+        return;
+    }
+}
+
+// 如果之前已经设置了此 state 下的文字颜色，则覆盖掉之前的颜色
+- (void)qmui_setTitleColor:(UIColor *)color forState:(UIControlState)state {
+    [self qmui_setTitleColor:color forState:state];
+    
+    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitleColor forState:state value:color];
+    
+    NSDictionary *attributes = self.qmui_titleAttributes[@(state)];
+    if (attributes) {
+        NSMutableDictionary *newAttributes = [NSMutableDictionary dictionaryWithDictionary:attributes];
+        newAttributes[NSForegroundColorAttributeName] = color;
+        [self qmui_setTitleAttributes:[NSDictionary dictionaryWithDictionary:newAttributes] forState:state];
+    }
+}
+
+- (void)qmui_setTitleShadowColor:(nullable UIColor *)color forState:(UIControlState)state {
+    [self qmui_setTitleShadowColor:color forState:state];
+    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitleShadowColor forState:state value:color];
+}
+- (void)qmui_setImage:(nullable UIImage *)image forState:(UIControlState)state {
+    [self qmui_setImage:image forState:state];
+    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeImage forState:state value:image];
+}
+- (void)qmui_setBackgroundImage:(nullable UIImage *)image forState:(UIControlState)state {
+    [self qmui_setBackgroundImage:image forState:state];
+    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeBackgroundImage forState:state value:image];
+}
+- (void)qmui_setAttributedTitle:(nullable NSAttributedString *)title forState:(UIControlState)state {
+    [self qmui_setAttributedTitle:title forState:state];
+    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeAttributedTitle forState:state value:title];
 }
 
 #pragma mark - Title Attributes
@@ -66,40 +151,6 @@
     }
 }
 
-- (void)qmui_setTitle:(NSString *)title forState:(UIControlState)state {
-    [self qmui_setTitle:title forState:state];
-    if (!title || !self.qmui_titleAttributes.count) {
-        return;
-    }
-    
-    if (state == UIControlStateNormal) {
-        [self.qmui_titleAttributes enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
-            UIControlState state = [key unsignedIntegerValue];
-            NSString *titleForState = [self titleForState:state];
-            NSAttributedString *string = [[NSAttributedString alloc] initWithString:titleForState attributes:obj];
-            [self setAttributedTitle:[self attributedStringWithEndKernRemoved:string] forState:state];
-        }];
-        return;
-    }
-    
-    if ([self.qmui_titleAttributes objectForKey:@(state)]) {
-        NSAttributedString *string = [[NSAttributedString alloc] initWithString:title attributes:self.qmui_titleAttributes[@(state)]];
-        [self setAttributedTitle:[self attributedStringWithEndKernRemoved:string] forState:state];
-        return;
-    }
-}
-
-// 如果之前已经设置了此 state 下的文字颜色，则覆盖掉之前的颜色
-- (void)qmui_setTitleColor:(UIColor *)color forState:(UIControlState)state {
-    [self qmui_setTitleColor:color forState:state];
-    NSDictionary *attributes = self.qmui_titleAttributes[@(state)];
-    if (attributes) {
-        NSMutableDictionary *newAttributes = [NSMutableDictionary dictionaryWithDictionary:attributes];
-        newAttributes[NSForegroundColorAttributeName] = color;
-        [self qmui_setTitleAttributes:[NSDictionary dictionaryWithDictionary:newAttributes] forState:state];
-    }
-}
-
 // 去除最后一个字的 kern 效果
 - (NSAttributedString *)attributedStringWithEndKernRemoved:(NSAttributedString *)string {
     if (!string || !string.length) {
@@ -117,6 +168,45 @@ static char kAssociatedObjectKey_titleAttributes;
 
 - (NSMutableDictionary<NSNumber *, NSDictionary *> *)qmui_titleAttributes {
     return (NSMutableDictionary *)objc_getAssociatedObject(self, &kAssociatedObjectKey_titleAttributes);
+}
+
+#pragma mark - customize state
+
+static char kAssociatedObjectKey_qmuiCustomizeButtonPropDict;
+- (void)setQmui_customizeButtonPropDict:(NSMutableDictionary<NSNumber *, NSMutableDictionary<NSNumber *, NSNumber *> *> *)qmui_customizeButtonPropDict {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_qmuiCustomizeButtonPropDict, qmui_customizeButtonPropDict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (NSMutableDictionary<NSNumber *, NSMutableDictionary<NSNumber *, NSNumber *> *> *)qmui_customizeButtonPropDict {
+    return (NSMutableDictionary *)objc_getAssociatedObject(self, &kAssociatedObjectKey_qmuiCustomizeButtonPropDict);
+}
+
+- (void)_markQMUICustomizeType:(QMUICustomizeButtonPropType)type forState:(UIControlState)state value:(id)value {
+    if (value) {
+        [self _setQMUICustomizeType:type forState:state];
+    } else {
+        [self _removeQMUICustomizeType:type forState:state];
+    }
+}
+
+- (void)_setQMUICustomizeType:(QMUICustomizeButtonPropType)type forState:(UIControlState)state {
+    if (!self.qmui_customizeButtonPropDict) {
+        self.qmui_customizeButtonPropDict = [NSMutableDictionary dictionary];
+    }
+    
+    if (!self.qmui_customizeButtonPropDict[@(state)]) {
+        self.qmui_customizeButtonPropDict[@(state)] = [NSMutableDictionary dictionary];
+    }
+    
+    self.qmui_customizeButtonPropDict[@(state)][@(type)] = @(YES);
+}
+
+- (void)_removeQMUICustomizeType:(QMUICustomizeButtonPropType)type forState:(UIControlState)state {
+    if (!self.qmui_customizeButtonPropDict || !self.qmui_customizeButtonPropDict[@(state)]) {
+        return;
+    }
+    
+    [self.qmui_customizeButtonPropDict[@(state)] removeObjectForKey:@(type)];
 }
 
 @end

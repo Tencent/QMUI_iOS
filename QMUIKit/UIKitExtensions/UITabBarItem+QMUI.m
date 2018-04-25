@@ -8,15 +8,12 @@
 
 #import "UITabBarItem+QMUI.h"
 #import "QMUICore.h"
+#import "UIBarItem+QMUI.h"
 
 @implementation UITabBarItem (QMUI)
 
-- (UIControl *)qmui_barButton {
-    return [self valueForKey:@"view"];
-}
-
 - (UIImageView *)qmui_imageView {
-    UIControl *barButton = [self qmui_barButton];
+    UIControl *barButton = (UIControl *)self.qmui_view;
     
     if (!barButton) {
         return nil;

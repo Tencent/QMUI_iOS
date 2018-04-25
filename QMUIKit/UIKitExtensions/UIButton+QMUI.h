@@ -10,7 +10,28 @@
 
 @interface UIButton (QMUI)
 
+typedef NS_ENUM(NSUInteger, QMUICustomizeButtonPropType) {
+    QMUICustomizeButtonPropTypeTitle,
+    QMUICustomizeButtonPropTypeTitleColor,
+    QMUICustomizeButtonPropTypeTitleShadowColor,
+    QMUICustomizeButtonPropTypeImage,
+    QMUICustomizeButtonPropTypeBackgroundImage,
+    QMUICustomizeButtonPropTypeAttributedTitle
+};
+
 - (instancetype)qmui_initWithImage:(UIImage *)image title:(NSString *)title;
+
+/**
+ * 判断该 button 在特定 UIControlState 下是否设置了属性
+ * @note 该方法会对设置了任何 QMUICustomizeButtonPropType 都返回 YES
+ */
+- (BOOL)qmui_hasCustomizedButtonPropForState:(UIControlState)state;
+
+/**
+ * 判断该 button 在特定 UIControlState 下是否设置了某个 QMUICustomizeButtonPropType 属性
+ * @param type 对应于 UIbutton 的 setXXX:forState 办法
+ */
+- (BOOL)qmui_hasCustomizedButtonPropWithType:(QMUICustomizeButtonPropType)type forState:(UIControlState)state;
 
 /**
  * 在UIButton的样式（如字体）设置完后，将button的text设置为一个测试字符，再调用sizeToFit，从而令button的高度适应字体

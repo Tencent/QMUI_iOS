@@ -49,6 +49,8 @@ static QMUIModalPresentationViewController *appearance;
 @property(nonatomic, strong) QMUIModalPresentationWindow *containerWindow;
 @property(nonatomic, weak) UIWindow *previousKeyWindow;
 
+@property(nonatomic, assign, readwrite, getter=isVisible) BOOL visible;
+
 @property(nonatomic, assign) BOOL appearAnimated;
 @property(nonatomic, copy) void (^appearCompletionBlock)(BOOL finished);
 
@@ -161,7 +163,7 @@ static QMUIModalPresentationViewController *appearance;
             [self.contentViewController endAppearanceTransition];
         }
         
-        _visible = YES;
+        self.visible = YES;
         
         if (self.appearCompletionBlock) {
             self.appearCompletionBlock(finished);
@@ -260,7 +262,7 @@ static QMUIModalPresentationViewController *appearance;
             [self.contentViewController endAppearanceTransition];
         }
         
-        _visible = NO;
+        self.visible = NO;
         
         if ([self.delegate respondsToSelector:@selector(didHideModalPresentationViewController:)]) {
             [self.delegate didHideModalPresentationViewController:self];

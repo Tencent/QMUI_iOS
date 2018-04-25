@@ -18,11 +18,6 @@
 @property(nonatomic, copy) void (^qmui_doubleTapBlock)(UITabBarItem *tabBarItem, NSInteger index);
 
 /**
- * 获取一个UITabBarItem内的按钮，里面包含imageView、label等子View
- */
-- (UIControl *)qmui_barButton;
-
-/**
  * 获取一个UITabBarItem内显示图标的UIImageView，如果找不到则返回nil
  * @warning 需要对nil的返回值做保护
  */

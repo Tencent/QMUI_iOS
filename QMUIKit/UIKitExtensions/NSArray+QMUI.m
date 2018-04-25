@@ -37,4 +37,19 @@
     return mutableResult;
 }
 
+- (instancetype)qmui_filterWithBlock:(BOOL (^)(id))block {
+    if (!block) {
+        return self;
+    }
+    
+    NSMutableArray *result = [[NSMutableArray alloc] init];
+    for (NSInteger i = 0; i < self.count; i++) {
+        id item = self[i];
+        if (block(item)) {
+            [result addObject:item];
+        }
+    }
+    return [result copy];
+}
+
 @end

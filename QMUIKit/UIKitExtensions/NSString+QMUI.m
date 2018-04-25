@@ -8,9 +8,29 @@
 
 #import "NSString+QMUI.h"
 #import <CommonCrypto/CommonDigest.h>
+#import "NSArray+QMUI.h"
 #import <objc/runtime.h>
 
 @implementation NSString (QMUI)
+
+- (NSArray<NSString *> *)qmui_toArray {
+    if (!self.length) {
+        return nil;
+    }
+    
+    NSMutableArray<NSString *> *array = [[NSMutableArray alloc] init];
+    for (NSInteger i = 0; i < self.length; i++) {
+        NSString *stringItem = [self substringWithRange:NSMakeRange(i, 1)];
+        [array addObject:stringItem];
+    }
+    return [array copy];
+}
+
+- (NSArray<NSString *> *)qmui_toTrimmedArray {
+    return [[self qmui_toArray] qmui_filterWithBlock:^BOOL(NSString *item) {
+        return item.qmui_trim.length > 0;
+    }];
+}
 
 - (NSString *)qmui_trim {
     return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];

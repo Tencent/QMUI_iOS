@@ -7,6 +7,7 @@
 //
 
 #import "QMUIMultipleDelegates.h"
+#import "NSPointerArray+QMUI.h"
 
 @interface QMUIMultipleDelegates ()
 
@@ -24,27 +25,24 @@
 }
 
 - (void)addDelegate:(id)delegate {
-    [self.delegates addPointer:(__bridge void *)delegate];
+    if (![self.delegates qmui_containsPointer:(__bridge void *)delegate] && delegate != self) {
+        [self.delegates addPointer:(__bridge void *)delegate];
+    }
 }
 
-- (void)removeDelegate:(id)delegate {
-    NSUInteger index = [self indexOfDelegate:delegate];
+- (BOOL)removeDelegate:(id)delegate {
+    NSUInteger index = [self.delegates qmui_indexOfPointer:(__bridge void *)delegate];
     if (index != NSNotFound) {
         [self.delegates removePointerAtIndex:index];
+        return YES;
     }
+    return NO;
 }
 
-- (NSUInteger)indexOfDelegate:(id)delegate {
-    if (!delegate) {
-        return NSNotFound;
+- (void)removeAllDelegates {
+    for (NSInteger i = self.delegates.count - 1; i >= 0; i--) {
+        [self.delegates removePointerAtIndex:i];
     }
-    
-    for (NSUInteger i = 0; i < self.delegates.count; i++) {
-        if ([self.delegates pointerAtIndex:i] == ((__bridge void *)delegate)) {
-            return i;
-        }
-    }
-    return NSNotFound;
 }
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
@@ -52,7 +50,9 @@
     if (result) {
         return result;
     }
-    for (id delegate in self.delegates) {
+    
+    NSPointerArray *delegates = [self.delegates copy];
+    for (id delegate in delegates) {
         result = [delegate methodSignatureForSelector:aSelector];
         if (result) {
             return result;
@@ -62,17 +62,22 @@
 }
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
-    for (id delegate in self.delegates) {
-        if ([delegate respondsToSelector:anInvocation.selector]) {
+    SEL selector = anInvocation.selector;
+    NSPointerArray *delegates = [self.delegates copy];
+    for (id delegate in delegates) {
+        if ([delegate respondsToSelector:selector]) {
             [anInvocation invokeWithTarget:delegate];
         }
     }
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
-    if ([super respondsToSelector:aSelector])
+    if ([super respondsToSelector:aSelector]) {
         return YES;
-    for (id delegate in self.delegates) {
+    }
+    
+    NSPointerArray *delegates = [self.delegates copy];
+    for (id delegate in delegates) {
         if ([delegate respondsToSelector:aSelector]) {
             return YES;
         }
@@ -81,36 +86,7 @@
 }
 
 - (NSString *)description {
-    NSMutableString *delegatesString = [[NSMutableString alloc] init];
-    for (id delegate in self.delegates) {
-        [delegatesString appendFormat:@", %@", delegate];
-    }
-    return [NSString stringWithFormat:@"%@%@", [super description], delegatesString.copy];
-}
-
-@end
-
-// UIScrollViewDelegate 这两个方法比较特殊，当被调用时，不会经过 forwardInvocation:，所以用 QMUIMultipleDelegates 的实现方式无法对它们进行转发，原因暂时不明，因此以下是临时的解决方法。其他 delegate 是否存在类似这样的方法也未知。
-@interface QMUIMultipleDelegates (UIScrollViewDelegate)
-
-@end
-
-@implementation QMUIMultipleDelegates (UIScrollViewDelegate)
-
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    for (id delegate in self.delegates) {
-        if ([delegate respondsToSelector:_cmd]) {
-            [delegate scrollViewDidScroll:scrollView];
-        }
-    }
-}
-
-- (void)scrollViewDidZoom:(UIScrollView *)scrollView {
-    for (id delegate in self.delegates) {
-        if ([delegate respondsToSelector:_cmd]) {
-            [delegate scrollViewDidZoom:scrollView];
-        }
-    }
+    return [NSString stringWithFormat:@"%@%@", [super description], self.delegates];
 }
 
 @end

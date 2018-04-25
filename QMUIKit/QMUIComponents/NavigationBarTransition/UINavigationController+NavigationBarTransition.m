@@ -516,11 +516,9 @@
 - (UIViewController *)NavigationBarTransition_popViewControllerAnimated:(BOOL)animated {
     UIViewController *disappearingViewController = self.viewControllers.lastObject;
     UIViewController *appearingViewController = self.viewControllers.count >= 2 ? self.viewControllers[self.viewControllers.count - 2] : nil;
-    if (!disappearingViewController) {
-        return [self NavigationBarTransition_popViewControllerAnimated:animated];
+    if (disappearingViewController && appearingViewController) {
+        [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
     }
-    [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
-    
     return [self NavigationBarTransition_popViewControllerAnimated:animated];
 }
 

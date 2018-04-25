@@ -345,6 +345,8 @@
     if (indexPath && self.parentTableView) {
         QMUITableViewCellPosition position = [self.parentTableView qmui_positionForRowAtIndexPath:indexPath];
         self.cellPosition = position;
+    } else {
+        self.cellPosition = QMUITableViewCellPositionNone;
     }
 }
 
