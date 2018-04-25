@@ -51,6 +51,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUILog'
+      sss.dependency 'QMUIKit/QMUIMainFrame'
     end
 
     ss.subspec 'QMUITableView' do |sss|
