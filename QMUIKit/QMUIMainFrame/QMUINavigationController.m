@@ -14,7 +14,6 @@
 #import "UINavigationController+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
-#import "QMUINavigationButton.h"
 
 @implementation UIViewController (QMUINavigationController)
 
@@ -342,12 +341,12 @@ static char kAssociatedObjectKey_qmuiNavIsViewWillAppear;
     if (currentViewController) {
         if (!NeedsBackBarButtonItemTitle) {
             // 会自动从 UIBarButtonItem.title 取值作为下一个界面的返回按钮的文字
-            currentViewController.navigationItem.backBarButtonItem = [UIBarButtonItem qmui_itemWithTitle:@"" target:nil action:NULL];
+            currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
         } else {
             UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController;
             if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
                 NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
-                currentViewController.navigationItem.backBarButtonItem = [UIBarButtonItem qmui_itemWithTitle:title target:nil action:NULL];
+                currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL];
             }
         }
     }
