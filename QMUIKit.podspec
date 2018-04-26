@@ -55,14 +55,17 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIFillButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIFillButton.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
     end
 
     ss.subspec 'QMUIGhostButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIGhostButton.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
     end
 
     ss.subspec 'QMUILinkButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUILinkButton.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
     end
 
     ss.subspec 'QMUINavigationButton' do |sss|
