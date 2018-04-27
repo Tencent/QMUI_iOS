@@ -50,7 +50,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
  *
  *  @return QMUIAlertController按钮的实例
  */
-+ (instancetype)actionWithTitle:(NSString *)title style:(QMUIAlertActionStyle)style handler:(void (^)(QMUIAlertAction *action))handler;
++ (instancetype)actionWithTitle:(NSString *)title style:(QMUIAlertActionStyle)style handler:(void (^)(__kindof QMUIAlertController *aAlertController, QMUIAlertAction *action))handler;
 
 /// `QMUIAlertAction`对应的 button 对象
 @property(nonatomic, strong, readonly) QMUIButton *button;

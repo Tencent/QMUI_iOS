@@ -369,9 +369,8 @@ EndIgnoreClangWarning
 
 - (void)handleSubmitButtonEvent:(QMUIButton *)submitButton {
     if (self.submitButtonBlock) {
-        // 把自己传过去，方便在block里调用self时不会导致内存泄露
-        __weak QMUIDialogViewController *weakSelf = self;
-        self.submitButtonBlock(weakSelf);
+        // 把自己传过去，通过参数来引用 self，避免在 block 里直接引用 dialog 导致内存泄漏
+        self.submitButtonBlock(self);
     }
 }
 
