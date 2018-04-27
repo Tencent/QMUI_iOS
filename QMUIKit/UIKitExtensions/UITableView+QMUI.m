@@ -26,15 +26,17 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     [self qmui_initWithFrame:frame style:style];
     
     // iOS 11 之后 estimatedRowHeight 如果值为 UITableViewAutomaticDimension，estimate 效果也会生效（iOS 11 以前要 > 0 才会生效）。
-    // 而当使用 estimate 效果时，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地统一控制所有 UITableView（包括系统默认的）的 estimatedRowHeight 效果的开关
-    if (TableViewEstimatedHeightEnabled) {
-        self.estimatedRowHeight = TableViewCellNormalHeight;
-        self.estimatedSectionHeaderHeight = TableViewCellNormalHeight;
-        self.estimatedSectionFooterHeight = TableViewCellNormalHeight;
-    } else {
-        self.estimatedRowHeight = 0;
-        self.estimatedSectionHeaderHeight = 0;
-        self.estimatedSectionFooterHeight = 0;
+    // 而当使用 estimate 效果时，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地控制 QMUITableView（及其子类） 和 UITableView（不包含子类，例如 UIPickerTableView）的 estimatedRowHeight 效果的开关 https://github.com/QMUI/QMUI_iOS/issues/313
+    if ([self isKindOfClass:NSClassFromString(@"QMUITableView")] || [NSStringFromClass(self.class) isEqualToString:@"UITableView"]) {
+        if (TableViewEstimatedHeightEnabled) {
+            self.estimatedRowHeight = TableViewCellNormalHeight;
+            self.estimatedSectionHeaderHeight = TableViewCellNormalHeight;
+            self.estimatedSectionFooterHeight = TableViewCellNormalHeight;
+        } else {
+            self.estimatedRowHeight = 0;
+            self.estimatedSectionHeaderHeight = 0;
+            self.estimatedSectionFooterHeight = 0;
+        }
     }
     return self;
 }

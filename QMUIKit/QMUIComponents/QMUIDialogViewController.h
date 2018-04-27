@@ -130,6 +130,6 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 /// 是否自动控制提交按钮的enabled状态，默认为YES，则当输入框内容为空时禁用提交按钮
 @property(nonatomic, assign) BOOL enablesSubmitButtonAutomatically;
 
-@property(nonatomic, copy) BOOL (^shouldEnableSubmitButtonBlock)(QMUIDialogTextFieldViewController *dialogViewController);
+@property(nonatomic, copy) BOOL (^shouldEnableSubmitButtonBlock)(__kindof QMUIDialogTextFieldViewController *dialogViewController);
 
 @end

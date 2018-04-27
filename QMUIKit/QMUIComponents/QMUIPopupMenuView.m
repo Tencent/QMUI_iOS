@@ -94,6 +94,9 @@
     self.scrollView.scrollsToTop = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     self.scrollView.showsVerticalScrollIndicator = NO;
+    if (@available(iOS 11, *)) {
+        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
     [self.contentView addSubview:self.scrollView];
     
     self.itemSeparatorLayers = [[NSMutableArray alloc] init];

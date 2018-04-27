@@ -61,14 +61,14 @@ static NSUInteger alertControllerCount = 0;
 @property(nonatomic, strong) QMUIAlertButtonWrapView *buttonWrapView;
 @property(nonatomic, copy, readwrite) NSString *title;
 @property(nonatomic, assign, readwrite) QMUIAlertActionStyle style;
-@property(nonatomic, copy) void (^handler)(QMUIAlertAction *action);
+@property(nonatomic, copy) void (^handler)(QMUIAlertController *aAlertController, QMUIAlertAction *action);
 @property(nonatomic, weak) id<QMUIAlertActionDelegate> delegate;
 
 @end
 
 @implementation QMUIAlertAction
 
-+ (instancetype)actionWithTitle:(NSString *)title style:(QMUIAlertActionStyle)style handler:(void (^)(QMUIAlertAction *action))handler {
++ (instancetype)actionWithTitle:(NSString *)title style:(QMUIAlertActionStyle)style handler:(void (^)(__kindof QMUIAlertController *, QMUIAlertAction *))handler {
     QMUIAlertAction *alertAction = [[QMUIAlertAction alloc] init];
     alertAction.title = title;
     alertAction.style = style;
@@ -1101,7 +1101,7 @@ static QMUIAlertController *alertControllerAppearance;
 - (void)didClickAlertAction:(QMUIAlertAction *)alertAction {
     [self hideWithAnimated:YES completion:^{
         if (alertAction.handler) {
-            alertAction.handler(alertAction);
+            alertAction.handler(self, alertAction);
             alertAction.handler = nil;
         }
     }];
