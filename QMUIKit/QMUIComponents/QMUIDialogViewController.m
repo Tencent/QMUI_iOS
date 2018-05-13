@@ -201,9 +201,9 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 }
 
 BeginIgnoreClangWarning(-Wobjc-missing-super-calls)
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {
+- (void)setupNavigationItems {
     // 不继承父类的实现，从而避免把 self.titleView 放到 navigationItem 上
-//    [super setNavigationItemsIsInEditMode:isInEditMode animated:animated];
+//    [super setupNavigationItems];
 }
 EndIgnoreClangWarning
 

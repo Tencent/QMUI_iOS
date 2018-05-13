@@ -42,8 +42,8 @@
     _homeLabel.frame = CGRectMake(paddingHorizontal, self.qmui_navigationBarMaxYInViewCoordinator + 50, homeLabelLimitWidth, homeLabelSize.height);
 }
 
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {
-    [super setNavigationItemsIsInEditMode:isInEditMode animated:animated];
+- (void)setupNavigationItems {
+    [super setupNavigationItems];
     self.title = @"QMUI";
 }
 

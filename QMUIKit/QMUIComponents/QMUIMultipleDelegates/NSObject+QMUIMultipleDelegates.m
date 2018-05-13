@@ -83,7 +83,7 @@ static char kAssociatedObjectKey_qmuiDelegates;
     BOOL isAddedMethod = class_addMethod(targetClass, newDelegateSetter, imp_implementationWithBlock(^(NSObject *selfObject, id aDelegate){
         
         // 这一段保护的原因请查看 https://github.com/QMUI/QMUI_iOS/issues/292
-        if (!selfObject.qmui_multipleDelegatesEnabled || ![selfObject isKindOfClass:targetClass]) {
+        if (!selfObject.qmui_multipleDelegatesEnabled || selfObject.class != targetClass) {
             originSelectorIMP(selfObject, originDelegateSetter, aDelegate);
             return;
         }

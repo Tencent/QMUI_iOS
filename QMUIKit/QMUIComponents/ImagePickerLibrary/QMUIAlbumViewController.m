@@ -132,8 +132,8 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
     }
 }
 
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {
-    [super setNavigationItemsIsInEditMode:isInEditMode animated:animated];
+- (void)setupNavigationItems {
+    [super setupNavigationItems];
     if (!self.title) {
         self.title = @"照片";
     }

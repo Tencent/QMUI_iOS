@@ -112,7 +112,7 @@
     if (gestureRecognizer.state == UIGestureRecognizerStateBegan) {
         [self becomeFirstResponder];
         UIMenuController *menuController = [UIMenuController sharedMenuController];
-        UIMenuItem *copyMenuItem = [[UIMenuItem alloc] initWithTitle:@"复制" action:@selector(copyString:)];
+        UIMenuItem *copyMenuItem = [[UIMenuItem alloc] initWithTitle:self.menuItemTitleForCopyAction ?: @"复制" action:@selector(copyString:)];
         [[UIMenuController sharedMenuController] setMenuItems:@[copyMenuItem]];
         [menuController setTargetRect:self.frame inView:self.superview];
         [menuController setMenuVisible:YES animated:YES];

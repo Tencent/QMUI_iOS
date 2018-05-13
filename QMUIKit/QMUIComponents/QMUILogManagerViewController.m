@@ -43,8 +43,8 @@
     [self checkEmptyView];
 }
 
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {
-    [super setNavigationItemsIsInEditMode:isInEditMode animated:animated];
+- (void)setupNavigationItems {
+    [super setupNavigationItems];
     if (self.allNames.count) {
         self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(handleMenuItemEvent)];
     } else {
@@ -119,7 +119,7 @@
     } else {
         [self hideEmptyView];
     }
-    [self setNavigationItemsIsInEditMode:NO animated:NO];
+    [self setupNavigationItems];
 }
 
 - (NSArray<NSString *> *)sortedLogNameArray {

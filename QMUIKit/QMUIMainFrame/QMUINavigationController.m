@@ -434,6 +434,16 @@ static char kAssociatedObjectKey_qmuiNavIsViewWillAppear;
     return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 
+#pragma mark - HomeIndicator
+
+- (UIViewController *)childViewControllerForHomeIndicatorAutoHidden {
+    return self.topViewController;
+}
+
+- (BOOL)prefersHomeIndicatorAutoHidden {
+    return NO;
+}
+
 @end
 
 

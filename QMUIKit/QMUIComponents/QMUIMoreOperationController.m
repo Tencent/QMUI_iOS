@@ -240,11 +240,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (CGFloat)suitableColumnCountWithCount:(CGFloat)columnCount {
     // 根据精准的列数，找到一个合适的、能让半个 item 刚好露出来的列数。例如 3.6 会被转换成 3.5，3.2 会被转换成 2.5。
-    CGFloat result = 0;
-    if (((NSInteger)columnCount + .5) == (NSInteger)columnCount) {
-        result = ((NSInteger)columnCount - 1) + 0.5;
-    }
-    result = ((NSInteger)columnCount) + 0.5;
+    CGFloat result = round(columnCount) - .5;;
     return result;
 }
 

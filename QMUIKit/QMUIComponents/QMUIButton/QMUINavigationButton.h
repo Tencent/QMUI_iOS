@@ -57,6 +57,7 @@ typedef NS_ENUM(NSUInteger, QMUINavigationButtonType) {
 + (instancetype)qmui_itemWithImage:(nullable UIImage *)image target:(nullable id)target action:(nullable SEL)action;
 + (instancetype)qmui_itemWithTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action;
 + (instancetype)qmui_itemWithBoldTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action;
++ (instancetype)qmui_backItemWithTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action;
 + (instancetype)qmui_backItemWithTarget:(nullable id)target action:(nullable SEL)action;
 + (instancetype)qmui_closeItemWithTarget:(nullable id)target action:(nullable SEL)action;
 + (instancetype)qmui_fixedSpaceItemWithWidth:(CGFloat)width;

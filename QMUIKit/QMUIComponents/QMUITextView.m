@@ -67,7 +67,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     self.scrollsToTop = NO;
     self.placeholderColor = UIColorPlaceholder;
     self.placeholderMargins = UIEdgeInsetsZero;
-    self.autoResizable = NO;
+    self.maximumHeight = CGFLOAT_MAX;
     self.maximumTextLength = NSUIntegerMax;
     self.shouldResponseToProgrammaticallyTextChanges = YES;
     if (@available(iOS 11, *)) {
@@ -246,16 +246,16 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     if (textView) {
         
         // 计算高度
-        if (self.autoResizable) {
+        if ([textView.delegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)]) {
             
-            CGFloat resultHeight = [textView sizeThatFits:CGSizeMake(CGRectGetWidth(self.bounds), CGFLOAT_MAX)].height;
+            CGFloat resultHeight = [textView sizeThatFits:CGSizeMake(CGRectGetWidth(textView.bounds), CGFLOAT_MAX)].height;
             
-            if (self.debug) QMUILog(NSStringFromClass(self.class), @"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
+            if (textView.debug) QMUILog(NSStringFromClass(textView.class), @"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
             
             
             // 通知delegate去更新textView的高度
-            if ([textView.delegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)] && resultHeight != CGRectGetHeight(self.bounds)) {
-                [textView.delegate textView:self newHeightAfterTextChanged:resultHeight];
+            if (resultHeight != CGRectGetHeight(textView.bounds)) {
+                [textView.delegate textView:textView newHeightAfterTextChanged:resultHeight];
             }
         }
         
@@ -264,13 +264,24 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             return;
         }
         
-        self.shouldRejectSystemScroll = YES;
+        textView.shouldRejectSystemScroll = YES;
         // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            self.shouldRejectSystemScroll = NO;
-            [self qmui_scrollCaretVisibleAnimated:NO];
+            textView.shouldRejectSystemScroll = NO;
+            [textView qmui_scrollCaretVisibleAnimated:NO];
         });
     }
+}
+
+- (CGSize)sizeThatFits:(CGSize)size {
+    CGSize result = [super sizeThatFits:size];
+    result.height = MIN(result.height, self.maximumHeight);
+    return result;
+}
+
+- (void)setFrame:(CGRect)frame {
+    frame = CGRectSetHeight(frame, MIN(CGRectGetHeight(frame), self.maximumHeight));
+    [super setFrame:frame];
 }
 
 - (void)layoutSubviews {
