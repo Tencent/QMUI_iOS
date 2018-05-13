@@ -362,10 +362,19 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrameNotification:) name:UIKeyboardDidChangeFrameNotification object:nil];
 }
 
+- (BOOL)isAppActive {
+    return [[UIApplication sharedApplication] applicationState] == UIApplicationStateActive;
+}
+
 - (void)keyboardWillShowNotification:(NSNotification *)notification {
     
     if (self.debug) {
         QMUILog(NSStringFromClass(self.class), @"keyboardWillShowNotification - %@", self);
+    }
+    
+    if (![self isAppActive]) {
+        QMUILog(NSStringFromClass(self.class), @"app is not active");
+        return;
     }
     
     if (![self shouldReceiveShowNotification]) {
@@ -378,18 +387,17 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardWillShowWithUserInfo:)]) {
         [self.delegate keyboardWillShowWithUserInfo:userInfo];
     }
-    
-    // 额外处理iPad浮动键盘
-//    if (IS_IPAD) {
-//        self.keyboardMoveUserInfo = userInfo;
-//        [self keyboardDidChangedFrame:[self.class keyboardView]];
-//    }
 }
 
 - (void)keyboardDidShowNotification:(NSNotification *)notification {
     
     if (self.debug) {
         QMUILog(NSStringFromClass(self.class), @"keyboardDidShowNotification - %@", self);
+    }
+    
+    if (![self isAppActive]) {
+        QMUILog(NSStringFromClass(self.class), @"app is not active");
+        return;
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
@@ -399,16 +407,9 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     BOOL shouldReceiveDidShowNotification = self.targetResponderValues.count <= 0 || (firstResponder && firstResponder == self.currentResponder);
     
     if (shouldReceiveDidShowNotification) {
-        
         if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardDidShowWithUserInfo:)]) {
             [self.delegate keyboardDidShowWithUserInfo:userInfo];
         }
-        
-        // 额外处理iPad浮动键盘
-//        if (IS_IPAD) {
-//            self.keyboardMoveUserInfo = userInfo;
-//            [self keyboardDidChangedFrame:[self.class keyboardView]];
-//        }
     }
 }
 
@@ -416,6 +417,11 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     
     if (self.debug) {
         QMUILog(NSStringFromClass(self.class), @"keyboardWillHideNotification - %@", self);
+    }
+    
+    if (![self isAppActive]) {
+        QMUILog(NSStringFromClass(self.class), @"app is not active");
+        return;
     }
     
     if (![self shouldReceiveHideNotification]) {
@@ -428,18 +434,17 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardWillHideWithUserInfo:)]) {
         [self.delegate keyboardWillHideWithUserInfo:userInfo];
     }
-    
-    // 额外处理iPad浮动键盘
-//    if (IS_IPAD) {
-//        self.keyboardMoveUserInfo = userInfo;
-//        [self keyboardDidChangedFrame:[self.class keyboardView]];
-//    }
 }
 
 - (void)keyboardDidHideNotification:(NSNotification *)notification {
     
     if (self.debug) {
         QMUILog(NSStringFromClass(self.class), @"keyboardDidHideNotification - %@", self);
+    }
+    
+    if (![self isAppActive]) {
+        QMUILog(NSStringFromClass(self.class), @"app is not active");
+        return;
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
@@ -454,20 +459,17 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (self.currentResponder && !self.currentResponder.keyboardManager_isFirstResponder && !IS_IPAD) {
         self.currentResponder = nil;
     }
-    
-    // 额外处理iPad浮动键盘
-//    if (IS_IPAD) {
-//        if (self.targetResponderValues.count <= 0 || self.currentResponder) {
-//            self.keyboardMoveUserInfo = userInfo;
-//            [self keyboardDidChangedFrame:[self.class keyboardView]];
-//        }
-//    }
 }
 
 - (void)keyboardWillChangeFrameNotification:(NSNotification *)notification {
     
     if (self.debug) {
         QMUILog(NSStringFromClass(self.class), @"keyboardWillChangeFrameNotification - %@", self);
+    }
+    
+    if (![self isAppActive]) {
+        QMUILog(NSStringFromClass(self.class), @"app is not active");
+        return;
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
@@ -483,18 +485,17 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardWillChangeFrameWithUserInfo:)]) {
         [self.delegate keyboardWillChangeFrameWithUserInfo:userInfo];
     }
-    
-    // 额外处理iPad浮动键盘
-//    if (IS_IPAD) {
-//        self.keyboardMoveUserInfo = userInfo;
-//        [self addFrameObserverIfNeeded];
-//    }
 }
 
 - (void)keyboardDidChangeFrameNotification:(NSNotification *)notification {
     
     if (self.debug) {
         QMUILog(NSStringFromClass(self.class), @"keyboardDidChangeFrameNotification - %@", self);
+    }
+    
+    if (![self isAppActive]) {
+        QMUILog(NSStringFromClass(self.class), @"app is not active");
+        return;
     }
     
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
@@ -510,12 +511,6 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardDidChangeFrameWithUserInfo:)]) {
         [self.delegate keyboardDidChangeFrameWithUserInfo:userInfo];
     }
-    
-    // 额外处理iPad浮动键盘
-//    if (IS_IPAD) {
-//        self.keyboardMoveUserInfo = userInfo;
-//        [self keyboardDidChangedFrame:[self.class keyboardView]];
-//    }
 }
 
 - (QMUIKeyboardUserInfo *)newUserInfoWithNotification:(NSNotification *)notification {
@@ -526,11 +521,9 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (BOOL)shouldReceiveShowNotification {
-    
     // 这里有BUG，如果点击了webview导致键盘下降，这个时候运行shouldReceiveHideNotification就会判断错误
     self.currentResponder = self.currentResponderWhenResign ?: [[UIApplication sharedApplication].keyWindow qmui_findFirstResponder];
     self.currentResponderWhenResign = nil;
-    
     if (self.targetResponderValues.count <= 0) {
         return YES;
     } else {
