@@ -83,6 +83,7 @@
     
     _actionButton = [[UIButton alloc] init];
     self.actionButton.qmui_outsideEdge = UIEdgeInsetsMake(-20, -20, -20, -20);
+    self.actionButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [self.contentView addSubview:self.actionButton];
 }
 
@@ -272,6 +273,8 @@
 - (void)setActionButtonTitleColor:(UIColor *)actionButtonTitleColor {
     _actionButtonTitleColor = actionButtonTitleColor;
     [self.actionButton setTitleColor:actionButtonTitleColor forState:UIControlStateNormal];
+    [self.actionButton setTitleColor:[actionButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
+    [self.actionButton setTitleColor:[actionButtonTitleColor colorWithAlphaComponent:ButtonDisabledAlpha] forState:UIControlStateDisabled];
 }
 
 @end
