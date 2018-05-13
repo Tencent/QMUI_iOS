@@ -164,8 +164,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     self.view.backgroundColor = UIColorWhite;
 }
 
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {
-    [super setNavigationItemsIsInEditMode:isInEditMode animated:animated];
+- (void)setupNavigationItems {
+    [super setupNavigationItems];
     self.navigationItem.rightBarButtonItem = [UIBarButtonItem qmui_itemWithTitle:@"取消" target:self action:@selector(handleCancelPickerImage:)];
 }
 

@@ -14,7 +14,7 @@
 
 @optional
 /**
- *  输入框高度发生变化时的回调，仅当 `autoResizable` 属性为 YES 时才有效。
+ *  输入框高度发生变化时的回调，当实现了这个方法后，文字输入过程中就会不断去计算输入框新内容的高度，并通过这个方法通知到 delegate
  *  @note 只有当内容高度与当前输入框的高度不一致时才会调用到这里，所以无需在内部做高度是否变化的判断。
  */
 - (void)textView:(QMUITextView *)textView newHeightAfterTextChanged:(CGFloat)height;
@@ -42,9 +42,10 @@
  *  自定义 UITextView，提供的特性如下：
  *
  *  1. 支持 placeholder 并支持更改 placeholderColor；若使用了富文本文字，则 placeholder 的样式也会跟随文字的样式（除了 placeholder 颜色）
- *  2. 支持在文字发生变化时计算内容高度并通知 delegate （需打开 autoResizable 属性）。
- *  3. 支持限制输入的文本的最大长度，默认不限制。
- *  4. 修正系统 UITextView 在输入时自然换行的时候，contentOffset 的滚动位置没有考虑 textContainerInset.bottom
+ *  2. 支持在文字发生变化时计算内容高度并通知 delegate。
+ *  3. 支持限制输入框最大高度，一般配合第 2 点使用。
+ *  4. 支持限制输入的文本的最大长度，默认不限制。
+ *  5. 修正系统 UITextView 在输入时自然换行的时候，contentOffset 的滚动位置没有考虑 textContainerInset.bottom
  */
 @interface QMUITextView : UITextView
 
@@ -84,10 +85,9 @@
 @property(nonatomic, assign) UIEdgeInsets placeholderMargins;
 
 /**
- *  是否支持自动拓展高度，默认为NO
- *  @see textView:newHeightAfterTextChanged:
+ *  最大高度，当设置了这个属性后，超过这个高度值的 frame 是不生效的。默认为 CGFLOAT_MAX，也即无限制。
  */
-@property(nonatomic, assign) BOOL autoResizable;
+@property(nonatomic, assign) CGFloat maximumHeight;
 
 /**
  *  控制输入框是否要出现“粘贴”menu

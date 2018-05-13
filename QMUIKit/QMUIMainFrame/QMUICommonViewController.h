@@ -128,20 +128,14 @@
 - (void)initSubviews NS_REQUIRES_SUPER;
 
 /**
- *  负责设置和更新navigationItem，包括title、leftBarButtonItem、rightBarButtonItem。viewDidLoad里面会自动调用，允许手动调用更新。目的在于分类代码，所有与navigationItem相关的代码都写在这里。在需要修改navigationItem的时候都只调用这个接口。
- *
- *  @param isInEditMode 是否用于编辑模式下
- *  @param animated     是否使用动画呈现
+ *  负责设置和更新navigationItem，包括title、leftBarButtonItem、rightBarButtonItem。viewWillAppear 里面会自动调用，业务也可以在需要的时候自行调用。目的在于分类代码，所有与navigationItem相关的代码都写在这里。在需要修改navigationItem的时候都统一调用这个接口。
  */
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated NS_REQUIRES_SUPER;
+- (void)setupNavigationItems NS_REQUIRES_SUPER;
 
 /**
  *  负责设置和更新toolbarItem。在viewWillAppear里面自动调用（因为toolbar是navigationController的，是每个界面公用的，所以必须在每个界面的viewWillAppear时更新，不能放在viewDidLoad里），允许手动调用。目的在于分类代码，所有与toolbarItem相关的代码都写在这里。在需要修改toolbarItem的时候都只调用这个接口。
- *
- *  @param isInEditMode 是否用于编辑模式下
- *  @param animated     是否使用动画呈现
  */
-- (void)setToolbarItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated NS_REQUIRES_SUPER;
+- (void)setupToolbarItems NS_REQUIRES_SUPER;
 
 /**
  *  动态字体的回调函数。

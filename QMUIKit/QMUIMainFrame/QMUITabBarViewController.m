@@ -44,4 +44,14 @@
     return [self.selectedViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.selectedViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 
+#pragma mark - HomeIndicator
+
+- (UIViewController *)childViewControllerForHomeIndicatorAutoHidden {
+    return self.selectedViewController;
+}
+
+- (BOOL)prefersHomeIndicatorAutoHidden {
+    return NO;
+}
+
 @end

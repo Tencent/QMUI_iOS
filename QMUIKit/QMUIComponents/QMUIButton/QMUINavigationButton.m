@@ -222,6 +222,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     return [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStyleDone target:target action:action];
 }
 
++ (instancetype)qmui_backItemWithTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action {
+    QMUINavigationButton *button = [[QMUINavigationButton alloc] initWithType:QMUINavigationButtonTypeBack title:title];
+    [button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
+    UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithCustomView:button];
+    return barButtonItem;
+}
+
 + (instancetype)qmui_backItemWithTarget:(nullable id)target action:(nullable SEL)action {
     NSString *backTitle = nil;
     if (NeedsBackBarButtonItemTitle) {
@@ -244,10 +251,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         backTitle = @" ";
     }
     
-    QMUINavigationButton *button = [[QMUINavigationButton alloc] initWithType:QMUINavigationButtonTypeBack title:backTitle];
-    [button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
-    UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithCustomView:button];
-    return barButtonItem;
+    return [UIBarButtonItem qmui_backItemWithTitle:backTitle target:target action:action];
 }
 
 + (instancetype)qmui_closeItemWithTarget:(nullable id)target action:(nullable SEL)action {
@@ -500,18 +504,43 @@ static char kAssociatedObjectKey_tempRightBarButtonItems;
         OverrideImplementation([UINavigationBar class], @selector(pushNavigationItem:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
             return ^(UINavigationBar *selfObject, UINavigationItem *item, BOOL animated) {
                 
+                // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+                BOOL shouldSetTagBeforeCallingSuper = NO;// 如果要 push 进的新 item 本身就是自定义返回按钮，那么要先打好标记再调用 super，否则先调用 super 再打标记，实测只有这样才不会导致跳动
+                if (@available(iOS 11, *)) {
+                    shouldSetTagBeforeCallingSuper = [selfObject isKindOfClass:originClass] && item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                }
+                
+                if (shouldSetTagBeforeCallingSuper) {
+                    selfObject.qmui_customizingBackBarButtonItem = item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                }
+                
                 // call super
                 void (*originSelectorIMP)(id, SEL, UINavigationItem *, BOOL);
                 originSelectorIMP = (void (*)(id, SEL, UINavigationItem *, BOOL))originIMP;
                 originSelectorIMP(selfObject, originCMD, item, animated);
                 
-                // avoid superclass
-                if (![selfObject isKindOfClass:originClass]) return;
-                
-                // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
-                if (@available(iOS 11, *)) {
+                if (!shouldSetTagBeforeCallingSuper) {
                     selfObject.qmui_customizingBackBarButtonItem = item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
                 }
+            };
+        });
+        
+        OverrideImplementation([UINavigationBar class], @selector(popNavigationItemAnimated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+            return ^UINavigationItem *(UINavigationBar *selfObject, BOOL firstArgv) {
+                
+                if ([selfObject isKindOfClass:originClass]) {
+                    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+                    if (@available(iOS 11, *)) {
+                        UINavigationItem *itemWillAppear = selfObject.items.count >= 2 ? selfObject.items[selfObject.items.count - 2] : nil;
+                        selfObject.qmui_customizingBackBarButtonItem = itemWillAppear.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                    }
+                }
+                
+                // call super
+                UINavigationItem *(*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (UINavigationItem *(*)(id, SEL, BOOL))originIMP;
+                UINavigationItem *result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                return result;
             };
         });
         
@@ -519,45 +548,30 @@ static char kAssociatedObjectKey_tempRightBarButtonItems;
         OverrideImplementation([UINavigationBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
             return ^(UINavigationBar *selfObject, NSArray<UINavigationItem *> *items, BOOL animated) {
                 
+                if ([selfObject isKindOfClass:originClass]) {
+                    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+                    if (@available(iOS 11, *)) {
+                        selfObject.qmui_customizingBackBarButtonItem = items.lastObject.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                    }
+                }
+                
                 // call super
                 void (*originSelectorIMP)(id, SEL, NSArray<UINavigationItem *> *, BOOL);
                 originSelectorIMP = (void (*)(id, SEL, NSArray<UINavigationItem *> *, BOOL))originIMP;
                 originSelectorIMP(selfObject, originCMD, items, animated);
-                
-                // avoid superclass
-                if (![selfObject isKindOfClass:originClass]) return;
-                
-                // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
-                if (@available(iOS 11, *)) {
-                    selfObject.qmui_customizingBackBarButtonItem = items.lastObject.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
-                }
             };
         });
         
         // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
         if (@available(iOS 11, *)) {
-            Class contentViewClass = NSClassFromString([NSString stringWithFormat:@"_%@%@", NSStringFromClass(self.class), @"ContentView"]);
-            if (contentViewClass) {
-                OverrideImplementation(contentViewClass, @selector(setDirectionalLayoutMargins:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
-                    return ^(UIView *selfObject, NSDirectionalEdgeInsets margins) {
-                        
-                        if ([selfObject isKindOfClass:originClass] && selfObject.safeAreaInsets.left == 0 && selfObject.safeAreaInsets.right == 0) {// TODO: molice iPhone X 横屏下，这段代码会导致 margins 不断变大，待解决，目前先屏蔽横屏的情况（也即 safeAreaInsets 左右不为0）
-                            UINavigationBar *navigationBar = (UINavigationBar *)selfObject.superview;
-                            if ([navigationBar isKindOfClass:[UINavigationBar class]]) {
-                                CGFloat leadingMargin = MAX(0, margins.trailing - selfObject.safeAreaInsets.right - (navigationBar.qmui_customizingBackBarButtonItem ? 8 : 0));// 左边的值以右边的值为基准再减去一部分
-                                if (margins.leading != leadingMargin) {
-                                    margins.leading = leadingMargin;
-                                }
-                            }
-                        }
-                        
-                        // call super
-                        void (*originSelectorIMP)(id, SEL, NSDirectionalEdgeInsets);
-                        originSelectorIMP = (void (*)(id, SEL, NSDirectionalEdgeInsets))originIMP;
-                        originSelectorIMP(selfObject, originCMD, margins);
-                    };
-                });
-            }
+            ExtendImplementationOfVoidMethodWithoutArguments([UINavigationBar class], @selector(layoutSubviews), ^(UINavigationBar *selfObject) {
+                UIView *contentView = selfObject.qmui_contentView;
+                if (contentView) {
+                    NSDirectionalEdgeInsets value = contentView.directionalLayoutMargins;
+                    value.leading = value.trailing - (selfObject.qmui_customizingBackBarButtonItem ? 8 : 0);
+                    contentView.directionalLayoutMargins = value;
+                }
+            });
         }
     });
 }
@@ -574,16 +588,11 @@ static char kAssociatedObjectKey_tempRightBarButtonItems;
 static char kAssociatedObjectKey_customizingBackBarButtonItem;
 - (void)setQmui_customizingBackBarButtonItem:(BOOL)qmui_customizingBackBarButtonItem {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_customizingBackBarButtonItem, @(qmui_customizingBackBarButtonItem), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    // 触发 UINavigationBar 的 layoutSubviews，在那里面会去更新 contentView 的 layoutMargins
     if (@available(iOS 11, *)) {
-        UIView *contentView = self.qmui_contentView;
-        if (contentView && contentView.safeAreaInsets.left == 0 && contentView.safeAreaInsets.right == 0) {// TODO: molice iPhone X 横屏下，这段代码会导致 margins 不断变大，待解决，目前先屏蔽横屏的情况（也即 safeAreaInsets 左右不为0）
-            NSDirectionalEdgeInsets layoutMargins = contentView.directionalLayoutMargins;
-            CGFloat leadingMargin = MAX(0, layoutMargins.trailing - contentView.safeAreaInsets.right - (qmui_customizingBackBarButtonItem ? 8 : 0));
-            if (layoutMargins.leading != leadingMargin) {
-                layoutMargins.leading = leadingMargin;
-                contentView.directionalLayoutMargins = layoutMargins;
-            }
-        }
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
     }
 }
 

@@ -9,6 +9,7 @@
 #import "QMUIModalPresentationViewController.h"
 #import "QMUICore.h"
 #import "UIViewController+QMUI.h"
+#import "QMUIKeyboardManager.h"
 
 @interface UIViewController ()
 
@@ -44,7 +45,7 @@ static QMUIModalPresentationViewController *appearance;
 
 @end
 
-@interface QMUIModalPresentationViewController ()
+@interface QMUIModalPresentationViewController ()<QMUIKeyboardManagerDelegate>
 
 @property(nonatomic, strong) QMUIModalPresentationWindow *containerWindow;
 @property(nonatomic, weak) UIWindow *previousKeyWindow;
@@ -61,6 +62,7 @@ static QMUIModalPresentationViewController *appearance;
 @property(nonatomic, assign) BOOL hasAlreadyViewWillDisappear;
 
 @property(nonatomic, strong) UITapGestureRecognizer *dimmingViewTapGestureRecognizer;
+@property(nonatomic, strong) QMUIKeyboardManager *keyboardManager;
 @property(nonatomic, assign) CGFloat keyboardHeight;
 @end
 
@@ -89,6 +91,8 @@ static QMUIModalPresentationViewController *appearance;
         self.modalPresentationStyle = UIModalPresentationCustom;
         self.supportedOrientationMask = SupportedOrientationMask;
     }
+    
+    self.keyboardManager = [[QMUIKeyboardManager alloc] initWithDelegate:self];
     
     [self initDefaultDimmingViewWithoutAddToView];
 }
@@ -140,8 +144,7 @@ static QMUIModalPresentationViewController *appearance;
         animated = self.appearAnimated;
     }
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleKeyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleKeyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    self.keyboardManager.delegateEnabled = YES;
     
     if (self.contentViewController) {
         self.contentViewController.qmui_modalPresentationViewController = self;
@@ -221,8 +224,7 @@ static QMUIModalPresentationViewController *appearance;
     }
     
     // 在降下键盘前取消对键盘事件的监听，从而避免键盘影响隐藏浮层的动画
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+    self.keyboardManager.delegateEnabled = NO;
     [self.view endEditing:YES];
     
     // 如果是因为 present 了新的界面导致走到 willDisappear，则后面那些降下浮层的操作都可以不用做了
@@ -243,7 +245,12 @@ static QMUIModalPresentationViewController *appearance;
         if (self.shownInWindowMode) {
             // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/QMUI/QMUI_iOS/issues/90
             if ([[UIApplication sharedApplication] keyWindow] == self.containerWindow) {
-                [self.previousKeyWindow makeKeyWindow];
+                if (self.previousKeyWindow.hidden) {
+                    // 保护了这个 issue 记录的情况，避免主 window 丢失 keyWindow https://github.com/QMUI/QMUI_iOS/issues/315
+                    [[UIApplication sharedApplication].delegate.window makeKeyWindow];
+                } else {
+                    [self.previousKeyWindow makeKeyWindow];
+                }
             }
             self.containerWindow.hidden = YES;
             self.containerWindow.rootViewController = nil;
@@ -533,17 +540,18 @@ static QMUIModalPresentationViewController *appearance;
     return self.shownInPresentedMode && self.presentedViewController && self.presentedViewController.presentingViewController == self;
 }
 
-#pragma mark - Keyboard
+#pragma mark - <QMUIKeyboardManagerDelegate>
 
-- (void)handleKeyboardWillShow:(NSNotification *)notification {
-    CGFloat keyboardHeight = [QMUIHelper keyboardHeightWithNotification:notification inView:self.view];
-    if (keyboardHeight > 0) {
-        self.keyboardHeight = keyboardHeight;
-        [self.view setNeedsLayout];
-    }
+- (void)keyboardWillShowWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
+    CGRect keyboardRect = [QMUIKeyboardManager convertKeyboardRect:[keyboardUserInfo endFrame] toView:self.view];
+    CGFloat keyboardHeight = keyboardRect.size.height;
+    if (keyboardHeight <= 0) return;
+    
+    self.keyboardHeight = keyboardHeight;
+    [self.view setNeedsLayout];
 }
 
-- (void)handleKeyboardWillHide:(NSNotification *)notification {
+- (void)keyboardWillHideWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
     self.keyboardHeight = 0;
     [self.view setNeedsLayout];
 }

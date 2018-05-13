@@ -1042,6 +1042,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hant",
 			);
 			mainGroup = CD44C1BC1956D5970098D0A2;
 			productRefGroup = CD44C1C61956D5970098D0A2 /* Products */;
