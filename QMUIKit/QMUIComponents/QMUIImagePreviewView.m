@@ -133,6 +133,10 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 
 #pragma mark - <UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     if ([self.delegate respondsToSelector:@selector(numberOfImagesInImagePreviewView:)]) {
         return [self.delegate numberOfImagesInImagePreviewView:self];
