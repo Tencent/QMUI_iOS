@@ -41,7 +41,7 @@
  *  2. 默认自带取消按钮，也可自行隐藏。
  *  3. 支持以 UIAppearance 的方式配置样式皮肤。
  */
-@interface QMUIMoreOperationController : UIViewController <QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate>
+@interface QMUIMoreOperationController : UIViewController <QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate, QMUIModalPresentationComponentProtocol>
 
 @property(nonatomic, strong) UIColor *contentBackgroundColor UI_APPEARANCE_SELECTOR;// 面板上半部分（不包含取消按钮）背景色
 @property(nonatomic, assign) CGFloat contentEdgeMargin UI_APPEARANCE_SELECTOR;// 面板距离屏幕的上下左右间距

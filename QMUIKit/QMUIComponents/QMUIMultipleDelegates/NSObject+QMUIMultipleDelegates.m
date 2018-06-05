@@ -9,6 +9,7 @@
 #import "NSObject+QMUIMultipleDelegates.h"
 #import "QMUIMultipleDelegates.h"
 #import "QMUICore.h"
+#import "NSPointerArray+QMUI.h"
 #import <objc/runtime.h>
 
 @interface NSObject ()
@@ -88,19 +89,24 @@ static char kAssociatedObjectKey_qmuiDelegates;
             return;
         }
         
+        QMUIMultipleDelegates *delegates = selfObject.qmuimd_delegates[delegateGetterKey];
+        
         if (!aDelegate) {
             // 对应 setDelegate:nil，表示清理所有的 delegate
-            [selfObject.qmuimd_delegates[delegateGetterKey] removeAllDelegates];
-            
+            [delegates removeAllDelegates];
+            selfObject.qmui_delegatesSelf = NO;
             // 只要 qmui_multipleDelegatesEnabled 开启，就会保证 delegate 一直是 delegates，所以不去调用系统默认的 set nil
 //            originSelectorIMP(selfObject, originDelegateSetter, nil);
             return;
         }
         
-        QMUIMultipleDelegates *delegates = selfObject.qmuimd_delegates[delegateGetterKey];
         if (aDelegate != delegates) {// 过滤掉容器自身，避免把 delegates 传进去 delegates 里，导致死循环
             [delegates addDelegate:aDelegate];
         }
+        
+        // 将类似 textView.delegate = textView 的情况标志起来，避免产生循环调用 https://github.com/QMUI/QMUI_iOS/issues/346
+        selfObject.qmui_delegatesSelf = [delegates.delegates qmui_containsPointer:(__bridge void * _Nullable)(aDelegate)];
+        
         originSelectorIMP(selfObject, originDelegateSetter, nil);// 先置为 nil 再设置 delegates，从而避免这个问题 https://github.com/QMUI/QMUI_iOS/issues/305
         originSelectorIMP(selfObject, originDelegateSetter, delegates);// 不管外面将什么 object 传给 setDelegate:，最终实际上传进去的都是 QMUIMultipleDelegates 容器
         
@@ -152,6 +158,19 @@ static char kAssociatedObjectKey_qmuiDelegates;
 // 根据 delegate property 的 getter，得到 QMUIMultipleDelegates 为它的 setter 创建的新 setter 方法，最终交换原方法，因此利用这个方法返回的 SEL，可以调用到原来的 delegate property setter 的实现
 - (SEL)newSetterWithGetter:(SEL)getter {
     return NSSelectorFromString([NSString stringWithFormat:@"qmuimd_%@", NSStringFromSelector([self originSetterWithGetter:getter])]);
+}
+
+@end
+
+@implementation NSObject (QMUIMultipleDelegates_Private)
+
+static char kAssociatedObjectKey_delegatesSelf;
+- (void)setQmui_delegatesSelf:(BOOL)qmui_delegatesSelf {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_delegatesSelf, @(qmui_delegatesSelf), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)qmui_delegatesSelf {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_delegatesSelf)) boolValue];
 }
 
 @end

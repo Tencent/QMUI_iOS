@@ -53,7 +53,6 @@
  * 其中，InHorizon 是横向；InVertical 是纵向。
  
  */
-
 + (CAShapeLayer *)qmui_seperatorDashLayerInHorizontal;
 
 + (CAShapeLayer *)qmui_seperatorDashLayerInVertical;

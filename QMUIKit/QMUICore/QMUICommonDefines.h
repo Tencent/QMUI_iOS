@@ -519,13 +519,31 @@ UIEdgeInsetsRemoveFloatMin(UIEdgeInsets insets) {
 
 #pragma mark - CGSize
 
-/// 判断一个size是否为空（宽或高为0）
+/// 判断一个 CGSize 是否存在 NaN
+CG_INLINE BOOL
+CGSizeIsNaN(CGSize size) {
+    return isnan(size.width) || isnan(size.height);
+}
+
+/// 判断一个 CGSize 是否存在 infinite
+CG_INLINE BOOL
+CGSizeIsInf(CGSize size) {
+    return isinf(size.width) || isinf(size.height);
+}
+
+/// 判断一个 CGSize 是否为空（宽或高为0）
 CG_INLINE BOOL
 CGSizeIsEmpty(CGSize size) {
     return size.width <= 0 || size.height <= 0;
 }
 
-/// 将一个CGSize像素对齐
+/// 判断一个 CGSize 是否合法（例如不带无穷大的值、不带非法数字）
+CG_INLINE BOOL
+CGSizeIsValidated(CGSize size) {
+    return !CGSizeIsEmpty(size) && !CGSizeIsInf(size) && !CGSizeIsNaN(size);
+}
+
+/// 将一个 CGSize 像素对齐
 CG_INLINE CGSize
 CGSizeFlatted(CGSize size) {
     return CGSizeMake(flat(size.width), flat(size.height));
@@ -557,7 +575,7 @@ CGSizeRemoveFloatMin(CGSize size) {
 
 #pragma mark - CGRect
 
-/// 判断一个 CGRect 是否存在NaN
+/// 判断一个 CGRect 是否存在 NaN
 CG_INLINE BOOL
 CGRectIsNaN(CGRect rect) {
     return isnan(rect.origin.x) || isnan(rect.origin.y) || isnan(rect.size.width) || isnan(rect.size.height);

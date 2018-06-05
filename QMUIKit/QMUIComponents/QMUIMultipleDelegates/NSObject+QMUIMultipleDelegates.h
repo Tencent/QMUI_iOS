@@ -33,3 +33,10 @@
 - (void)qmui_removeDelegate:(id)delegate;
 
 @end
+
+@interface NSObject (QMUIMultipleDelegates_Private)
+
+/// 内部使用，用于标志“xxx.delegate = xxx”的情况，具体请看 https://github.com/QMUI/QMUI_iOS/issues/346
+@property(nonatomic, assign) BOOL qmui_delegatesSelf;
+
+@end

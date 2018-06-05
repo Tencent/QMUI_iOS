@@ -25,7 +25,7 @@
  * @see QMUIDialogSelectionViewController
  * @see QMUIDialogTextFieldViewController
  */
-@interface QMUIDialogViewController : QMUICommonViewController<QMUIModalPresentationContentViewControllerProtocol>
+@interface QMUIDialogViewController : QMUICommonViewController<QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationComponentProtocol>
 
 @property(nonatomic, assign) CGFloat        cornerRadius UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) UIEdgeInsets   dialogViewMargins UI_APPEARANCE_SELECTOR;
@@ -61,8 +61,8 @@
 @property(nonatomic, strong, readonly) QMUIButton *submitButton;
 @property(nonatomic, strong, readonly) CALayer *buttonSeparatorLayer;
 
-- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block;
-- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block;
+- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *aDialogViewController))block;
+- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *aDialogViewController))block;
 - (void)show;
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
 - (void)hide;
@@ -98,11 +98,11 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 /// 控制是否允许多选，默认为NO。
 @property(nonatomic, assign) BOOL allowsMultipleSelection;
 
-@property(nonatomic, copy) void (^cellForItemBlock)(QMUIDialogSelectionViewController *dialogViewController, QMUITableViewCell *cell, NSUInteger itemIndex);
-@property(nonatomic, copy) CGFloat (^heightForItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) BOOL (^canSelectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) void (^didSelectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) void (^didDeselectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) void (^cellForItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, QMUITableViewCell *cell, NSUInteger itemIndex);
+@property(nonatomic, copy) CGFloat (^heightForItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) BOOL (^canSelectItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) void (^didSelectItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) void (^didDeselectItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
 
 @end
 
@@ -130,6 +130,6 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 /// 是否自动控制提交按钮的enabled状态，默认为YES，则当输入框内容为空时禁用提交按钮
 @property(nonatomic, assign) BOOL enablesSubmitButtonAutomatically;
 
-@property(nonatomic, copy) BOOL (^shouldEnableSubmitButtonBlock)(__kindof QMUIDialogTextFieldViewController *dialogViewController);
+@property(nonatomic, copy) BOOL (^shouldEnableSubmitButtonBlock)(__kindof QMUIDialogTextFieldViewController *aDialogViewController);
 
 @end

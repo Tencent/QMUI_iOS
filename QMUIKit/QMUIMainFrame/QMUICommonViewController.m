@@ -37,19 +37,19 @@
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.titleView = [[QMUINavigationTitleView alloc] init];
     self.titleView.title = self.title;// 从 storyboard 初始化的话，可能带有 self.title 的值
     
@@ -100,7 +100,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self setupNavigationItems];
-    [self setupNavigationItems];
+    [self setupToolbarItems];
 }
 
 - (void)dealloc {
@@ -215,7 +215,7 @@
 - (void)viewControllerKeepingAppearWhenSetViewControllersWithAnimated:(BOOL)animated {
     // 通常和 viewWillAppear: 里做的事情保持一致
     [self setupNavigationItems];
-    [self setupNavigationItems];
+    [self setupToolbarItems];
 }
 
 @end

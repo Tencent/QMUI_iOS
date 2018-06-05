@@ -48,8 +48,8 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
     });
 }
 
-- (void)didInitializedWithStyle:(UITableViewCellStyle)style {
-    [super didInitializedWithStyle:style];
+- (void)didInitializeWithStyle:(UITableViewCellStyle)style {
+    [super didInitializeWithStyle:style];
     self.albumImageSize = [QMUIAlbumTableViewCell appearance].albumImageSize;
     self.albumImageMarginLeft = [QMUIAlbumTableViewCell appearance].albumImageMarginLeft;
     self.albumNameFontSize = [QMUIAlbumTableViewCell appearance].albumNameFontSize;
@@ -123,8 +123,8 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
 
 @implementation QMUIAlbumViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     _shouldShowDefaultLoadingView = YES;
     if (albumViewControllerAppearance) {
         // 避免 albumViewControllerAppearance init 时走到这里来，导致死循环
@@ -232,7 +232,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
     static NSString *kCellIdentifer = @"cell";
     QMUIAlbumTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:kCellIdentifer];
     if (!cell) {
-        cell = [[QMUIAlbumTableViewCell alloc] initForTableView:self.tableView withStyle:UITableViewCellStyleSubtitle reuseIdentifier:kCellIdentifer];
+        cell = [[QMUIAlbumTableViewCell alloc] initForTableView:tableView withStyle:UITableViewCellStyleSubtitle reuseIdentifier:kCellIdentifer];
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     QMUIAssetsGroup *assetsGroup = [self.albumsArray objectAtIndex:indexPath.row];

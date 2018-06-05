@@ -7,8 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "QMUIModalPresentationViewController.h"
 
-@class QMUIModalPresentationViewController;
 @class QMUIButton;
 @class QMUITextField;
 @class QMUIAlertController;
@@ -32,6 +32,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 - (void)willHideAlertController:(QMUIAlertController *)alertController;
 - (void)didShowAlertController:(QMUIAlertController *)alertController;
 - (void)didHideAlertController:(QMUIAlertController *)alertController;
+- (BOOL)shouldHideAlertController:(QMUIAlertController *)alertController;
 
 @end
 
@@ -76,7 +77,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /**
  *  `QMUIAlertController`是模仿系统`UIAlertController`的控件，所以系统有的功能在QMUIAlertController里面基本都有。同时`QMUIAlertController`还提供了一些扩展功能，例如：它的每个 button 都是开放出来的，可以对默认的按钮进行二次处理（比如加一个图片）；可以通过 appearance 在 app 启动的时候修改整个`QMUIAlertController`的主题样式。
  */
-@interface QMUIAlertController : UIViewController
+@interface QMUIAlertController : UIViewController<QMUIModalPresentationComponentProtocol>
 
 /// alert距离屏幕四边的间距，默认UIEdgeInsetsMake(0, 0, 0, 0)。alert的宽度最终是通过屏幕宽度减去水平的 alertContentMargin 和 alertContentMaximumWidth 决定的。
 @property(nonatomic, assign) UIEdgeInsets alertContentMargin UI_APPEARANCE_SELECTOR;
@@ -146,22 +147,22 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic, strong) UIColor *sheetSeperatorColor UI_APPEARANCE_SELECTOR;
 
 /// sheet标题样式，默认@{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontBoldMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *sheetTitleAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetTitleAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet信息样式，默认@{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *sheetMessageAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetMessageAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet按钮样式，默认@{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *sheetButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet按钮disabled时的样式，默认@{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *sheetButtonDisabledAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetButtonDisabledAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet cancel 按钮样式，默认@{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *sheetCancelButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetCancelButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet destructive 按钮样式，默认@{NSForegroundColorAttributeName:UIColorRed,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *sheetDestructiveButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetDestructiveButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet cancel 按钮距离其上面元素（按钮或者header）的间距，默认8pt
 @property(nonatomic, assign) CGFloat sheetCancelButtonMarginTop UI_APPEARANCE_SELECTOR;

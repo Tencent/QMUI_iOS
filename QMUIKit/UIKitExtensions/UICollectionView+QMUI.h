@@ -36,6 +36,11 @@
 - (BOOL)qmui_itemVisibleAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
+ *  对系统的 indexPathsForVisibleItems 进行了排序后的结果
+ */
+- (NSArray<NSIndexPath *> *)qmui_indexPathsForVisibleItems;
+
+/**
  *  获取可视区域内第一个cell的indexPath。
  *
  *  为什么需要这个方法是因为系统的indexPathsForVisibleItems方法返回的数组成员是无序排列的，所以不能直接通过firstObject拿到第一个cell。

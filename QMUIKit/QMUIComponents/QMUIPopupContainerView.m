@@ -44,14 +44,14 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
@@ -503,7 +503,7 @@
 
 @implementation QMUIPopupContainerView (UISubclassingHooks)
 
-- (void)didInitialized {
+- (void)didInitialize {
     _backgroundLayer = [CAShapeLayer layer];
     _backgroundLayer.shadowOffset = CGSizeMake(0, 2);
     _backgroundLayer.shadowOpacity = 1;

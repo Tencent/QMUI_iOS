@@ -102,7 +102,7 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
     
     // 修复这个 bug：https://github.com/QMUI/QMUI_iOS/issues/309
     if (@available(iOS 11, *)) {
-        if ((CGRectGetHeight(self.bounds) == 49 || CGRectGetHeight(self.bounds) == 32)) {
+        if ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32)) {
             CGFloat bottomSafeAreaInsets = self.safeAreaInsets.bottom > 0 ? self.safeAreaInsets.bottom : self.superview.safeAreaInsets.bottom;// 注意，如果只是拿 self.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
             frame.size.height += bottomSafeAreaInsets;
             frame.origin.y -= bottomSafeAreaInsets;

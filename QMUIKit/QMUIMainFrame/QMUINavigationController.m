@@ -126,19 +126,19 @@ static char kAssociatedObjectKey_qmuiNavIsViewWillAppear;
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     
     self.qmui_multipleDelegatesEnabled = YES;
     self.delegator = [[_QMUINavigationControllerDelegator alloc] init];

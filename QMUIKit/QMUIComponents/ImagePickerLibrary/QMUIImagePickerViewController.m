@@ -75,8 +75,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 @implementation QMUIImagePickerViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     if (imagePickerViewControllerAppearance) {
         // 避免 imagePickerViewControllerAppearance init 时走到这里来，导致死循环
         self.minimumImageWidth = [QMUIImagePickerViewController appearance].minimumImageWidth;

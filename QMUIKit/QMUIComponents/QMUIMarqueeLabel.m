@@ -34,19 +34,19 @@
         self.lineBreakMode = NSLineBreakByClipping;
         self.clipsToBounds = YES;// 显示非英文字符时，滚动的时候字符会稍微露出两端，所以这里直接裁剪掉
         
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.speed = .5;
     self.pauseDurationWhenMoveToEdge = 2.5;
     self.spacingBetweenHeadToTail = 40;

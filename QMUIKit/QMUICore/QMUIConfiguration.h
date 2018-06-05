@@ -197,6 +197,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               shouldPrintInfoLog;
 @property(nonatomic, assign) BOOL               shouldPrintWarnLog;
 
+#pragma mark - QMUIBadge
+
+@property(nonatomic, strong, nullable) UIColor *badgeBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor *badgeTextColor;
+@property(nonatomic, strong, nullable) UIFont *badgeFont;
+@property(nonatomic, assign) UIEdgeInsets badgeContentEdgeInsets;
+@property(nonatomic, assign) CGPoint badgeCenterOffset;
+@property(nonatomic, assign) CGPoint badgeCenterOffsetLandscape;
+
+@property(nonatomic, strong, nullable) UIColor *updatesIndicatorColor;
+@property(nonatomic, assign) CGSize updatesIndicatorSize;
+@property(nonatomic, assign) CGPoint updatesIndicatorCenterOffset;
+@property(nonatomic, assign) CGPoint updatesIndicatorCenterOffsetLandscape;
+
 #pragma mark - Others
 
 @property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;

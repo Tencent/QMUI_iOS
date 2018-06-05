@@ -22,7 +22,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        [self didInitialized];
+        [self didInitialize];
         
         self.tintColor = ButtonTintColor;
         if (!self.adjustsTitleTintColorAutomatically) {
@@ -37,12 +37,12 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.adjustsTitleTintColorAutomatically = NO;
     self.adjustsImageTintColorAutomatically = NO;
     

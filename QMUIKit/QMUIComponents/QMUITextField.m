@@ -31,7 +31,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self didInitialized];
+        [self didInitialize];
         self.tintColor = TextFieldTintColor;
     }
     return self;
@@ -39,12 +39,12 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.qmui_multipleDelegatesEnabled = YES;
     self.delegator = [[_QMUITextFieldDelegator alloc] init];
     self.delegator.textField = self;

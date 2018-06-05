@@ -13,7 +13,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
@@ -21,12 +21,12 @@
 - (instancetype)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     if (self) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     [self qmui_styledAsQMUISearchBar];
 }
 

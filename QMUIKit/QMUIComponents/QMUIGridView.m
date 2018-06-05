@@ -19,7 +19,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame column:(NSInteger)column rowHeight:(CGFloat)rowHeight {
     if (self = [super initWithFrame:frame]) {
-        [self didInitialized];
+        [self didInitialize];
         self.columnCount = column;
         self.rowHeight = rowHeight;
     }
@@ -36,12 +36,12 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.separatorLayer = [CAShapeLayer layer];
     [self.separatorLayer qmui_removeDefaultAnimations];
     self.separatorLayer.hidden = YES;

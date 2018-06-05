@@ -33,7 +33,7 @@ typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
 /**
  *  子类继承时重写的方法，一般不建议重写 initWithXxx
  */
-- (void)didInitialized NS_REQUIRES_SUPER;
+- (void)didInitialize NS_REQUIRES_SUPER;
 
 /**
  * 让按钮的文字颜色自动跟随tintColor调整（系统默认titleColor是不跟随的）<br/>
