@@ -318,10 +318,6 @@
 #import "QMUIToolbarButton.h"
 #endif
 
-#if __has_include("QMUIVisualEffectView.h")
-#import "QMUIVisualEffectView.h"
-#endif
-
 #if __has_include("QMUIZoomImageView.h")
 #import "QMUIZoomImageView.h"
 #endif
@@ -332,6 +328,10 @@
 
 #if __has_include("UIBarItem+QMUI.h")
 #import "UIBarItem+QMUI.h"
+#endif
+
+#if __has_include("UIBarItem+QMUIBadge.h")
+#import "UIBarItem+QMUIBadge.h"
 #endif
 
 #if __has_include("UIBezierPath+QMUI.h")

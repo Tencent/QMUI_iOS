@@ -28,8 +28,8 @@
 
 @implementation QMUILogManagerViewController
 
-- (void)didInitializedWithStyle:(UITableViewStyle)style {
-    [super didInitializedWithStyle:style];
+- (void)didInitializeWithStyle:(UITableViewStyle)style {
+    [super didInitializeWithStyle:style];
     self.rowCountWhenShowSearchBar = 10;
 }
 

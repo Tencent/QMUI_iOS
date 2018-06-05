@@ -24,7 +24,7 @@
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        [self didInitializedWithStyle:style];
+        [self didInitializeWithStyle:style];
     }
     return self;
 }
@@ -42,7 +42,7 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitializedWithStyle:UITableViewCellStyleDefault];
+        [self didInitializeWithStyle:UITableViewCellStyleDefault];
     }
     return self;
 }
@@ -305,7 +305,7 @@
 
 @implementation QMUITableViewCell(QMUISubclassingHooks)
 
-- (void)didInitializedWithStyle:(UITableViewCellStyle)style {
+- (void)didInitializeWithStyle:(UITableViewCellStyle)style {
     _cellPosition = QMUITableViewCellPositionNone;
     
     _style = style;

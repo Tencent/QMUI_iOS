@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <objc/runtime.h>
 
 @interface NSObject (QMUI)
 
@@ -82,6 +83,22 @@
  *  @param firstArgument 调用 selector 时要传的第一个参数的指针地址
  */
 - (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue arguments:(void *)firstArgument, ...;
+
+
+/**
+ 使用 block 遍历当前实例的所有成员变量（也即 _xxx 那种）
+
+ @param block 用于遍历的 block
+ */
+- (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
+
+/**
+ 使用 block 遍历指定 class 的所有成员变量（也即 _xxx 那种）
+
+ @param aClass 指定的 class
+ @param block  用于遍历的 block
+ */
++ (void)qmui_enumrateIvarsOfClass:(Class)aClass usingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
 
 /**
  使用 block 遍历当前实例的所有方法，父类的方法不包含在内

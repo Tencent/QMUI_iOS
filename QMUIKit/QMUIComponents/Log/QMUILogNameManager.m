@@ -14,7 +14,7 @@ NSString *const QMUILoggerAllNamesKeyInUserDefaults = @"QMUILoggerAllNamesKeyInU
 @interface QMUILogNameManager ()
 
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSNumber *> *mutableAllNames;
-@property(nonatomic, assign) BOOL didInitialized;
+@property(nonatomic, assign) BOOL didInitialize;
 @end
 
 @implementation QMUILogNameManager
@@ -29,7 +29,7 @@ NSString *const QMUILoggerAllNamesKeyInUserDefaults = @"QMUILoggerAllNamesKeyInU
         }
         
         // 初始化时从 NSUserDefaults 里获取值的过程，不希望触发 delegate，所以加这个标志位
-        self.didInitialized = YES;
+        self.didInitialize = YES;
     }
     return self;
 }
@@ -52,7 +52,7 @@ NSString *const QMUILoggerAllNamesKeyInUserDefaults = @"QMUILoggerAllNamesKeyInU
     if (logName.length > 0) {
         self.mutableAllNames[logName] = @(enabled);
         
-        if (!self.didInitialized) return;
+        if (!self.didInitialize) return;
         
         [self synchronizeUserDefaults];
         
@@ -75,7 +75,7 @@ NSString *const QMUILoggerAllNamesKeyInUserDefaults = @"QMUILoggerAllNamesKeyInU
     if (logName.length > 0) {
         [self.mutableAllNames removeObjectForKey:logName];
         
-        if (!self.didInitialized) return;
+        if (!self.didInitialize) return;
         
         [self synchronizeUserDefaults];
         
@@ -86,7 +86,7 @@ NSString *const QMUILoggerAllNamesKeyInUserDefaults = @"QMUILoggerAllNamesKeyInU
 }
 
 - (void)removeAllNames {
-    BOOL shouldCallDelegate = self.didInitialized && [[QMUILogger sharedInstance].delegate respondsToSelector:@selector(QMUILogNameDidRemove:)];
+    BOOL shouldCallDelegate = self.didInitialize && [[QMUILogger sharedInstance].delegate respondsToSelector:@selector(QMUILogNameDidRemove:)];
     NSDictionary<NSString *, NSNumber *> *allNames = nil;
     if (shouldCallDelegate) {
         allNames = self.allNames;

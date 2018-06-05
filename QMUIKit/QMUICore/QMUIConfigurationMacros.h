@@ -68,11 +68,11 @@
 #define GhostButtonColorGray            [QMUICMI ghostButtonColorGray]              // QMUIGhostButtonColorGray的颜色
 #define GhostButtonColorWhite           [QMUICMI ghostButtonColorWhite]             // QMUIGhostButtonColorWhite的颜色
 
-#define FillButtonColorBlue            [QMUICMI fillButtonColorBlue]              // QMUIFillButtonColorBlue的颜色
-#define FillButtonColorRed             [QMUICMI fillButtonColorRed]               // QMUIFillButtonColorRed的颜色
-#define FillButtonColorGreen           [QMUICMI fillButtonColorGreen]             // QMUIFillButtonColorGreen的颜色
-#define FillButtonColorGray            [QMUICMI fillButtonColorGray]              // QMUIFillButtonColorGray的颜色
-#define FillButtonColorWhite           [QMUICMI fillButtonColorWhite]             // QMUIFillButtonColorWhite的颜色
+#define FillButtonColorBlue             [QMUICMI fillButtonColorBlue]              // QMUIFillButtonColorBlue的颜色
+#define FillButtonColorRed              [QMUICMI fillButtonColorRed]               // QMUIFillButtonColorRed的颜色
+#define FillButtonColorGreen            [QMUICMI fillButtonColorGreen]             // QMUIFillButtonColorGreen的颜色
+#define FillButtonColorGray             [QMUICMI fillButtonColorGray]              // QMUIFillButtonColorGray的颜色
+#define FillButtonColorWhite            [QMUICMI fillButtonColorWhite]             // QMUIFillButtonColorWhite的颜色
 
 // 输入框
 #pragma mark - TextField & TextView
@@ -146,57 +146,71 @@
 
 #pragma mark - TableView / TableViewCell
 
-#define TableViewEstimatedHeightEnabled            [QMUICMI tableViewEstimatedHeightEnabled]            // 是否要开启全局 UITableView 的 estimatedRow(Section/Footer)Height
+#define TableViewEstimatedHeightEnabled                 [QMUICMI tableViewEstimatedHeightEnabled]            // 是否要开启全局 UITableView 的 estimatedRow(Section/Footer)Height
 
-#define TableViewBackgroundColor                   [QMUICMI tableViewBackgroundColor]                   // 普通列表的背景色
-#define TableViewGroupedBackgroundColor            [QMUICMI tableViewGroupedBackgroundColor]            // Grouped类型的列表的背景色
-#define TableSectionIndexColor                     [QMUICMI tableSectionIndexColor]                     // 列表右边索引条的文字颜色，iOS6及以后生效
-#define TableSectionIndexBackgroundColor           [QMUICMI tableSectionIndexBackgroundColor]           // 列表右边索引条的背景色，iOS7及以后生效
-#define TableSectionIndexTrackingBackgroundColor   [QMUICMI tableSectionIndexTrackingBackgroundColor]   // 列表右边索引条按下时的背景色，iOS6及以后生效
-#define TableViewSeparatorColor                    [QMUICMI tableViewSeparatorColor]                    // 列表分隔线颜色
-#define TableViewCellBackgroundColor               [QMUICMI tableViewCellBackgroundColor]               // 列表 cell 的背景色
-#define TableViewCellSelectedBackgroundColor       [QMUICMI tableViewCellSelectedBackgroundColor]       // 列表 cell 按下时的背景色
-#define TableViewCellWarningBackgroundColor        [QMUICMI tableViewCellWarningBackgroundColor]        // 列表 cell 在未读状态下的背景色
-#define TableViewCellNormalHeight                  [QMUICMI tableViewCellNormalHeight]                  // QMUITableView 的默认 cell 高度
+#define TableViewBackgroundColor                        [QMUICMI tableViewBackgroundColor]                   // 普通列表的背景色
+#define TableViewGroupedBackgroundColor                 [QMUICMI tableViewGroupedBackgroundColor]            // Grouped类型的列表的背景色
+#define TableSectionIndexColor                          [QMUICMI tableSectionIndexColor]                     // 列表右边索引条的文字颜色，iOS6及以后生效
+#define TableSectionIndexBackgroundColor                [QMUICMI tableSectionIndexBackgroundColor]           // 列表右边索引条的背景色，iOS7及以后生效
+#define TableSectionIndexTrackingBackgroundColor        [QMUICMI tableSectionIndexTrackingBackgroundColor]   // 列表右边索引条按下时的背景色，iOS6及以后生效
+#define TableViewSeparatorColor                         [QMUICMI tableViewSeparatorColor]                    // 列表分隔线颜色
+#define TableViewCellBackgroundColor                    [QMUICMI tableViewCellBackgroundColor]               // 列表 cell 的背景色
+#define TableViewCellSelectedBackgroundColor            [QMUICMI tableViewCellSelectedBackgroundColor]       // 列表 cell 按下时的背景色
+#define TableViewCellWarningBackgroundColor             [QMUICMI tableViewCellWarningBackgroundColor]        // 列表 cell 在未读状态下的背景色
+#define TableViewCellNormalHeight                       [QMUICMI tableViewCellNormalHeight]                  // QMUITableView 的默认 cell 高度
 
-#define TableViewCellDisclosureIndicatorImage      [QMUICMI tableViewCellDisclosureIndicatorImage]      // 列表 cell 右边的箭头图片
-#define TableViewCellCheckmarkImage                [QMUICMI tableViewCellCheckmarkImage]                // 列表 cell 右边的打钩checkmark
-#define TableViewCellDetailButtonImage             [QMUICMI tableViewCellDetailButtonImage]             // 列表 cell 右边的 i 按钮
+#define TableViewCellDisclosureIndicatorImage           [QMUICMI tableViewCellDisclosureIndicatorImage]      // 列表 cell 右边的箭头图片
+#define TableViewCellCheckmarkImage                     [QMUICMI tableViewCellCheckmarkImage]                // 列表 cell 右边的打钩checkmark
+#define TableViewCellDetailButtonImage                  [QMUICMI tableViewCellDetailButtonImage]             // 列表 cell 右边的 i 按钮
 #define TableViewCellSpacingBetweenDetailButtonAndDisclosureIndicator [QMUICMI tableViewCellSpacingBetweenDetailButtonAndDisclosureIndicator]   // 列表 cell 右边的 i 按钮和向右箭头之间的间距（仅当两者都使用了自定义图片并且同时显示时才生效）
 
-#define TableViewSectionHeaderBackgroundColor      [QMUICMI tableViewSectionHeaderBackgroundColor]
-#define TableViewSectionFooterBackgroundColor      [QMUICMI tableViewSectionFooterBackgroundColor]
-#define TableViewSectionHeaderFont                 [QMUICMI tableViewSectionHeaderFont]
-#define TableViewSectionFooterFont                 [QMUICMI tableViewSectionFooterFont]
-#define TableViewSectionHeaderTextColor            [QMUICMI tableViewSectionHeaderTextColor]
-#define TableViewSectionFooterTextColor            [QMUICMI tableViewSectionFooterTextColor]
-#define TableViewSectionHeaderAccessoryMargins     [QMUICMI tableViewSectionHeaderAccessoryMargins]
-#define TableViewSectionFooterAccessoryMargins     [QMUICMI tableViewSectionFooterAccessoryMargins]
-#define TableViewSectionHeaderContentInset         [QMUICMI tableViewSectionHeaderContentInset]
-#define TableViewSectionFooterContentInset         [QMUICMI tableViewSectionFooterContentInset]
+#define TableViewSectionHeaderBackgroundColor           [QMUICMI tableViewSectionHeaderBackgroundColor]
+#define TableViewSectionFooterBackgroundColor           [QMUICMI tableViewSectionFooterBackgroundColor]
+#define TableViewSectionHeaderFont                      [QMUICMI tableViewSectionHeaderFont]
+#define TableViewSectionFooterFont                      [QMUICMI tableViewSectionFooterFont]
+#define TableViewSectionHeaderTextColor                 [QMUICMI tableViewSectionHeaderTextColor]
+#define TableViewSectionFooterTextColor                 [QMUICMI tableViewSectionFooterTextColor]
+#define TableViewSectionHeaderAccessoryMargins          [QMUICMI tableViewSectionHeaderAccessoryMargins]
+#define TableViewSectionFooterAccessoryMargins          [QMUICMI tableViewSectionFooterAccessoryMargins]
+#define TableViewSectionHeaderContentInset              [QMUICMI tableViewSectionHeaderContentInset]
+#define TableViewSectionFooterContentInset              [QMUICMI tableViewSectionFooterContentInset]
 
-#define TableViewGroupedSectionHeaderFont          [QMUICMI tableViewGroupedSectionHeaderFont]
-#define TableViewGroupedSectionFooterFont          [QMUICMI tableViewGroupedSectionFooterFont]
-#define TableViewGroupedSectionHeaderTextColor     [QMUICMI tableViewGroupedSectionHeaderTextColor]
-#define TableViewGroupedSectionFooterTextColor     [QMUICMI tableViewGroupedSectionFooterTextColor]
+#define TableViewGroupedSectionHeaderFont               [QMUICMI tableViewGroupedSectionHeaderFont]
+#define TableViewGroupedSectionFooterFont               [QMUICMI tableViewGroupedSectionFooterFont]
+#define TableViewGroupedSectionHeaderTextColor          [QMUICMI tableViewGroupedSectionHeaderTextColor]
+#define TableViewGroupedSectionFooterTextColor          [QMUICMI tableViewGroupedSectionFooterTextColor]
 #define TableViewGroupedSectionHeaderAccessoryMargins   [QMUICMI tableViewGroupedSectionHeaderAccessoryMargins]
 #define TableViewGroupedSectionFooterAccessoryMargins   [QMUICMI tableViewGroupedSectionFooterAccessoryMargins]
-#define TableViewGroupedSectionHeaderDefaultHeight [QMUICMI tableViewGroupedSectionHeaderDefaultHeight]
-#define TableViewGroupedSectionFooterDefaultHeight [QMUICMI tableViewGroupedSectionFooterDefaultHeight]
-#define TableViewGroupedSectionHeaderContentInset  [QMUICMI tableViewGroupedSectionHeaderContentInset]
-#define TableViewGroupedSectionFooterContentInset  [QMUICMI tableViewGroupedSectionFooterContentInset]
+#define TableViewGroupedSectionHeaderDefaultHeight      [QMUICMI tableViewGroupedSectionHeaderDefaultHeight]
+#define TableViewGroupedSectionFooterDefaultHeight      [QMUICMI tableViewGroupedSectionFooterDefaultHeight]
+#define TableViewGroupedSectionHeaderContentInset       [QMUICMI tableViewGroupedSectionHeaderContentInset]
+#define TableViewGroupedSectionFooterContentInset       [QMUICMI tableViewGroupedSectionFooterContentInset]
 
-#define TableViewCellTitleLabelColor               [QMUICMI tableViewCellTitleLabelColor]               // cell的title颜色
-#define TableViewCellDetailLabelColor              [QMUICMI tableViewCellDetailLabelColor]              // cell的detailTitle颜色
+#define TableViewCellTitleLabelColor                    [QMUICMI tableViewCellTitleLabelColor]               // cell的title颜色
+#define TableViewCellDetailLabelColor                   [QMUICMI tableViewCellDetailLabelColor]              // cell的detailTitle颜色
 
 #pragma mark - UIWindowLevel
-#define UIWindowLevelQMUIAlertView                  [QMUICMI windowLevelQMUIAlertView]
-#define UIWindowLevelQMUIImagePreviewView           [QMUICMI windowLevelQMUIImagePreviewView]
+#define UIWindowLevelQMUIAlertView                      [QMUICMI windowLevelQMUIAlertView]
+#define UIWindowLevelQMUIImagePreviewView               [QMUICMI windowLevelQMUIImagePreviewView]
 
 #pragma mark - QMUILog
-#define ShouldPrintDefaultLog                       [QMUICMI shouldPrintDefaultLog]
-#define ShouldPrintInfoLog                          [QMUICMI shouldPrintInfoLog]
-#define ShouldPrintWarnLog                          [QMUICMI shouldPrintWarnLog]
+#define ShouldPrintDefaultLog                           [QMUICMI shouldPrintDefaultLog]
+#define ShouldPrintInfoLog                              [QMUICMI shouldPrintInfoLog]
+#define ShouldPrintWarnLog                              [QMUICMI shouldPrintWarnLog]
+
+#pragma mark - QMUIBadge
+#define BadgeBackgroundColor                            [QMUICMI badgeBackgroundColor]
+#define BadgeTextColor                                  [QMUICMI badgeTextColor]
+#define BadgeFont                                       [QMUICMI badgeFont]
+#define BadgeContentEdgeInsets                          [QMUICMI badgeContentEdgeInsets]
+#define BadgeContentEdgeInsets                          [QMUICMI badgeContentEdgeInsets]
+#define BadgeCenterOffset                               [QMUICMI badgeCenterOffset]
+#define BadgeCenterOffsetLandscape                      [QMUICMI badgeCenterOffsetLandscape]
+
+#define UpdatesIndicatorColor                           [QMUICMI updatesIndicatorColor]
+#define UpdatesIndicatorSize                            [QMUICMI updatesIndicatorSize]
+#define UpdatesIndicatorCenterOffset                    [QMUICMI updatesIndicatorCenterOffset]
+#define UpdatesIndicatorCenterOffsetLandscape           [QMUICMI updatesIndicatorCenterOffsetLandscape]
 
 #pragma mark - Others
 

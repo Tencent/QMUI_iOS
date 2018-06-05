@@ -29,6 +29,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 @interface QMUITextView ()
 
 @property(nonatomic, assign) BOOL debug;
+@property(nonatomic, assign) BOOL postInitializationMethodCalled;
 @property(nonatomic, strong) _QMUITextViewDelegator *delegator;
 @property(nonatomic, assign) BOOL shouldRejectSystemScroll;// 如果在 handleTextChanged: 里主动调整 contentOffset，则为了避免被系统的自动调整覆盖，会利用这个标记去屏蔽系统对 setContentOffset: 的调用
 
@@ -43,7 +44,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self didInitialized];
+        [self didInitialize];
         self.tintColor = TextFieldTintColor;
     }
     return self;
@@ -51,12 +52,12 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.debug = NO;
     
     self.qmui_multipleDelegatesEnabled = YES;
@@ -82,6 +83,8 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     [self addSubview:self.placeholderLabel];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTextChanged:) name:UITextViewTextDidChangeNotification object:nil];
+    
+    self.postInitializationMethodCalled = YES;
 }
 
 - (void)dealloc {
@@ -248,13 +251,13 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         // 计算高度
         if ([textView.delegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)]) {
             
-            CGFloat resultHeight = [textView sizeThatFits:CGSizeMake(CGRectGetWidth(textView.bounds), CGFLOAT_MAX)].height;
+            CGFloat resultHeight = flat([textView sizeThatFits:CGSizeMake(CGRectGetWidth(textView.bounds), CGFLOAT_MAX)].height);
             
             if (textView.debug) QMUILog(NSStringFromClass(textView.class), @"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
             
             
             // 通知delegate去更新textView的高度
-            if (resultHeight != CGRectGetHeight(textView.bounds)) {
+            if (resultHeight != flat(CGRectGetHeight(textView.bounds))) {
                 [textView.delegate textView:textView newHeightAfterTextChanged:resultHeight];
             }
         }
@@ -280,7 +283,10 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 }
 
 - (void)setFrame:(CGRect)frame {
-    frame = CGRectSetHeight(frame, MIN(CGRectGetHeight(frame), self.maximumHeight));
+    if (self.postInitializationMethodCalled) {
+        // 如果没走完 didInitialize，说明 self.maximumHeight 尚未被赋初始值 CGFLOAT_MAX，此时的值为 0，就会导致调用 initWithFrame: 时高度无效，必定被指定为 0
+        frame = CGRectSetHeight(frame, MIN(CGRectGetHeight(frame), self.maximumHeight));
+    }
     [super setFrame:frame];
 }
 

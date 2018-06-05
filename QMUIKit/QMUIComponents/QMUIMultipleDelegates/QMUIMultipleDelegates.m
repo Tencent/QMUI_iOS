@@ -8,18 +8,14 @@
 
 #import "QMUIMultipleDelegates.h"
 #import "NSPointerArray+QMUI.h"
-
-@interface QMUIMultipleDelegates ()
-
-@property(nonatomic, strong) NSPointerArray *delegates;
-@end
+#import <objc/runtime.h>
 
 @implementation QMUIMultipleDelegates
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.delegates = [NSPointerArray weakObjectsPointerArray];
+        _delegates = [NSPointerArray weakObjectsPointerArray];
     }
     return self;
 }
@@ -86,7 +82,11 @@
     
     NSPointerArray *delegates = [self.delegates copy];
     for (id delegate in delegates) {
-        if ([delegate respondsToSelector:aSelector]) {
+        if (class_respondsToSelector(self.class, aSelector)) {
+            return YES;
+        }
+        // 判断 qmui_delegatesSelf 是为了解决这个 issue：https://github.com/QMUI/QMUI_iOS/issues/346
+        if (class_respondsToSelector(((NSObject *)delegate).class, aSelector) && !((NSObject *)delegate).qmui_delegatesSelf) {
             return YES;
         }
     }

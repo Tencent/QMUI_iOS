@@ -86,8 +86,8 @@
 
 #pragma mark - (UISubclassingHooks)
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     self.contentEdgeInsets = UIEdgeInsetsZero;
     
     self.scrollView = [[UIScrollView alloc] init];

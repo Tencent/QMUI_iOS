@@ -55,8 +55,6 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  */
 - (void)didHideModalPresentationViewController:(QMUIModalPresentationViewController *)controller;
 
-- (void)requestHideAllModalPresentationViewController;
-
 @end
 
 /**
@@ -127,7 +125,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nonatomic, assign) UIEdgeInsets contentViewMargins UI_APPEARANCE_SELECTOR;
 
 /**
- *  限制`contentView`布局时的最大宽度，默认为iPhone 6竖屏下的屏幕宽度减去`contentViewMargins`在水平方向的值，也即浮层在iPhone 6 Plus或iPad上的宽度以iPhone 6上的宽度为准。
+ *  限制`contentView`布局时的最大宽度，默认为 CGFLOAT_MAX，也即无限制。
  *  @warning 当设置了`layoutBlock`属性时，此属性不生效
  */
 @property(nonatomic, assign) CGFloat maximumContentViewWidth UI_APPEARANCE_SELECTOR;
@@ -247,6 +245,17 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @end
 
 
+/**
+ *  如果你有一个控件，内部通过 QMUIModalPresentationViewController 实现显隐功能，那么这个控件建议实现这个协议，这样当 + [QMUIModalPresentationViewController hideAllVisibleModalPresentationViewControllerIfCan] 被调用的时候，可以通过 hideModalPresentationComponent 来隐藏你的控件，否则会直接调用 QMUIModalPresentationViewController 的 hide 方法，那样可能导致你的控件无法正确被隐藏。
+ */
+@protocol QMUIModalPresentationComponentProtocol <NSObject>
+
+@required
+- (void)hideModalPresentationComponent;
+
+@end
+
+
 @interface QMUIModalPresentationViewController (Manager)
 
 /**
@@ -259,6 +268,8 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  把所有正在显示的并且允许被隐藏的modalViewController都隐藏掉
  *  @return 只要遇到一个正在显示的并且不能被隐藏的浮层，就会返回NO，否则都返回YES，表示成功隐藏掉所有可视浮层
  *  @see    shouldHideModalPresentationViewController:
+ *  @see    QMUIModalPresentationComponentProtocol
+ *  @warning 当要隐藏一个 modalPresentationViewController 时，如果这个 modal 有实现 QMUIModalPresentationComponentProtocol 协议，则会调用它的 hideModalPresentationComponent 方法来隐藏，否则直接用 QMUIModalPresentationViewController 的 hideWithAnimated:completion:
  */
 + (BOOL)hideAllVisibleModalPresentationViewControllerIfCan;
 @end

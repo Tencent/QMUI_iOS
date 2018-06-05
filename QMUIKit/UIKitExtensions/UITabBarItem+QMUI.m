@@ -13,13 +13,16 @@
 @implementation UITabBarItem (QMUI)
 
 - (UIImageView *)qmui_imageView {
-    UIControl *barButton = (UIControl *)self.qmui_view;
+    return [self.class qmui_imageViewInTabBarButton:self.qmui_view];
+}
+
++ (UIImageView *)qmui_imageViewInTabBarButton:(UIView *)tabBarButton {
     
-    if (!barButton) {
+    if (!tabBarButton) {
         return nil;
     }
     
-    for (UIView *subview in barButton.subviews) {
+    for (UIView *subview in tabBarButton.subviews) {
         // iOS10及以后，imageView都是用UITabBarSwappableImageView实现的，所以遇到这个class就直接拿
         if ([NSStringFromClass([subview class]) isEqualToString:@"UITabBarSwappableImageView"]) {
             return (UIImageView *)subview;
@@ -31,7 +34,7 @@
                 return (UIImageView *)subview;
             }
         }
-
+        
     }
     return nil;
 }

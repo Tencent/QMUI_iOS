@@ -374,6 +374,10 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     if (@available(iOS 11, *)) {
         UINavigationBar *navigationBar = self.qmui_navigationBar;
         if (!navigationBar) return;
+        
+        // 这个保护对应这个 issue：https://github.com/QMUI/QMUI_iOS/issues/335
+        if ([navigationBar.items containsObject:self] && navigationBar.topItem != self) return;
+        
         navigationBar.qmui_customizingBackBarButtonItem = item.qmui_isCustomizedBackBarButtonItem;
     }
 }
@@ -400,6 +404,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         
         UINavigationBar *navigationBar = self.qmui_navigationBar;
         if (!navigationBar) return;
+        
+        // 这个保护对应这个 issue：https://github.com/QMUI/QMUI_iOS/issues/335
+        if ([navigationBar.items containsObject:self] && navigationBar.topItem != self) return;
         
         BOOL customizingBackBarButtonItem = NO;
         for (UIBarButtonItem *item in items) {
@@ -525,25 +532,6 @@ static char kAssociatedObjectKey_tempRightBarButtonItems;
             };
         });
         
-        OverrideImplementation([UINavigationBar class], @selector(popNavigationItemAnimated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
-            return ^UINavigationItem *(UINavigationBar *selfObject, BOOL firstArgv) {
-                
-                if ([selfObject isKindOfClass:originClass]) {
-                    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
-                    if (@available(iOS 11, *)) {
-                        UINavigationItem *itemWillAppear = selfObject.items.count >= 2 ? selfObject.items[selfObject.items.count - 2] : nil;
-                        selfObject.qmui_customizingBackBarButtonItem = itemWillAppear.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
-                    }
-                }
-                
-                // call super
-                UINavigationItem *(*originSelectorIMP)(id, SEL, BOOL);
-                originSelectorIMP = (UINavigationItem *(*)(id, SEL, BOOL))originIMP;
-                UINavigationItem *result = originSelectorIMP(selfObject, originCMD, firstArgv);
-                return result;
-            };
-        });
-        
         // 对应 UINavigationController setViewControllers:animated:
         OverrideImplementation([UINavigationBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
             return ^(UINavigationBar *selfObject, NSArray<UINavigationItem *> *items, BOOL animated) {
@@ -598,6 +586,42 @@ static char kAssociatedObjectKey_customizingBackBarButtonItem;
 
 - (BOOL)qmui_customizingBackBarButtonItem {
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_customizingBackBarButtonItem)) boolValue];
+}
+
+@end
+
+@interface UINavigationController (QMUINavigationButton)
+
+@end
+
+@implementation UINavigationController (QMUINavigationButton)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+        if (@available(iOS 11, *)) {
+            ExchangeImplementations([UINavigationController class], @selector(navigationBar:shouldPopItem:), @selector(navigationButton_navigationBar:shouldPopItem:));
+        }
+        
+    });
+}
+
+- (BOOL)navigationButton_navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
+    BOOL result = [self navigationButton_navigationBar:navigationBar shouldPopItem:item];
+    if (result) {
+        BOOL isPopedByCoding = item != navigationBar.topItem;
+        if (!isPopedByCoding) {
+            if (navigationBar.items.count == 2 && !navigationBar.backItem.leftBarButtonItem && item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem) {
+                // 如果从自定义返回按钮界面返回到根界面，且根界面左上角没有按钮，则不调整 layout，不然会有跳动。理论上不应该这么改，但暂时没想到优雅的解决方式
+            } else {
+                navigationBar.qmui_customizingBackBarButtonItem = navigationBar.backItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+            }
+        }
+    }
+    
+    return result;
 }
 
 @end

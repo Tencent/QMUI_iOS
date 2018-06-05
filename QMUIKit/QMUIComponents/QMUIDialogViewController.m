@@ -33,7 +33,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         if (!dialogViewControllerAppearance) {
             dialogViewControllerAppearance = [[QMUIDialogViewController alloc] init];
             dialogViewControllerAppearance.cornerRadius = 6;
-            dialogViewControllerAppearance.dialogViewMargins = UIEdgeInsetsMake(20, 20, 20, 20); // 在实例的 didInitialized 里会适配 iPhone X 的 safeAreaInsets
+            dialogViewControllerAppearance.dialogViewMargins = UIEdgeInsetsMake(20, 20, 20, 20); // 在实例的 didInitialize 里会适配 iPhone X 的 safeAreaInsets
             dialogViewControllerAppearance.maximumContentViewWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(dialogViewControllerAppearance.dialogViewMargins);
             dialogViewControllerAppearance.backgroundColor = UIColorClear;
             dialogViewControllerAppearance.titleTintColor = UIColorBlack;
@@ -69,8 +69,8 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 @implementation QMUIDialogViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     if (dialogViewControllerAppearance) {
         self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
         self.dialogViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].dialogViewMargins, IPhoneXSafeAreaInsets);
@@ -418,6 +418,12 @@ EndIgnoreClangWarning
     return finalSize;
 }
 
+#pragma mark - <QMUIModalPresentationComponentProtocol>
+
+- (void)hideModalPresentationComponent {
+    [self hideWithAnimated:NO completion:nil];
+}
+
 @end
 
 const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
@@ -429,8 +435,8 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 @implementation QMUIDialogSelectionViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     
     self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
     self.selectedItemIndexes = [[NSMutableSet alloc] init];
@@ -469,12 +475,20 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
 }
 
+- (void)setItems:(NSArray<NSString *> *)items {
+    _items = [items copy];
+    [self.tableView reloadData];
+    if (self.qmui_modalPresentationViewController.visible) {
+        [self.qmui_modalPresentationViewController updateLayout];
+    }
+}
+
 - (void)setSelectedItemIndex:(NSInteger)selectedItemIndex {
     _selectedItemIndex = selectedItemIndex;
     [self.selectedItemIndexes removeAllObjects];
 }
 
-- (void)setselectedItemIndexes:(NSMutableSet<NSNumber *> *)selectedItemIndexes {
+- (void)setSelectedItemIndexes:(NSMutableSet<NSNumber *> *)selectedItemIndexes {
     _selectedItemIndexes = selectedItemIndexes;
     self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 }
@@ -492,7 +506,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     static NSString *identifier = @"cell";
     QMUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
-        cell = [[QMUITableViewCell alloc] initForTableView:self.tableView withStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier];
+        cell = [[QMUITableViewCell alloc] initForTableView:tableView withStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier];
     }
     cell.textLabel.text = self.items[indexPath.row];
     
@@ -608,8 +622,8 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 @implementation QMUIDialogTextFieldViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     self.shouldManageTextFieldsReturnEventAutomatically = YES;
     self.enablesSubmitButtonAutomatically = YES;
     BeginIgnoreAvailabilityWarning

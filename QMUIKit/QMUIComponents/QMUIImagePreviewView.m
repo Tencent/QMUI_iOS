@@ -119,7 +119,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     if (currentImageIndex < [self.collectionView numberOfItemsInSection:0]) {
         [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:currentImageIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:animated];
     } else {
-        QMUILog(@"QMUIImagePreviewView", @"dataSource 里的图片数量和当前显示出来的图片数量不匹配, collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource numberOfSectionsInCollectionView:self.collectionView]), @(_currentImageIndex));
+        QMUILog(@"QMUIImagePreviewView", @"dataSource 里的图片数量和当前显示出来的图片数量不匹配, collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource collectionView:self.collectionView numberOfItemsInSection:1]), @(_currentImageIndex));
     }
 }
 

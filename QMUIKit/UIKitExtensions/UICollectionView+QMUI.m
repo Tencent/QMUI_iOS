@@ -60,29 +60,21 @@
     return NO;
 }
 
+- (NSArray<NSIndexPath *> *)qmui_indexPathsForVisibleItems {
+    NSArray<NSIndexPath *> *visibleItems = [self indexPathsForVisibleItems];
+    NSSortDescriptor *sectionSorter = [[NSSortDescriptor alloc] initWithKey:@"section" ascending:YES];
+    NSSortDescriptor *rowSorter = [[NSSortDescriptor alloc] initWithKey:@"row" ascending:YES];
+    visibleItems = [visibleItems sortedArrayUsingDescriptors:[NSArray arrayWithObjects:sectionSorter,rowSorter, nil]];
+    return visibleItems;
+}
+
 - (NSIndexPath *)qmui_indexPathForFirstVisibleCell {
-    NSArray *visibleIndexPaths = [self indexPathsForVisibleItems];
+    NSArray *visibleIndexPaths = [self qmui_indexPathsForVisibleItems];
     if (!visibleIndexPaths || visibleIndexPaths.count <= 0) {
         return nil;
     }
-    NSIndexPath *minimumIndexPath = nil;
-    for (NSIndexPath *indexPath in visibleIndexPaths) {
-        if (!minimumIndexPath) {
-            minimumIndexPath = indexPath;
-            continue;
-        }
-        
-        if (indexPath.section < minimumIndexPath.section) {
-            minimumIndexPath = indexPath;
-            continue;
-        }
-        
-        if (indexPath.item < minimumIndexPath.item) {
-            minimumIndexPath = indexPath;
-            continue;
-        }
-    }
-    return minimumIndexPath;
+    
+    return visibleIndexPaths.firstObject;
 }
 
 @end

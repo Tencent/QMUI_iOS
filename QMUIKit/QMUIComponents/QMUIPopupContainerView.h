@@ -32,7 +32,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  * @warning 如果使用方法 2.2，并且没有打开 automaticallyHidesWhenUserTap 属性，则记得在适当的时机（例如 viewWillDisappear:）隐藏浮层。
  *
  * 如果默认功能无法满足需求，可继承它重写一个子类，继承要点：
- * 1. 初始化时要做的事情请放在 didInitialized 里。
+ * 1. 初始化时要做的事情请放在 didInitialize 里。
  * 2. 所有 subviews 请加到 contentView 上。
  * 3. 通过重写 sizeThatFitsInContentView:，在里面返回当前 subviews 的大小，控件最终会被布局为这个大小。
  * 4. 在 layoutSubviews: 里，所有 subviews 请相对于 contentView 布局。
@@ -147,7 +147,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 @interface QMUIPopupContainerView (UISubclassingHooks)
 
 /// 子类重写，在初始化时做一些操作
-- (void)didInitialized NS_REQUIRES_SUPER;
+- (void)didInitialize NS_REQUIRES_SUPER;
 
 /// 子类重写，告诉父类subviews的合适大小
 - (CGSize)sizeThatFitsInContentView:(CGSize)size;

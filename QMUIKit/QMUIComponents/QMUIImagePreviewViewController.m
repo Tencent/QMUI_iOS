@@ -46,8 +46,8 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 
 @synthesize imagePreviewView = _imagePreviewView;
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     self.automaticallyAdjustsScrollViewInsets = NO;
     
     if (imagePreviewViewControllerAppearance) {

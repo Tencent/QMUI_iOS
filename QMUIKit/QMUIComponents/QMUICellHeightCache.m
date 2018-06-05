@@ -373,12 +373,6 @@
     CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets) - UIEdgeInsetsGetHorizontalValue(self.contentInset);
     CGSize fitSize = CGSizeZero;
     if (cell && contentWidth > 0) {
-        SEL selector = @selector(sizeThatFits:);
-        BOOL inherited = ![cell isMemberOfClass:[UITableViewCell class]]; // 是否UITableViewCell
-        BOOL overrided = [cell.class instanceMethodForSelector:selector] != [UITableViewCell instanceMethodForSelector:selector]; // 是否重写了sizeThatFit:
-        if (inherited && !overrided) {
-            NSAssert(NO, @"Customized cell must override '-sizeThatFits:' method if not using auto layout.");
-        }
         fitSize = [cell sizeThatFits:CGSizeMake(contentWidth, CGFLOAT_MAX)];
     }
     return ceil(fitSize.height);
@@ -620,12 +614,6 @@
     if (configuration) { configuration(cell); }
     CGSize fitSize = CGSizeZero;
     if (cell && itemWidth > 0) {
-        SEL selector = @selector(sizeThatFits:);
-        BOOL inherited = ![cell isMemberOfClass:[UICollectionViewCell class]];
-        BOOL overrided = [cell.class instanceMethodForSelector:selector] != [UICollectionViewCell instanceMethodForSelector:selector];
-        if (inherited && !overrided) {
-            NSAssert(NO, @"Customized cell must override '-sizeThatFits:' method if not using auto layout.");
-        }
         fitSize = [cell sizeThatFits:CGSizeMake(itemWidth, CGFLOAT_MAX)];
     }
     return ceil(fitSize.height);
