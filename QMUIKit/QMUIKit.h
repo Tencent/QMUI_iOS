@@ -318,6 +318,10 @@
 #import "QMUIToolbarButton.h"
 #endif
 
+#if __has_include("QMUIVisualEffectView.h")
+#import "QMUIVisualEffectView.h"
+#endif
+
 #if __has_include("QMUIZoomImageView.h")
 #import "QMUIZoomImageView.h"
 #endif
