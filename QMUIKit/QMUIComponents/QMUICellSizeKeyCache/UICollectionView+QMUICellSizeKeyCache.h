@@ -17,6 +17,7 @@
 - (nonnull id<NSCopying>)qmui_collectionView:(nonnull UICollectionView *)collectionView cacheKeyForItemAtIndexPath:(nonnull NSIndexPath *)indexPath;
 @end
 
+/// 注意，这个类的功能暂无法使用
 @interface UICollectionView (QMUICellSizeKeyCache)
 
 /// 控制是否要自动缓存 cell 的高度，默认为 NO

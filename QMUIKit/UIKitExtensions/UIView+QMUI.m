@@ -12,6 +12,7 @@
 #import "UIColor+QMUI.h"
 #import "NSObject+QMUI.h"
 #import "UIImage+QMUI.h"
+#import "NSNumber+QMUI.h"
 #import <objc/runtime.h>
 
 @interface UIView ()
@@ -414,7 +415,7 @@ static char kAssociatedObjectKey_borderWidth;
 }
 
 - (CGFloat)qmui_borderWidth {
-    return (CGFloat)[objc_getAssociatedObject(self, &kAssociatedObjectKey_borderWidth) floatValue];
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_borderWidth)) qmui_CGFloatValue];
 }
 
 static char kAssociatedObjectKey_borderColor;
@@ -434,7 +435,7 @@ static char kAssociatedObjectKey_dashPhase;
 }
 
 - (CGFloat)qmui_dashPhase {
-    return (CGFloat)[objc_getAssociatedObject(self, &kAssociatedObjectKey_dashPhase) floatValue];
+    return [(NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_dashPhase) qmui_CGFloatValue];
 }
 
 static char kAssociatedObjectKey_dashPattern;

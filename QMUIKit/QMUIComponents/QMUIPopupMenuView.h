@@ -50,7 +50,8 @@
 @property(nonatomic, strong) UIImage *image;
 @property(nonatomic, copy) NSString *title;
 @property(nonatomic, strong, readonly) QMUIButton *button;
-@property(nonatomic, copy) void (^handler)(void);
+@property(nonatomic, copy) void (^handler)(QMUIPopupMenuView *aMenuView, QMUIPopupMenuItem *aItem);
+@property(nonatomic, weak) QMUIPopupMenuView *menuView;
 
-+ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)(void))handler;
++ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)(QMUIPopupMenuView *aMenuView, QMUIPopupMenuItem *aItem))handler;
 @end

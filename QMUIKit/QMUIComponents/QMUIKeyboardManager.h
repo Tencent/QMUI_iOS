@@ -68,7 +68,7 @@
 + (CGRect)convertKeyboardRect:(CGRect)rect toView:(UIView *)view;
 
 /**
- *  获取键盘到顶部到相对于view底部的距离，这个值在某些情况下会等于endFrame.size.height或者visiableKeyboardHeight，不过在iPad浮动键盘的时候就包括了底部的空隙。所以建议使用这个方法。
+ *  获取键盘到顶部到相对于view底部的距离，这个值在某些情况下会等于endFrame.size.height或者visibleKeyboardHeight，不过在iPad浮动键盘的时候就包括了底部的空隙。所以建议使用这个方法。
  */
 + (CGFloat)distanceFromMinYToBottomInView:(UIView *)view keyboardRect:(CGRect)rect;
 
@@ -107,7 +107,7 @@
 /**
  *  当前键盘高度键盘的可见高度
  */
-+ (CGFloat)visiableKeyboardHeight;
++ (CGFloat)visibleKeyboardHeight;
 
 @end
 

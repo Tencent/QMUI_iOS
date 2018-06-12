@@ -11,10 +11,11 @@
 #import "QMUICore.h"
 #import "UIScrollView+QMUI.h"
 #import "UIView+QMUI.h"
+#import "NSNumber+QMUI.h"
 
 @implementation QMUICellHeightCache {
-    NSMutableDictionary *_mutableHeightsByKeyForPortrait;
-    NSMutableDictionary *_mutableHeightsByKeyForLandscape;
+    NSMutableDictionary<id<NSCopying>, NSNumber *> *_mutableHeightsByKeyForPortrait;
+    NSMutableDictionary<id<NSCopying>, NSNumber *> *_mutableHeightsByKeyForLandscape;
 }
 
 - (instancetype)init {
@@ -26,7 +27,7 @@
     return self;
 }
 
-- (NSMutableDictionary *)mutableHeightsByKeyForCurrentOrientation {
+- (NSMutableDictionary<id<NSCopying>, NSNumber *> *)mutableHeightsByKeyForCurrentOrientation {
     return UIDeviceOrientationIsPortrait([UIDevice currentDevice].orientation) ? _mutableHeightsByKeyForPortrait : _mutableHeightsByKeyForLandscape;
 }
 
@@ -40,11 +41,7 @@
 }
 
 - (CGFloat)heightForKey:(id<NSCopying>)key {
-#if CGFLOAT_IS_DOUBLE
-    return [[self mutableHeightsByKeyForCurrentOrientation][key] doubleValue];
-#else
-    return [[self mutableHeightsByKeyForCurrentOrientation][key] floatValue];
-#endif
+    return [self mutableHeightsByKeyForCurrentOrientation][key].qmui_CGFloatValue;
 }
 
 - (void)invalidateHeightForKey:(id<NSCopying>)key {
@@ -64,8 +61,8 @@
 @end
 
 @implementation QMUICellHeightIndexPathCache {
-    NSMutableArray *_heightsBySectionForPortrait;
-    NSMutableArray *_heightsBySectionForLandscape;
+    NSMutableArray<NSMutableArray<NSNumber *> *> *_heightsBySectionForPortrait;
+    NSMutableArray<NSMutableArray<NSNumber *> *> *_heightsBySectionForLandscape;
 }
 
 - (instancetype)init {
@@ -77,11 +74,11 @@
     return self;
 }
 
-- (NSMutableArray *)heightsBySectionForCurrentOrientation {
+- (NSMutableArray<NSMutableArray<NSNumber *> *> *)heightsBySectionForCurrentOrientation {
     return UIDeviceOrientationIsPortrait([UIDevice currentDevice].orientation) ? _heightsBySectionForPortrait : _heightsBySectionForLandscape;
 }
 
-- (void)enumerateAllOrientationsUsingBlock:(void (^)(NSMutableArray *heightsBySection))block {
+- (void)enumerateAllOrientationsUsingBlock:(void (^)(NSMutableArray<NSMutableArray<NSNumber *> *> *heightsBySection))block {
     if (block) {
         block(_heightsBySectionForPortrait);
         block(_heightsBySectionForLandscape);
@@ -102,28 +99,23 @@
 
 - (CGFloat)heightForIndexPath:(NSIndexPath *)indexPath {
     [self buildCachesAtIndexPathsIfNeeded:@[indexPath]];
-    NSNumber *number = self.heightsBySectionForCurrentOrientation[indexPath.section][indexPath.row];
-#if CGFLOAT_IS_DOUBLE
-    return number.doubleValue;
-#else
-    return number.floatValue;
-#endif
+    return self.heightsBySectionForCurrentOrientation[indexPath.section][indexPath.row].qmui_CGFloatValue;
 }
 
 - (void)invalidateHeightAtIndexPath:(NSIndexPath *)indexPath {
     [self buildCachesAtIndexPathsIfNeeded:@[indexPath]];
-    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray<NSMutableArray<NSNumber *> *> *heightsBySection) {
         heightsBySection[indexPath.section][indexPath.row] = @-1;
     }];
 }
 
 - (void)invalidateAllHeightCache {
-    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray<NSMutableArray<NSNumber *> *> *heightsBySection) {
         [heightsBySection removeAllObjects];
     }];
 }
 
-- (void)buildCachesAtIndexPathsIfNeeded:(NSArray *)indexPaths {
+- (void)buildCachesAtIndexPathsIfNeeded:(NSArray<NSIndexPath *> *)indexPaths {
     [indexPaths enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
         [self buildSectionsIfNeeded:indexPath.section];
         [self buildRowsIfNeeded:indexPath.row inExistSection:indexPath.section];
@@ -131,7 +123,7 @@
 }
 
 - (void)buildSectionsIfNeeded:(NSInteger)targetSection {
-    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray<NSMutableArray<NSNumber *> *> *heightsBySection) {
         for (NSInteger section = 0; section <= targetSection; ++section) {
             if (section >= heightsBySection.count) {
                 heightsBySection[section] = [NSMutableArray array];
@@ -141,7 +133,7 @@
 }
 
 - (void)buildRowsIfNeeded:(NSInteger)targetRow inExistSection:(NSInteger)section {
-    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray *heightsBySection) {
+    [self enumerateAllOrientationsUsingBlock:^(NSMutableArray<NSMutableArray<NSNumber *> *> *heightsBySection) {
         NSMutableArray *heightsByRow = heightsBySection[section];
         for (NSInteger row = 0; row <= targetRow; ++row) {
             if (row >= heightsByRow.count) {

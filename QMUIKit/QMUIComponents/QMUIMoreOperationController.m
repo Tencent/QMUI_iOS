@@ -612,7 +612,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
+- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     __block CGFloat contentHeight = (self.cancelButton.hidden ? 0 : self.cancelButtonHeight + self.cancelButtonMarginTop);
     [self.mutableScrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
         NSArray<QMUIMoreOperationItemView *> *itemSection = self.mutableItems[idx];

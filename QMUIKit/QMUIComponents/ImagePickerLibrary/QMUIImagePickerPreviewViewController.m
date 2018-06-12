@@ -125,6 +125,10 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     }
 }
 
+- (BOOL)prefersStatusBarHidden {
+    return YES;
+}
+
 - (void)setToolBarBackgroundColor:(UIColor *)toolBarBackgroundColor {
     _toolBarBackgroundColor = toolBarBackgroundColor;
     self.topToolBarView.backgroundColor = self.toolBarBackgroundColor;
