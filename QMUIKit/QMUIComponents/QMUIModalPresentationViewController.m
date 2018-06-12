@@ -303,6 +303,7 @@ static QMUIModalPresentationViewController *appearance;
 - (void)updateLayout {
     if ([self isViewLoaded]) {
         [self.view setNeedsLayout];
+        [self.view layoutIfNeeded];
     }
 }
 
@@ -511,8 +512,8 @@ static QMUIModalPresentationViewController *appearance;
     CGSize contentViewContainerSize = CGSizeMake(CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentViewMargins), CGRectGetHeight(self.view.bounds) - self.keyboardHeight - UIEdgeInsetsGetVerticalValue(self.contentViewMargins));
     CGSize contentViewLimitSize = CGSizeMake(fmin(self.maximumContentViewWidth, contentViewContainerSize.width), contentViewContainerSize.height);
     CGSize contentViewSize = CGSizeZero;
-    if ([self.contentViewController respondsToSelector:@selector(preferredContentSizeInModalPresentationViewController:limitSize:)]) {
-        contentViewSize = [self.contentViewController preferredContentSizeInModalPresentationViewController:self limitSize:contentViewLimitSize];
+    if ([self.contentViewController respondsToSelector:@selector(preferredContentSizeInModalPresentationViewController:keyboardHeight:limitSize:)]) {
+        contentViewSize = [self.contentViewController preferredContentSizeInModalPresentationViewController:self keyboardHeight:self.keyboardHeight limitSize:contentViewLimitSize];
     } else {
         contentViewSize = [self.contentView sizeThatFits:contentViewLimitSize];
     }
@@ -543,18 +544,12 @@ static QMUIModalPresentationViewController *appearance;
 
 #pragma mark - <QMUIKeyboardManagerDelegate>
 
-- (void)keyboardWillShowWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
+- (void)keyboardWillChangeFrameWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
     CGRect keyboardRect = [QMUIKeyboardManager convertKeyboardRect:[keyboardUserInfo endFrame] toView:self.view];
-    CGFloat keyboardHeight = keyboardRect.size.height;
-    if (keyboardHeight <= 0) return;
-    
+    CGFloat keyboardHeight = CGRectIntersection(self.view.bounds, keyboardRect).size.height;
     self.keyboardHeight = keyboardHeight;
-    [self.view setNeedsLayout];
-}
-
-- (void)keyboardWillHideWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
-    self.keyboardHeight = 0;
-    [self.view setNeedsLayout];
+    
+    [self updateLayout];
 }
 
 #pragma mark - 屏幕旋转

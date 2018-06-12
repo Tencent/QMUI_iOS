@@ -16,7 +16,8 @@
  *  1. 将 tableView.qmui_cacheCellHeightByKeyAutomatically = YES
  *  2. 实现 tableView 的 delegate 方法 qmui_tableView:cacheKeyForRowAtIndexPath: 返回一个 key。建议 key 由所有可能影响高度的字段拼起来，这样当数据发生变化时不需要手动更新缓存。
  *
- *  @note 注意这里的高度缓存仅适合于使用 self-sizing 机制的 tableView（也即 tableView.rowHeight = UITableViewAutomaticDimension），QMUICellHeightKeyCache 会自动在 willDisplayCell 里将 cell 的当前高度缓存起来，然后在 heightForRow 里从缓存中读取高度后使用。而如果你的 tableView 并没有使用 self-sizing 机制（也即自己重写了 heightForRow），则请勿使用本控件的功能。
+ *  @note 注意这里的高度缓存仅适合于使用 self-sizing 机制的 tableView（也即 tableView.rowHeight = UITableViewAutomaticDimension），QMUICellHeightKeyCache 会自动在 willDisplayCell 里将 cell 的当前高度缓存起来，然后在 heightForRow 里从缓存中读取高度后使用。
+ *  @note 如果 tableView.delegate 指向的类既想使用 QMUICellHeightKeyCache 的功能，又需要在 tableView:heightForRowAtIndexPath: 里写业务逻辑，则可通过 tableView:heightForRowAtIndexPath: 返回 -1 来使用 QMUICellHeightKeyCache 的计算结果，返回大于等于 0 的值将不会触发 QMUICellHeightKeyCache 的计算，具体请看 QMUI Demo。
  *
  *  @note 在 UITableView 的宽度和 contentInset 发生变化时（例如横竖屏旋转、iPad 分屏），高度缓存会自动刷新，所以无需为这种情况做保护。
  */

@@ -23,10 +23,6 @@
 }
 
 - (BOOL)qmui_alreadyAtTop {
-    if (!self.qmui_canScroll) {
-        return YES;
-    }
-    
     if (self.contentOffset.y == -self.qmui_contentInset.top) {
         return YES;
     }

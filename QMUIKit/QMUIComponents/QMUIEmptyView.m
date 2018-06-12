@@ -57,7 +57,7 @@
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     self.scrollView.scrollsToTop = NO;
-    self.scrollView.contentInset = UIEdgeInsetsMake(0, 10, 0, 10); // 避免 label 直接撑满到屏幕两边，不好看
+    self.scrollView.contentInset = UIEdgeInsetsMake(0, 16, 0, 16);
     [self addSubview:self.scrollView];
     
     _contentView = [[UIView alloc] init];

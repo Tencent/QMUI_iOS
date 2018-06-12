@@ -10,6 +10,7 @@
 #import "QMUICore.h"
 #import "NSParagraphStyle+QMUI.h"
 #import "NSObject+QMUI.h"
+#import "NSNumber+QMUI.h"
 
 @implementation UILabel (QMUI)
 
@@ -148,7 +149,7 @@ static char kAssociatedObjectKey_lineHeight;
 }
 
 - (CGFloat)qmui_lineHeight {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight) floatValue];
+    return [(NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight) qmui_CGFloatValue];
 }
 
 - (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor {

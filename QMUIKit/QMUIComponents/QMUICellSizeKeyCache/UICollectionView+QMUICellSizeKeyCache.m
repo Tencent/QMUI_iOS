@@ -182,9 +182,6 @@ static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
             return;
         }
         [qmui_methodsReplacedClasses addObject:NSStringFromClass(delegate.class)];
-        
-        ExchangeImplementationsInTwoClasses(delegate.class, @selector(collectionView:willDisplayCell:forItemAtIndexPath:), self.class, @selector(qmui_collectionView:willDisplayCell:forItemAtIndexPath:));
-//        ExchangeImplementationsInTwoClasses(delegate.class, @selector(collectionView:layout:sizeForItemAtIndexPath:), self.class, @selector(qmui_collectionView:layout:sizeForItemAtIndexPath:));
     }
 }
 

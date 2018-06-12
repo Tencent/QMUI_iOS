@@ -401,7 +401,7 @@ EndIgnoreClangWarning
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
+- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     if (!self.hasCustomContentView) {
         return limitSize;
     }
@@ -601,7 +601,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
+- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     CGFloat contentViewVerticalMargin = UIEdgeInsetsGetVerticalValue(self.contentViewMargins);
     CGFloat footerHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0;
     CGFloat tableViewLimitHeight = limitSize.height - CGRectGetHeight(self.headerView.frame) - footerHeight - contentViewVerticalMargin;
@@ -745,7 +745,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
+- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     CGFloat textFieldHeight = self.textFieldLabel.hidden ? 56.0 : 25.0; // 25.0 考虑了行高导致的 offsetoffset
     CGFloat textFieldTitleHeight = 29.0;
     

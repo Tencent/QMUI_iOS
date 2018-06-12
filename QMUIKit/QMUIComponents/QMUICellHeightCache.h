@@ -40,7 +40,7 @@
 - (void)invalidateAllHeightCache;
 
 // 给 tableview 和 collectionview 调用的方法
-- (void)enumerateAllOrientationsUsingBlock:(void (^)(NSMutableArray *heightsBySection))block;
+- (void)enumerateAllOrientationsUsingBlock:(void (^)(NSMutableArray<NSMutableArray<NSNumber *> *> *heightsBySection))block;
 - (void)buildSectionsIfNeeded:(NSInteger)targetSection;
 - (void)buildCachesAtIndexPathsIfNeeded:(NSArray *)indexPaths;
 

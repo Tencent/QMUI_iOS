@@ -46,7 +46,7 @@
         
         // 针对非 customView 的 UIBarButtonItem，负责将红点添加上去
         ExtendImplementationOfVoidMethodWithSingleArgument([UIBarButtonItem class], @selector(setView:), UIView *, ^(UIBarButtonItem *selfObject, UIView *firstArgv) {
-            if (selfObject.qmui_badgeValue > 0 && selfObject.qmui_badgeLabel) {
+            if (selfObject.qmui_badgeString.length && selfObject.qmui_badgeLabel) {
                 [firstArgv addSubview:selfObject.qmui_badgeLabel];
             }
             if (selfObject.qmui_shouldShowUpdatesIndicator && selfObject.qmui_updatesIndicatorView) {
@@ -56,7 +56,7 @@
         
         // 针对 UITabBarItem，负责将红点添加上去
         ExtendImplementationOfVoidMethodWithSingleArgument([UITabBarItem class], @selector(setView:), UIView *, ^(UITabBarItem *selfObject, UIView *firstArgv) {
-            if (selfObject.qmui_badgeValue > 0 && selfObject.qmui_badgeLabel) {
+            if (selfObject.qmui_badgeString.length && selfObject.qmui_badgeLabel) {
                 [firstArgv addSubview:selfObject.qmui_badgeLabel];
             }
             if (selfObject.qmui_shouldShowUpdatesIndicator && selfObject.qmui_updatesIndicatorView) {
@@ -113,10 +113,20 @@
 
 #pragma mark - Badge
 
-static char kAssociatedObjectKey_badgeValue;
-- (void)setQmui_badgeValue:(NSUInteger)qmui_badgeValue {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeValue, @(qmui_badgeValue), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (qmui_badgeValue > 0) {
+static char kAssociatedObjectKey_badgeInteger;
+- (void)setQmui_badgeInteger:(NSUInteger)qmui_badgeInteger {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeInteger, @(qmui_badgeInteger), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.qmui_badgeString = qmui_badgeInteger > 0 ? [NSString stringWithFormat:@"%@", @(qmui_badgeInteger)] : nil;
+}
+
+- (NSUInteger)qmui_badgeInteger {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeInteger)) unsignedIntegerValue];
+}
+
+static char kAssociatedObjectKey_badgeString;
+- (void)setQmui_badgeString:(NSString *)qmui_badgeString {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeString, qmui_badgeString, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_badgeString.length) {
         if (!self.qmui_badgeLabel) {
             self.qmui_badgeLabel = [[_QMUIBadgeLabel alloc] init];
             self.qmui_badgeLabel.clipsToBounds = YES;
@@ -129,7 +139,7 @@ static char kAssociatedObjectKey_badgeValue;
             self.qmui_badgeLabel.centerOffsetLandscape = self.qmui_badgeCenterOffsetLandscape;
             [self.qmui_view addSubview:self.qmui_badgeLabel];
         }
-        self.qmui_badgeLabel.text = [NSString stringWithFormat:@"%@", @(qmui_badgeValue)];
+        self.qmui_badgeLabel.text = qmui_badgeString;
         self.qmui_badgeLabel.hidden = NO;
         [self setNeedsUpdateBadgeLabelLayout];
     } else {
@@ -137,8 +147,8 @@ static char kAssociatedObjectKey_badgeValue;
     }
 }
 
-- (NSUInteger)qmui_badgeValue {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeValue)) unsignedIntegerValue];
+- (NSString *)qmui_badgeString {
+    return (NSString *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeString);
 }
 
 static char kAssociatedObjectKey_badgeBackgroundColor;
@@ -225,7 +235,7 @@ static char kAssociatedObjectKey_badgeLabel;
 }
 
 - (void)setNeedsUpdateBadgeLabelLayout {
-    if (self.qmui_badgeValue > 0) {
+    if (self.qmui_badgeString.length) {
         if ([self isKindOfClass:[UIBarButtonItem class]] && ((UIBarButtonItem *)self).customView) {
             // 如果是 customView，由于无法重写它的 layoutSubviews，所以认为它目前的 frame 已经是最终的 frame，直接按照当前 frame 来布局即可
             [self.qmui_badgeLabel updateLayout];
