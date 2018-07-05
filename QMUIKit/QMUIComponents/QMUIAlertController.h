@@ -47,11 +47,11 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
  *
  *  @param title   按钮标题
  *  @param style   按钮style，跟系统一样，有 Default、Cancel、Destructive 三种类型
- *  @param handler 处理点击时间的block
+ *  @param handler 处理点击事件的block，注意 QMUIAlertAction 点击后必定会隐藏 alertController，不需要手动在 handler 里 hide
  *
  *  @return QMUIAlertController按钮的实例
  */
-+ (instancetype)actionWithTitle:(NSString *)title style:(QMUIAlertActionStyle)style handler:(void (^)(__kindof QMUIAlertController *aAlertController, QMUIAlertAction *action))handler;
++ (instancetype)actionWithTitle:(nullable NSString *)title style:(QMUIAlertActionStyle)style handler:(nullable void (^)(__kindof QMUIAlertController *aAlertController, QMUIAlertAction *action))handler;
 
 /// `QMUIAlertAction`对应的 button 对象
 @property(nonatomic, strong, readonly) QMUIButton *button;
@@ -86,7 +86,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic, assign) CGFloat alertContentMaximumWidth UI_APPEARANCE_SELECTOR;
 
 /// alert上分隔线颜色，默认UIColorMake(211, 211, 219)。
-@property(nonatomic, strong) UIColor *alertSeperatorColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) UIColor *alertSeparatorColor UI_APPEARANCE_SELECTOR;
 
 /// alert标题样式，默认@{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
 @property(nonatomic, strong) NSDictionary<NSString *, id> *alertTitleAttributes UI_APPEARANCE_SELECTOR;
@@ -144,7 +144,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic, assign) CGFloat sheetContentMaximumWidth UI_APPEARANCE_SELECTOR;
 
 /// sheet分隔线颜色，默认UIColorMake(211, 211, 219)
-@property(nonatomic, strong) UIColor *sheetSeperatorColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) UIColor *sheetSeparatorColor UI_APPEARANCE_SELECTOR;
 
 /// sheet标题样式，默认@{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontBoldMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
 @property(nonatomic, copy) NSDictionary<NSString *, id> *sheetTitleAttributes UI_APPEARANCE_SELECTOR;
@@ -239,6 +239,12 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 
 /// 将`QMUIAlertController`弹出来的`QMUIModalPresentationViewController`对象
 @property(nonatomic, strong, readonly) QMUIModalPresentationViewController *modalPresentationViewController;
+
+/// 主体内容（alert 下指整个弹窗，actionSheet 下指取消按钮上方的那些 header 和 按钮）背后用来做背景样式的 view，默认为空白的 UIView，当你需要做磨砂效果时可以将一个 UIVisualEffectView 赋值给它（但推荐用 QMUIVisualEffectView）。当赋值为 nil 时，内部会自动创建一个空白的 UIView 代替，以保证这个属性不为空。
+@property(nonatomic, strong) UIView *mainVisualEffectView;
+
+/// actionSheet 下的取消按钮背后用来做背景样式的 view，默认为空白的 UIView，当你需要做磨砂效果时可以将一个 UIVisualEffectView 赋值给它（但推荐用 QMUIVisualEffectView）。alert 情况下不会出现。当赋值为 nil 时，内部会自动创建一个空白的 UIView 代替，以保证这个属性不为空。
+@property(nonatomic, strong) UIView *cancelButtonVisualEffectView;
 
 /**
  *  设置按钮的排序是否要由用户添加的顺序来决定，默认为NO，也即与系统原生`UIAlertController`一致，QMUIAlertActionStyleDestructive 类型的action必定在最后面。

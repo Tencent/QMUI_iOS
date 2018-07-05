@@ -40,7 +40,7 @@
  * 注意：暂不支持 dashPhase 和 dashPattens 数组设置，因为这些都定制性太强，如果用到则自己调用系统方法即可。
  */
 
-+ (CAShapeLayer *)qmui_seperatorDashLayerWithLineLength:(NSInteger)lineLength
++ (CAShapeLayer *)qmui_separatorDashLayerWithLineLength:(NSInteger)lineLength
                                             lineSpacing:(NSInteger)lineSpacing
                                               lineWidth:(CGFloat)lineWidth
                                               lineColor:(CGColorRef)lineColor
@@ -53,9 +53,9 @@
  * 其中，InHorizon 是横向；InVertical 是纵向。
  
  */
-+ (CAShapeLayer *)qmui_seperatorDashLayerInHorizontal;
++ (CAShapeLayer *)qmui_separatorDashLayerInHorizontal;
 
-+ (CAShapeLayer *)qmui_seperatorDashLayerInVertical;
++ (CAShapeLayer *)qmui_separatorDashLayerInVertical;
 
 /**
  * 产生一个适用于做通用分隔线的 layer，高度为 PixelOne，默认会移除动画，并且背景色用 UIColorSeparator

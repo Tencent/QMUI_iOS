@@ -31,14 +31,12 @@
 - (void)setShouldBlurBackgroundView:(BOOL)shouldBlurBackgroundView {
     _shouldBlurBackgroundView = shouldBlurBackgroundView;
     if (shouldBlurBackgroundView) {
-        if (NSClassFromString(@"UIBlurEffect")) {
-            UIBlurEffect *effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
-            UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:effect];
-            effectView.layer.cornerRadius = self.cornerRadius;
-            effectView.layer.masksToBounds = YES;
-            [self addSubview:effectView];
-            self.effectView = effectView;
-        }
+        UIBlurEffect *effect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+        UIVisualEffectView *effectView = [[UIVisualEffectView alloc] initWithEffect:effect];
+        effectView.layer.cornerRadius = self.cornerRadius;
+        effectView.layer.masksToBounds = YES;
+        [self addSubview:effectView];
+        self.effectView = effectView;
     } else {
         if (self.effectView) {
             [self.effectView removeFromSuperview];

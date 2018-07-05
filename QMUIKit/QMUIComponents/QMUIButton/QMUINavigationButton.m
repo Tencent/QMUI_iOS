@@ -333,7 +333,13 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             @selector(setLeftBarButtonItem:animated:),
             @selector(setLeftBarButtonItems:animated:),
             @selector(setRightBarButtonItem:animated:),
-            @selector(setRightBarButtonItems:animated:)
+            @selector(setRightBarButtonItems:animated:),
+            
+            // 如果被拦截，则 getter 也要返回被缓存的 item，否则会出现这个 bug：https://github.com/QMUI/QMUI_iOS/issues/362
+            @selector(leftBarButtonItem),
+            @selector(leftBarButtonItems),
+            @selector(rightBarButtonItem),
+            @selector(rightBarButtonItems)
         };
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
@@ -447,6 +453,34 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             items[i].qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionNone;
         }
     }
+}
+
+- (UIBarButtonItem *)qmui_leftBarButtonItem {
+    if (self.tempLeftBarButtonItems) {
+        return self.tempLeftBarButtonItems.firstObject;
+    }
+    return [self qmui_leftBarButtonItem];
+}
+
+- (NSArray<UIBarButtonItem *> *)qmui_leftBarButtonItems {
+    if (self.tempLeftBarButtonItems) {
+        return self.tempLeftBarButtonItems;
+    }
+    return [self qmui_leftBarButtonItems];
+}
+
+- (UIBarButtonItem *)qmui_rightBarButtonItem {
+    if (self.tempRightBarButtonItems) {
+        return self.tempRightBarButtonItems.firstObject;
+    }
+    return [self qmui_rightBarButtonItem];
+}
+
+- (NSArray<UIBarButtonItem *> *)qmui_rightBarButtonItems {
+    if (self.tempRightBarButtonItems) {
+        return self.tempRightBarButtonItems;
+    }
+    return [self qmui_rightBarButtonItems];
 }
 
 - (UINavigationBar *)qmui_navigationBar {

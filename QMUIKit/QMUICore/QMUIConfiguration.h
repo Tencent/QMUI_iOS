@@ -137,7 +137,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarPlaceholderColor;
 @property(nonatomic, strong, nullable) UIFont   *searchBarFont;
-/// 搜索框放大镜icon的图片，大小必须为13x13pt，否则会失真（系统的限制）
+/// 搜索框放大镜icon的图片，大小必须为14x14pt，否则会失真（系统的限制）
 @property(nonatomic, strong, nullable) UIImage  *searchBarSearchIconImage;
 @property(nonatomic, strong, nullable) UIImage  *searchBarClearIconImage;
 @property(nonatomic, assign) CGFloat            searchBarTextFieldCornerRadius;

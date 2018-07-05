@@ -486,6 +486,7 @@
     dispatch_once(&onceToken, ^{
         Class cls = [self class];
         ExchangeImplementations(cls, @selector(pushViewController:animated:), @selector(NavigationBarTransition_pushViewController:animated:));
+        ExchangeImplementations(cls, @selector(setViewControllers:animated:), @selector(NavigationBarTransition_setViewControllers:animated:));
         ExchangeImplementations(cls, @selector(popViewControllerAnimated:), @selector(NavigationBarTransition_popViewControllerAnimated:));
         ExchangeImplementations(cls, @selector(popToViewController:animated:), @selector(NavigationBarTransition_popToViewController:animated:));
         ExchangeImplementations(cls, @selector(popToRootViewControllerAnimated:), @selector(NavigationBarTransition_popToRootViewControllerAnimated:));
@@ -511,6 +512,19 @@
     }
 
     return [self NavigationBarTransition_pushViewController:viewController animated:animated];
+}
+
+- (void)NavigationBarTransition_setViewControllers:(NSArray<UIViewController *> *)viewControllers animated:(BOOL)animated {
+    if (viewControllers.count <= 0 || !animated) {
+        return [self NavigationBarTransition_setViewControllers:viewControllers animated:animated];
+    }
+    UIViewController *disappearingViewController = self.viewControllers.lastObject;
+    UIViewController *appearingViewController = viewControllers.lastObject;
+    if (!disappearingViewController) {
+        return [self NavigationBarTransition_setViewControllers:viewControllers animated:animated];
+    }
+    [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
+    return [self NavigationBarTransition_setViewControllers:viewControllers animated:animated];
 }
 
 - (UIViewController *)NavigationBarTransition_popViewControllerAnimated:(BOOL)animated {

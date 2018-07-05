@@ -48,6 +48,19 @@
     [self configureItems];
 }
 
+- (void)setItemConfigurationHandler:(void (^)(QMUIPopupMenuView *, QMUIPopupMenuItem *, NSInteger, NSInteger))itemConfigurationHandler {
+    _itemConfigurationHandler = [itemConfigurationHandler copy];
+    if (_itemConfigurationHandler && self.itemSections.count) {
+        for (NSInteger section = 0, sectionCount = self.itemSections.count; section < sectionCount; section ++) {
+            NSArray<QMUIPopupMenuItem *> *items = self.itemSections[section];
+            for (NSInteger row = 0, rowCount = items.count; row < rowCount; row ++) {
+                QMUIPopupMenuItem *item = items[row];
+                _itemConfigurationHandler(self, item, section, row);
+            }
+        }
+    }
+}
+
 - (BOOL)shouldShowSeparatorAtRow:(NSInteger)row rowCount:(NSInteger)rowCount inSection:(NSInteger)section sectionCount:(NSInteger)sectionCount {
     return (!self.shouldShowSectionSeparatorOnly && self.shouldShowItemSeparator && row < rowCount - 1) || (self.shouldShowSectionSeparatorOnly && row == rowCount - 1 && section < sectionCount - 1);
 }
@@ -66,8 +79,11 @@
             item.button.highlightedBackgroundColor = self.itemHighlightedBackgroundColor;
             item.button.imageEdgeInsets = UIEdgeInsetsMake(0, -self.imageMarginRight, 0, self.imageMarginRight);
             item.button.contentEdgeInsets = UIEdgeInsetsMake(0, self.padding.left - item.button.imageEdgeInsets.left, 0, self.padding.right);
-            [self.scrollView addSubview:item.button];
             item.menuView = self;
+            if (self.itemConfigurationHandler) {
+                self.itemConfigurationHandler(self, item, section, row);
+            }
+            [self.scrollView addSubview:item.button];
             
             // 配置分隔线，注意每一个 section 里的最后一行是不显示分隔线的
             BOOL shouldShowSeparatorAtRow = [self shouldShowSeparatorAtRow:row rowCount:rowCount inSection:section sectionCount:sectionCount];

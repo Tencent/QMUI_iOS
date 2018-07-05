@@ -119,7 +119,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         
         _operationToolBarView = [[UIView alloc] init];
         self.operationToolBarView.backgroundColor = UIColorWhite;
-        self.operationToolBarView.qmui_borderPosition = QMUIBorderViewPositionTop;
+        self.operationToolBarView.qmui_borderPosition = QMUIViewBorderPositionTop;
         [self.view addSubview:self.operationToolBarView];
         
         _sendButton = [[QMUIButton alloc] init];

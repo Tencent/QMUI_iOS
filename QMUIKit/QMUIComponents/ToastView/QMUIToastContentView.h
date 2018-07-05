@@ -16,7 +16,7 @@
 @interface QMUIToastContentView : UIView
 
 /**
- * 设置一个UIView，可以是：菊花、图片等等
+ * 设置一个UIView，可以是：菊花、图片等等，请自行保证 customView 的 size 被正确设置
  */
 @property(nonatomic, strong) UIView *customView;
 

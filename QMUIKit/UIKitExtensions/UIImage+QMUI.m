@@ -30,9 +30,30 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return [NSString stringWithFormat:@"%@, scale = %@", [self qmui_description], @(self.scale)];
 }
 
++ (UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock {
+    if (!actionBlock || CGSizeIsEmpty(size)) {
+        return nil;
+    }
+    UIGraphicsBeginImageContextWithOptions(size, opaque, scale);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextInspectContext(context);
+    actionBlock(context);
+    UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return imageOut;
+}
+
 - (CGSize)qmui_sizeInPixel {
     CGSize size = CGSizeMake(self.size.width * self.scale, self.size.height * self.scale);
     return size;
+}
+
+- (BOOL)qmui_opaque {
+    CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(self.CGImage);
+    BOOL opaque = alphaInfo == kCGImageAlphaNoneSkipLast
+    || alphaInfo == kCGImageAlphaNoneSkipFirst
+    || alphaInfo == kCGImageAlphaNone;
+    return opaque;
 }
 
 - (UIColor *)qmui_averageColor {
@@ -58,16 +79,15 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 
 - (UIImage *)qmui_grayImage {
     // CGBitmapContextCreate 是无倍数的，所以要自己换算成1倍
-    NSInteger width = self.size.width * self.scale;
-    NSInteger height = self.size.height * self.scale;
+    CGSize size = self.qmui_sizeInPixel;
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
-    CGContextRef context = CGBitmapContextCreate(NULL, width, height, 8, 0, colorSpace, kCGBitmapByteOrderDefault);
+    CGContextRef context = CGBitmapContextCreate(NULL, size.width, size.height, 8, 0, colorSpace, kCGBitmapByteOrderDefault);
     CGContextInspectContext(context);
     CGColorSpaceRelease(colorSpace);
     if (context == NULL) {
         return nil;
     }
-    CGRect imageRect = CGRectMake(0, 0, width, height);
+    CGRect imageRect = CGRectMakeWithSize(size);
     CGContextDrawImage(context, imageRect, self.CGImage);
     
     UIImage *grayImage = nil;
@@ -75,7 +95,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     if (self.qmui_opaque) {
         grayImage = [UIImage imageWithCGImage:imageRef scale:self.scale orientation:self.imageOrientation];
     } else {
-        CGContextRef alphaContext = CGBitmapContextCreate(NULL, width, height, 8, 0, nil, kCGImageAlphaOnly);
+        CGContextRef alphaContext = CGBitmapContextCreate(NULL, size.width, size.height, 8, 0, nil, kCGImageAlphaOnly);
         CGContextDrawImage(alphaContext, imageRect, self.CGImage);
         CGImageRef mask = CGBitmapContextCreateImage(alphaContext);
 		CGImageRef maskedGrayImageRef = CGImageCreateWithMask(imageRef, mask);
@@ -85,10 +105,9 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         CGContextRelease(alphaContext);
         
         // 用 CGBitmapContextCreateImage 方式创建出来的图片，CGImageAlphaInfo 总是为 CGImageAlphaInfoNone，导致 qmui_opaque 与原图不一致，所以这里再做多一步
-        UIGraphicsBeginImageContextWithOptions(grayImage.size, NO, grayImage.scale);
-        [grayImage drawInRect:imageRect];
-        grayImage = UIGraphicsGetImageFromCurrentImageContext();
-        UIGraphicsEndImageContext();
+        grayImage = [UIImage qmui_imageWithSize:grayImage.size opaque:NO scale:grayImage.scale actions:^(CGContextRef contextRef) {
+            [grayImage drawInRect:imageRect];
+        }];
     }
     
     CGContextRelease(context);
@@ -97,39 +116,20 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 - (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha {
-    UIGraphicsBeginImageContextWithOptions(self.size, NO, self.scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    CGRect drawingRect = CGRectMake(0, 0, self.size.width, self.size.height);
-    [self drawInRect:drawingRect blendMode:kCGBlendModeNormal alpha:alpha];
-    UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return imageOut;
-}
-
-- (BOOL)qmui_opaque {
-    CGImageAlphaInfo alphaInfo = CGImageGetAlphaInfo(self.CGImage);
-    BOOL opaque = alphaInfo == kCGImageAlphaNoneSkipLast
-                  || alphaInfo == kCGImageAlphaNoneSkipFirst
-                  || alphaInfo == kCGImageAlphaNone;
-    return opaque;
+    return [UIImage qmui_imageWithSize:self.size opaque:NO scale:self.scale actions:^(CGContextRef contextRef) {
+        [self drawInRect:CGRectMakeWithSize(self.size) blendMode:kCGBlendModeNormal alpha:alpha];
+    }];
 }
 
 - (UIImage *)qmui_imageWithTintColor:(UIColor *)tintColor {
-    UIImage *imageIn = self;
-    CGRect rect = CGRectMake(0, 0, imageIn.size.width, imageIn.size.height);
-    UIGraphicsBeginImageContextWithOptions(imageIn.size, self.qmui_opaque, imageIn.scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    CGContextTranslateCTM(context, 0, imageIn.size.height);
-    CGContextScaleCTM(context, 1.0, -1.0);
-    CGContextSetBlendMode(context, kCGBlendModeNormal);
-    CGContextClipToMask(context, rect, imageIn.CGImage);
-    CGContextSetFillColorWithColor(context, tintColor.CGColor);
-    CGContextFillRect(context, rect);
-    UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return imageOut;
+    return [UIImage qmui_imageWithSize:self.size opaque:self.qmui_opaque scale:self.scale actions:^(CGContextRef contextRef) {
+        CGContextTranslateCTM(contextRef, 0, self.size.height);
+        CGContextScaleCTM(contextRef, 1.0, -1.0);
+        CGContextSetBlendMode(contextRef, kCGBlendModeNormal);
+        CGContextClipToMask(contextRef, CGRectMakeWithSize(self.size), self.CGImage);
+        CGContextSetFillColorWithColor(contextRef, tintColor.CGColor);
+        CGContextFillRect(contextRef, CGRectMakeWithSize(self.size));
+    }];
 }
 
 - (UIImage *)qmui_imageWithBlendColor:(UIColor *)blendColor {
@@ -146,23 +146,17 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 - (UIImage *)qmui_imageWithImageAbove:(UIImage *)image atPoint:(CGPoint)point {
-    UIImage *imageIn = self;
-    UIImage *imageOut = nil;
-    UIGraphicsBeginImageContextWithOptions(imageIn.size, self.qmui_opaque, imageIn.scale);
-    [imageIn drawInRect:CGRectMakeWithSize(imageIn.size)];
-    [image drawAtPoint:point];
-    imageOut = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return imageOut;
+    return [UIImage qmui_imageWithSize:self.size opaque:self.qmui_opaque scale:self.scale actions:^(CGContextRef contextRef) {
+        [self drawInRect:CGRectMakeWithSize(self.size)];
+        [image drawAtPoint:point];
+    }];
 }
 
 - (UIImage *)qmui_imageWithSpacingExtensionInsets:(UIEdgeInsets)extension {
     CGSize contextSize = CGSizeMake(self.size.width + UIEdgeInsetsGetHorizontalValue(extension), self.size.height + UIEdgeInsetsGetVerticalValue(extension));
-    UIGraphicsBeginImageContextWithOptions(contextSize, self.qmui_opaque, self.scale);
-    [self drawAtPoint:CGPointMake(extension.left, extension.top)];
-    UIImage *finalImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return finalImage;
+    return [UIImage qmui_imageWithSize:contextSize opaque:self.qmui_opaque scale:self.scale actions:^(CGContextRef contextRef) {
+        [self drawAtPoint:CGPointMake(extension.left, extension.top)];
+    }];
 }
 
 - (UIImage *)qmui_imageWithClippedRect:(CGRect)rect {
@@ -185,31 +179,25 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 - (UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius scale:(CGFloat)scale {
-    CGRect imageRect = CGRectMakeWithSize(self.size);
     if (cornerRadius <= 0) {
         return self;
     }
-    
-    UIGraphicsBeginImageContextWithOptions(self.size, NO, scale);
-    [[UIBezierPath bezierPathWithRoundedRect:imageRect cornerRadius:cornerRadius] addClip];
-    [self drawInRect:imageRect];
-    UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return imageOut;
+    return [UIImage qmui_imageWithSize:self.size opaque:NO scale:scale actions:^(CGContextRef contextRef) {
+        [[UIBezierPath bezierPathWithRoundedRect:CGRectMakeWithSize(self.size) cornerRadius:cornerRadius] addClip];
+        [self drawInRect:CGRectMakeWithSize(self.size)];
+    }];
 }
 
 - (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size {
-    return [self qmui_imageResizedInLimitedSize:size contentMode:UIViewContentModeScaleAspectFit];
+    return [self qmui_imageResizedInLimitedSize:size resizingMode:QMUIImageResizingModeScaleAspectFit];
 }
 
-- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size contentMode:(UIViewContentMode)contentMode {
-    return [self qmui_imageResizedInLimitedSize:size contentMode:contentMode scale:self.scale];
+- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size resizingMode:(QMUIImageResizingMode)resizingMode {
+    return [self qmui_imageResizedInLimitedSize:size resizingMode:resizingMode scale:self.scale];
 }
 
-- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale {
+- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size resizingMode:(QMUIImageResizingMode)resizingMode scale:(CGFloat)scale {
     size = CGSizeFlatSpecificScale(size, scale);
-    CGContextInspectSize(size);
     CGSize imageSize = self.size;
     CGRect drawingRect = CGRectZero;// 图片绘制的 rect
     CGSize contextSize = CGSizeZero;// 画布的大小
@@ -218,33 +206,43 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         return self;
     }
     
-    if (contentMode == UIViewContentModeScaleToFill) {
-        drawingRect = CGRectMakeWithSize(size);
-        contextSize = size;
-    } else {
+    if (resizingMode >= QMUIImageResizingModeScaleAspectFit && resizingMode <= QMUIImageResizingModeScaleAspectFillBottom) {
         CGFloat horizontalRatio = size.width / imageSize.width;
         CGFloat verticalRatio = size.height / imageSize.height;
         CGFloat ratio = 0;
-        if (contentMode == UIViewContentModeScaleAspectFill) {
-            ratio = fmax(horizontalRatio, verticalRatio);
+        if (resizingMode >= QMUIImageResizingModeScaleAspectFill && resizingMode < (QMUIImageResizingModeScaleAspectFill + 10)) {
+            ratio = MAX(horizontalRatio, verticalRatio);
         } else {
-            // 默认按 UIViewContentModeScaleAspectFit
-            ratio = fmin(horizontalRatio, verticalRatio);
+            // 默认按 QMUIImageResizingModeScaleAspectFit
+            ratio = MIN(horizontalRatio, verticalRatio);
         }
         CGSize resizedSize = CGSizeMake(flatSpecificScale(imageSize.width * ratio, scale), flatSpecificScale(imageSize.height * ratio, scale));
-        contextSize = CGSizeMake(fmin(size.width, resizedSize.width), fmin(size.height, resizedSize.height));
+        contextSize = CGSizeMake(MIN(size.width, resizedSize.width), MIN(size.height, resizedSize.height));
         drawingRect.origin.x = CGFloatGetCenter(contextSize.width, resizedSize.width);
-        drawingRect.origin.y = CGFloatGetCenter(contextSize.height, resizedSize.height);
+        
+        CGFloat originY = 0;
+        if (resizingMode % 10 == 1) {
+            // toTop
+            originY = 0;
+        } else if (resizingMode % 10 == 2) {
+            // toBottom
+            originY = contextSize.height - resizedSize.height;
+        } else {
+            // default is Center
+            originY = CGFloatGetCenter(contextSize.height, resizedSize.height);
+        }
+        drawingRect.origin.y = originY;
+        
         drawingRect.size = resizedSize;
+    } else {
+        // 默认按照 QMUIImageResizingModeScaleToFill
+        drawingRect = CGRectMakeWithSize(size);
+        contextSize = size;
     }
     
-    UIGraphicsBeginImageContextWithOptions(contextSize, self.qmui_opaque, scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    [self drawInRect:drawingRect];
-    UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return imageOut;
+    return [UIImage qmui_imageWithSize:contextSize opaque:self.qmui_opaque scale:scale actions:^(CGContextRef contextRef) {
+        [self drawInRect:drawingRect];
+    }];
 }
 
 - (UIImage *)qmui_imageWithOrientation:(UIImageOrientation)orientation {
@@ -259,50 +257,44 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     
     contextSize = CGSizeFlatSpecificScale(contextSize, self.scale);
     
-    UIGraphicsBeginImageContextWithOptions(contextSize, NO, self.scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    
-    // 画布的原点在左上角，旋转后可能图片就飞到画布外了，所以旋转前先把图片摆到特定位置再旋转，图片刚好就落在画布里
-    switch (orientation) {
-        case UIImageOrientationUp:
-            // 上
-            break;
-        case UIImageOrientationDown:
-            // 下
-            CGContextTranslateCTM(context, contextSize.width, contextSize.height);
-            CGContextRotateCTM(context, AngleWithDegrees(180));
-            break;
-        case UIImageOrientationLeft:
-            // 左
-            CGContextTranslateCTM(context, 0, contextSize.height);
-            CGContextRotateCTM(context, AngleWithDegrees(-90));
-            break;
-        case UIImageOrientationRight:
-            // 右
-            CGContextTranslateCTM(context, contextSize.width, 0);
-            CGContextRotateCTM(context, AngleWithDegrees(90));
-            break;
-        case UIImageOrientationUpMirrored:
-        case UIImageOrientationDownMirrored:
-            // 向上、向下翻转是一样的
-            CGContextTranslateCTM(context, 0, contextSize.height);
-            CGContextScaleCTM(context, 1, -1);
-            break;
-        case UIImageOrientationLeftMirrored:
-        case UIImageOrientationRightMirrored:
-            // 向左、向右翻转是一样的
-            CGContextTranslateCTM(context, contextSize.width, 0);
-            CGContextScaleCTM(context, -1, 1);
-            break;
-    }
-    
-    // 在前面画布的旋转、移动的结果上绘制自身即可，这里不用考虑旋转带来的宽高置换的问题
-    [self drawInRect:CGRectMake(0, 0, self.size.width, self.size.height)];
-    
-    UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return imageOut;
+    return [UIImage qmui_imageWithSize:contextSize opaque:NO scale:self.scale actions:^(CGContextRef contextRef) {
+        // 画布的原点在左上角，旋转后可能图片就飞到画布外了，所以旋转前先把图片摆到特定位置再旋转，图片刚好就落在画布里
+        switch (orientation) {
+            case UIImageOrientationUp:
+                // 上
+                break;
+            case UIImageOrientationDown:
+                // 下
+                CGContextTranslateCTM(contextRef, contextSize.width, contextSize.height);
+                CGContextRotateCTM(contextRef, AngleWithDegrees(180));
+                break;
+            case UIImageOrientationLeft:
+                // 左
+                CGContextTranslateCTM(contextRef, 0, contextSize.height);
+                CGContextRotateCTM(contextRef, AngleWithDegrees(-90));
+                break;
+            case UIImageOrientationRight:
+                // 右
+                CGContextTranslateCTM(contextRef, contextSize.width, 0);
+                CGContextRotateCTM(contextRef, AngleWithDegrees(90));
+                break;
+            case UIImageOrientationUpMirrored:
+            case UIImageOrientationDownMirrored:
+                // 向上、向下翻转是一样的
+                CGContextTranslateCTM(contextRef, 0, contextSize.height);
+                CGContextScaleCTM(contextRef, 1, -1);
+                break;
+            case UIImageOrientationLeftMirrored:
+            case UIImageOrientationRightMirrored:
+                // 向左、向右翻转是一样的
+                CGContextTranslateCTM(contextRef, contextSize.width, 0);
+                CGContextScaleCTM(contextRef, -1, 1);
+                break;
+        }
+        
+        // 在前面画布的旋转、移动的结果上绘制自身即可，这里不用考虑旋转带来的宽高置换的问题
+        [self drawInRect:CGRectMakeWithSize(self.size)];
+    }];
 }
 
 - (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor path:(UIBezierPath *)path {
@@ -310,18 +302,11 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         return self;
     }
     
-    UIImage *oldImage = self;
-    UIImage *resultImage;
-    CGRect rect = CGRectMake(0, 0, oldImage.size.width, oldImage.size.height);
-    UIGraphicsBeginImageContextWithOptions(oldImage.size, self.qmui_opaque, oldImage.scale);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    [oldImage drawInRect:rect];
-    CGContextSetStrokeColorWithColor(context, borderColor.CGColor);
-    [path stroke];
-    resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return resultImage;
+    return [UIImage qmui_imageWithSize:self.size opaque:self.qmui_opaque scale:self.scale actions:^(CGContextRef contextRef) {
+        [self drawInRect:CGRectMakeWithSize(self.size)];
+        CGContextSetStrokeColorWithColor(contextRef, borderColor.CGColor);
+        [path stroke];
+    }];
 }
 
 - (UIImage *)qmui_imageWithBorderColor:(UIColor *)borderColor borderWidth:(CGFloat)borderWidth cornerRadius:(CGFloat)cornerRadius {
@@ -405,17 +390,11 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 
 + (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size path:(UIBezierPath *)path addClip:(BOOL)addClip {
     size = CGSizeFlatted(size);
-    CGContextInspectSize(size);
-    UIImage *resultImage = nil;
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    CGContextSetStrokeColorWithColor(context, strokeColor.CGColor);
-    if (addClip) [path addClip];
-    [path stroke];
-    resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return resultImage;
+    return [UIImage qmui_imageWithSize:size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        CGContextSetStrokeColorWithColor(contextRef, strokeColor.CGColor);
+        if (addClip) [path addClip];
+        [path stroke];
+    }];
 }
 
 + (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size lineWidth:(CGFloat)lineWidth cornerRadius:(CGFloat)cornerRadius {
@@ -423,7 +402,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     // 往里面缩一半的lineWidth，应为stroke绘制线的时候是往两边绘制的
     // 如果cornerRadius为0的时候使用bezierPathWithRoundedRect:cornerRadius:会有问题，左上角老是会多出一点，所以区分开
     UIBezierPath *path;
-    CGRect rect = CGRectInset(CGRectMake(0, 0, size.width, size.height), lineWidth / 2, lineWidth / 2);
+    CGRect rect = CGRectInset(CGRectMakeWithSize(size), lineWidth / 2, lineWidth / 2);
     if (cornerRadius > 0) {
         path = [UIBezierPath bezierPathWithRoundedRect:rect cornerRadius:cornerRadius];
     } else {
@@ -470,147 +449,127 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     size = CGSizeFlatted(size);
     CGContextInspectSize(size);
     
-    UIImage *resultImage = nil;
     color = color ? color : UIColorClear;
-
 	BOOL opaque = (cornerRadius == 0.0 && [color qmui_alpha] == 1.0);
-    UIGraphicsBeginImageContextWithOptions(size, opaque, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, color.CGColor);
-    
-    if (cornerRadius > 0) {
-        UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMakeWithSize(size) cornerRadius:cornerRadius];
-        [path addClip];
-        [path fill];
-    } else {
-        CGContextFillRect(context, CGRectMakeWithSize(size));
-    }
-    
-    resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return resultImage;
+    return [UIImage qmui_imageWithSize:size opaque:opaque scale:0 actions:^(CGContextRef contextRef) {
+        CGContextSetFillColorWithColor(contextRef, color.CGColor);
+        
+        if (cornerRadius > 0) {
+            UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:CGRectMakeWithSize(size) cornerRadius:cornerRadius];
+            [path addClip];
+            [path fill];
+        } else {
+            CGContextFillRect(contextRef, CGRectMakeWithSize(size));
+        }
+    }];
 }
 
 + (UIImage *)qmui_imageWithColor:(UIColor *)color size:(CGSize)size cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius {
     size = CGSizeFlatted(size);
     CGContextInspectSize(size);
-    
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    
     color = color ? color : UIColorWhite;
-    CGContextSetFillColorWithColor(context, color.CGColor);
-    
-    UIBezierPath *path = [UIBezierPath qmui_bezierPathWithRoundedRect:CGRectMakeWithSize(size) cornerRadiusArray:cornerRadius lineWidth:0];
-    [path addClip];
-    [path fill];
-    
-    UIImage *resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return resultImage;
+    return [UIImage qmui_imageWithSize:size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        
+        CGContextSetFillColorWithColor(contextRef, color.CGColor);
+        
+        UIBezierPath *path = [UIBezierPath qmui_bezierPathWithRoundedRect:CGRectMakeWithSize(size) cornerRadiusArray:cornerRadius lineWidth:0];
+        [path addClip];
+        [path fill];
+    }];
 }
 
 + (UIImage *)qmui_imageWithShape:(QMUIImageShape)shape size:(CGSize)size lineWidth:(CGFloat)lineWidth tintColor:(UIColor *)tintColor {
     size = CGSizeFlatted(size);
     CGContextInspectSize(size);
     
-    UIImage *resultImage = nil;
     tintColor = tintColor ? : [UIColor colorWithRed:1 green:1 blue:1 alpha:1];
     
-    
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    UIBezierPath *path = nil;
-    BOOL drawByStroke = NO;
-    CGFloat drawOffset = lineWidth / 2;
-    switch (shape) {
-        case QMUIImageShapeOval: {
-            path = [UIBezierPath bezierPathWithOvalInRect:CGRectMakeWithSize(size)];
+    return [UIImage qmui_imageWithSize:size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        UIBezierPath *path = nil;
+        BOOL drawByStroke = NO;
+        CGFloat drawOffset = lineWidth / 2;
+        switch (shape) {
+            case QMUIImageShapeOval: {
+                path = [UIBezierPath bezierPathWithOvalInRect:CGRectMakeWithSize(size)];
+            }
+                break;
+            case QMUIImageShapeTriangle: {
+                path = [UIBezierPath bezierPath];
+                [path moveToPoint:CGPointMake(0, size.height)];
+                [path addLineToPoint:CGPointMake(size.width / 2, 0)];
+                [path addLineToPoint:CGPointMake(size.width, size.height)];
+                [path closePath];
+            }
+                break;
+            case QMUIImageShapeNavBack: {
+                drawByStroke = YES;
+                path = [UIBezierPath bezierPath];
+                path.lineWidth = lineWidth;
+                [path moveToPoint:CGPointMake(size.width - drawOffset, drawOffset)];
+                [path addLineToPoint:CGPointMake(0 + drawOffset, size.height / 2.0)];
+                [path addLineToPoint:CGPointMake(size.width - drawOffset, size.height - drawOffset)];
+            }
+                break;
+            case QMUIImageShapeDisclosureIndicator: {
+                drawByStroke = YES;
+                path = [UIBezierPath bezierPath];
+                path.lineWidth = lineWidth;
+                [path moveToPoint:CGPointMake(drawOffset, drawOffset)];
+                [path addLineToPoint:CGPointMake(size.width - drawOffset, size.height / 2)];
+                [path addLineToPoint:CGPointMake(drawOffset, size.height - drawOffset)];
+            }
+                break;
+            case QMUIImageShapeCheckmark: {
+                CGFloat lineAngle = M_PI_4;
+                path = [UIBezierPath bezierPath];
+                [path moveToPoint:CGPointMake(0, size.height / 2)];
+                [path addLineToPoint:CGPointMake(size.width / 3, size.height)];
+                [path addLineToPoint:CGPointMake(size.width, lineWidth * sin(lineAngle))];
+                [path addLineToPoint:CGPointMake(size.width - lineWidth * cos(lineAngle), 0)];
+                [path addLineToPoint:CGPointMake(size.width / 3, size.height - lineWidth / sin(lineAngle))];
+                [path addLineToPoint:CGPointMake(lineWidth * sin(lineAngle), size.height / 2 - lineWidth * sin(lineAngle))];
+                [path closePath];
+            }
+                break;
+            case QMUIImageShapeDetailButtonImage: {
+                drawByStroke = YES;
+                path = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(CGRectMakeWithSize(size), drawOffset, drawOffset)];
+                path.lineWidth = lineWidth;
+            }
+                break;
+            case QMUIImageShapeNavClose: {
+                drawByStroke = YES;
+                path = [UIBezierPath bezierPath];
+                [path moveToPoint:CGPointMake(0, 0)];
+                [path addLineToPoint:CGPointMake(size.width, size.height)];
+                [path closePath];
+                [path moveToPoint:CGPointMake(size.width, 0)];
+                [path addLineToPoint:CGPointMake(0, size.height)];
+                [path closePath];
+                path.lineWidth = lineWidth;
+                path.lineCapStyle = kCGLineCapRound;
+            }
+                break;
+            default:
+                break;
         }
-            break;
-        case QMUIImageShapeTriangle: {
-            path = [UIBezierPath bezierPath];
-            [path moveToPoint:CGPointMake(0, size.height)];
-            [path addLineToPoint:CGPointMake(size.width / 2, 0)];
-            [path addLineToPoint:CGPointMake(size.width, size.height)];
-            [path closePath];
+        
+        if (drawByStroke) {
+            CGContextSetStrokeColorWithColor(contextRef, tintColor.CGColor);
+            [path stroke];
+        } else {
+            CGContextSetFillColorWithColor(contextRef, tintColor.CGColor);
+            [path fill];
         }
-            break;
-        case QMUIImageShapeNavBack: {
-            drawByStroke = YES;
-            path = [UIBezierPath bezierPath];
-            path.lineWidth = lineWidth;
-            [path moveToPoint:CGPointMake(size.width - drawOffset, drawOffset)];
-            [path addLineToPoint:CGPointMake(0 + drawOffset, size.height / 2.0)];
-            [path addLineToPoint:CGPointMake(size.width - drawOffset, size.height - drawOffset)];
+        
+        if (shape == QMUIImageShapeDetailButtonImage) {
+            CGFloat fontPointSize = flat(size.height * 0.8);
+            UIFont *font = [UIFont fontWithName:@"Georgia" size:fontPointSize];
+            NSAttributedString *string = [[NSAttributedString alloc] initWithString:@"i" attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: tintColor}];
+            CGSize stringSize = [string boundingRectWithSize:size options:NSStringDrawingUsesFontLeading context:nil].size;
+            [string drawAtPoint:CGPointMake(CGFloatGetCenter(size.width, stringSize.width), CGFloatGetCenter(size.height, stringSize.height))];
         }
-            break;
-        case QMUIImageShapeDisclosureIndicator: {
-            drawByStroke = YES;
-            path = [UIBezierPath bezierPath];
-            path.lineWidth = lineWidth;
-            [path moveToPoint:CGPointMake(drawOffset, drawOffset)];
-            [path addLineToPoint:CGPointMake(size.width - drawOffset, size.height / 2)];
-            [path addLineToPoint:CGPointMake(drawOffset, size.height - drawOffset)];
-        }
-            break;
-        case QMUIImageShapeCheckmark: {
-            CGFloat lineAngle = M_PI_4;
-            path = [UIBezierPath bezierPath];
-            [path moveToPoint:CGPointMake(0, size.height / 2)];
-            [path addLineToPoint:CGPointMake(size.width / 3, size.height)];
-            [path addLineToPoint:CGPointMake(size.width, lineWidth * sin(lineAngle))];
-            [path addLineToPoint:CGPointMake(size.width - lineWidth * cos(lineAngle), 0)];
-            [path addLineToPoint:CGPointMake(size.width / 3, size.height - lineWidth / sin(lineAngle))];
-            [path addLineToPoint:CGPointMake(lineWidth * sin(lineAngle), size.height / 2 - lineWidth * sin(lineAngle))];
-            [path closePath];
-        }
-            break;
-        case QMUIImageShapeDetailButtonImage: {
-            drawByStroke = YES;
-            path = [UIBezierPath bezierPathWithOvalInRect:CGRectInset(CGRectMakeWithSize(size), drawOffset, drawOffset)];
-            path.lineWidth = lineWidth;
-        }
-            break;
-        case QMUIImageShapeNavClose: {
-            drawByStroke = YES;
-            path = [UIBezierPath bezierPath];
-            [path moveToPoint:CGPointMake(0, 0)];
-            [path addLineToPoint:CGPointMake(size.width, size.height)];
-            [path closePath];
-            [path moveToPoint:CGPointMake(size.width, 0)];
-            [path addLineToPoint:CGPointMake(0, size.height)];
-            [path closePath];
-            path.lineWidth = lineWidth;
-            path.lineCapStyle = kCGLineCapRound;
-        }
-            break;
-        default:
-            break;
-    }
-    
-    if (drawByStroke) {
-        CGContextSetStrokeColorWithColor(context, tintColor.CGColor);
-        [path stroke];
-    } else {
-        CGContextSetFillColorWithColor(context, tintColor.CGColor);
-        [path fill];
-    }
-    
-    if (shape == QMUIImageShapeDetailButtonImage) {
-        CGFloat fontPointSize = flat(size.height * 0.8);
-        UIFont *font = [UIFont fontWithName:@"Georgia" size:fontPointSize];
-        NSAttributedString *string = [[NSAttributedString alloc] initWithString:@"i" attributes:@{NSFontAttributeName: font, NSForegroundColorAttributeName: tintColor}];
-        CGSize stringSize = [string boundingRectWithSize:size options:NSStringDrawingUsesFontLeading context:nil].size;
-        [string drawAtPoint:CGPointMake(CGFloatGetCenter(size.width, stringSize.width), CGFloatGetCenter(size.height, stringSize.height))];
-    }
-    
-    resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return resultImage;
+    }];
 }
 
 + (UIImage *)qmui_imageWithShape:(QMUIImageShape)shape size:(CGSize)size tintColor:(UIColor *)tintColor {
@@ -640,35 +599,24 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 + (UIImage *)qmui_imageWithAttributedString:(NSAttributedString *)attributedString {
     CGSize stringSize = [attributedString boundingRectWithSize:CGSizeMax options:NSStringDrawingUsesLineFragmentOrigin context:nil].size;
     stringSize = CGSizeCeil(stringSize);
-    UIGraphicsBeginImageContextWithOptions(stringSize, NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    [attributedString drawInRect:CGRectMake(0, 0, stringSize.width, stringSize.height)];
-    UIImage *resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return resultImage;
+    return [UIImage qmui_imageWithSize:stringSize opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        [attributedString drawInRect:CGRectMakeWithSize(stringSize)];
+    }];
 }
 
 + (UIImage *)qmui_imageWithView:(UIView *)view {
     CGContextInspectSize(view.bounds.size);
-    UIImage *resultImage = nil;
-    UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    [view.layer renderInContext:context];
-    resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return resultImage;
+    return [UIImage qmui_imageWithSize:view.bounds.size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        [view.layer renderInContext:contextRef];
+    }];
 }
 
 + (UIImage *)qmui_imageWithView:(UIView *)view afterScreenUpdates:(BOOL)afterUpdates {
     // iOS 7 截图新方式，性能好会好一点，不过不一定适用，因为这个方法的使用条件是：界面要已经render完，否则截到得图将会是empty。
-    UIImage *resultImage = nil;
-    UIGraphicsBeginImageContextWithOptions(view.bounds.size, NO, 0);
-    [view drawViewHierarchyInRect:CGRectMakeWithSize(view.bounds.size) afterScreenUpdates:afterUpdates];
-    resultImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return resultImage;
+    CGContextInspectSize(view.bounds.size);
+    return [UIImage qmui_imageWithSize:view.bounds.size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        [view drawViewHierarchyInRect:CGRectMakeWithSize(view.bounds.size) afterScreenUpdates:afterUpdates];
+    }];
 }
 
 @end

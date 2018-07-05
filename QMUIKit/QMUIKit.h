@@ -318,6 +318,10 @@
 #import "QMUIToolbarButton.h"
 #endif
 
+#if __has_include("QMUIVisualEffectView.h")
+#import "QMUIVisualEffectView.h"
+#endif
+
 #if __has_include("QMUIZoomImageView.h")
 #import "QMUIZoomImageView.h"
 #endif
@@ -416,6 +420,10 @@
 
 #if __has_include("UITableView+QMUIStaticCell.h")
 #import "UITableView+QMUIStaticCell.h"
+#endif
+
+#if __has_include("UITableViewCell+QMUI.h")
+#import "UITableViewCell+QMUI.h"
 #endif
 
 #if __has_include("UITextField+QMUI.h")

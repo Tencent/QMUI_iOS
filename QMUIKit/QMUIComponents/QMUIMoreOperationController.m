@@ -160,7 +160,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     [self.cancelButton setTitle:@"取消" forState:UIControlStateNormal];
     [self.cancelButton setTitleColor:self.cancelButtonTitleColor forState:UIControlStateNormal];
     [self.cancelButton setTitleColor:[self.cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
-    self.cancelButton.qmui_borderPosition = QMUIBorderViewPositionBottom;
+    self.cancelButton.qmui_borderPosition = QMUIViewBorderPositionBottom;
     self.cancelButton.qmui_borderColor = self.cancelButtonSeparatorColor;
     [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.cancelButton];
@@ -433,7 +433,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     scrollView.showsVerticalScrollIndicator = NO;
     scrollView.alwaysBounceHorizontal = YES;
     scrollView.qmui_borderColor = self.scrollViewSeparatorColor;
-    scrollView.qmui_borderPosition = (self.scrollViewSeparatorColor && index != 0) ? QMUIBorderViewPositionTop : QMUIBorderViewPositionNone;
+    scrollView.qmui_borderPosition = (self.scrollViewSeparatorColor && index != 0) ? QMUIViewBorderPositionTop : QMUIViewBorderPositionNone;
     scrollView.scrollsToTop = NO;
     if (@available(iOS 11, *)) {
         scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
@@ -446,7 +446,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 - (void)updateScrollViewsBorderStyle {
     [self.mutableScrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
         scrollView.qmui_borderColor = self.scrollViewSeparatorColor;
-        scrollView.qmui_borderPosition = idx != 0 ? QMUIBorderViewPositionTop : QMUIBorderViewPositionNone;
+        scrollView.qmui_borderPosition = idx != 0 ? QMUIViewBorderPositionTop : QMUIViewBorderPositionNone;
     }];
 }
 
@@ -567,7 +567,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (void)setCancelButtonMarginTop:(CGFloat)cancelButtonMarginTop {
     _cancelButtonMarginTop = cancelButtonMarginTop;
-    self.cancelButton.qmui_borderPosition = cancelButtonMarginTop > 0 ? QMUIBorderViewPositionNone : QMUIBorderViewPositionTop;
+    self.cancelButton.qmui_borderPosition = cancelButtonMarginTop > 0 ? QMUIViewBorderPositionNone : QMUIViewBorderPositionTop;
     [self updateCornerRadius];
     [self setViewNeedsLayoutIfLoaded];
 }

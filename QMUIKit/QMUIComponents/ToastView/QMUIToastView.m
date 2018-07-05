@@ -126,15 +126,18 @@
         // 处理键盘相关逻辑，当键盘在显示的时候，内容高度会减去键盘的高度以使 Toast 居中
         CGRect keyboardFrame = [QMUIKeyboardManager currentKeyboardFrame];
         CGRect parentViewRect = [[QMUIKeyboardManager keyboardWindow] convertRect:self.parentView.frame fromView:self.parentView.superview];
-        CGRect overlapRect = CGRectFlatted(CGRectIntersection(keyboardFrame, parentViewRect));
+        CGRect intersectionRect = CGRectIntersection(keyboardFrame, parentViewRect);
+        CGRect overlapRect = CGRectIsValidated(intersectionRect) ? CGRectFlatted(intersectionRect) : CGRectZero;
         contentHeight -= CGRectGetHeight(overlapRect);
     }
     
     if (self.contentView) {
         
         CGSize contentViewSize = [self.contentView sizeThatFits:CGSizeMake(limitWidth, limitHeight)];
-        CGFloat contentViewX = fmax(self.marginInsets.left, (contentWidth - contentViewSize.width) / 2) + self.offset.x;
-        CGFloat contentViewY = fmax(self.marginInsets.top, (contentHeight - contentViewSize.height) / 2) + self.offset.y;
+        contentViewSize.width = MIN(contentViewSize.width, limitWidth);
+        contentViewSize.height = MIN(contentViewSize.height, limitHeight);
+        CGFloat contentViewX = MAX(self.marginInsets.left, (contentWidth - contentViewSize.width) / 2) + self.offset.x;
+        CGFloat contentViewY = MAX(self.marginInsets.top, (contentHeight - contentViewSize.height) / 2) + self.offset.y;
         
         if (self.toastPosition == QMUIToastViewPositionTop) {
             contentViewY = self.marginInsets.top + self.offset.y;

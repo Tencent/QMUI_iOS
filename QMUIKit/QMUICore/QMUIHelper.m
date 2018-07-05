@@ -163,7 +163,7 @@ static char kAssociatedObjectKey_LastKeyboardHeight;
     }
     CGRect keyboardRectInView = [view convertRect:keyboardRect fromView:view.window];
     CGRect keyboardVisibleRectInView = CGRectIntersection(view.bounds, keyboardRectInView);
-    CGFloat resultHeight = CGRectIsNull(keyboardVisibleRectInView) ? 0.0f : CGRectGetHeight(keyboardVisibleRectInView);
+    CGFloat resultHeight = CGRectIsValidated(keyboardVisibleRectInView) ? CGRectGetHeight(keyboardVisibleRectInView) : 0;
     return resultHeight;
 }
 
