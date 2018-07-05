@@ -460,7 +460,7 @@ static char kAssociatedObjectKey_borderLayer;
 @end
 
 
-const CGFloat QMUIViewSelfSizingHeight = CGFLOAT_MAX - 1;
+const CGFloat QMUIViewSelfSizingHeight = INFINITY;
 
 @implementation UIView (QMUI_Layout)
 
@@ -472,8 +472,7 @@ const CGFloat QMUIViewSelfSizingHeight = CGFLOAT_MAX - 1;
 }
 
 - (void)qmui_setFrame:(CGRect)frame {
-    // 特别的，对于 UIButton.titleLabel（也即 UIButtonLabel），它的 setFrame 里会将高度变成+inf，即便我们传的是 QMUIViewSelfSizingHeight，所以这里特殊处理一下
-    if (CGRectGetWidth(frame) > 0 && (CGRectGetHeight(frame) == QMUIViewSelfSizingHeight || (isinf(CGRectGetHeight(frame)) && [self isKindOfClass:[UILabel class]]))) {
+    if (CGRectGetWidth(frame) > 0 && isinf(CGRectGetHeight(frame))) {
         CGFloat height = flat([self sizeThatFits:CGSizeMake(CGRectGetWidth(frame), CGFLOAT_MAX)].height);
         frame = CGRectSetHeight(frame, height);
     }

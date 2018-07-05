@@ -11,18 +11,12 @@
 #import "UIView+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
 
-#define DefaultTextLabelFont UIFontBoldMake(16)
-#define DefaultDetailTextLabelFont UIFontBoldMake(12)
-#define DefaultLabelColor UIColorWhite
-
 @implementation QMUIToastContentView
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        
         self.layer.allowsGroupOpacity = NO;
-        
         [self initSubviews];
     }
     return self;
@@ -32,17 +26,11 @@
     
     _textLabel = [[UILabel alloc] init];
     self.textLabel.numberOfLines = 0;
-    self.textLabel.textAlignment = NSTextAlignmentCenter;
-    self.textLabel.textColor = DefaultLabelColor;
-    self.textLabel.font = DefaultTextLabelFont;
     self.textLabel.opaque = NO;
     [self addSubview:self.textLabel];
     
     _detailTextLabel = [[UILabel alloc] init];
     self.detailTextLabel.numberOfLines = 0;
-    self.detailTextLabel.textAlignment = NSTextAlignmentCenter;
-    self.detailTextLabel.textColor = DefaultLabelColor;
-    self.detailTextLabel.font = DefaultDetailTextLabelFont;
     self.detailTextLabel.opaque = NO;
     [self addSubview:self.detailTextLabel];
 }
@@ -151,20 +139,20 @@
 }
 
 - (void)tintColorDidChange {
+    [super tintColorDidChange];
     
     if (self.customView) {
         [self updateCustomViewTintColor];
     }
     
-    NSMutableDictionary *textLabelAttributes = [[NSMutableDictionary alloc] initWithDictionary:self.textLabelAttributes];
-    textLabelAttributes[NSForegroundColorAttributeName] = self.tintColor;
-    self.textLabelAttributes = textLabelAttributes;
-    self.textLabelText = self.textLabelText;
+    // 如果通过 attributes 设置了文字颜色，则不再响应 tintColor
+    if (!self.textLabelAttributes[NSForegroundColorAttributeName]) {
+        self.textLabel.textColor = self.tintColor;
+    }
     
-    NSMutableDictionary *detailTextLabelAttributes = [[NSMutableDictionary alloc] initWithDictionary:self.detailTextLabelAttributes];
-    detailTextLabelAttributes[NSForegroundColorAttributeName] = self.tintColor;
-    self.detailTextLabelAttributes = detailTextLabelAttributes;
-    self.detailTextLabelText = self.detailTextLabelText;
+    if (!self.detailTextLabelAttributes[NSForegroundColorAttributeName]) {
+        self.detailTextLabel.textColor = self.tintColor;
+    }
 }
 
 - (void)updateCustomViewTintColor {
@@ -172,10 +160,6 @@
         return;
     }
     self.customView.tintColor = self.tintColor;
-    if ([self.customView isKindOfClass:[UIImageView class]]) {
-        UIImageView *customView = (UIImageView *)self.customView;
-        customView.image = [customView.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    }
     if ([self.customView isKindOfClass:[UIActivityIndicatorView class]]) {
         UIActivityIndicatorView *customView = (UIActivityIndicatorView *)self.customView;
         customView.color = self.tintColor;
@@ -248,8 +232,8 @@
     appearance.customViewMarginBottom = 8;
     appearance.textLabelMarginBottom = 4;
     appearance.detailTextLabelMarginBottom = 0;
-    appearance.textLabelAttributes = @{NSFontAttributeName: DefaultTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight: 22]};
-    appearance.detailTextLabelAttributes = @{NSFontAttributeName: DefaultDetailTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight: 18]};
+    appearance.textLabelAttributes = @{NSFontAttributeName: UIFontBoldMake(16), NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:22 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]};
+    appearance.detailTextLabelAttributes = @{NSFontAttributeName: UIFontBoldMake(12), NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:18 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]};
 }
 
 @end

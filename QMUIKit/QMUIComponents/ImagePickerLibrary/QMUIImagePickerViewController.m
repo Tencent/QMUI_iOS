@@ -419,6 +419,10 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 - (void)handleCheckBoxButtonClick:(UIButton *)checkboxButton {
     NSIndexPath *indexPath = [self.collectionView qmui_indexPathForItemAtView:checkboxButton];
     
+    if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:shouldCheckImageAtIndex:)] && ![self.imagePickerViewControllerDelegate imagePickerViewController:self shouldCheckImageAtIndex:indexPath.item]) {
+        return;
+    }
+    
     QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
     if (cell.checked) {

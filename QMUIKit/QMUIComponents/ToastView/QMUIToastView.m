@@ -37,7 +37,7 @@
     NSAssert(view, @"view不能为空");
     if (self = [super initWithFrame:view.bounds]) {
         _parentView = view;
-        [self commonInit];
+        [self didInitialize];
     }
     return self;
 }
@@ -46,7 +46,9 @@
     [self removeNotifications];
 }
 
-- (void)commonInit {
+- (void)didInitialize {
+    
+    self.tintColor = UIColorWhite;
     
     self.toastPosition = QMUIToastViewPositionCenter;
     
@@ -58,8 +60,6 @@
     self.alpha = 0.0;
     self.backgroundColor = UIColorClear;
     self.layer.allowsGroupOpacity = NO;
-    
-    self.tintColor = UIColorWhite;
     
     _maskView = [[UIView alloc] init];
     self.maskView.backgroundColor = UIColorClear;
