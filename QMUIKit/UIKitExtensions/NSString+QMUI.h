@@ -120,6 +120,14 @@
  */
 - (NSString *)qmui_stringByRemoveLastCharacter;
 
+/**
+ *  用正则表达式匹配字符串并将其替换为指定的另一个字符串
+ *  @param pattern 正则表达式
+ *  @param replacement 要替换为的字符串
+ *  @return 最终替换后的完整字符串，如果正则表达式匹配不成功则返回原字符串
+ */
+- (NSString *)qmui_stringByReplacingPattern:(NSString *)pattern withString:(NSString *)replacement;
+
 @end
 
 @interface NSString (QMUI_StringFormat)

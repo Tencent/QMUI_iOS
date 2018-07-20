@@ -63,8 +63,8 @@
 - (NSArray<NSIndexPath *> *)qmui_indexPathsForVisibleItems {
     NSArray<NSIndexPath *> *visibleItems = [self indexPathsForVisibleItems];
     NSSortDescriptor *sectionSorter = [[NSSortDescriptor alloc] initWithKey:@"section" ascending:YES];
-    NSSortDescriptor *rowSorter = [[NSSortDescriptor alloc] initWithKey:@"row" ascending:YES];
-    visibleItems = [visibleItems sortedArrayUsingDescriptors:[NSArray arrayWithObjects:sectionSorter,rowSorter, nil]];
+    NSSortDescriptor *rowSorter = [[NSSortDescriptor alloc] initWithKey:@"item" ascending:YES];
+    visibleItems = [visibleItems sortedArrayUsingDescriptors:[NSArray arrayWithObjects:sectionSorter, rowSorter, nil]];
     return visibleItems;
 }
 

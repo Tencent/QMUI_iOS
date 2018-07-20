@@ -198,7 +198,13 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     if ([viewController respondsToSelector:@selector(willPopInNavigationControllerWithAnimated:)]) {
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewController) willPopInNavigationControllerWithAnimated:animated];
     }
+    
+    QMUILog(@"NavigationItem", @"call popViewControllerAnimated:%@, current viewControllers = %@", StringFromBOOL(animated), self.viewControllers);
+    
     viewController = [super popViewControllerAnimated:animated];
+    
+    QMUILog(@"NavigationItem", @"pop viewController: %@", viewController);
+    
     if ([viewController respondsToSelector:@selector(didPopInNavigationControllerWithAnimated:)]) {
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewController) didPopInNavigationControllerWithAnimated:animated];
     }

@@ -62,11 +62,65 @@
 @property(nonatomic, strong, readonly) QMUIButton *submitButton;
 @property(nonatomic, strong, readonly) CALayer *buttonSeparatorLayer;
 
+/**
+ 添加位于左下角的取消按钮，取消按钮点击时默认会自动 hide 弹窗，无需自己在 block 里调用 hide。
+ 
+ 同一时间只能存在一个取消按钮，所以每次添加都会移除上一个取消按钮。
+
+ @param buttonText 按钮文字
+ @param block 按钮点击后的事件。取消按钮会自动 hide 弹窗，无需在 block 里调用 hide
+ */
 - (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *aDialogViewController))block;
+
+/**
+ 移除当前的取消按钮
+ */
+- (void)removeCancelButton;
+
+/**
+ 添加位于右下角的提交按钮
+ 
+ 同一时间只能存在一个提交按钮，所以每次添加都会移除上一个提交按钮
+
+ @param buttonText 按钮文字
+ @param block 按钮点击后的事件，如果需要在点击后关闭浮层，需要在 block 里自行调用 hide
+ */
 - (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *aDialogViewController))block;
+
+/**
+ 移除提交按钮
+ */
+- (void)removeSubmitButton;
+
+/**
+ 用于展示 dialog 的 modalPresentationViewController
+ */
+@property(nonatomic, strong) QMUIModalPresentationViewController *modalPresentationViewController;
+
+/**
+ 以动画形式显示弹窗，等同于 [self showWithAnimated:YES completion:nil]
+ */
 - (void)show;
+
+/**
+ 显示弹窗
+
+ @param animated 是否用动画的形式
+ @param completion 弹窗显示出来后的回调
+ */
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+
+/**
+ 以动画形式隐藏弹窗，等同于 [self hideWithAnimated:YES completion:nil]
+ */
 - (void)hide;
+
+/**
+ 隐藏弹窗
+
+ @param animated 是否用动画的形式
+ @param completion 弹窗隐藏后的回调
+ */
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
 
 @end

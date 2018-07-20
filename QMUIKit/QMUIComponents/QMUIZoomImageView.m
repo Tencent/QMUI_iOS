@@ -311,7 +311,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         CGFloat y = self.scrollView.contentOffset.y;
         CGRect viewport = [self finalViewportRect];
         if (!CGRectIsEmpty(viewport)) {
-            UIView *contentView = [self currentContentView];
+            UIView *contentView = [self contentView];
             if (CGRectGetWidth(viewport) < CGRectGetWidth(contentView.frame)) {
                 x = (CGRectGetWidth(contentView.frame) / 2 - CGRectGetWidth(viewport) / 2) - CGRectGetMinX(viewport);
             }
@@ -343,15 +343,18 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     }
 }
 
-- (CGRect)imageViewRectInZoomImageView {
-    UIView *imageView = [self currentContentView];
-    return [self convertRect:imageView.frame fromView:imageView.superview];
+- (CGRect)contentViewRectInZoomImageView {
+    UIView *contentView = [self contentView];
+    if (!contentView) {
+        return CGRectZero;
+    }
+    return [self convertRect:contentView.frame fromView:contentView.superview];
 }
 
 - (void)handleDidEndZooming {
     CGRect viewport = [self finalViewportRect];
     
-    UIView *contentView = [self currentContentView];
+    UIView *contentView = [self contentView];
     // 强制 layout 以确保下面的一堆计算依赖的都是最新的 frame 的值
     [self layoutIfNeeded];
     CGRect contentViewFrame = contentView ? [self convertRect:contentView.frame fromView:contentView.superview] : CGRectZero;
@@ -777,7 +780,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
             }
             
             CGRect zoomRect = CGRectZero;
-            CGPoint tapPoint = [[self currentContentView] convertPoint:gesturePoint fromView:gestureRecognizer.view];
+            CGPoint tapPoint = [[self contentView] convertPoint:gesturePoint fromView:gestureRecognizer.view];
             zoomRect.size.width = CGRectGetWidth(self.bounds) / newZoomScale;
             zoomRect.size.height = CGRectGetHeight(self.bounds) / newZoomScale;
             zoomRect.origin.x = tapPoint.x - CGRectGetWidth(zoomRect) / 2;
@@ -812,6 +815,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self.emptyView setDetailTextLabelText:nil];
     [self.emptyView setActionButtonTitle:nil];
     self.emptyView.hidden = NO;
+    [self setNeedsLayout];
 }
 
 - (void)showEmptyViewWithText:(NSString *)text {
@@ -821,16 +825,18 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self.emptyView setDetailTextLabelText:nil];
     [self.emptyView setActionButtonTitle:nil];
     self.emptyView.hidden = NO;
+    [self setNeedsLayout];
 }
 
 - (void)hideEmptyView {
     self.emptyView.hidden = YES;
+    [self setNeedsLayout];
 }
 
 #pragma mark - <UIScrollViewDelegate>
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return [self currentContentView];
+    return [self contentView];
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
@@ -864,7 +870,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 
-- (UIView *)currentContentView {
+- (UIView *)contentView {
     if (_imageView) {
         return _imageView;
     }

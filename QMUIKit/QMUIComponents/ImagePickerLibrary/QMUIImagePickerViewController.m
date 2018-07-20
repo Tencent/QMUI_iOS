@@ -275,6 +275,20 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         self.imagePickerPreviewViewController = [self.imagePickerViewControllerDelegate imagePickerPreviewViewControllerForImagePickerViewController:self];
         self.imagePickerPreviewViewController.maximumSelectImageCount = self.maximumSelectImageCount;
         self.imagePickerPreviewViewController.minimumSelectImageCount = self.minimumSelectImageCount;
+        if (!self.imagePickerPreviewViewController.customGestureExitBlock) {
+            __weak __typeof(self)weakSelf = self;
+            self.imagePickerPreviewViewController.customGestureExitBlock = ^(QMUIImagePreviewViewController *aImagePreviewViewController, QMUIZoomImageView *currentZoomImageView) {
+                NSInteger index = [aImagePreviewViewController.imagePreviewView indexForZoomImageView:currentZoomImageView];
+                NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
+                if ([weakSelf.collectionView.indexPathsForVisibleItems containsObject:indexPath]) {
+                    CGRect rect = [weakSelf.collectionViewLayout layoutAttributesForItemAtIndexPath:indexPath].frame;
+                    rect = [weakSelf.collectionView convertRect:rect toView:nil];
+                    [aImagePreviewViewController exitPreviewToRectInScreenCoordinate:rect];
+                } else {
+                    [aImagePreviewViewController exitPreviewByFadeOut];
+                }
+            };
+        }
     }
 }
 
@@ -383,7 +397,10 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
                                                                               currentImageIndex:indexPath.item
                                                                                 singleCheckMode:NO];
         }
-        [self.navigationController pushViewController:self.imagePickerPreviewViewController animated:YES];
+        
+        CGRect frame = [self.collectionViewLayout layoutAttributesForItemAtIndexPath:indexPath].frame;
+        frame = [self.collectionView convertRect:frame toView:nil];
+        [self.imagePickerPreviewViewController startPreviewFromRectInScreenCoordinate:frame];
     }
 }
 
@@ -496,7 +513,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     // 发出请求获取大图，如果图片在 iCloud，则会发出网络请求下载图片。这里同时保存请求 id，供取消请求使用
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
     QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
-    imageAsset.requestID = [imageAsset requestPreviewImageWithCompletion:^(UIImage *result, NSDictionary *info) {
+    imageAsset.requestID = [imageAsset requestOriginImageWithCompletion:^(UIImage *result, NSDictionary *info) {
         
         BOOL downloadSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         

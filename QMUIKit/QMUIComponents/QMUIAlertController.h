@@ -77,7 +77,13 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /**
  *  `QMUIAlertController`是模仿系统`UIAlertController`的控件，所以系统有的功能在QMUIAlertController里面基本都有。同时`QMUIAlertController`还提供了一些扩展功能，例如：它的每个 button 都是开放出来的，可以对默认的按钮进行二次处理（比如加一个图片）；可以通过 appearance 在 app 启动的时候修改整个`QMUIAlertController`的主题样式。
  */
-@interface QMUIAlertController : UIViewController<QMUIModalPresentationComponentProtocol>
+@interface QMUIAlertController : UIViewController<QMUIModalPresentationComponentProtocol> {
+    UIView          *_containerView;    // 弹窗的主体容器
+    UIView          *_scrollWrapView;   // 包含上下两个 scrollView 的容器
+    UIScrollView    *_headerScrollView; // 上半部分的内容的 scrollView，例如 title、message
+    UIScrollView    *_buttonScrollView; // 所有按钮的容器，特别的，actionSheet 下的取消按钮不放在这里面，因为它不参与滚动
+    UIControl       *_maskView;         // 背后占满整个屏幕的半透明黑色遮罩
+}
 
 /// alert距离屏幕四边的间距，默认UIEdgeInsetsMake(0, 0, 0, 0)。alert的宽度最终是通过屏幕宽度减去水平的 alertContentMargin 和 alertContentMaximumWidth 决定的。
 @property(nonatomic, assign) UIEdgeInsets alertContentMargin UI_APPEARANCE_SELECTOR;

@@ -95,6 +95,43 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         self.buttonTitleAttributes = [QMUIDialogViewController appearance].buttonTitleAttributes;
         self.buttonHighlightedBackgroundColor = [QMUIDialogViewController appearance].buttonHighlightedBackgroundColor;
     }
+    
+    _contentView = [[UIView alloc] init]; // 特地不使用setter，从而不要影响self.hasCustomContentView的默认值
+    self.contentView.backgroundColor = self.contentViewBackgroundColor;
+    
+    _headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, self.headerViewHeight)];
+    self.headerView.backgroundColor = self.headerViewBackgroundColor;
+    
+    // 使用自带的QMUINavigationTitleView，支持loading、subTitle
+    [self.headerView addSubview:self.titleView];
+    
+    // 加上分隔线
+    _headerViewSeparatorLayer = [CALayer layer];
+    [self.headerViewSeparatorLayer qmui_removeDefaultAnimations];
+    self.headerViewSeparatorLayer.backgroundColor = self.headerSeparatorColor.CGColor;
+    [self.headerView.layer addSublayer:self.headerViewSeparatorLayer];
+    
+    _footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, self.footerViewHeight)];
+    self.footerView.backgroundColor = self.footerViewBackgroundColor;
+    self.footerView.hidden = YES;
+    
+    _footerViewSeparatorLayer = [CALayer layer];
+    [self.footerViewSeparatorLayer qmui_removeDefaultAnimations];
+    self.footerViewSeparatorLayer.backgroundColor = self.footerSeparatorColor.CGColor;
+    [self.footerView.layer addSublayer:self.footerViewSeparatorLayer];
+    
+    _buttonSeparatorLayer = [CALayer layer];
+    [self.buttonSeparatorLayer qmui_removeDefaultAnimations];
+    self.buttonSeparatorLayer.backgroundColor = self.footerViewSeparatorLayer.backgroundColor;
+    self.buttonSeparatorLayer.hidden = YES;
+    [self.footerView.layer addSublayer:self.buttonSeparatorLayer];
+    
+    self.modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
+    self.modalPresentationViewController.modal = YES;
+}
+
+- (void)dealloc {
+    NSLog(@"");
 }
 
 - (void)setCornerRadius:(CGFloat)cornerRadius {
@@ -140,36 +177,28 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 - (void)setHeaderSeparatorColor:(UIColor *)headerSeparatorColor {
     _headerSeparatorColor = headerSeparatorColor;
-    if (self.headerViewSeparatorLayer) {
-        self.headerViewSeparatorLayer.backgroundColor = headerSeparatorColor.CGColor;
-    }
+    self.headerViewSeparatorLayer.backgroundColor = headerSeparatorColor.CGColor;
 }
 
 - (void)setFooterSeparatorColor:(UIColor *)footerSeparatorColor {
     _footerSeparatorColor = footerSeparatorColor;
-    if (self.footerViewSeparatorLayer) {
-        self.footerViewSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
-    }
-    if (self.buttonSeparatorLayer) {
-        self.buttonSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
-    }
+    self.footerViewSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
+    self.buttonSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
 }
 
 - (void)setHeaderViewHeight:(CGFloat)headerViewHeight {
     _headerViewHeight = headerViewHeight;
-    [self.qmui_modalPresentationViewController updateLayout];
+    [self.modalPresentationViewController updateLayout];
 }
 
 - (void)setHeaderViewBackgroundColor:(UIColor *)headerViewBackgroundColor {
     _headerViewBackgroundColor = headerViewBackgroundColor;
-    if ([self isViewLoaded]) {
-        self.headerView.backgroundColor = headerViewBackgroundColor;
-    }
+    self.headerView.backgroundColor = headerViewBackgroundColor;
 }
 
 - (void)setContentViewMargins:(UIEdgeInsets)contentViewMargins {
     _contentViewMargins = contentViewMargins;
-    [self.qmui_modalPresentationViewController updateLayout];
+    [self.modalPresentationViewController updateLayout];
 }
 
 - (void)setContentViewBackgroundColor:(UIColor *)contentViewBackgroundColor {
@@ -221,50 +250,21 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 BeginIgnoreClangWarning(-Wobjc-missing-super-calls)
 - (void)setupNavigationItems {
     // 不继承父类的实现，从而避免把 self.titleView 放到 navigationItem 上
-//    [super setupNavigationItems];
+    //    [super setupNavigationItems];
 }
 EndIgnoreClangWarning
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // subview都在[super viewDidLoad]里添加，所以在添加完subview后再强制把headerView和footerView拉到最前面，以保证分隔线不会被subview盖住
-    [self.view bringSubviewToFront:self.headerView];
-    [self.view bringSubviewToFront:self.footerView];
+    // subviews 的初始化都放到 didInitialize 里，以保证初始化完 dialog 就能被外界访问到。但真正加到 self.view 上还是等到 viewDidLoad 时
+    [self.view addSubview:self.contentView];
+    [self.view addSubview:self.headerView];
+    [self.view addSubview:self.footerView];
     
+    self.view.clipsToBounds = YES;
     self.view.backgroundColor = self.backgroundColor;
     self.view.layer.cornerRadius = self.cornerRadius;
-    self.view.layer.masksToBounds = YES;
-}
-
-- (void)initSubviews {
-    [super initSubviews];
-    
-    if (self.hasCustomContentView) {
-        if (!self.contentView.superview) {
-            [self.view insertSubview:self.contentView atIndex:0];
-        }
-    } else {
-        _contentView = [[UIView alloc] init]; // 特地不使用setter，从而不要影响self.hasCustomContentView的默认值
-        self.contentView.backgroundColor = self.contentViewBackgroundColor;
-        [self.view addSubview:self.contentView];
-    }
-    
-    _headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), self.headerViewHeight)];
-    self.headerView.backgroundColor = self.headerViewBackgroundColor;
-    
-    // 使用自带的QMUINavigationTitleView，支持loading、subTitle
-    [self.headerView addSubview:self.titleView];
-    
-    // 加上分隔线
-    _headerViewSeparatorLayer = [CALayer layer];
-    [self.headerViewSeparatorLayer qmui_removeDefaultAnimations];
-    self.headerViewSeparatorLayer.backgroundColor = self.headerSeparatorColor.CGColor;
-    [self.headerView.layer addSublayer:self.headerViewSeparatorLayer];
-    
-    [self.view addSubview:self.headerView];
-    
-    [self initFooterViewIfNeeded];
 }
 
 - (void)setContentView:(UIView *)contentView {
@@ -316,55 +316,46 @@ EndIgnoreClangWarning
     self.contentView.frame = CGRectMake(self.contentViewMargins.left, contentViewMinY, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentViewMargins), contentViewHeight);
 }
 
-- (void)initFooterViewIfNeeded {
-    if (!self.footerView) {
-        _footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), self.footerViewHeight)];
-        self.footerView.backgroundColor = self.footerViewBackgroundColor;
-        self.footerView.hidden = YES;
-        
-        _footerViewSeparatorLayer = [CALayer layer];
-        [self.footerViewSeparatorLayer qmui_removeDefaultAnimations];
-        self.footerViewSeparatorLayer.backgroundColor = self.footerSeparatorColor.CGColor;
-        [self.footerView.layer addSublayer:self.footerViewSeparatorLayer];
-        
-        _buttonSeparatorLayer = [CALayer layer];
-        [self.buttonSeparatorLayer qmui_removeDefaultAnimations];
-        self.buttonSeparatorLayer.backgroundColor = self.footerViewSeparatorLayer.backgroundColor;
-        self.buttonSeparatorLayer.hidden = YES;
-        [self.footerView.layer addSublayer:self.buttonSeparatorLayer];
-        
-        [self.view addSubview:self.footerView];
-    }
-}
-
 - (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *))block {
-    if (_cancelButton) {
-        [_cancelButton removeFromSuperview];
-    }
+    [self removeCancelButton];
     
     _cancelButton = [self generateButtonWithText:buttonText];
     [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self initFooterViewIfNeeded];
     self.footerView.hidden = NO;
     [self.footerView addSubview:self.cancelButton];
     
     self.cancelButtonBlock = block;
 }
 
-- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block {
-    if (_submitButton) {
-        [_submitButton removeFromSuperview];
+- (void)removeCancelButton {
+    [_cancelButton removeFromSuperview];
+    self.cancelButtonBlock = nil;
+    _cancelButton = nil;
+    if (!self.cancelButton && !self.submitButton) {
+        self.footerView.hidden = YES;
     }
+}
+
+- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block {
+    [self removeSubmitButton];
     
     _submitButton = [self generateButtonWithText:buttonText];
     [self.submitButton addTarget:self action:@selector(handleSubmitButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self initFooterViewIfNeeded];
     self.footerView.hidden = NO;
     [self.footerView addSubview:self.submitButton];
     
     self.submitButtonBlock = block;
+}
+
+- (void)removeSubmitButton {
+    [_submitButton removeFromSuperview];
+    self.submitButtonBlock = nil;
+    _submitButton = nil;
+    if (!self.cancelButton && !self.submitButton) {
+        self.footerView.hidden = YES;
+    }
 }
 
 - (QMUIButton *)generateButtonWithText:(NSString *)buttonText {
@@ -378,11 +369,10 @@ EndIgnoreClangWarning
 }
 
 - (void)handleCancelButtonEvent:(QMUIButton *)cancelButton {
-    [self hideWithAnimated:YES completion:^(BOOL finished) {
-        if (self.cancelButtonBlock) {
-            self.cancelButtonBlock(self);
-        }
-    }];
+    [self hideWithAnimated:YES completion:nil];
+    if (self.cancelButtonBlock) {
+        self.cancelButtonBlock(self);
+    }
 }
 
 - (void)handleSubmitButtonEvent:(QMUIButton *)submitButton {
@@ -397,12 +387,10 @@ EndIgnoreClangWarning
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    QMUIModalPresentationViewController *modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
-    modalPresentationViewController.contentViewMargins = self.dialogViewMargins;
-    modalPresentationViewController.maximumContentViewWidth = self.maximumContentViewWidth;
-    modalPresentationViewController.contentViewController = self;
-    modalPresentationViewController.modal = YES;
-    [modalPresentationViewController showWithAnimated:YES completion:completion];
+    self.modalPresentationViewController.contentViewMargins = self.dialogViewMargins;
+    self.modalPresentationViewController.maximumContentViewWidth = self.maximumContentViewWidth;
+    self.modalPresentationViewController.contentViewController = self;
+    [self.modalPresentationViewController showWithAnimated:YES completion:completion];
 }
 
 - (void)hide {
@@ -410,10 +398,11 @@ EndIgnoreClangWarning
 }
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    [self.qmui_modalPresentationViewController hideWithAnimated:animated completion:^(BOOL finished) {
+    [self.modalPresentationViewController hideWithAnimated:animated completion:^(BOOL finished) {
         if (completion) {
             completion(finished);
         }
+        self.modalPresentationViewController.contentViewController = nil;
     }];
 }
 
@@ -479,19 +468,13 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 - (void)didInitialize {
     [super didInitialize];
     
-    self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
-    self.selectedItemIndexes = [[NSMutableSet alloc] init];
-    BeginIgnoreAvailabilityWarning
-    [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
-    
     if (dialogSelectionViewControllerAppearance) {
         self.rowHeight = [QMUIDialogSelectionViewController appearance].rowHeight;
     }
-}
-
-- (void)initSubviews {
-    [super initSubviews];
+    
+    self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
+    self.selectedItemIndexes = [[NSMutableSet alloc] init];
+    
     self.tableView = [[QMUITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
@@ -527,8 +510,8 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 - (void)setItems:(NSArray<NSString *> *)items {
     _items = [items copy];
     [self.tableView reloadData];
-    if (self.qmui_modalPresentationViewController.visible) {
-        [self.qmui_modalPresentationViewController updateLayout];
+    if (self.modalPresentationViewController.visible) {
+        [self.modalPresentationViewController updateLayout];
     }
 }
 
@@ -702,17 +685,6 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
 - (void)didInitialize {
     [super didInitialize];
     
-    self.mutableTitleLabels = [[NSMutableArray alloc] init];
-    self.mutableTextFields = [[NSMutableArray alloc] init];
-    self.mutableSeparatorLayers = [[NSMutableArray alloc] init];
-    
-    self.shouldManageTextFieldsReturnEventAutomatically = YES;
-    self.enablesSubmitButtonAutomatically = YES;
-    
-    BeginIgnoreAvailabilityWarning
-    [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
-    
     if (dialogTextFieldViewControllerAppearance) {
         self.textFieldLabelFont = [QMUIDialogTextFieldViewController appearance].textFieldLabelFont;
         self.textFieldLabelTextColor = [QMUIDialogTextFieldViewController appearance].textFieldLabelTextColor;
@@ -724,10 +696,14 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
         self.textFieldHeight = [QMUIDialogTextFieldViewController appearance].textFieldHeight;
         self.textFieldSeparatorInsets = [QMUIDialogTextFieldViewController appearance].textFieldSeparatorInsets;
     }
-}
-
-- (void)initSubviews {
-    [super initSubviews];
+    
+    self.mutableTitleLabels = [[NSMutableArray alloc] init];
+    self.mutableTextFields = [[NSMutableArray alloc] init];
+    self.mutableSeparatorLayers = [[NSMutableArray alloc] init];
+    
+    self.shouldManageTextFieldsReturnEventAutomatically = YES;
+    self.enablesSubmitButtonAutomatically = YES;
+    
     self.scrollView = [[UIScrollView alloc] init];
     self.scrollView.scrollsToTop = NO;
     self.scrollView.clipsToBounds = YES;
@@ -851,7 +827,7 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
         label.font = textFieldLabelFont;
     }];
     if (self.mutableTitleLabels.count) {
-        [self.qmui_modalPresentationViewController updateLayout];
+        [self.modalPresentationViewController updateLayout];
     }
 }
 
@@ -886,28 +862,28 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
 - (void)setTextFieldLabelMargins:(UIEdgeInsets)textFieldLabelMargins {
     _textFieldLabelMargins = textFieldLabelMargins;
     if (self.mutableTitleLabels.count) {
-        [self.qmui_modalPresentationViewController updateLayout];
+        [self.modalPresentationViewController updateLayout];
     }
 }
 
 - (void)setTextFieldMargins:(UIEdgeInsets)textFieldMargins {
     _textFieldMargins = textFieldMargins;
     if (self.textFields.count) {
-        [self.qmui_modalPresentationViewController updateLayout];
+        [self.modalPresentationViewController updateLayout];
     }
 }
 
 - (void)setTextFieldHeight:(CGFloat)textFieldHeight {
     _textFieldHeight = textFieldHeight;
     if (self.textFields.count) {
-        [self.qmui_modalPresentationViewController updateLayout];
+        [self.modalPresentationViewController updateLayout];
     }
 }
 
 - (void)setTextFieldSeparatorInsets:(UIEdgeInsets)textFieldSeparatorInsets {
     _textFieldSeparatorInsets = textFieldSeparatorInsets;
     if (self.mutableSeparatorLayers.count) {
-        [self.qmui_modalPresentationViewController updateLayout];
+        [self.modalPresentationViewController updateLayout];
     }
 }
 

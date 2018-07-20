@@ -36,7 +36,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    self.zoomImageView.frame = self.contentView.bounds;
+    self.zoomImageView.frame = CGRectApplyAffineTransform(self.contentView.bounds, self.zoomImageView.transform);
 }
 
 @end
@@ -239,7 +239,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     } else {
         NSAssert(NO, @"尝试通过 %s 获取 QMUIZoomImageView 所在的 index，但找不到 QMUIZoomImageView 所在的 cell，index 获取失败。%@", __func__, zoomImageView);
     }
-    return NSUIntegerMax;
+    return NSNotFound;
 }
 
 - (QMUIZoomImageView *)zoomImageViewAtIndex:(NSUInteger)index {
