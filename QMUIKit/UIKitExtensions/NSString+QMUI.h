@@ -73,12 +73,13 @@
 /**
  *  将字符串从开头裁剪到指定的 index，裁剪时会避免将 emoji 等 "character sequences" 拆散（一个 emoji 表情占用1-4个长度的字符）。
  *
- *  例如对于字符串“😊😞”，它的长度为4，若调用 [string qmui_substringAvoidBreakingUpCharacterSequencesToIndex:1]，将返回“😊”。
+ *  例如对于字符串“😊😞”，它的长度为4，若调用 [string qmui_substringAvoidBreakingUpCharacterSequencesToIndex:1 lessValue:NO countingNonASCIICharacterAsTwo:NO]，将返回“😊”。
  *  若调用系统的 [string substringToIndex:1]，将返回“?”。（?表示乱码，因为第一个 emoji 表情被从中间裁开了）。
  *
  *  @param index 要裁剪到哪个 index
- *  @return 裁剪完的字符
+ *  @param lessValue 裁剪时若遇到“character sequences”，是向下取整还是向上取整。
  *  @param countingNonASCIICharacterAsTwo 是否按照 英文 1 个字符长度、中文 2 个字符长度的方式来裁剪
+ *  @return 裁剪完的字符
  */
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo;
 
@@ -118,6 +119,14 @@
  *  @see `qmui_stringByRemoveCharacterAtIndex:`
  */
 - (NSString *)qmui_stringByRemoveLastCharacter;
+
+/**
+ *  用正则表达式匹配字符串并将其替换为指定的另一个字符串
+ *  @param pattern 正则表达式
+ *  @param replacement 要替换为的字符串
+ *  @return 最终替换后的完整字符串，如果正则表达式匹配不成功则返回原字符串
+ */
+- (NSString *)qmui_stringByReplacingPattern:(NSString *)pattern withString:(NSString *)replacement;
 
 @end
 

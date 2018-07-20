@@ -40,6 +40,7 @@
 @property(nonatomic, assign) CGFloat        headerViewHeight UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *headerViewBackgroundColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) UIEdgeInsets   contentViewMargins UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) UIColor        *contentViewBackgroundColor UI_APPEARANCE_SELECTOR;// 对自定义 contentView 无效
 @property(nonatomic, strong) UIColor        *footerSeparatorColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        footerViewHeight UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor        *footerViewBackgroundColor UI_APPEARANCE_SELECTOR;
@@ -61,11 +62,65 @@
 @property(nonatomic, strong, readonly) QMUIButton *submitButton;
 @property(nonatomic, strong, readonly) CALayer *buttonSeparatorLayer;
 
+/**
+ 添加位于左下角的取消按钮，取消按钮点击时默认会自动 hide 弹窗，无需自己在 block 里调用 hide。
+ 
+ 同一时间只能存在一个取消按钮，所以每次添加都会移除上一个取消按钮。
+
+ @param buttonText 按钮文字
+ @param block 按钮点击后的事件。取消按钮会自动 hide 弹窗，无需在 block 里调用 hide
+ */
 - (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *aDialogViewController))block;
+
+/**
+ 移除当前的取消按钮
+ */
+- (void)removeCancelButton;
+
+/**
+ 添加位于右下角的提交按钮
+ 
+ 同一时间只能存在一个提交按钮，所以每次添加都会移除上一个提交按钮
+
+ @param buttonText 按钮文字
+ @param block 按钮点击后的事件，如果需要在点击后关闭浮层，需要在 block 里自行调用 hide
+ */
 - (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *aDialogViewController))block;
+
+/**
+ 移除提交按钮
+ */
+- (void)removeSubmitButton;
+
+/**
+ 用于展示 dialog 的 modalPresentationViewController
+ */
+@property(nonatomic, strong) QMUIModalPresentationViewController *modalPresentationViewController;
+
+/**
+ 以动画形式显示弹窗，等同于 [self showWithAnimated:YES completion:nil]
+ */
 - (void)show;
+
+/**
+ 显示弹窗
+
+ @param animated 是否用动画的形式
+ @param completion 弹窗显示出来后的回调
+ */
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+
+/**
+ 以动画形式隐藏弹窗，等同于 [self hideWithAnimated:YES completion:nil]
+ */
 - (void)hide;
+
+/**
+ 隐藏弹窗
+
+ @param animated 是否用动画的形式
+ @param completion 弹窗隐藏后的回调
+ */
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
 
 @end
@@ -85,6 +140,9 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
  */
 @interface QMUIDialogSelectionViewController : QMUIDialogViewController<QMUITableViewDelegate, QMUITableViewDataSource>
 
+/// 每一行的高度，如果使用了 heightForItemBlock 则该属性不生效，默认值为配置表里的 TableViewCellNormalHeight
+@property(nonatomic, assign) CGFloat rowHeight UI_APPEARANCE_SELECTOR;
+
 @property(nonatomic, strong, readonly) QMUITableView *tableView;
 
 @property(nonatomic, copy) NSArray <NSString *> *items;
@@ -98,11 +156,11 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 /// 控制是否允许多选，默认为NO。
 @property(nonatomic, assign) BOOL allowsMultipleSelection;
 
-@property(nonatomic, copy) void (^cellForItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, QMUITableViewCell *cell, NSUInteger itemIndex);
-@property(nonatomic, copy) CGFloat (^heightForItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) BOOL (^canSelectItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) void (^didSelectItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) void (^didDeselectItemBlock)(QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) void (^cellForItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, __kindof QMUITableViewCell *cell, NSUInteger itemIndex);
+@property(nonatomic, copy) CGFloat (^heightForItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) BOOL (^canSelectItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) void (^didSelectItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nonatomic, copy) void (^didDeselectItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
 
 @end
 
@@ -112,22 +170,38 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
  */
 @interface QMUIDialogTextFieldViewController : QMUIDialogViewController
 
-/// 输入框的标题
-@property(nonatomic, copy) NSString *textFieldTitle;
+@property(nonatomic, strong) UIFont *textFieldLabelFont UI_APPEARANCE_SELECTOR;
 
-/// 输入框Label
-@property(nonatomic, strong, readonly) QMUILabel *textFieldLabel;
+@property(nonatomic, strong) UIColor *textFieldLabelTextColor UI_APPEARANCE_SELECTOR;
 
-/// 输入框底部分隔线
-@property(nonatomic, strong, readonly) CALayer *textFieldSeparatorLayer;
+@property(nonatomic, strong) UIFont *textFieldFont UI_APPEARANCE_SELECTOR;
 
-/// 输入框
-@property(nonatomic, strong, readonly) QMUITextField *textField;
+@property(nonatomic, strong) UIColor *textFieldTextColor UI_APPEARANCE_SELECTOR;
+
+@property(nonatomic, strong) UIColor *textFieldSeparatorColor UI_APPEARANCE_SELECTOR;
+
+/// 输入框上方文字的间距，如果不存在文字则不使用这个间距
+@property(nonatomic, assign) UIEdgeInsets textFieldLabelMargins UI_APPEARANCE_SELECTOR;
+
+/// 输入框本身的间距，注意输入框内部自带 textInsets，所以可能文字实际的显示位置会比这个间距更往内部一点
+@property(nonatomic, assign) UIEdgeInsets textFieldMargins UI_APPEARANCE_SELECTOR;
+
+/// 输入框的高度
+@property(nonatomic, assign) CGFloat textFieldHeight UI_APPEARANCE_SELECTOR;
+
+/// 输入框底部分隔线基于默认布局的偏移，注意分隔线默认的布局为：宽度是输入框宽度减去输入框左右的 textInsets，y 紧贴输入框底部。如果 textFieldSeparatorLayer.hidden = YES 则布局时不考虑这个间距
+@property(nonatomic, assign) UIEdgeInsets textFieldSeparatorInsets UI_APPEARANCE_SELECTOR;
+
+- (void)addTextFieldWithTitle:(NSString *)textFieldTitle configurationHandler:(void (^)(QMUILabel *titleLabel, QMUITextField *textField, CALayer *separatorLayer))configurationHandler;
+
+@property(nonatomic, copy, readonly) NSArray<QMUILabel *> *textFieldTitleLabels;
+@property(nonatomic, copy, readonly) NSArray<QMUITextField *> *textFields;
+@property(nonatomic, copy, readonly) NSArray<CALayer *> *textFieldSeparatorLayers;
 
 /// 是否应该自动管理输入框的键盘 Return 事件，默认为 YES，YES 表示当点击 Return 按钮时，视为点击了 dialog 的 submit 按钮。你也可以通过 UITextFieldDelegate 自己管理，此时请将此属性置为 NO。
 @property(nonatomic, assign) BOOL shouldManageTextFieldsReturnEventAutomatically;
 
-/// 是否自动控制提交按钮的enabled状态，默认为YES，则当输入框内容为空时禁用提交按钮
+/// 是否自动控制提交按钮的enabled状态，默认为YES，则当任一输入框内容为空时禁用提交按钮
 @property(nonatomic, assign) BOOL enablesSubmitButtonAutomatically;
 
 @property(nonatomic, copy) BOOL (^shouldEnableSubmitButtonBlock)(__kindof QMUIDialogTextFieldViewController *aDialogViewController);

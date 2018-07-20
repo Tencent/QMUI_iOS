@@ -18,7 +18,7 @@
     dispatch_once(&onceToken, ^{
         ExchangeImplementations([self class], @selector(setPlaceholder:), @selector(qmui_setPlaceholder:));
         ExchangeImplementations([self class], @selector(layoutSubviews), @selector(qmui_layoutSubviews));
-        ExchangeImplementations([self class], @selector(setFrame:), @selector(qmui_setFrame:));
+        ExchangeImplementations([self class], @selector(setFrame:), @selector(qmuiSearchBar_setFrame:));
     });
 }
 
@@ -204,10 +204,10 @@ static char kAssociatedObjectKey_textFieldMargins;
     return backgroundView;
 }
 
-- (void)qmui_setFrame:(CGRect)frame {
+- (void)qmuiSearchBar_setFrame:(CGRect)frame {
     
     if (!self.qmui_usedAsTableHeaderView) {
-        [self qmui_setFrame:frame];
+        [self qmuiSearchBar_setFrame:frame];
         return;
     }
     
@@ -217,7 +217,7 @@ static char kAssociatedObjectKey_textFieldMargins;
         // iOS 11 下用 tableHeaderView 的方式使用 searchBar 的话，进入搜索状态时 y 偏上了，导致间距错乱
         
         if (![self qmui_isActive]) {
-            [self qmui_setFrame:frame];
+            [self qmuiSearchBar_setFrame:frame];
             return;
         }
         
@@ -253,7 +253,7 @@ static char kAssociatedObjectKey_textFieldMargins;
         }
     }
     
-    [self qmui_setFrame:frame];
+    [self qmuiSearchBar_setFrame:frame];
 }
 
 - (void)qmui_styledAsQMUISearchBar {
@@ -283,8 +283,8 @@ static char kAssociatedObjectKey_textFieldMargins;
     // 设置搜索icon
     UIImage *searchIconImage = SearchBarSearchIconImage;
     if (searchIconImage) {
-        if (!CGSizeEqualToSize(searchIconImage.size, CGSizeMake(13, 13))) {
-            NSLog(@"搜索框放大镜图片（SearchBarSearchIconImage）的大小最好为 (13, 13)，否则会失真，目前的大小为 %@", NSStringFromCGSize(searchIconImage.size));
+        if (!CGSizeEqualToSize(searchIconImage.size, CGSizeMake(14, 14))) {
+            NSLog(@"搜索框放大镜图片（SearchBarSearchIconImage）的大小最好为 (14, 14)，否则会失真，目前的大小为 %@", NSStringFromCGSize(searchIconImage.size));
         }
         [self setImage:searchIconImage forSearchBarIcon:UISearchBarIconSearch state:UIControlStateNormal];
     }

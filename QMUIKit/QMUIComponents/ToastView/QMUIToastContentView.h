@@ -10,13 +10,14 @@
 
 /**
  * `QMUIToastView`默认使用的contentView。其结构是：customView->textLabel->detailTextLabel等三个view依次往下排列。其中customView可以赋值任意的UIView或者自定义的view。
+ *  注意，customView 会响应 tintColor 的变化。而 textLabel/detailTextLabel 在没设置颜色到 attributes 里的情况下，也会跟随 tintColor 变化，设置了 attributes 的颜色则优先使用 attributes 里的颜色。
  *
  * @TODO: 增加多种类型的progressView的支持。
  */
 @interface QMUIToastContentView : UIView
 
 /**
- * 设置一个UIView，可以是：菊花、图片等等
+ * 设置一个UIView，可以是：菊花、图片等等，请自行保证 customView 的 size 被正确设置
  */
 @property(nonatomic, strong) UIView *customView;
 
@@ -66,12 +67,12 @@
 @property(nonatomic, assign) CGFloat detailTextLabelMarginBottom UI_APPEARANCE_SELECTOR;
 
 /**
- * 设置textLabel的attributes
+ * 设置textLabel的attributes，如果包含 NSForegroundColorAttributeName 则 textLabel 不响应 tintColor，如果不包含则 textLabel 会拿 tintColor 当成文字颜色
  */
 @property(nonatomic, strong) NSDictionary <NSString *, id> *textLabelAttributes UI_APPEARANCE_SELECTOR;
 
 /**
- * 设置detailTextLabel的attributes
+ * 设置 detailTextLabel 的 attributes，如果包含 NSForegroundColorAttributeName 则 detailTextLabel 不响应 tintColor，如果不包含则 detailTextLabel 会拿 tintColor 当成文字颜色
  */
 @property(nonatomic, strong) NSDictionary <NSString *, id> *detailTextLabelAttributes UI_APPEARANCE_SELECTOR;
 

@@ -8,23 +8,41 @@
 
 #import "UINavigationController+QMUI.h"
 #import "QMUICore.h"
+#import "QMUILog.h"
+
+@interface _QMUIWeakObjectContainer : NSObject
+
+@property (nonatomic, readonly, weak) id object;
+
+@end
+
+@implementation _QMUIWeakObjectContainer
+
+- (instancetype)initWithObject:(id)object {
+    if (self = [super init]) {
+        _object = object;
+    }
+    return self;
+}
+@end
 
 @interface UINavigationController (BackButtonHandlerProtocol)
 
-// `UINavigationControllerBackButtonHandlerProtocol`的`canPopViewController`功能里面，当 A canPop = NO，B canPop = YES，那么从 B 手势返回到 A，也会触发需求 A 的 `canPopViewController` 方法，这是因为手势返回会去询问`gestureRecognizerShouldBegin:`和`qmui_navigationBar:shouldPopItem:`，而这两个方法里面的 self.topViewController 是不同的对象，所以导致这个问题。所以通过 tmp_topViewController 来记录 self.topViewController 从而保证两个地方的值是相等的。
-
-- (nullable UIViewController *)tmp_topViewController;
+// `UINavigationControllerBackButtonHandlerProtocol`的`canPopViewController`功能里面，当 A canPop = NO，B canPop = YES，那么从 B 手势返回到 A，也会触发 A 的 `canPopViewController` 方法，这是因为手势返回会去询问`gestureRecognizerShouldBegin:`和`qmui_navigationBar:shouldPopItem:`，而这两个方法里面的 self.topViewController 是不同的对象，所以导致这个问题。所以通过 tmp_topViewController 来记录 self.topViewController 从而保证两个地方的值是相等的。
+// 手势从 B 返回 A，如果 A 没有 navBar，那么`qmui_navigationBar:shouldPopItem:`是不会被调用的，所以导致 tmp_topViewController 没有被释放，所以 tmp_topViewController 需要使用 weak 来修饰（https://github.com/QMUI/QMUI_iOS/issues/251）
+@property(nonatomic, weak) UIViewController *tmp_topViewController;
 
 @end
 
 @implementation UINavigationController (BackButtonHandlerProtocol)
 
 - (UIViewController *)tmp_topViewController {
-    return objc_getAssociatedObject(self, _cmd);
+    id object = [objc_getAssociatedObject(self, _cmd) object];
+    return (UIViewController *)object;
 }
 
 - (void)setTmp_topViewController:(UIViewController *)viewController {
-    objc_setAssociatedObject(self, @selector(tmp_topViewController), viewController, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    objc_setAssociatedObject(self, @selector(tmp_topViewController), [[_QMUIWeakObjectContainer alloc] initWithObject:viewController], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 @end
@@ -66,18 +84,25 @@ static char originGestureDelegateKey;
 
 - (BOOL)qmui_navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
     
+    QMUILog(@"NavigationItem", @"topViewController = %@, navigationBar.items = %@, shouldPopItem = %@", NSStringFromClass(self.topViewController.class), navigationBar.items, item);
+    
     // 如果nav的vc栈中有两个vc，第一个是root，第二个是second。这时second页面如果点击系统的返回按钮，topViewController获取的栈顶vc是second，而如果是直接代码写的pop操作，则获取的栈顶vc是root。也就是说只要代码写了pop操作，则系统会直接将顶层vc也就是second出栈，然后才回调的，所以这时我们获取到的顶层vc就是root了。然而不管哪种方式，参数中的item都是second的item。
     BOOL isPopedByCoding = item != [self topViewController].navigationItem;
     
     // !isPopedByCoding 要放在前面，这样当 !isPopedByCoding 不满足的时候就不会去询问 canPopViewController 了，可以避免额外调用 canPopViewController 里面的逻辑
     BOOL canPopViewController = !isPopedByCoding && [self canPopViewController:self.tmp_topViewController ?: [self topViewController]];
     
+    QMUILog(@"NavigationItem", @"isPopedByCoding = %@, canPopViewController = %@, tmp_topViewController = %@", StringFromBOOL(isPopedByCoding), StringFromBOOL(canPopViewController), self.tmp_topViewController);
+    
     if (canPopViewController || isPopedByCoding) {
         self.tmp_topViewController = nil;
-        return [self qmui_navigationBar:navigationBar shouldPopItem:item];
+        BOOL result = [self qmui_navigationBar:navigationBar shouldPopItem:item];
+        QMUILog(@"NavigationItem", @"call super finally, result = %@", StringFromBOOL(result));
+        return result;
     } else {
         self.tmp_topViewController = nil;
         [self resetSubviewsInNavBar:navigationBar];
+        QMUILog(@"NavigationItem", @"reset subviews in navigationBar");
     }
     
     return NO;

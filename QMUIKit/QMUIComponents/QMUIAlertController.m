@@ -57,7 +57,6 @@ static NSUInteger alertControllerCount = 0;
 
 @interface QMUIAlertAction ()
 
-@property(nonatomic, strong) QMUIAlertButtonWrapView *buttonWrapView;
 @property(nonatomic, copy, readwrite) NSString *title;
 @property(nonatomic, assign, readwrite) QMUIAlertActionStyle style;
 @property(nonatomic, copy) void (^handler)(QMUIAlertController *aAlertController, QMUIAlertAction *action);
@@ -78,15 +77,13 @@ static NSUInteger alertControllerCount = 0;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        self.buttonWrapView = [[QMUIAlertButtonWrapView alloc] init];
+        _button = [[QMUIButton alloc] init];
+        self.button.adjustsButtonWhenDisabled = NO;
+        self.button.adjustsButtonWhenHighlighted = NO;
         self.button.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
         [self.button addTarget:self action:@selector(handleAlertActionEvent:) forControlEvents:UIControlEventTouchUpInside];
     }
     return self;
-}
-
-- (QMUIButton *)button {
-    return self.buttonWrapView.button;
 }
 
 - (void)setEnabled:(BOOL)enabled {
@@ -129,9 +126,9 @@ static QMUIAlertController *alertControllerAppearance;
         
         alertControllerAppearance.alertContentMargin = UIEdgeInsetsMake(0, 0, 0, 0);
         alertControllerAppearance.alertContentMaximumWidth = 270;
-        alertControllerAppearance.alertSeperatorColor = UIColorMake(211, 211, 219);
-        alertControllerAppearance.alertTitleAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
-        alertControllerAppearance.alertMessageAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
+        alertControllerAppearance.alertSeparatorColor = UIColorMake(211, 211, 219);
+        alertControllerAppearance.alertTitleAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail textAlignment:NSTextAlignmentCenter]};
+        alertControllerAppearance.alertMessageAttributes = @{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail textAlignment:NSTextAlignmentCenter]};
         alertControllerAppearance.alertButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
         alertControllerAppearance.alertButtonDisabledAttributes = @{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
         alertControllerAppearance.alertCancelButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(17),NSKernAttributeName:@(0)};
@@ -149,9 +146,9 @@ static QMUIAlertController *alertControllerAppearance;
         
         alertControllerAppearance.sheetContentMargin = UIEdgeInsetsMake(10, 10, 10, 10);
         alertControllerAppearance.sheetContentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(alertControllerAppearance.sheetContentMargin);
-        alertControllerAppearance.sheetSeperatorColor = UIColorMake(211, 211, 219);
-        alertControllerAppearance.sheetTitleAttributes = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontBoldMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
-        alertControllerAppearance.sheetMessageAttributes = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]};
+        alertControllerAppearance.sheetSeparatorColor = UIColorMake(211, 211, 219);
+        alertControllerAppearance.sheetTitleAttributes = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontBoldMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail textAlignment:NSTextAlignmentCenter]};
+        alertControllerAppearance.sheetMessageAttributes = @{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail textAlignment:NSTextAlignmentCenter]};
         alertControllerAppearance.sheetButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetButtonDisabledAttributes = @{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetCancelButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(20),NSKernAttributeName:@(0)};
@@ -185,9 +182,6 @@ static QMUIAlertController *alertControllerAppearance;
 @property(nonatomic, strong) UIView *scrollWrapView;
 @property(nonatomic, strong) UIScrollView *headerScrollView;
 @property(nonatomic, strong) UIScrollView *buttonScrollView;
-
-@property(nonatomic, strong) UIView *headerEffectView;
-@property(nonatomic, strong) UIView *cancelButtoneEffectView;
 
 @property(nonatomic, strong) CALayer *extendLayer;
 
@@ -238,7 +232,7 @@ static QMUIAlertController *alertControllerAppearance;
     if (alertControllerAppearance) {
         self.alertContentMargin = [QMUIAlertController appearance].alertContentMargin;
         self.alertContentMaximumWidth = [QMUIAlertController appearance].alertContentMaximumWidth;
-        self.alertSeperatorColor = [QMUIAlertController appearance].alertSeperatorColor;
+        self.alertSeparatorColor = [QMUIAlertController appearance].alertSeparatorColor;
         self.alertContentCornerRadius = [QMUIAlertController appearance].alertContentCornerRadius;
         self.alertTitleAttributes = [QMUIAlertController appearance].alertTitleAttributes;
         self.alertMessageAttributes = [QMUIAlertController appearance].alertMessageAttributes;
@@ -258,7 +252,7 @@ static QMUIAlertController *alertControllerAppearance;
         
         self.sheetContentMargin = [QMUIAlertController appearance].sheetContentMargin;
         self.sheetContentMaximumWidth = [QMUIAlertController appearance].sheetContentMaximumWidth;
-        self.sheetSeperatorColor = [QMUIAlertController appearance].sheetSeperatorColor;
+        self.sheetSeparatorColor = [QMUIAlertController appearance].sheetSeparatorColor;
         self.sheetTitleAttributes = [QMUIAlertController appearance].sheetTitleAttributes;
         self.sheetMessageAttributes = [QMUIAlertController appearance].sheetMessageAttributes;
         self.sheetButtonAttributes = [QMUIAlertController appearance].sheetButtonAttributes;
@@ -378,24 +372,21 @@ static QMUIAlertController *alertControllerAppearance;
     }
 }
 
-- (void)setAlertSeperatorColor:(UIColor *)alertSeperatorColor {
-    _alertSeperatorColor = alertSeperatorColor;
-    [self updateEffectBackgroundColor];
+- (void)setAlertSeparatorColor:(UIColor *)alertSeparatorColor {
+    _alertSeparatorColor = alertSeparatorColor;
+    [self updateSeparatorColor];
 }
 
-- (void)setSheetSeperatorColor:(UIColor *)sheetSeperatorColor {
-    _sheetSeperatorColor = sheetSeperatorColor;
-    [self updateEffectBackgroundColor];
+- (void)setSheetSeparatorColor:(UIColor *)sheetSeparatorColor {
+    _sheetSeparatorColor = sheetSeparatorColor;
+    [self updateSeparatorColor];
 }
 
-- (void)updateEffectBackgroundColor {
-    if (self.preferredStyle == QMUIAlertControllerStyleAlert && self.alertSeperatorColor) {
-        if (self.headerEffectView) { self.headerEffectView.backgroundColor = self.alertSeperatorColor; }
-        if (self.cancelButtoneEffectView) { self.cancelButtoneEffectView.backgroundColor = self.alertSeperatorColor; }
-    } else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet && self.sheetSeperatorColor) {
-        if (self.headerEffectView) { self.headerEffectView.backgroundColor = self.sheetSeperatorColor; }
-        if (self.cancelButtoneEffectView) { self.cancelButtoneEffectView.backgroundColor = self.sheetSeperatorColor; }
-    }
+- (void)updateSeparatorColor {
+    UIColor *separatorColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertSeparatorColor : self.sheetSeparatorColor;
+    [self.alertActions enumerateObjectsUsingBlock:^(QMUIAlertAction * _Nonnull alertAction, NSUInteger idx, BOOL * _Nonnull stop) {
+        alertAction.button.qmui_borderColor = separatorColor;
+    }];
 }
 
 - (void)setAlertContentCornerRadius:(CGFloat)alertContentCornerRadius {
@@ -427,11 +418,11 @@ static QMUIAlertController *alertControllerAppearance;
 - (void)updateCornerRadius {
     if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
         if (self.containerView) { self.containerView.layer.cornerRadius = self.alertContentCornerRadius; self.containerView.clipsToBounds = YES; }
-        if (self.cancelButtoneEffectView) { self.cancelButtoneEffectView.layer.cornerRadius = 0; self.cancelButtoneEffectView.clipsToBounds = NO;}
+        if (self.cancelButtonVisualEffectView) { self.cancelButtonVisualEffectView.layer.cornerRadius = 0; self.cancelButtonVisualEffectView.clipsToBounds = NO;}
         if (self.scrollWrapView) { self.scrollWrapView.layer.cornerRadius = 0; self.scrollWrapView.clipsToBounds = NO; }
     } else {
         if (self.containerView) { self.containerView.layer.cornerRadius = 0; self.containerView.clipsToBounds = NO; }
-        if (self.cancelButtoneEffectView) { self.cancelButtoneEffectView.layer.cornerRadius = self.sheetContentCornerRadius; self.cancelButtoneEffectView.clipsToBounds = YES; }
+        if (self.cancelButtonVisualEffectView) { self.cancelButtonVisualEffectView.layer.cornerRadius = self.sheetContentCornerRadius; self.cancelButtonVisualEffectView.clipsToBounds = YES; }
         if (self.scrollWrapView) { self.scrollWrapView.layer.cornerRadius = self.sheetContentCornerRadius; self.scrollWrapView.clipsToBounds = YES; }
     }
 }
@@ -457,6 +448,59 @@ static QMUIAlertController *alertControllerAppearance;
     }];
 }
 
+- (void)setMainVisualEffectView:(UIView *)mainVisualEffectView {
+    if (!mainVisualEffectView) {
+        // 不允许为空
+        mainVisualEffectView = [[UIView alloc] init];
+    }
+    BOOL isValueChanged = _mainVisualEffectView != mainVisualEffectView;
+    if (isValueChanged) {
+        if ([_mainVisualEffectView isKindOfClass:[UIVisualEffectView class]]) {
+            [((UIVisualEffectView *)_mainVisualEffectView).contentView qmui_removeAllSubviews];
+        } else {
+            [_mainVisualEffectView qmui_removeAllSubviews];
+        }
+        [_mainVisualEffectView removeFromSuperview];
+        _mainVisualEffectView = nil;
+    }
+    _mainVisualEffectView = mainVisualEffectView;
+    if (isValueChanged) {
+        [self.scrollWrapView insertSubview:_mainVisualEffectView atIndex:0];
+        [self updateCornerRadius];
+    }
+}
+
+- (void)setCancelButtonVisualEffectView:(UIView *)cancelButtonVisualEffectView {
+    if (!cancelButtonVisualEffectView) {
+        // 不允许为空
+        cancelButtonVisualEffectView = [[UIView alloc] init];
+    }
+    BOOL isValueChanged = _cancelButtonVisualEffectView != cancelButtonVisualEffectView;
+    if (isValueChanged) {
+        if ([_cancelButtonVisualEffectView isKindOfClass:[UIVisualEffectView class]]) {
+            [((UIVisualEffectView *)_cancelButtonVisualEffectView).contentView qmui_removeAllSubviews];
+        } else {
+            [_cancelButtonVisualEffectView qmui_removeAllSubviews];
+        }
+        [_cancelButtonVisualEffectView removeFromSuperview];
+        _cancelButtonVisualEffectView = nil;
+    }
+    _cancelButtonVisualEffectView = cancelButtonVisualEffectView;
+    if (isValueChanged) {
+        [self.containerView addSubview:_cancelButtonVisualEffectView];
+        if (self.preferredStyle == QMUIAlertControllerStyleActionSheet && self.cancelAction && !self.cancelAction.button.superview) {
+            if ([_cancelButtonVisualEffectView isKindOfClass:[UIVisualEffectView class]]) {
+                UIVisualEffectView *effectView = (UIVisualEffectView *)_cancelButtonVisualEffectView;
+                [effectView.contentView addSubview:self.cancelAction.button];
+            } else {
+                [_cancelButtonVisualEffectView addSubview:self.cancelAction.button];
+            }
+        }
+        
+        [self updateCornerRadius];
+    }
+}
+
 + (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     QMUIAlertController *alertController = [[self alloc] initWithTitle:title message:message preferredStyle:preferredStyle];
     if (alertController) {
@@ -468,6 +512,8 @@ static QMUIAlertController *alertControllerAppearance;
 - (instancetype)initWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     self = [self init];
     if (self) {
+        
+        self.preferredStyle = preferredStyle;
     
         self.shouldRespondMaskViewTouch = preferredStyle == QMUIAlertControllerStyleActionSheet;
         
@@ -483,10 +529,16 @@ static QMUIAlertController *alertControllerAppearance;
         [self.maskView addTarget:self action:@selector(handleMaskViewEvent:) forControlEvents:UIControlEventTouchUpInside];
         
         self.scrollWrapView = [[UIView alloc] init];
-        self.headerEffectView = [[UIView alloc] init];
-        self.cancelButtoneEffectView = [[UIView alloc] init];
+        self.mainVisualEffectView = [[UIView alloc] init];
+        self.cancelButtonVisualEffectView = [[UIView alloc] init];
         self.headerScrollView = [[UIScrollView alloc] init];
+        self.headerScrollView.scrollsToTop = NO;
         self.buttonScrollView = [[UIScrollView alloc] init];
+        self.buttonScrollView.scrollsToTop = NO;
+        if (@available(iOS 11, *)) {
+            self.headerScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+            self.buttonScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
         
         self.extendLayer = [CALayer layer];
         self.extendLayer.hidden = !self.isExtendBottomLayout;
@@ -494,11 +546,8 @@ static QMUIAlertController *alertControllerAppearance;
         
         self.title = title;
         self.message = message;
-        self.preferredStyle = preferredStyle;
         
         [self updateHeaderBackgrondColor];
-        [self updateEffectBackgroundColor];
-        [self updateCornerRadius];
         [self updateExtendLayerAppearance];
         
     }
@@ -514,7 +563,6 @@ static QMUIAlertController *alertControllerAppearance;
     [self.view addSubview:self.maskView];
     [self.view addSubview:self.containerView];
     [self.containerView addSubview:self.scrollWrapView];
-    [self.scrollWrapView addSubview:self.headerEffectView];
     [self.scrollWrapView addSubview:self.headerScrollView];
     [self.scrollWrapView addSubview:self.buttonScrollView];
     [self.containerView.layer addSublayer:self.extendLayer];
@@ -545,15 +593,11 @@ static QMUIAlertController *alertControllerAppearance;
         contentOriginY = contentPaddingTop;
         // 标题和副标题布局
         if (hasTitle) {
-            CGFloat titleLabelLimitWidth = CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight;
-            CGSize titleLabelSize = [self.titleLabel sizeThatFits:CGSizeMake(titleLabelLimitWidth, CGFLOAT_MAX)];
-            self.titleLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, titleLabelLimitWidth, titleLabelSize.height));
+            self.titleLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight, QMUIViewSelfSizingHeight));
             contentOriginY = CGRectGetMaxY(self.titleLabel.frame) + (hasMessage ? self.alertTitleMessageSpacing : contentPaddingBottom);
         }
         if (hasMessage) {
-            CGFloat messageLabelLimitWidth = CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight;
-            CGSize messageLabelSize = [self.messageLabel sizeThatFits:CGSizeMake(messageLabelLimitWidth, CGFLOAT_MAX)];
-            self.messageLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, messageLabelLimitWidth, messageLabelSize.height));
+            self.messageLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight, QMUIViewSelfSizingHeight));
             contentOriginY = CGRectGetMaxY(self.messageLabel.frame) + contentPaddingBottom;
         }
         // 输入框布局
@@ -578,8 +622,8 @@ static QMUIAlertController *alertControllerAppearance;
         // 按钮布局
         self.buttonScrollView.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), 0);
         contentOriginY = 0;
-        NSArray *newOrderActions = [self orderedAlertActions:self.alertActions];
-        if (self.alertActions.count > 0) {
+        NSArray<QMUIAlertAction *> *newOrderActions = [self orderedAlertActions:self.alertActions];
+        if (newOrderActions.count > 0) {
             BOOL verticalLayout = YES;
             if (self.alertActions.count == 2) {
                 CGFloat halfWidth = CGRectGetWidth(self.buttonScrollView.bounds) / 2;
@@ -592,17 +636,20 @@ static QMUIAlertController *alertControllerAppearance;
                 }
             }
             if (!verticalLayout) {
-                QMUIAlertAction *action1 = newOrderActions[1];
-                action1.buttonWrapView.frame = CGRectMake(0, contentOriginY + PixelOne, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
-                QMUIAlertAction *action2 = newOrderActions[0];
-                action2.buttonWrapView.frame = CGRectMake(CGRectGetMaxX(action1.buttonWrapView.frame) + PixelOne, contentOriginY + PixelOne, CGRectGetWidth(self.buttonScrollView.bounds) / 2 - PixelOne, self.alertButtonHeight);
-                contentOriginY = CGRectGetMaxY(action1.buttonWrapView.frame);
-            }
-            else {
+                // 对齐系统，先 add 的在右边，后 add 的在左边
+                QMUIAlertAction *leftAction = newOrderActions[1];
+                leftAction.button.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
+                leftAction.button.qmui_borderPosition = QMUIViewBorderPositionTop|QMUIViewBorderPositionRight;
+                QMUIAlertAction *rightAction = newOrderActions[0];
+                rightAction.button.frame = CGRectMake(CGRectGetMaxX(leftAction.button.frame), contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
+                rightAction.button.qmui_borderPosition = QMUIViewBorderPositionTop;
+                contentOriginY = CGRectGetMaxY(leftAction.button.frame);
+            } else {
                 for (int i = 0; i < newOrderActions.count; i++) {
                     QMUIAlertAction *action = newOrderActions[i];
-                    action.buttonWrapView.frame = CGRectMake(0, contentOriginY + PixelOne, CGRectGetWidth(self.containerView.bounds), self.alertButtonHeight - PixelOne);
-                    contentOriginY = CGRectGetMaxY(action.buttonWrapView.frame);
+                    action.button.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), self.alertButtonHeight);
+                    action.button.qmui_borderPosition = QMUIViewBorderPositionTop;
+                    contentOriginY = CGRectGetMaxY(action.button.frame);
                 }
             }
         }
@@ -633,7 +680,7 @@ static QMUIAlertController *alertControllerAppearance;
             screenSpaceHeight += 20;
         }
         self.scrollWrapView.frame =  CGRectMake(0, 0, CGRectGetWidth(self.scrollWrapView.bounds), contentHeight);
-        self.headerEffectView.frame = self.scrollWrapView.bounds;
+        self.mainVisualEffectView.frame = self.scrollWrapView.bounds;
         
         CGRect containerRect = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.bounds)) / 2, (screenSpaceHeight - contentHeight - self.keyboardHeight) / 2, CGRectGetWidth(self.containerView.bounds), CGRectGetHeight(self.scrollWrapView.bounds));
         self.containerView.frame = CGRectFlatted(CGRectApplyAffineTransform(containerRect, self.containerView.transform));
@@ -652,15 +699,11 @@ static QMUIAlertController *alertControllerAppearance;
         contentOriginY = contentPaddingTop;
         // 标题和副标题布局
         if (hasTitle) {
-            CGFloat titleLabelLimitWidth = CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight;
-            CGSize titleLabelSize = [self.titleLabel sizeThatFits:CGSizeMake(titleLabelLimitWidth, CGFLOAT_MAX)];
-            self.titleLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, titleLabelLimitWidth, titleLabelSize.height));
+            self.titleLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight, QMUIViewSelfSizingHeight));
             contentOriginY = CGRectGetMaxY(self.titleLabel.frame) + (hasMessage ? self.sheetTitleMessageSpacing : contentPaddingBottom);
         }
         if (hasMessage) {
-            CGFloat messageLabelLimitWidth = CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight;
-            CGSize messageLabelSize = [self.messageLabel sizeThatFits:CGSizeMake(messageLabelLimitWidth, CGFLOAT_MAX)];
-            self.messageLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, messageLabelLimitWidth, messageLabelSize.height));
+            self.messageLabel.frame = CGRectFlatted(CGRectMake(contentPaddingLeft, contentOriginY, CGRectGetWidth(self.headerScrollView.bounds) - contentPaddingLeft - contentPaddingRight, QMUIViewSelfSizingHeight));
             contentOriginY = CGRectGetMaxY(self.messageLabel.frame) + contentPaddingBottom;
         }
         // 自定义view的布局 - 自动居中
@@ -676,37 +719,37 @@ static QMUIAlertController *alertControllerAppearance;
         // 按钮的布局
         self.buttonScrollView.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), 0);
         contentOriginY = 0;
-        NSArray *newOrderActions = [self orderedAlertActions:self.alertActions];
+        NSArray<QMUIAlertAction *> *newOrderActions = [self orderedAlertActions:self.alertActions];
         if (self.alertActions.count > 0) {
-            contentOriginY = (hasTitle || hasMessage || hasCustomView) ? contentOriginY + PixelOne : contentOriginY;
+            contentOriginY = (hasTitle || hasMessage || hasCustomView) ? contentOriginY : contentOriginY;
             for (int i = 0; i < newOrderActions.count; i++) {
                 QMUIAlertAction *action = newOrderActions[i];
                 if (action.style == QMUIAlertActionStyleCancel && i == newOrderActions.count - 1) {
                     continue;
                 } else {
-                    action.buttonWrapView.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds), self.sheetButtonHeight - PixelOne);
-                    contentOriginY = CGRectGetMaxY(action.buttonWrapView.frame) + PixelOne;
+                    action.button.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds), self.sheetButtonHeight);
+                    action.button.qmui_borderPosition = QMUIViewBorderPositionTop;
+                    contentOriginY = CGRectGetMaxY(action.button.frame);
                 }
             }
-            contentOriginY -= PixelOne;
         }
         // 按钮scrollView布局
         self.buttonScrollView.frame = CGRectSetHeight(self.buttonScrollView.frame, contentOriginY);
         self.buttonScrollView.contentSize = CGSizeMake(CGRectGetWidth(self.buttonScrollView.bounds), contentOriginY);
         // 容器最终布局
         self.scrollWrapView.frame =  CGRectMake(0, 0, CGRectGetWidth(self.scrollWrapView.bounds), CGRectGetMaxY(self.buttonScrollView.frame));
-        self.headerEffectView.frame = self.scrollWrapView.bounds;
+        self.mainVisualEffectView.frame = self.scrollWrapView.bounds;
         contentOriginY = CGRectGetMaxY(self.scrollWrapView.frame) + self.sheetCancelButtonMarginTop;
         if (self.cancelAction) {
-            self.cancelButtoneEffectView.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), self.sheetButtonHeight);
-            self.cancelAction.buttonWrapView.frame = self.cancelButtoneEffectView.bounds;
-            contentOriginY = CGRectGetMaxY(self.cancelButtoneEffectView.frame);
+            self.cancelButtonVisualEffectView.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), self.sheetButtonHeight);
+            self.cancelAction.button.frame = self.cancelButtonVisualEffectView.bounds;
+            contentOriginY = CGRectGetMaxY(self.cancelButtonVisualEffectView.frame);
         }
         // 把上下的margin都加上用于跟整个屏幕的高度做比较
         CGFloat contentHeight = contentOriginY + UIEdgeInsetsGetVerticalValue(self.sheetContentMargin);
         CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds);
         if (contentHeight > screenSpaceHeight) {
-            CGFloat cancelButtonAreaHeight = (self.cancelAction ? (CGRectGetHeight(self.cancelAction.buttonWrapView.bounds) + self.sheetCancelButtonMarginTop) : 0);
+            CGFloat cancelButtonAreaHeight = (self.cancelAction ? (CGRectGetHeight(self.cancelAction.button.bounds) + self.sheetCancelButtonMarginTop) : 0);
             screenSpaceHeight = screenSpaceHeight - cancelButtonAreaHeight - UIEdgeInsetsGetVerticalValue(self.sheetContentMargin);
             CGFloat contentH = MIN(CGRectGetHeight(self.headerScrollView.bounds), screenSpaceHeight / 2);
             CGFloat buttonH = MIN(CGRectGetHeight(self.buttonScrollView.bounds), screenSpaceHeight / 2);
@@ -725,7 +768,7 @@ static QMUIAlertController *alertControllerAppearance;
             }
             self.scrollWrapView.frame =  CGRectSetHeight(self.scrollWrapView.frame, CGRectGetHeight(self.headerScrollView.bounds) + CGRectGetHeight(self.buttonScrollView.bounds));
             if (self.cancelAction) {
-                self.cancelButtoneEffectView.frame = CGRectSetY(self.cancelButtoneEffectView.frame, CGRectGetMaxY(self.scrollWrapView.frame) + self.sheetCancelButtonMarginTop);
+                self.cancelButtonVisualEffectView.frame = CGRectSetY(self.cancelButtonVisualEffectView.frame, CGRectGetMaxY(self.scrollWrapView.frame) + self.sheetCancelButtonMarginTop);
             }
             contentHeight = CGRectGetHeight(self.headerScrollView.bounds) + CGRectGetHeight(self.buttonScrollView.bounds) + cancelButtonAreaHeight + self.sheetContentMargin.bottom;
             screenSpaceHeight += (cancelButtonAreaHeight + UIEdgeInsetsGetVerticalValue(self.sheetContentMargin));
@@ -741,7 +784,7 @@ static QMUIAlertController *alertControllerAppearance;
     }
 }
 
-- (NSArray *)orderedAlertActions:(NSArray *)actions {
+- (NSArray<QMUIAlertAction *> *)orderedAlertActions:(NSArray<QMUIAlertAction *> *)actions {
     NSMutableArray<QMUIAlertAction *> *newActions = [[NSMutableArray alloc] init];
     // 按照用户addAction的先后顺序来排序
     if (self.orderActionsByAddedOrdered) {
@@ -890,9 +933,11 @@ static QMUIAlertController *alertControllerAppearance;
         return;
     }
     
-    if (self.willShow && !self.showing) {
-        self.isNeedsHideAfterAlertShowed = YES;
-        self.isAnimatedForHideAfterAlertShowed = animated;
+    if (!self.showing) {
+        if (self.willShow) {
+            self.isNeedsHideAfterAlertShowed = YES;
+            self.isAnimatedForHideAfterAlertShowed = animated;
+        }
         return;
     }
     
@@ -935,13 +980,17 @@ static QMUIAlertController *alertControllerAppearance;
         [self.destructiveActions addObject:action];
     }
     // 只有ActionSheet的取消按钮不参与滚动
-    if (self.preferredStyle == QMUIAlertControllerStyleActionSheet && action.style == QMUIAlertActionStyleCancel && !IS_IPAD) {
-        if (!self.cancelButtoneEffectView.superview) {
-            [self.containerView addSubview:self.cancelButtoneEffectView];
+    if (self.preferredStyle == QMUIAlertControllerStyleActionSheet && action.style == QMUIAlertActionStyleCancel) {
+        if (!self.cancelButtonVisualEffectView.superview) {
+            [self.containerView addSubview:self.cancelButtonVisualEffectView];
         }
-        [self.cancelButtoneEffectView addSubview:action.buttonWrapView];
+        if ([self.cancelButtonVisualEffectView isKindOfClass:[UIVisualEffectView class]]) {
+            [((UIVisualEffectView *)self.cancelButtonVisualEffectView).contentView addSubview:action.button];
+        } else {
+            [self.cancelButtonVisualEffectView addSubview:action.button];
+        }
     } else {
-        [self.buttonScrollView addSubview:action.buttonWrapView];
+        [self.buttonScrollView addSubview:action.button];
     }
     action.delegate = self;
     [self.alertActions addObject:action];
@@ -1008,7 +1057,6 @@ static QMUIAlertController *alertControllerAppearance;
     if (self.titleLabel && !self.titleLabel.hidden) {
         NSAttributedString *attributeString = [[NSAttributedString alloc] initWithString:self.title attributes:self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertTitleAttributes : self.sheetTitleAttributes];
         self.titleLabel.attributedText = attributeString;
-        self.titleLabel.textAlignment = NSTextAlignmentCenter;
     }
 }
 
@@ -1031,7 +1079,6 @@ static QMUIAlertController *alertControllerAppearance;
     if (self.messageLabel && !self.messageLabel.hidden) {
         NSAttributedString *attributeString = [[NSAttributedString alloc] initWithString:self.message attributes:self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertMessageAttributes : self.sheetMessageAttributes];
         self.messageLabel.attributedText = attributeString;
-        self.messageLabel.textAlignment = NSTextAlignmentCenter;
     }
 }
 
@@ -1045,10 +1092,12 @@ static QMUIAlertController *alertControllerAppearance;
         
         UIColor *backgroundColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertButtonBackgroundColor : self.sheetButtonBackgroundColor;
         UIColor *highlightBackgroundColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertButtonHighlightBackgroundColor : self.sheetButtonHighlightBackgroundColor;
+        UIColor *borderColor = self.preferredStyle == QMUIAlertControllerStyleAlert ? self.alertSeparatorColor : self.sheetSeparatorColor;
         
-        alertAction.buttonWrapView.clipsToBounds = alertAction.style == QMUIAlertActionStyleCancel;
+        alertAction.button.clipsToBounds = alertAction.style == QMUIAlertActionStyleCancel;
         alertAction.button.backgroundColor = backgroundColor;
         alertAction.button.highlightedBackgroundColor = highlightBackgroundColor;
+        alertAction.button.qmui_borderColor = borderColor;
         
         NSAttributedString *attributeString = nil;
         if (alertAction.style == QMUIAlertActionStyleCancel) {

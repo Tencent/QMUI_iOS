@@ -62,6 +62,8 @@
 
 @property(nonatomic, assign) CGFloat maximumZoomScale;
 
+@property(nonatomic, copy) NSObject<NSCopying> *reusedIdentifier;
+
 /// 设置当前要显示的图片，会把 livePhoto/video 相关内容清空，因此注意不要直接通过 imageView.image 来设置图片。
 @property(nonatomic, weak) UIImage *image;
 
@@ -108,10 +110,13 @@
 /// 停止视频播放，将播放状态重置到初始状态
 - (void)endPlayingVideo;
 
+/// 获取当前正在显示的图片/视频的容器
+@property(nonatomic, weak, readonly) __kindof UIView *contentView;
+
 /**
  *  获取当前正在显示的图片/视频在整个 QMUIZoomImageView 坐标系里的 rect（会按照当前的缩放状态来计算）
  */
-- (CGRect)imageViewRectInZoomImageView;
+- (CGRect)contentViewRectInZoomImageView;
 
 /**
  *  重置图片或视频的大小，使用的场景例如：相册控件里放大当前图片、划到下一张、再回来，当前的图片或视频应该恢复到原来大小。

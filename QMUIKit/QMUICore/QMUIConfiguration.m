@@ -13,7 +13,9 @@
 #import "UIViewController+QMUI.h"
 #import <objc/runtime.h>
 
-const CGSize kUINavigationBarBackIndicatorImageSize = {13, 21}; // 在iOS 8-11 上实际测量得到
+// 在 iOS 8 - 11 上实际测量得到
+// Measured on iOS 8 - 11
+const CGSize kUINavigationBarBackIndicatorImageSize = {13, 21};
 
 @implementation QMUIConfiguration
 
@@ -40,8 +42,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         return;
     }
     
-    // 自动寻找并应用模板的解释参照这里 https://github.com/QMUI/QMUI_iOS/issues/264
-    
+    // 自动寻找并应用模板
+    // Automatically look for templates and apply them
+    // @see https://github.com/QMUI/QMUI_iOS/issues/264
     Protocol *protocol = @protocol(QMUIConfigurationTemplateProtocol);
     int numberOfClasses = objc_getClassList(NULL, 0);
     if (numberOfClasses > 0) {
@@ -50,6 +53,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         for (int i = 0; i < numberOfClasses; i++) {
             Class class = classes[i];
             // 这里用 containsString 是考虑到 Swift 里 className 由“项目前缀+class 名”组成，如果用 hasPrefix 就无法判断了
+            // Use `containsString` instead of `hasPrefix` because class names in Swift have project prefix prepended
             if ([NSStringFromClass(class) containsString:@"QMUIConfigurationTemplate"] && [class conformsToProtocol:protocol]) {
                 if ([class instancesRespondToSelector:@selector(shouldApplyTemplateAutomatically)]) {
                     id<QMUIConfigurationTemplateProtocol> template = [[class alloc] init];
@@ -57,6 +61,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
                         QMUI_hasAppliedInitialTemplate = YES;
                         [template applyConfigurationTemplate];
                         // 只应用第一个 shouldApplyTemplateAutomatically 的主题
+                        // Only apply the first template returned
                         break;
                     }
                 }
@@ -68,7 +73,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     QMUI_hasAppliedInitialTemplate = YES;
 }
 
-#pragma mark - 初始化默认值
+#pragma mark - Initialize default values
 
 - (void)initDefaultConfiguration {
     
@@ -254,11 +259,12 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 - (void)setNavBarButtonFont:(UIFont *)navBarButtonFont {
     _navBarButtonFont = navBarButtonFont;
     // by molice 2017-08-04 只要用 appearence 的方式修改 UIBarButtonItem 的 font，就会导致界面切换时 UIBarButtonItem 抖动，系统的问题，所以暂时不修改 appearance。
-//    if (navBarButtonFont) {
-//        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil];
-//        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: navBarButtonFont} forState:UIControlStateNormal];
-//        [barButtonItemAppearance setTitleTextAttributes:[barButtonItemAppearance titleTextAttributesForState:UIControlStateNormal] forState:UIControlStateHighlighted];
-//    }
+    // by molice 2018-06-14 iOS 11 观察貌似又没抖动了，先试试看
+    if (navBarButtonFont) {
+        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil];
+        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: navBarButtonFont} forState:UIControlStateNormal];
+        [barButtonItemAppearance setTitleTextAttributes:[barButtonItemAppearance titleTextAttributesForState:UIControlStateNormal] forState:UIControlStateHighlighted];
+    }
 }
 
 - (void)setNavBarTintColor:(UIColor *)navBarTintColor {
@@ -357,6 +363,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         UINavigationBar *navigationBar = [QMUIHelper visibleViewController].navigationController.navigationBar;
         
         // 返回按钮的图片frame是和系统默认的返回图片的大小一致的（13, 21），所以用自定义返回箭头时要保证图片大小与系统的箭头大小一样，否则无法对齐
+        // Make sure custom back button image is the same size as the system's back button image, i.e. (13, 21), due to the same frame size they share.
         if (self.sizeNavBarBackIndicatorImageAutomatically) {
             CGSize systemBackIndicatorImageSize = kUINavigationBarBackIndicatorImageSize;
             CGSize customBackIndicatorImageSize = _navBarBackIndicatorImage.size;

@@ -18,4 +18,5 @@
 - (void)addDelegate:(id)delegate;
 - (BOOL)removeDelegate:(id)delegate;
 - (void)removeAllDelegates;
+- (BOOL)containsDelegate:(id)delegate;
 @end

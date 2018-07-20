@@ -35,10 +35,34 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
     QMUIImageBorderPositionRight    = 1 << 3,
 };
 
+typedef NS_ENUM(NSInteger, QMUIImageResizingMode) {
+    QMUIImageResizingModeScaleToFill            = 0,    // 将图片缩放到给定的大小，不考虑宽高比例
+    QMUIImageResizingModeScaleAspectFit         = 10,   // 默认的缩放方式，将图片保持宽高比例不变的情况下缩放到不超过给定的大小（但缩放后的大小不一定与给定大小相等），不会产生空白也不会产生裁剪
+    QMUIImageResizingModeScaleAspectFill        = 20,   // 将图片保持宽高比例不变的情况下缩放到不超过给定的大小（但缩放后的大小不一定与给定大小相等），若有内容超出则会被裁剪。若裁剪则上下居中裁剪。
+    QMUIImageResizingModeScaleAspectFillTop,            // 将图片保持宽高比例不变的情况下缩放到不超过给定的大小（但缩放后的大小不一定与给定大小相等），若有内容超出则会被裁剪。若裁剪则水平居中、垂直居上裁剪。
+    QMUIImageResizingModeScaleAspectFillBottom          // 将图片保持宽高比例不变的情况下缩放到不超过给定的大小（但缩放后的大小不一定与给定大小相等），若有内容超出则会被裁剪。若裁剪则水平居中、垂直居下裁剪。
+};
+
 @interface UIImage (QMUI)
+
+/**
+ 用于绘制一张图并以 UIImage 的形式返回
+
+ @param size 要绘制的图片的 size，宽或高均不能为 0
+ @param opaque 图片是否不透明，YES 表示不透明，NO 表示半透明
+ @param scale 图片的倍数，0 表示取当前屏幕的倍数
+ @param actionBlock 实际的图片绘制操作，在这里只管绘制就行，不用手动生成 image
+ @return 返回绘制完的图片
+ */
++ (UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock;
 
 /// 获取当前图片的像素大小，如果是多倍图，会被放大到一倍来算
 @property(nonatomic, assign, readonly) CGSize qmui_sizeInPixel;
+
+/**
+ *  判断一张图是否不存在 alpha 通道，注意 “不存在 alpha 通道” 不等价于 “不透明”。一张不透明的图有可能是存在 alpha 通道但 alpha 值为 1。
+ */
+- (BOOL)qmui_opaque;
 
 /**
  *  获取当前图片的均色，原理是将图片绘制到1px*1px的矩形内，再从当前区域取色，得到图片的均色。
@@ -63,11 +87,6 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
  *  @return 设置了透明度之后的图片
  */
 - (UIImage *)qmui_imageWithAlpha:(CGFloat)alpha;
-
-/**
- *  判断一张图是否不存在 alpha 通道，注意 “不存在 alpha 通道” 不等价于 “不透明”。一张不透明的图有可能是存在 alpha 通道但 alpha 值为 1。
- */
-- (BOOL)qmui_opaque;
 
 /**
  *  保持当前图片的形状不变，使用指定的颜色去重新渲染它，生成一张新图片并返回
@@ -134,33 +153,33 @@ typedef NS_OPTIONS(NSInteger, QMUIImageBorderPosition) {
 - (UIImage *)qmui_imageWithClippedCornerRadius:(CGFloat)cornerRadius scale:(CGFloat)scale;
 
 /**
- *  将原图以 UIViewContentModeScaleAspectFit 的策略缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片，缩放后的图片的倍数保持与原图一致。
- *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 contentMode 不同而不同，但必定不会超过 size。
+ *  将原图以 QMUIImageResizingModeScaleAspectFit 的策略缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片。缩放后的图片的倍数保持与原图一致。
+ *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 resizingMode 不同而不同，但必定不会超过 size。
  *
  *  @return 处理完的图片
- *  @see qmui_imageResizedInLimitedSize:contentMode:scale:
+ *  @see qmui_imageResizedInLimitedSize:resizingMode:scale:
  */
 - (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size;
 
 /**
- *  将原图按指定的 UIViewContentMode 缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片，缩放后的图片的倍数保持与原图一致。
- *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 contentMode 不同而不同，但必定不会超过 size。
- *  @param contentMode 希望使用的缩放模式，目前仅支持 UIViewContentModeScaleToFill、UIViewContentModeScaleAspectFill、UIViewContentModeScaleAspectFit（默认）
+ *  将原图按指定的 QMUIImageResizingMode 缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片，缩放后的图片的倍数保持与原图一致。
+ *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 resizingMode 不同而不同，但必定不会超过 size。
+ *  @param resizingMode 希望使用的缩放模式
  *
  *  @return 处理完的图片
- *  @see qmui_imageResizedInLimitedSize:contentMode:scale:
+ *  @see qmui_imageResizedInLimitedSize:resizingMode:scale:
  */
-- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size contentMode:(UIViewContentMode)contentMode;
+- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size resizingMode:(QMUIImageResizingMode)resizingMode;
 
 /**
- *  将原图按指定的 UIViewContentMode 缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片。
- *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 contentMode 不同而不同，但必定不会超过 size。
- *  @param contentMode 希望使用的缩放模式，目前仅支持 UIViewContentModeScaleToFill、UIViewContentModeScaleAspectFill、UIViewContentModeScaleAspectFit（默认）
+ *  将原图按指定的 QMUIImageResizingMode 缩放，使其缩放后的大小不超过指定的大小，并返回缩放后的图片。
+ *  @param size 在这个约束的 size 内进行缩放后的大小，处理后返回的图片的 size 会根据 resizingMode 不同而不同，但必定不会超过 size。
+ *  @param resizingMode 希望使用的缩放模式
  *  @param scale 用于指定缩放后的图片的倍数
  *
  *  @return 处理完的图片
  */
-- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size contentMode:(UIViewContentMode)contentMode scale:(CGFloat)scale;
+- (UIImage *)qmui_imageResizedInLimitedSize:(CGSize)size resizingMode:(QMUIImageResizingMode)resizingMode scale:(CGFloat)scale;
 
 /**
  *  将原图进行旋转，只能选择上下左右四个方向

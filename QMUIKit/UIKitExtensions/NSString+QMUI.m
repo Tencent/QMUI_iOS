@@ -242,6 +242,15 @@
     return [self qmui_stringByRemoveCharacterAtIndex:self.length - 1];
 }
 
+- (NSString *)qmui_stringByReplacingPattern:(NSString *)pattern withString:(NSString *)replacement {
+    NSError *error = nil;
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
+    if (error) {
+        return self;
+    }
+    return [regex stringByReplacingMatchesInString:self options:NSMatchingReportCompletion range:NSMakeRange(0, self.length) withTemplate:replacement];
+}
+
 @end
 
 @implementation NSString (QMUI_StringFormat)

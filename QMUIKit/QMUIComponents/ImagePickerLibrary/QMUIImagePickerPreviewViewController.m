@@ -210,7 +210,11 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 #pragma mark - 按钮点击回调
 
 - (void)handleCancelPreviewImage:(QMUIButton *)button {
-    [self.navigationController popViewControllerAnimated:YES];
+    if (self.navigationController) {
+        [self.navigationController popViewControllerAnimated:YES];
+    } else {
+        [self exitPreviewAutomatically];
+    }
     if (self.delegate && [self.delegate respondsToSelector:@selector(imagePickerPreviewViewControllerDidCancel:)]) {
         [self.delegate imagePickerPreviewViewControllerDidCancel:self];
     }
@@ -365,7 +369,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
             }];
         } else {
             imageView.tag = -1;
-            imageAsset.requestID = [imageAsset requestPreviewImageWithCompletion:^void(UIImage *result, NSDictionary *info) {
+            imageAsset.requestID = [imageAsset requestOriginImageWithCompletion:^void(UIImage *result, NSDictionary *info) {
                 // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
                 // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
                 dispatch_async(dispatch_get_main_queue(), ^{

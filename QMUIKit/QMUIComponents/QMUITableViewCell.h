@@ -74,6 +74,6 @@
 - (void)didInitializeWithStyle:(UITableViewCellStyle)style NS_REQUIRES_SUPER;
 
 /// 用于继承的接口，设置一些cell相关的UI，需要自 cellForRowAtIndexPath 里面调用。默认实现是设置当前cell在哪个position。
-- (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath;
+- (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath NS_REQUIRES_SUPER;
 
 @end

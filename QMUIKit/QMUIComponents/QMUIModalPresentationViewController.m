@@ -58,6 +58,9 @@ static QMUIModalPresentationViewController *appearance;
 @property(nonatomic, assign) BOOL disappearAnimated;
 @property(nonatomic, copy) void (^disappearCompletionBlock)(BOOL finished);
 
+/// 标志 modal 本身以 present 的形式显示之后，又再继续 present 了一个子界面后从子界面回来时触发的 viewWillAppear:
+@property(nonatomic, assign) BOOL viewWillAppearByPresentedViewController;
+
 /// 标志是否已经走过一次viewWillAppear了，用于hideInView的情况
 @property(nonatomic, assign) BOOL hasAlreadyViewWillDisappear;
 
@@ -153,8 +156,8 @@ static QMUIModalPresentationViewController *appearance;
     }
     
     // 如果是因为 present 了新的界面再从那边回来，导致走到 viewWillAppear，则后面那些升起浮层的操作都可以不用做了，因为浮层从来没被降下去过
-    BOOL willAppearByPresentedViewController = [self isShowingPresentedViewController];
-    if (willAppearByPresentedViewController) {
+    self.viewWillAppearByPresentedViewController = [self isShowingPresentedViewController];
+    if (self.viewWillAppearByPresentedViewController) {
         return;
     }
     
@@ -205,6 +208,15 @@ static QMUIModalPresentationViewController *appearance;
     }
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    if (self.viewWillAppearByPresentedViewController) {
+        if (self.contentViewController) {
+            [self.contentViewController endAppearanceTransition];
+        }
+    }
+}
+
 - (void)viewWillDisappear:(BOOL)animated {
     if (self.hasAlreadyViewWillDisappear) {
         return;
@@ -228,6 +240,10 @@ static QMUIModalPresentationViewController *appearance;
     self.keyboardManager.delegateEnabled = NO;
     [self.view endEditing:YES];
     
+    if (self.contentViewController) {
+        [self.contentViewController beginAppearanceTransition:NO animated:animated];
+    }
+    
     // 如果是因为 present 了新的界面导致走到 willDisappear，则后面那些降下浮层的操作都可以不用做了
     if (willDisappearByPresentedViewController) {
         return;
@@ -235,10 +251,6 @@ static QMUIModalPresentationViewController *appearance;
     
     if (self.isShownInWindowMode) {
         [QMUIHelper resetDimmedApplicationWindow];
-    }
-    
-    if (self.contentViewController) {
-        [self.contentViewController beginAppearanceTransition:NO animated:animated];
     }
     
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
@@ -297,6 +309,16 @@ static QMUIModalPresentationViewController *appearance;
         }
     } else {
         didHiddenCompletion(YES);
+    }
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+    [super viewDidDisappear:animated];
+    BOOL willDisappearByPresentedViewController = [self isShowingPresentedViewController];
+    if (willDisappearByPresentedViewController) {
+        if (self.contentViewController) {
+            [self.contentViewController endAppearanceTransition];
+        }
     }
 }
 
@@ -546,7 +568,11 @@ static QMUIModalPresentationViewController *appearance;
 
 - (void)keyboardWillChangeFrameWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
     CGRect keyboardRect = [QMUIKeyboardManager convertKeyboardRect:[keyboardUserInfo endFrame] toView:self.view];
-    CGFloat keyboardHeight = CGRectIntersection(self.view.bounds, keyboardRect).size.height;
+    CGRect intersectionRect = CGRectIntersection(self.view.bounds, keyboardRect);
+    CGFloat keyboardHeight = 0;
+    if (CGRectIsValidated(intersectionRect)) {
+        keyboardHeight = CGRectGetHeight(intersectionRect);
+    }
     self.keyboardHeight = keyboardHeight;
     
     [self updateLayout];

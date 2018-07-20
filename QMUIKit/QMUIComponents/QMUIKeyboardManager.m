@@ -171,7 +171,7 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
     }
     CGRect keyboardRect = [QMUIKeyboardManager convertKeyboardRect:_endFrame toView:view];
     CGRect visibleRect = CGRectIntersection(view.bounds, keyboardRect);
-    if (CGRectIsNull(visibleRect)) {
+    if (!CGRectIsValidated(visibleRect)) {
         return 0;
     }
     return visibleRect.size.height;

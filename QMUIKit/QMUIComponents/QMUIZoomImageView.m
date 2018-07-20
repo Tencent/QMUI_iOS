@@ -311,7 +311,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         CGFloat y = self.scrollView.contentOffset.y;
         CGRect viewport = [self finalViewportRect];
         if (!CGRectIsEmpty(viewport)) {
-            UIView *contentView = [self currentContentView];
+            UIView *contentView = [self contentView];
             if (CGRectGetWidth(viewport) < CGRectGetWidth(contentView.frame)) {
                 x = (CGRectGetWidth(contentView.frame) / 2 - CGRectGetWidth(viewport) / 2) - CGRectGetMinX(viewport);
             }
@@ -343,15 +343,18 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     }
 }
 
-- (CGRect)imageViewRectInZoomImageView {
-    UIView *imageView = [self currentContentView];
-    return [self convertRect:imageView.frame fromView:imageView.superview];
+- (CGRect)contentViewRectInZoomImageView {
+    UIView *contentView = [self contentView];
+    if (!contentView) {
+        return CGRectZero;
+    }
+    return [self convertRect:contentView.frame fromView:contentView.superview];
 }
 
 - (void)handleDidEndZooming {
     CGRect viewport = [self finalViewportRect];
     
-    UIView *contentView = [self currentContentView];
+    UIView *contentView = [self contentView];
     // 强制 layout 以确保下面的一堆计算依赖的都是最新的 frame 的值
     [self layoutIfNeeded];
     CGRect contentViewFrame = contentView ? [self convertRect:contentView.frame fromView:contentView.superview] : CGRectZero;
@@ -777,7 +780,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
             }
             
             CGRect zoomRect = CGRectZero;
-            CGPoint tapPoint = [[self currentContentView] convertPoint:gesturePoint fromView:gestureRecognizer.view];
+            CGPoint tapPoint = [[self contentView] convertPoint:gesturePoint fromView:gestureRecognizer.view];
             zoomRect.size.width = CGRectGetWidth(self.bounds) / newZoomScale;
             zoomRect.size.height = CGRectGetHeight(self.bounds) / newZoomScale;
             zoomRect.origin.x = tapPoint.x - CGRectGetWidth(zoomRect) / 2;
@@ -812,6 +815,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self.emptyView setDetailTextLabelText:nil];
     [self.emptyView setActionButtonTitle:nil];
     self.emptyView.hidden = NO;
+    [self setNeedsLayout];
 }
 
 - (void)showEmptyViewWithText:(NSString *)text {
@@ -821,16 +825,18 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self.emptyView setDetailTextLabelText:nil];
     [self.emptyView setActionButtonTitle:nil];
     self.emptyView.hidden = NO;
+    [self setNeedsLayout];
 }
 
 - (void)hideEmptyView {
     self.emptyView.hidden = YES;
+    [self setNeedsLayout];
 }
 
 #pragma mark - <UIScrollViewDelegate>
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return [self currentContentView];
+    return [self contentView];
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
@@ -864,7 +870,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 
-- (UIView *)currentContentView {
+- (UIView *)contentView {
     if (_imageView) {
         return _imageView;
     }
@@ -912,75 +918,54 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 + (UIImage *)largePlayImage {
     CGFloat width = 60;
-    
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, width), NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    
-    UIColor *color = kIconsColor;
-    CGContextSetStrokeColorWithColor(context, color.CGColor);
-    
-    // circle outside
-    CGContextSetFillColorWithColor(context, UIColorMakeWithRGBA(0, 0, 0, .25).CGColor);
-    CGFloat circleLineWidth = 1;
-    // consider line width to avoid edge clip
-    UIBezierPath *circle = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(circleLineWidth / 2, circleLineWidth / 2, width - circleLineWidth, width - circleLineWidth)];
-    [circle setLineWidth:circleLineWidth];
-    [circle stroke];
-    [circle fill];
-    
-    // triangle inside
-    CGContextSetFillColorWithColor(context, color.CGColor);
-    CGFloat triangleLength = width / 2.5;
-    UIBezierPath *triangle = [self trianglePathWithLength:triangleLength];
-    UIOffset offset = UIOffsetMake(width / 2 - triangleLength * tan(M_PI / 6) / 2, width / 2 - triangleLength / 2);
-    [triangle applyTransform:CGAffineTransformMakeTranslation(offset.horizontal, offset.vertical)];
-    [triangle fill];
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
+    return [UIImage qmui_imageWithSize:CGSizeMake(width, width) opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        UIColor *color = kIconsColor;
+        CGContextSetStrokeColorWithColor(contextRef, color.CGColor);
+        
+        // circle outside
+        CGContextSetFillColorWithColor(contextRef, UIColorMakeWithRGBA(0, 0, 0, .25).CGColor);
+        CGFloat circleLineWidth = 1;
+        // consider line width to avoid edge clip
+        UIBezierPath *circle = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(circleLineWidth / 2, circleLineWidth / 2, width - circleLineWidth, width - circleLineWidth)];
+        [circle setLineWidth:circleLineWidth];
+        [circle stroke];
+        [circle fill];
+        
+        // triangle inside
+        CGContextSetFillColorWithColor(contextRef, color.CGColor);
+        CGFloat triangleLength = width / 2.5;
+        UIBezierPath *triangle = [self trianglePathWithLength:triangleLength];
+        UIOffset offset = UIOffsetMake(width / 2 - triangleLength * tan(M_PI / 6) / 2, width / 2 - triangleLength / 2);
+        [triangle applyTransform:CGAffineTransformMakeTranslation(offset.horizontal, offset.vertical)];
+        [triangle fill];
+    }];
 }
 
 + (UIImage *)smallPlayImage {
     // width and height are equal
     CGFloat width = 17;
-    
-    UIGraphicsBeginImageContextWithOptions(CGSizeMake(width, width), NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    
-    UIColor *color = kIconsColor;
-    CGContextSetFillColorWithColor(context, color.CGColor);
-    UIBezierPath *path = [self trianglePathWithLength:width];
-    [path fill];
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
+    return [UIImage qmui_imageWithSize:CGSizeMake(width, width) opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        UIColor *color = kIconsColor;
+        CGContextSetFillColorWithColor(contextRef, color.CGColor);
+        UIBezierPath *path = [self trianglePathWithLength:width];
+        [path fill];
+    }];
 }
 
 + (UIImage *)pauseImage {
     CGSize size = CGSizeMake(12, 18);
-    
-    UIGraphicsBeginImageContextWithOptions(size, NO, 0);
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    CGContextInspectContext(context);
-    
-    UIColor *color = kIconsColor;
-    CGContextSetStrokeColorWithColor(context, color.CGColor);
-    CGFloat lineWidth = 2;
-    UIBezierPath *path = [UIBezierPath bezierPath];
-    [path moveToPoint:CGPointMake(lineWidth / 2, 0)];
-    [path addLineToPoint:CGPointMake(lineWidth / 2, size.height)];
-    [path moveToPoint:CGPointMake(size.width - lineWidth / 2, 0)];
-    [path addLineToPoint:CGPointMake(size.width - lineWidth / 2, size.height)];
-    [path setLineWidth:lineWidth];
-    [path stroke];
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
+    return [UIImage qmui_imageWithSize:size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
+        UIColor *color = kIconsColor;
+        CGContextSetStrokeColorWithColor(contextRef, color.CGColor);
+        CGFloat lineWidth = 2;
+        UIBezierPath *path = [UIBezierPath bezierPath];
+        [path moveToPoint:CGPointMake(lineWidth / 2, 0)];
+        [path addLineToPoint:CGPointMake(lineWidth / 2, size.height)];
+        [path moveToPoint:CGPointMake(size.width - lineWidth / 2, 0)];
+        [path addLineToPoint:CGPointMake(size.width - lineWidth / 2, size.height)];
+        [path setLineWidth:lineWidth];
+        [path stroke];
+    }];
 }
 
 // @param length of the triangle side

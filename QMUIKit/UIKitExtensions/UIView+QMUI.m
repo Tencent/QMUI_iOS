@@ -30,8 +30,8 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
         SEL selectors[] = {
+            // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
             @selector(convertPoint:toView:),
             @selector(convertPoint:fromView:),
             @selector(convertRect:toView:),
@@ -337,11 +337,11 @@ static char kAssociatedObjectKey_hasDebugColor;
     
     [self qmui_layoutSublayersOfLayer:layer];
     
-    if ((!self.qmui_borderLayer && self.qmui_borderPosition == QMUIBorderViewPositionNone) || (!self.qmui_borderLayer && self.qmui_borderWidth == 0)) {
+    if ((!self.qmui_borderLayer && self.qmui_borderPosition == QMUIViewBorderPositionNone) || (!self.qmui_borderLayer && self.qmui_borderWidth == 0)) {
         return;
     }
     
-    if (self.qmui_borderLayer && self.qmui_borderPosition == QMUIBorderViewPositionNone && !self.qmui_borderLayer.path) {
+    if (self.qmui_borderLayer && self.qmui_borderPosition == QMUIViewBorderPositionNone && !self.qmui_borderLayer.path) {
         return;
     }
     
@@ -366,26 +366,26 @@ static char kAssociatedObjectKey_hasDebugColor;
     
     UIBezierPath *path = nil;
     
-    if (self.qmui_borderPosition != QMUIBorderViewPositionNone) {
+    if (self.qmui_borderPosition != QMUIViewBorderPositionNone) {
         path = [UIBezierPath bezierPath];
     }
     
-    if ((self.qmui_borderPosition & QMUIBorderViewPositionTop) == QMUIBorderViewPositionTop) {
+    if ((self.qmui_borderPosition & QMUIViewBorderPositionTop) == QMUIViewBorderPositionTop) {
         [path moveToPoint:CGPointMake(0, borderWidth / 2)];
         [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), borderWidth / 2)];
     }
     
-    if ((self.qmui_borderPosition & QMUIBorderViewPositionLeft) == QMUIBorderViewPositionLeft) {
+    if ((self.qmui_borderPosition & QMUIViewBorderPositionLeft) == QMUIViewBorderPositionLeft) {
         [path moveToPoint:CGPointMake(borderWidth / 2, 0)];
         [path addLineToPoint:CGPointMake(borderWidth / 2, CGRectGetHeight(self.bounds) - 0)];
     }
     
-    if ((self.qmui_borderPosition & QMUIBorderViewPositionBottom) == QMUIBorderViewPositionBottom) {
+    if ((self.qmui_borderPosition & QMUIViewBorderPositionBottom) == QMUIViewBorderPositionBottom) {
         [path moveToPoint:CGPointMake(0, CGRectGetHeight(self.bounds) - borderWidth / 2)];
         [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) - borderWidth / 2)];
     }
     
-    if ((self.qmui_borderPosition & QMUIBorderViewPositionRight) == QMUIBorderViewPositionRight) {
+    if ((self.qmui_borderPosition & QMUIViewBorderPositionRight) == QMUIViewBorderPositionRight) {
         [path moveToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, 0)];
         [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, CGRectGetHeight(self.bounds))];
     }
@@ -399,13 +399,13 @@ static char kAssociatedObjectKey_hasDebugColor;
 }
 
 static char kAssociatedObjectKey_borderPosition;
-- (void)setQmui_borderPosition:(QMUIBorderViewPosition)qmui_borderPosition {
+- (void)setQmui_borderPosition:(QMUIViewBorderPosition)qmui_borderPosition {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_borderPosition, @(qmui_borderPosition), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     [self setNeedsLayout];
 }
 
-- (QMUIBorderViewPosition)qmui_borderPosition {
-    return (QMUIBorderViewPosition)[objc_getAssociatedObject(self, &kAssociatedObjectKey_borderPosition) unsignedIntegerValue];
+- (QMUIViewBorderPosition)qmui_borderPosition {
+    return (QMUIViewBorderPosition)[objc_getAssociatedObject(self, &kAssociatedObjectKey_borderPosition) unsignedIntegerValue];
 }
 
 static char kAssociatedObjectKey_borderWidth;
@@ -460,7 +460,24 @@ static char kAssociatedObjectKey_borderLayer;
 @end
 
 
+const CGFloat QMUIViewSelfSizingHeight = INFINITY;
+
 @implementation UIView (QMUI_Layout)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ExchangeImplementations([UIView class], @selector(setFrame:), @selector(qmui_setFrame:));
+    });
+}
+
+- (void)qmui_setFrame:(CGRect)frame {
+    if (CGRectGetWidth(frame) > 0 && isinf(CGRectGetHeight(frame))) {
+        CGFloat height = flat([self sizeThatFits:CGSizeMake(CGRectGetWidth(frame), CGFLOAT_MAX)].height);
+        frame = CGRectSetHeight(frame, height);
+    }
+    [self qmui_setFrame:frame];
+}
 
 - (CGFloat)qmui_top {
     return CGRectGetMinY(self.frame);

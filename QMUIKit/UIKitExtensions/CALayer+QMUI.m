@@ -80,7 +80,7 @@
     self.actions = actions;
 }
 
-+ (CAShapeLayer *)qmui_seperatorDashLayerWithLineLength:(NSInteger)lineLength
++ (CAShapeLayer *)qmui_separatorDashLayerWithLineLength:(NSInteger)lineLength
                                             lineSpacing:(NSInteger)lineSpacing
                                               lineWidth:(CGFloat)lineWidth
                                               lineColor:(CGColorRef)lineColor
@@ -105,12 +105,12 @@
     
     return layer;
 }
-+ (CAShapeLayer *)qmui_seperatorDashLayerInHorizontal {
-    CAShapeLayer *layer = [CAShapeLayer qmui_seperatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:YES];
++ (CAShapeLayer *)qmui_separatorDashLayerInHorizontal {
+    CAShapeLayer *layer = [CAShapeLayer qmui_separatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:YES];
     return layer;
 }
-+ (CAShapeLayer *)qmui_seperatorDashLayerInVertical {
-    CAShapeLayer *layer = [CAShapeLayer qmui_seperatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:NO];
++ (CAShapeLayer *)qmui_separatorDashLayerInVertical {
+    CAShapeLayer *layer = [CAShapeLayer qmui_separatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:NO];
     return layer;
 }
 

@@ -10,6 +10,7 @@
 #import "QMUICore.h"
 #import "UIControl+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
+#import "UIView+QMUI.h"
 
 @interface QMUIEmptyView ()
 
@@ -117,16 +118,12 @@
     }
     
     if (!self.textLabel.hidden) {
-        CGFloat labelWidth = CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.textLabelInsets);
-        CGSize labelSize = [self.textLabel sizeThatFits:CGSizeMake(labelWidth, CGFLOAT_MAX)];
-        self.textLabel.frame = CGRectFlatMake(self.textLabelInsets.left, originY + self.textLabelInsets.top, labelWidth, labelSize.height);
+        self.textLabel.frame = CGRectFlatMake(self.textLabelInsets.left, originY + self.textLabelInsets.top, CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.textLabelInsets), QMUIViewSelfSizingHeight);
         originY = CGRectGetMaxY(self.textLabel.frame) + self.textLabelInsets.bottom;
     }
     
     if (!self.detailTextLabel.hidden) {
-        CGFloat labelWidth = CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.detailTextLabelInsets);
-        CGSize labelSize = [self.detailTextLabel sizeThatFits:CGSizeMake(labelWidth, CGFLOAT_MAX)];
-        self.detailTextLabel.frame = CGRectFlatMake(self.detailTextLabelInsets.left, originY + self.detailTextLabelInsets.top, labelWidth, labelSize.height);
+        self.detailTextLabel.frame = CGRectFlatMake(self.detailTextLabelInsets.left, originY + self.detailTextLabelInsets.top, CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.detailTextLabelInsets), QMUIViewSelfSizingHeight);
         originY = CGRectGetMaxY(self.detailTextLabel.frame) + self.detailTextLabelInsets.bottom;
     }
     

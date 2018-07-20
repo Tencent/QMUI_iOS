@@ -9,27 +9,26 @@
 #import <UIKit/UIKit.h>
 #import <Photos/PHImageManager.h>
 
-/// Asset 的类型
 typedef NS_ENUM(NSUInteger, QMUIAssetType) {
-    QMUIAssetTypeUnknow,                                    // 未知类型的 Asset
-    QMUIAssetTypeImage,                                     // 图片类型的 Asset
-    QMUIAssetTypeVideo,                                     // 视频类型的 Asset
-    QMUIAssetTypeAudio                                      // 音频类型的 Asset
+    QMUIAssetTypeUnknow,
+    QMUIAssetTypeImage,
+    QMUIAssetTypeVideo,
+    QMUIAssetTypeAudio
 };
 
 typedef NS_ENUM(NSUInteger, QMUIAssetSubType) {
-    QMUIAssetSubTypeUnknow,                                 // 未知类型
-    QMUIAssetSubTypeImage,                                  // 静态图片类型
-    QMUIAssetSubTypeLivePhoto NS_ENUM_AVAILABLE_IOS(9_1),   // Live Photo 类型
-    QMUIAssetSubTypeGIF                                     // GIF类型
+    QMUIAssetSubTypeUnknow,
+    QMUIAssetSubTypeImage,
+    QMUIAssetSubTypeLivePhoto NS_ENUM_AVAILABLE_IOS(9_1),
+    QMUIAssetSubTypeGIF
 };
 
-/// 从 iCloud 请求 Asset 大图的状态
+/// Status when download asset from iCloud
 typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
-    QMUIAssetDownloadStatusSucceed,     // 下载成功或资源本来已经在本地
-    QMUIAssetDownloadStatusDownloading, // 下载中
-    QMUIAssetDownloadStatusCanceled,    // 取消下载
-    QMUIAssetDownloadStatusFailed,      // 下载失败
+    QMUIAssetDownloadStatusSucceed,
+    QMUIAssetDownloadStatusDownloading,
+    QMUIAssetDownloadStatusCanceled,
+    QMUIAssetDownloadStatusFailed
 };
 
 
