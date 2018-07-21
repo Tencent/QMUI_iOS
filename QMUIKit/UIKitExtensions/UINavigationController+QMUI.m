@@ -8,7 +8,6 @@
 
 #import "UINavigationController+QMUI.h"
 #import "QMUICore.h"
-#import "QMUILog.h"
 
 @interface _QMUIWeakObjectContainer : NSObject
 
@@ -84,7 +83,7 @@ static char originGestureDelegateKey;
 
 - (BOOL)qmui_navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
     
-    QMUILog(@"NavigationItem", @"topViewController = %@, navigationBar.items = %@, shouldPopItem = %@", NSStringFromClass(self.topViewController.class), navigationBar.items, item);
+    NSLog(@"NavigationItem, topViewController = %@, navigationBar.items = %@, shouldPopItem = %@", NSStringFromClass(self.topViewController.class), navigationBar.items, item);
     
     // 如果nav的vc栈中有两个vc，第一个是root，第二个是second。这时second页面如果点击系统的返回按钮，topViewController获取的栈顶vc是second，而如果是直接代码写的pop操作，则获取的栈顶vc是root。也就是说只要代码写了pop操作，则系统会直接将顶层vc也就是second出栈，然后才回调的，所以这时我们获取到的顶层vc就是root了。然而不管哪种方式，参数中的item都是second的item。
     BOOL isPopedByCoding = item != [self topViewController].navigationItem;
@@ -92,17 +91,17 @@ static char originGestureDelegateKey;
     // !isPopedByCoding 要放在前面，这样当 !isPopedByCoding 不满足的时候就不会去询问 canPopViewController 了，可以避免额外调用 canPopViewController 里面的逻辑
     BOOL canPopViewController = !isPopedByCoding && [self canPopViewController:self.tmp_topViewController ?: [self topViewController]];
     
-    QMUILog(@"NavigationItem", @"isPopedByCoding = %@, canPopViewController = %@, tmp_topViewController = %@", StringFromBOOL(isPopedByCoding), StringFromBOOL(canPopViewController), self.tmp_topViewController);
+    NSLog(@"NavigationItem, isPopedByCoding = %@, canPopViewController = %@, tmp_topViewController = %@", StringFromBOOL(isPopedByCoding), StringFromBOOL(canPopViewController), self.tmp_topViewController);
     
     if (canPopViewController || isPopedByCoding) {
         self.tmp_topViewController = nil;
         BOOL result = [self qmui_navigationBar:navigationBar shouldPopItem:item];
-        QMUILog(@"NavigationItem", @"call super finally, result = %@", StringFromBOOL(result));
+        NSLog(@"NavigationItem, call super finally, result = %@", StringFromBOOL(result));
         return result;
     } else {
         self.tmp_topViewController = nil;
         [self resetSubviewsInNavBar:navigationBar];
-        QMUILog(@"NavigationItem", @"reset subviews in navigationBar");
+        NSLog(@"NavigationItem, reset subviews in navigationBar");
     }
     
     return NO;
