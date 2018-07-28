@@ -9,7 +9,6 @@
 #import "QMUILogger.h"
 #import "QMUILogNameManager.h"
 #import "QMUILogItem.h"
-#import "QMUICore.h"
 
 @implementation QMUILogger
 
