@@ -40,8 +40,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 @interface QMUIZoomImageView () <UIGestureRecognizerDelegate>
 
-@property(nonatomic, strong) UIScrollView *scrollView;
-
 // video play
 @property(nonatomic, strong) QMUIZoomImageVideoPlayerView *videoPlayerView;
 @property(nonatomic, strong) AVPlayer *videoPlayer;
@@ -74,7 +72,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         self.contentMode = UIViewContentModeCenter;
         self.maximumZoomScale = 2.0;
         
-        self.scrollView = [[UIScrollView alloc] init];
+        _scrollView = [[UIScrollView alloc] init];
         self.scrollView.showsHorizontalScrollIndicator = NO;
         self.scrollView.showsVerticalScrollIndicator = NO;
         self.scrollView.minimumZoomScale = 0;
@@ -124,7 +122,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     
     if (_videoCenteredPlayButton) {
         [_videoCenteredPlayButton sizeToFit];
-        _videoCenteredPlayButton.center = CGPointMake(CGRectGetMidX(viewportRect), CGRectGetMidY(viewportRect));
+        _videoCenteredPlayButton.center = CGPointGetCenterWithRect(viewportRect);
     }
     
     if (_videoToolbar) {

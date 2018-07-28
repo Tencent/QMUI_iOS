@@ -190,6 +190,10 @@
 #import "QMUILogNameManager.h"
 #endif
 
+#if __has_include("QMUILogger+QMUIConfigurationTemplate.h")
+#import "QMUILogger+QMUIConfigurationTemplate.h"
+#endif
+
 #if __has_include("QMUILogger.h")
 #import "QMUILogger.h"
 #endif
@@ -320,6 +324,10 @@
 
 #if __has_include("QMUIVisualEffectView.h")
 #import "QMUIVisualEffectView.h"
+#endif
+
+#if __has_include("QMUIWeakObjectContainer.h")
+#import "QMUIWeakObjectContainer.h"
 #endif
 
 #if __has_include("QMUIZoomImageView.h")

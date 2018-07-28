@@ -124,7 +124,9 @@ typedef NS_ENUM(NSInteger, QMUIToastViewPosition) {
 @property(nonatomic, assign) CGPoint offset UI_APPEARANCE_SELECTOR;
 
 /**
- * ToastView距离上下左右的最小间距。
+ *  ToastView 距离 parentView 去除 safeAreaInsets 后的区域的上下左右间距。
+ *
+ *  例如当 marginInsets.top = 0 且 toastPosition 为 QMUIToastViewPositionTop 时，如果 parentView 是 viewController.view，则 tips 顶边缘将会紧贴 navigationBar 的底边缘。而如果 parentView 是 navigationController.view，则 tips 顶边缘将会紧贴 statusBar 的底边缘。
  */
 @property(nonatomic, assign) UIEdgeInsets marginInsets UI_APPEARANCE_SELECTOR;
 

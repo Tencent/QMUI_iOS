@@ -326,6 +326,11 @@
         self.detailTextLabel.textColor = detailLabelColor;
     }
     
+    UIColor *backgroundColor = TableViewCellBackgroundColor;
+    if (backgroundColor) {
+        self.backgroundColor = backgroundColor;
+    }
+    
     UIColor *selectedBackgroundColor = TableViewCellSelectedBackgroundColor;
     if (selectedBackgroundColor) {
         UIView *selectedBackgroundView = [[UIView alloc] init];

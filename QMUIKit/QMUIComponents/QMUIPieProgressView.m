@@ -49,7 +49,7 @@
     }
     
     // 绘制扇形进度区域
-    CGPoint center = CGPointMake(CGRectGetMidX(self.bounds), CGRectGetMidY(self.bounds));
+    CGPoint center = CGPointGetCenterWithRect(self.bounds);
     CGFloat radius = MIN(center.x, center.y);
     CGFloat startAngle = -M_PI_2;
     CGFloat endAngle = M_PI * 2 * self.progress + startAngle;

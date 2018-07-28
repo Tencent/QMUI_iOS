@@ -52,6 +52,8 @@
 
 @property(nonatomic, weak) id<QMUIZoomImageViewDelegate> delegate;
 
+@property(nonatomic, strong, readonly) UIScrollView *scrollView;
+
 /**
  * 比如常见的上传头像预览界面中间有一个用于裁剪的方框，则 viewportRect 必须被设置为这个方框在 zoomImageView 坐标系内的 frame，否则拖拽图片或视频时无法正确限制它们的显示范围
  * @note 图片或视频的初始位置会位于 viewportRect 正中间

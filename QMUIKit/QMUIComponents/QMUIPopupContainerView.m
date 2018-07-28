@@ -303,7 +303,7 @@
     self.frame = CGRectFlatMake(tipMinX, tipMinY, tipSize.width, tipSize.height);
     
     // 调整浮层里的箭头的位置
-    CGPoint targetRectCenter = CGPointMake(CGRectGetMidX(targetRect), CGRectGetMidY(targetRect));
+    CGPoint targetRectCenter = CGPointGetCenterWithRect(targetRect);
     CGFloat selfMidX = targetRectCenter.x - (CGRectGetMinX(superviewBoundsInWindow) + CGRectGetMinX(self.frame));
     _arrowMinX = selfMidX - self.arrowSize.width / 2;
     [self setNeedsLayout];

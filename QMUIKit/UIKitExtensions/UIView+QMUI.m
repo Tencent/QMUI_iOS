@@ -574,6 +574,27 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
 @end
 
 
+@implementation UIView (CGAffineTransform)
+
+- (CGFloat)qmui_scaleX {
+    return self.transform.a;
+}
+
+- (CGFloat)qmui_scaleY {
+    return self.transform.d;
+}
+
+- (CGFloat)qmui_translationX {
+    return self.transform.tx;
+}
+
+- (CGFloat)qmui_translationY {
+    return self.transform.ty;
+}
+
+@end
+
+
 @implementation UIView (QMUI_Snapshotting)
 
 - (UIImage *)qmui_snapshotLayerImage {

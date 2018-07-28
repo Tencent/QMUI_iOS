@@ -14,6 +14,7 @@
 #import "UINavigationController+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
+#import "QMUIWeakObjectContainer.h"
 
 @implementation UIViewController (QMUINavigationController)
 
@@ -95,11 +96,16 @@ static char kAssociatedObjectKey_willAppearByInteractivePopGestureRecognizer;
 
 static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 - (void)setQmui_viewWillAppearNotifyDelegate:(id<QMUI_viewWillAppearNotifyDelegate>)qmui_viewWillAppearNotifyDelegate {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate, qmui_viewWillAppearNotifyDelegate, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate, [[QMUIWeakObjectContainer alloc] initWithObject:qmui_viewWillAppearNotifyDelegate], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (id<QMUI_viewWillAppearNotifyDelegate>)qmui_viewWillAppearNotifyDelegate {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate);
+    id weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate);
+    if ([weakContainer isKindOfClass:[QMUIWeakObjectContainer class]]) {
+        id notifyDelegate = [weakContainer object];
+        return notifyDelegate;
+    }
+    return nil;
 }
 
 @end

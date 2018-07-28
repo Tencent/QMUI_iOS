@@ -275,20 +275,6 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         self.imagePickerPreviewViewController = [self.imagePickerViewControllerDelegate imagePickerPreviewViewControllerForImagePickerViewController:self];
         self.imagePickerPreviewViewController.maximumSelectImageCount = self.maximumSelectImageCount;
         self.imagePickerPreviewViewController.minimumSelectImageCount = self.minimumSelectImageCount;
-        if (!self.imagePickerPreviewViewController.customGestureExitBlock) {
-            __weak __typeof(self)weakSelf = self;
-            self.imagePickerPreviewViewController.customGestureExitBlock = ^(QMUIImagePreviewViewController *aImagePreviewViewController, QMUIZoomImageView *currentZoomImageView) {
-                NSInteger index = [aImagePreviewViewController.imagePreviewView indexForZoomImageView:currentZoomImageView];
-                NSIndexPath *indexPath = [NSIndexPath indexPathForItem:index inSection:0];
-                if ([weakSelf.collectionView.indexPathsForVisibleItems containsObject:indexPath]) {
-                    CGRect rect = [weakSelf.collectionViewLayout layoutAttributesForItemAtIndexPath:indexPath].frame;
-                    rect = [weakSelf.collectionView convertRect:rect toView:nil];
-                    [aImagePreviewViewController exitPreviewToRectInScreenCoordinate:rect];
-                } else {
-                    [aImagePreviewViewController exitPreviewByFadeOut];
-                }
-            };
-        }
     }
 }
 
@@ -397,10 +383,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
                                                                               currentImageIndex:indexPath.item
                                                                                 singleCheckMode:NO];
         }
-        
-        CGRect frame = [self.collectionViewLayout layoutAttributesForItemAtIndexPath:indexPath].frame;
-        frame = [self.collectionView convertRect:frame toView:nil];
-        [self.imagePickerPreviewViewController startPreviewFromRectInScreenCoordinate:frame];
+        [self.navigationController pushViewController:self.imagePickerPreviewViewController animated:YES];
     }
 }
 
