@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/1190261/43357650-9b98d08a-92b7-11e8-8151-3345ec26a322.png" width="90" alt="Banner" />
+  <img src="https://user-images.githubusercontent.com/1190261/43357675-f18b3096-92b7-11e8-807e-809717ca504a.png" width="220" alt="Banner" />
 </p>
 
 # QMUI iOS
