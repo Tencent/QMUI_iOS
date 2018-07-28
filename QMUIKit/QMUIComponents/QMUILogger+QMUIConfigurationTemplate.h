@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "QMUILog.h"
 
 @interface QMUILogger (QMUIConfigurationTemplate)
 

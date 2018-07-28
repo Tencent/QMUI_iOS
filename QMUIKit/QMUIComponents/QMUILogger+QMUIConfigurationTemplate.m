@@ -6,7 +6,7 @@
 //  Copyright © 2018年 QMUI Team. All rights reserved.
 //
 
-#import "QMUILog.h"
+#import "QMUILogger+QMUIConfigurationTemplate.h"
 #import "QMUICore.h"
 
 @implementation QMUILogger (QMUIConfigurationTemplate)
