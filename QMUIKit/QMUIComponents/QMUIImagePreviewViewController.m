@@ -8,6 +8,7 @@
 
 #import "QMUIImagePreviewViewController.h"
 #import "QMUICore.h"
+#import "CALayer+QMUI.h"
 
 @implementation QMUIImagePreviewViewController (UIAppearance)
 
@@ -45,9 +46,15 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 @property(nonatomic, strong) UIPanGestureRecognizer *exitGesture;
 @property(nonatomic, assign) CGPoint gestureBeganLocation;
 @property(nonatomic, weak) QMUIZoomImageView *gestureZoomImageView;
+@property(nonatomic, strong) CALayer *maskLayer;
+
+// 给 window 那边用，先声明，才能使用
+- (void)startPreviewByTransformFromRect:(CGRect)fromRect;
 @end
 
+BeginIgnoreClangWarning(-Wincomplete-implementation)
 @implementation QMUIImagePreviewViewController
+EndIgnoreClangWarning
 
 @synthesize imagePreviewView = _imagePreviewView;
 
@@ -120,39 +127,8 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
             return;
         }
         
-        QMUIZoomImageView *zoomImageView = [self.imagePreviewView zoomImageViewAtIndex:self.imagePreviewView.currentImageIndex];
-        if (!zoomImageView) {
-            NSAssert(NO, @"第 %@ 个 zoomImageView 不存在，可能当前还处于非可视区域", @(self.imagePreviewView.currentImageIndex));
-        }
-        
-        CGRect transitionFromRect = self.previewFromRect;
-        CGRect transitionToRect = [self.view convertRect:[zoomImageView contentViewRectInZoomImageView] fromView:zoomImageView.superview];
-        
-        if (CGRectIsEmpty(transitionToRect)) {
-            // 如果开始做动画的时候业务的 zoomImageView 还在 loading，那么 [zoomImageView contentViewRectInZoomImageView] 得到的为 zero，此时则视为那张图将会撑满屏幕
-            CGRect zoomImageViewFrame = [self.view convertRect:zoomImageView.frame fromView:zoomImageView.superview];
-            transitionToRect = CGRectMake(0, 0, CGRectGetWidth(zoomImageViewFrame), CGRectGetHeight(transitionFromRect) * CGRectGetWidth(zoomImageViewFrame) / CGRectGetWidth(transitionFromRect));
-            transitionToRect = CGRectSetY(transitionToRect, CGFloatGetCenter(CGRectGetHeight(zoomImageViewFrame), CGRectGetHeight(transitionToRect)));
-        }
-        
-        CGFloat horizontalRatio = CGRectGetWidth(transitionFromRect) / CGRectGetWidth(transitionToRect);
-        CGFloat verticalRatio = CGRectGetHeight(transitionFromRect) / CGRectGetHeight(transitionToRect);
-        CGAffineTransform transform = CGAffineTransformMakeScale(horizontalRatio, verticalRatio);
-        transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(CGRectGetMidX(transitionFromRect) - CGRectGetMidX(transitionToRect), CGRectGetMidY(transitionFromRect) - CGRectGetMidY(transitionToRect)));
-        zoomImageView.transform = transform;
-        
-        zoomImageView.contentView.layer.cornerRadius = self.transitionCornerRadius / verticalRatio;
-        zoomImageView.contentView.clipsToBounds = YES;
         self.imagePreviewView.collectionView.hidden = NO;
-        
-        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
-            zoomImageView.contentView.layer.cornerRadius = 0;
-            zoomImageView.transform = CGAffineTransformIdentity;
-            self.view.backgroundColor = self.backgroundColorTemporarily;
-        } completion:^(BOOL finished) {
-            zoomImageView.contentView.clipsToBounds = NO;
-            self.backgroundColorTemporarily = nil;
-        }];
+        [self startPreviewByTransformFromRect:self.previewFromRect];
     }
 }
 
@@ -186,34 +162,166 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 
 #pragma mark - 动画
 
-- (void)initPreviewWindowIfNeeded {
+- (void)initObjectsForWindowModeIfNeeded {
     if (!self.previewWindow) {
         self.previewWindow = [[UIWindow alloc] init];
         self.previewWindow.windowLevel = UIWindowLevelQMUIImagePreviewView;
         self.previewWindow.backgroundColor = UIColorClear;
-        
-        [self initExitPreviewGestureIfNeeded];
+    }
+    
+    if (!self.exitGesture && self.exitGestureEnabled) {
+        self.exitGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleExitPreviewGesture:)];
+        [self.previewWindow addGestureRecognizer:self.exitGesture];
+    }
+    
+    if (!self.maskLayer) {
+        self.maskLayer = [CALayer layer];
+        [self.maskLayer qmui_removeDefaultAnimations];
+        self.maskLayer.backgroundColor = [UIColor whiteColor].CGColor;
     }
 }
 
-- (void)removePreviewWindow {
-    [self removeExitPreviewGesture];
+- (void)removeObjectsForWindowMode {
+    
+    [self.exitGesture removeTarget:self action:@selector(handleExitPreviewGesture:)];
+    [self.previewWindow removeGestureRecognizer:self.exitGesture];
+    self.exitGesture = nil;
+    
     self.previewWindow.hidden = YES;
     self.previewWindow.rootViewController = nil;
     self.previewWindow = nil;
 }
 
-- (void)initExitPreviewGestureIfNeeded {
-    if (!self.exitGesture && self.exitGestureEnabled) {
-        self.exitGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handleExitPreviewGesture:)];
-        [self.previewWindow addGestureRecognizer:self.exitGesture];
+BeginIgnoreClangWarning(-Wobjc-protocol-method-implementation)
+- (void)startPreviewByTransformFromRect:(CGRect)fromRect {
+    QMUIZoomImageView *zoomImageView = [self.imagePreviewView zoomImageViewAtIndex:self.imagePreviewView.currentImageIndex];
+    if (!zoomImageView) {
+        NSAssert(NO, @"第 %@ 个 zoomImageView 不存在，可能当前还处于非可视区域", @(self.imagePreviewView.currentImageIndex));
     }
+    [self transformZoomImageView:zoomImageView withRect:fromRect isStart:YES beforeAnimation:nil animationBlock:^{
+        self.view.backgroundColor = self.backgroundColorTemporarily;
+    } completion:nil];
+}
+EndIgnoreClangWarning
+
+- (void)exitPreviewByTransformToRect:(CGRect)toRect {
+    QMUIZoomImageView *zoomImageView = self.gestureZoomImageView ?: [self.imagePreviewView zoomImageViewAtIndex:self.imagePreviewView.currentImageIndex];
+    [self transformZoomImageView:zoomImageView withRect:toRect isStart:NO beforeAnimation:^{
+        if (!self.backgroundColorTemporarily) {
+            // 如果是手势触发的 exit，在手势 began 时就已经设置好 backgroundColorTemporarily 了，所以这里只为那种单击或者用代码 exit 的情况
+            self.backgroundColorTemporarily = self.view.backgroundColor;
+        }
+    } animationBlock:^{
+        self.view.backgroundColor = UIColorClear;
+    } completion:^{
+        [self removeObjectsForWindowMode];
+        [self resetExitGesture];
+    }];
 }
 
-- (void)removeExitPreviewGesture {
-    [self.exitGesture removeTarget:self action:@selector(handleExitPreviewGesture:)];
-    [self.previewWindow removeGestureRecognizer:self.exitGesture];
-    self.exitGesture = nil;
+- (void)transformZoomImageView:(QMUIZoomImageView *)zoomImageView withRect:(CGRect)rect isStart:(BOOL)isStart beforeAnimation:(void (^)(void))beforeAnimation animationBlock:(void (^)(void))animationBlock completion:(void (^)(void))completion {
+    
+    // 前期准备
+    
+    NSTimeInterval duration = .25;
+    
+    CGRect contentViewFrame = [self.view convertRect:zoomImageView.contentViewRectInZoomImageView fromView:nil];
+    CGPoint contentViewCenterInZoomImageView = CGPointGetCenterWithRect(zoomImageView.contentViewRectInZoomImageView);
+    if (CGRectIsEmpty(contentViewFrame)) {
+        // 有可能 start preview 时图片还在 loading，此时拿到的 content rect 是 zero，所以做个保护
+        contentViewFrame = [self.view convertRect:zoomImageView.frame fromView:zoomImageView.superview];
+        contentViewCenterInZoomImageView = CGPointGetCenterWithRect(contentViewFrame);
+    }
+    CGPoint centerInZoomImageView = CGPointGetCenterWithRect(zoomImageView.bounds);// 注意不是 zoomImageView 的 center，而是 zoomImageView 这个容器里的中心点
+    CGFloat horizontalRatio = CGRectGetWidth(rect) / CGRectGetWidth(contentViewFrame);
+    CGFloat verticalRatio = CGRectGetHeight(rect) / CGRectGetHeight(contentViewFrame);
+    CGFloat finalRatio = MAX(horizontalRatio, verticalRatio);
+    
+    CGAffineTransform fromTransform = CGAffineTransformIdentity;
+    CGAffineTransform toTransform = CGAffineTransformIdentity;
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    
+    // 先缩再移
+    transform = CGAffineTransformScale(transform, finalRatio, finalRatio);
+    CGPoint contentViewCenterAfterScale = CGPointMake(centerInZoomImageView.x + (contentViewCenterInZoomImageView.x - centerInZoomImageView.x) * finalRatio, centerInZoomImageView.y + (contentViewCenterInZoomImageView.y - centerInZoomImageView.y) * finalRatio);
+    CGSize translationAfterScale = CGSizeMake(CGRectGetMidX(rect) - contentViewCenterAfterScale.x, CGRectGetMidY(rect) - contentViewCenterAfterScale.y);
+    transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(translationAfterScale.width, translationAfterScale.height));
+    
+    if (isStart) {
+        fromTransform = transform;
+    } else {
+        toTransform = transform;
+    }
+    
+    CGRect maskFromBounds = zoomImageView.contentView.bounds;
+    CGRect maskToBounds = zoomImageView.contentView.bounds;
+    CGRect maskBounds = maskFromBounds;
+    CGFloat maskHorizontalRatio = CGRectGetWidth(rect) / CGRectGetWidth(maskBounds);
+    CGFloat maskVerticalRatio = CGRectGetHeight(rect) / CGRectGetHeight(maskBounds);
+    CGFloat maskFinalRatio = MAX(maskHorizontalRatio, maskVerticalRatio);
+    maskBounds = CGRectMakeWithSize(CGSizeMake(CGRectGetWidth(rect) / maskFinalRatio, CGRectGetHeight(rect) / maskFinalRatio));
+    if (isStart) {
+        maskFromBounds = maskBounds;
+    } else {
+        maskToBounds = maskBounds;
+    }
+
+    CGFloat cornerRadius = self.transitionCornerRadius / maskFinalRatio;
+    CGFloat fromCornerRadius = isStart ? cornerRadius : 0;
+    CGFloat toCornerRadius = isStart ? 0 : cornerRadius;
+    CABasicAnimation *cornerRadiusAnimation = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
+    cornerRadiusAnimation.fromValue = @(fromCornerRadius);
+    cornerRadiusAnimation.toValue = @(toCornerRadius);
+
+    CABasicAnimation *boundsAnimation = [CABasicAnimation animationWithKeyPath:@"bounds"];
+    boundsAnimation.fromValue = [NSValue valueWithCGRect:CGRectMakeWithSize(maskFromBounds.size)];
+    boundsAnimation.toValue = [NSValue valueWithCGRect:CGRectMakeWithSize(maskToBounds.size)];
+
+    CAAnimationGroup *maskAnimation = [[CAAnimationGroup alloc] init];
+    maskAnimation.duration = duration;
+    maskAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+    maskAnimation.fillMode = kCAFillModeForwards;
+    maskAnimation.removedOnCompletion = NO;// remove 都交给 UIView Block 的 completion 里做，这里是为了避免 Core Animation 和 UIView Animation Block 时间不一致导致的值变动
+    maskAnimation.animations = @[cornerRadiusAnimation, boundsAnimation];
+    self.maskLayer.position = CGPointGetCenterWithRect(zoomImageView.contentView.bounds);// 不管怎样，mask 都是居中的
+    zoomImageView.contentView.layer.mask = self.maskLayer;
+    [self.maskLayer addAnimation:maskAnimation forKey:@"maskAnimation"];
+    
+    // 动画开始
+    zoomImageView.scrollView.clipsToBounds = NO;// 当 contentView 被放大后，如果不去掉 clipToBounds，那么退出预览时，contentView 溢出的那部分内容就看不到
+    
+    if (isStart) {
+        zoomImageView.transform = fromTransform;
+    }
+    
+    if (beforeAnimation) {
+        beforeAnimation();
+    }
+    
+    // 发现 zoomImageView.transform 用 UIView Animation Block 实现的话，手势拖拽 exit 的情况下，松手时会瞬间跳动到某个位置，然后才继续做动画，改为 Core Animation 就没这个问题
+    CABasicAnimation *transformAnimation = [CABasicAnimation animationWithKeyPath:@"transform"];
+    transformAnimation.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeAffineTransform(toTransform)];
+    transformAnimation.duration = duration;
+    transformAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    transformAnimation.fillMode = kCAFillModeForwards;
+    transformAnimation.removedOnCompletion = NO;// remove 都交给 UIView Block 的 completion 里做，这里是为了避免 Core Animation 和 UIView Animation Block 时间不一致导致的值变动
+    [zoomImageView.layer addAnimation:transformAnimation forKey:@"transformAnimation"];
+    
+    [UIView animateWithDuration:duration delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        if (animationBlock) {
+            animationBlock();
+        }
+    } completion:^(BOOL finished) {
+        if (completion) {
+            completion();
+        }
+        [self.maskLayer removeAnimationForKey:@"maskAnimation"];
+        self.backgroundColorTemporarily = nil;
+        zoomImageView.scrollView.clipsToBounds = YES;// UIScrollView.clipsToBounds default is YES
+        zoomImageView.contentView.layer.mask = nil;
+        zoomImageView.transform = CGAffineTransformIdentity;
+        [zoomImageView.layer removeAnimationForKey:@"transformAnimation"];
+    }];
 }
 
 - (void)startPreviewWithFadingAnimation:(BOOL)isFading orFromRect:(CGRect)rect {
@@ -232,7 +340,7 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
         self.view.backgroundColor = UIColorClear;
     }
     
-    [self initPreviewWindowIfNeeded];
+    [self initObjectsForWindowModeIfNeeded];
     
     self.previewWindow.rootViewController = self;
     self.previewWindow.hidden = NO;
@@ -244,38 +352,14 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
         [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.view.alpha = 0;
         } completion:^(BOOL finished) {
-            [self removePreviewWindow];
+            [self removeObjectsForWindowMode];
             [self resetExitGesture];
             self.view.alpha = 1;
         }];
         return;
     }
     
-    QMUIZoomImageView *zoomImageView = [self.imagePreviewView zoomImageViewAtIndex:self.imagePreviewView.currentImageIndex];
-    zoomImageView.contentView.clipsToBounds = YES;
-    
-    CGRect transitionFromRect = [self.view convertRect:[zoomImageView contentViewRectInZoomImageView] fromView:zoomImageView.superview];
-    CGRect transitionToRect = rect;
-    CGFloat horizontalRatio = CGRectGetWidth(transitionToRect) / CGRectGetWidth(transitionFromRect);
-    CGFloat verticalRatio = CGRectGetHeight(transitionToRect) / CGRectGetHeight(transitionFromRect);
-    CGAffineTransform transform = CGAffineTransformMakeScale(horizontalRatio, verticalRatio);
-    transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(CGRectGetMidX(transitionToRect) - CGRectGetMidX(transitionFromRect), CGRectGetMidY(transitionToRect) - CGRectGetMidY(transitionFromRect)));
-    
-    self.backgroundColorTemporarily = self.view.backgroundColor;
-    
-    [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
-        zoomImageView.transform = transform;
-        zoomImageView.contentView.layer.cornerRadius = self.transitionCornerRadius / verticalRatio;
-        self.view.backgroundColor = UIColorClear;
-    } completion:^(BOOL finished) {
-        [self removePreviewWindow];
-        zoomImageView.contentView.clipsToBounds = NO;
-        zoomImageView.contentView.layer.cornerRadius = 0;
-        zoomImageView.transform = CGAffineTransformIdentity;
-        self.view.backgroundColor = self.backgroundColorTemporarily;
-        self.backgroundColorTemporarily = nil;
-        [self resetExitGesture];
-    }];
+    [self exitPreviewByTransformToRect:rect];
 }
 
 - (void)exitPreviewAutomatically {
@@ -294,6 +378,8 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
         case UIGestureRecognizerStateBegan:
             self.gestureBeganLocation = [gesture locationInView:self.previewWindow];
             self.gestureZoomImageView = [self.imagePreviewView zoomImageViewAtIndex:self.imagePreviewView.currentImageIndex];
+            self.gestureZoomImageView.scrollView.clipsToBounds = NO;// 当 contentView 被放大后，如果不去掉 clipToBounds，那么手势退出预览时，contentView 溢出的那部分内容就看不到
+            self.backgroundColorTemporarily = self.view.backgroundColor;
             break;
             
         case UIGestureRecognizerStateChanged: {
@@ -314,8 +400,8 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
                 CGFloat c = (CGRectGetHeight(self.previewWindow.bounds) - contentViewHeight) / 2;
                 verticalDistance = -c * b;
             }
-            CGAffineTransform transform = CGAffineTransformMakeScale(ratio, ratio);
-            transform = CGAffineTransformConcat(transform, CGAffineTransformMakeTranslation(horizontalDistance, verticalDistance));
+            CGAffineTransform transform = CGAffineTransformMakeTranslation(horizontalDistance, verticalDistance);
+            transform = CGAffineTransformScale(transform, ratio, ratio);
             self.gestureZoomImageView.transform = transform;
             self.view.backgroundColor = [self.view.backgroundColor colorWithAlphaComponent:alpha];
         }
@@ -349,7 +435,7 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
     self.gestureZoomImageView.transform = CGAffineTransformIdentity;
     self.gestureBeganLocation = CGPointZero;
     self.gestureZoomImageView = nil;
-    self.view.backgroundColor = [self.view.backgroundColor colorWithAlphaComponent:1];
+    self.view.backgroundColor = self.backgroundColorTemporarily;
 }
 
 @end

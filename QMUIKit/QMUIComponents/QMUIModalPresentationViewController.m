@@ -666,6 +666,18 @@ static QMUIModalPresentationViewController *appearance;
 
 @implementation QMUIModalPresentationWindow
 
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    if (self.rootViewController) {
+        
+        // https://github.com/QMUI/QMUI_iOS/issues/375
+        UIView *rootView = self.rootViewController.view;
+        if (CGRectGetMinY(rootView.frame) > 0 && ![UIApplication sharedApplication].statusBarHidden && StatusBarHeight > CGRectGetMinY(rootView.frame)) {
+            rootView.frame = self.bounds;
+        }
+    }
+}
+
 @end
 
 @implementation UIViewController (QMUIModalPresentationViewController)

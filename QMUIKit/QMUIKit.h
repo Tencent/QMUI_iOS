@@ -2,6 +2,10 @@
 
 #import <UIKit/UIKit.h>
 
+#if __has_include("CAAnimation+QMUI.h")
+#import "CAAnimation+QMUI.h"
+#endif
+
 #if __has_include("CALayer+QMUI.h")
 #import "CALayer+QMUI.h"
 #endif
@@ -190,6 +194,10 @@
 #import "QMUILogNameManager.h"
 #endif
 
+#if __has_include("QMUILogger+QMUIConfigurationTemplate.h")
+#import "QMUILogger+QMUIConfigurationTemplate.h"
+#endif
+
 #if __has_include("QMUILogger.h")
 #import "QMUILogger.h"
 #endif
@@ -320,6 +328,10 @@
 
 #if __has_include("QMUIVisualEffectView.h")
 #import "QMUIVisualEffectView.h"
+#endif
+
+#if __has_include("QMUIWeakObjectContainer.h")
+#import "QMUIWeakObjectContainer.h"
 #endif
 
 #if __has_include("QMUIZoomImageView.h")

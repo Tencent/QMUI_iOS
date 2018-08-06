@@ -737,8 +737,8 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
 
 - (QMUILabel *)generateTextFieldTitleLabel {
     QMUILabel *textFieldLabel = [[QMUILabel alloc] init];
-    textFieldLabel.font = UIFontBoldMake(12);
-    textFieldLabel.textColor = UIColorGrayDarken;
+    textFieldLabel.font = self.textFieldLabelFont;
+    textFieldLabel.textColor = self.textFieldLabelTextColor;
     [self.contentView addSubview:textFieldLabel];
     return textFieldLabel;
 }
@@ -747,6 +747,7 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
     QMUITextField *textField = [[QMUITextField alloc] init];
     textField.delegate = self;
     textField.font = self.textFieldFont;
+    textField.textColor = self.textFieldTextColor;
     textField.backgroundColor = nil;
     textField.returnKeyType = UIReturnKeyNext;
     textField.clearButtonMode = UITextFieldViewModeWhileEditing;
@@ -758,6 +759,7 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
 
 - (CALayer *)generateTextFieldSeparatorLayer {
     CALayer *textFieldSeparatorLayer = [CALayer qmui_separatorLayer];
+    textFieldSeparatorLayer.backgroundColor = self.textFieldSeparatorColor.CGColor;
     [self.contentView.layer addSublayer:textFieldSeparatorLayer];
     return textFieldSeparatorLayer;
 }

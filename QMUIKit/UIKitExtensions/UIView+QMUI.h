@@ -147,6 +147,22 @@ extern const CGFloat QMUIViewSelfSizingHeight;
 
 @end
 
+@interface UIView (CGAffineTransform)
+
+/// 获取当前 view 的 transform scale x
+@property(nonatomic, assign, readonly) CGFloat qmui_scaleX;
+
+/// 获取当前 view 的 transform scale y
+@property(nonatomic, assign, readonly) CGFloat qmui_scaleY;
+
+/// 获取当前 view 的 transform translation x
+@property(nonatomic, assign, readonly) CGFloat qmui_translationX;
+
+/// 获取当前 view 的 transform translation y
+@property(nonatomic, assign, readonly) CGFloat qmui_translationY;
+
+@end
+
 /**
  *  方便地将某个 UIView 截图并转成一个 UIImage，注意如果这个 UIView 本身做了 transform，也不会在截图上反映出来，截图始终都是原始 UIView 的截图。
  */

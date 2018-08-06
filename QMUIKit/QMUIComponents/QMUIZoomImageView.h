@@ -52,6 +52,8 @@
 
 @property(nonatomic, weak) id<QMUIZoomImageViewDelegate> delegate;
 
+@property(nonatomic, strong, readonly) UIScrollView *scrollView;
+
 /**
  * 比如常见的上传头像预览界面中间有一个用于裁剪的方框，则 viewportRect 必须被设置为这个方框在 zoomImageView 坐标系内的 frame，否则拖拽图片或视频时无法正确限制它们的显示范围
  * @note 图片或视频的初始位置会位于 viewportRect 正中间
@@ -137,6 +139,11 @@
  *  @info 注意 cell 复用可能导致当前页面显示一张错误的旧图片/视频，所以一般情况下需要视情况同时将 image/livePhoto/videoPlayerItem 等属性置为 nil 以清除图片/视频的显示
  */
 - (void)showEmptyViewWithText:(NSString *)text;
+- (void)showEmptyViewWithText:(NSString *)text
+                   detailText:(NSString *)detailText
+                  buttonTitle:(NSString *)buttonTitle
+                 buttonTarget:(id)buttonTarget
+                 buttonAction:(SEL)action;
 
 /**
  *  将 emptyView 隐藏

@@ -10,14 +10,23 @@
 #import "NSPointerArray+QMUI.h"
 #import <objc/runtime.h>
 
+@interface QMUIMultipleDelegates ()
+
+@property(nonatomic, strong, readwrite) NSPointerArray *delegates;
+@end
+
 @implementation QMUIMultipleDelegates
 
-- (instancetype)init {
-    self = [super init];
-    if (self) {
-        _delegates = [NSPointerArray weakObjectsPointerArray];
-    }
-    return self;
++ (instancetype)weakDelegates {
+    QMUIMultipleDelegates *delegates = [[QMUIMultipleDelegates alloc] init];
+    delegates.delegates = [NSPointerArray weakObjectsPointerArray];
+    return delegates;
+}
+
++ (instancetype)strongDelegates {
+    QMUIMultipleDelegates *delegates = [[QMUIMultipleDelegates alloc] init];
+    delegates.delegates = [NSPointerArray strongObjectsPointerArray];
+    return delegates;
 }
 
 - (void)addDelegate:(id)delegate {

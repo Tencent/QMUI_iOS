@@ -14,6 +14,7 @@
 #import "UINavigationController+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
+#import "QMUIWeakObjectContainer.h"
 
 @implementation UIViewController (QMUINavigationController)
 
@@ -95,11 +96,16 @@ static char kAssociatedObjectKey_willAppearByInteractivePopGestureRecognizer;
 
 static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 - (void)setQmui_viewWillAppearNotifyDelegate:(id<QMUI_viewWillAppearNotifyDelegate>)qmui_viewWillAppearNotifyDelegate {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate, qmui_viewWillAppearNotifyDelegate, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate, [[QMUIWeakObjectContainer alloc] initWithObject:qmui_viewWillAppearNotifyDelegate], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (id<QMUI_viewWillAppearNotifyDelegate>)qmui_viewWillAppearNotifyDelegate {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate);
+    id weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate);
+    if ([weakContainer isKindOfClass:[QMUIWeakObjectContainer class]]) {
+        id notifyDelegate = [weakContainer object];
+        return notifyDelegate;
+    }
+    return nil;
 }
 
 @end
@@ -376,10 +382,13 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     viewControllerWillDisappear.qmui_poppingByInteractivePopGestureRecognizer = NO;
     viewControllerWillAppear.qmui_willAppearByInteractivePopGestureRecognizer = YES;
     
-    if (state == UIGestureRecognizerStateChanged) {
-        viewControllerWillDisappear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
-        viewControllerWillAppear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
-    } else {
+    if (state == UIGestureRecognizerStateBegan) {
+        // UIGestureRecognizerStateBegan 对应 viewWillAppear:，只要在 viewWillAppear: 里的修改都是安全的，但只要过了 viewWillAppear:，后续的修改都是不安全的，所以这里用 dispatch 的方式将标志位的赋值放到 viewWillAppear: 的下一个 Runloop 里
+        dispatch_async(dispatch_get_main_queue(), ^{
+            viewControllerWillDisappear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
+            viewControllerWillAppear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
+        });
+    } else if (state > UIGestureRecognizerStateChanged) {
         viewControllerWillDisappear.qmui_navigationControllerPopGestureRecognizerChanging = NO;
         viewControllerWillAppear.qmui_navigationControllerPopGestureRecognizerChanging = NO;
     }

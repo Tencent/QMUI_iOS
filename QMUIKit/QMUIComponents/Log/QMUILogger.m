@@ -9,7 +9,6 @@
 #import "QMUILogger.h"
 #import "QMUILogNameManager.h"
 #import "QMUILogItem.h"
-#import "QMUICore.h"
 
 @implementation QMUILogger
 
@@ -36,11 +35,6 @@
 - (void)printLogWithFile:(const char *)file line:(int)line func:(const char *)func logItem:(QMUILogItem *)logItem {
     // 禁用了某个 name 则直接退出
     if (!logItem.enabled) return;
-    
-    // 不同级别的 log 可通过配置表的开关来控制是否要输出
-    if (logItem.level == QMUILogLevelDefault && !ShouldPrintDefaultLog) return;
-    if (logItem.level == QMUILogLevelInfo && !ShouldPrintInfoLog) return;
-    if (logItem.level == QMUILogLevelWarn && !ShouldPrintWarnLog) return;
     
     NSString *fileString = [NSString stringWithFormat:@"%s", file];
     NSString *funcString = [NSString stringWithFormat:@"%s", func];

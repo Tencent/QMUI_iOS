@@ -128,7 +128,7 @@
 #define ScreenNativeScale ([[UIScreen mainScreen] nativeScale])
 
 // 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算)
-#define StatusBarHeight ([[UIApplication sharedApplication] statusBarFrame].size.height)
+#define StatusBarHeight ([UIApplication sharedApplication].statusBarHidden ? 0 : [[UIApplication sharedApplication] statusBarFrame].size.height)
 
 // navigationBar相关frame
 #define NavigationBarHeight (IS_LANDSCAPE ? PreferredVarForDevices(44, 32, 32, 32) : 44)

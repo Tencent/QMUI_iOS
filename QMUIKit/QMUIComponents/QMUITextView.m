@@ -378,9 +378,18 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     if (textView.maximumTextLength < NSUIntegerMax) {
         
         // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 这里不会限制，而是放在 didChange 那里限制。
-        BOOL isDeleting = range.length > 0 && text.length <= 0;
-        if (isDeleting || textView.markedTextRange) {
+        if (textView.markedTextRange) {
             return YES;
+        }
+        
+        BOOL isDeleting = range.length > 0 && text.length <= 0;
+        if (isDeleting) {
+            if (NSMaxRange(range) > textView.text.length) {
+                // https://github.com/QMUI/QMUI_iOS/issues/377
+                return NO;
+            } else {
+                return YES;
+            }
         }
         
         NSUInteger rangeLength = textView.shouldCountingNonASCIICharacterAsTwo ? [textView.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
