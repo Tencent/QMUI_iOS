@@ -10,6 +10,7 @@
 
 @interface QMUITestView : UIView
 
+@property(nonatomic, strong) id delegate;
 @end
 
 

@@ -2,6 +2,10 @@
 
 #import <UIKit/UIKit.h>
 
+#if __has_include("CAAnimation+QMUI.h")
+#import "CAAnimation+QMUI.h"
+#endif
+
 #if __has_include("CALayer+QMUI.h")
 #import "CALayer+QMUI.h"
 #endif

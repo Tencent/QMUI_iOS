@@ -382,10 +382,13 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     viewControllerWillDisappear.qmui_poppingByInteractivePopGestureRecognizer = NO;
     viewControllerWillAppear.qmui_willAppearByInteractivePopGestureRecognizer = YES;
     
-    if (state == UIGestureRecognizerStateChanged) {
-        viewControllerWillDisappear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
-        viewControllerWillAppear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
-    } else {
+    if (state == UIGestureRecognizerStateBegan) {
+        // UIGestureRecognizerStateBegan 对应 viewWillAppear:，只要在 viewWillAppear: 里的修改都是安全的，但只要过了 viewWillAppear:，后续的修改都是不安全的，所以这里用 dispatch 的方式将标志位的赋值放到 viewWillAppear: 的下一个 Runloop 里
+        dispatch_async(dispatch_get_main_queue(), ^{
+            viewControllerWillDisappear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
+            viewControllerWillAppear.qmui_navigationControllerPopGestureRecognizerChanging = YES;
+        });
+    } else if (state > UIGestureRecognizerStateChanged) {
         viewControllerWillDisappear.qmui_navigationControllerPopGestureRecognizerChanging = NO;
         viewControllerWillAppear.qmui_navigationControllerPopGestureRecognizerChanging = NO;
     }

@@ -826,6 +826,21 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self setNeedsLayout];
 }
 
+- (void)showEmptyViewWithText:(NSString *)text
+                   detailText:(NSString *)detailText
+                  buttonTitle:(NSString *)buttonTitle
+                 buttonTarget:(id)buttonTarget
+                 buttonAction:(SEL)action {
+    [self insertSubview:self.emptyView atIndex:(self.subviews.count - 1)];
+    [self.emptyView setLoadingViewHidden:YES];
+    [self.emptyView setImage:nil];
+    [self.emptyView setTextLabelText:text];
+    [self.emptyView setDetailTextLabelText:detailText];
+    [self.emptyView setActionButtonTitle:buttonTitle];
+    [self.emptyView.actionButton removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
+    [self.emptyView.actionButton addTarget:buttonTarget action:action forControlEvents:UIControlEventTouchUpInside];
+}
+
 - (void)hideEmptyView {
     self.emptyView.hidden = YES;
     [self setNeedsLayout];

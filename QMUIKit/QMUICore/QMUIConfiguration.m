@@ -262,8 +262,10 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     // by molice 2018-06-14 iOS 11 观察貌似又没抖动了，先试试看
     if (navBarButtonFont) {
         UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil];
-        [barButtonItemAppearance setTitleTextAttributes:@{NSFontAttributeName: navBarButtonFont} forState:UIControlStateNormal];
-        [barButtonItemAppearance setTitleTextAttributes:[barButtonItemAppearance titleTextAttributesForState:UIControlStateNormal] forState:UIControlStateHighlighted];
+        NSDictionary<NSAttributedStringKey,id> *attributes = @{NSFontAttributeName: navBarButtonFont};
+        [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateNormal];
+        [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateHighlighted];
+        [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateDisabled];
     }
 }
 
