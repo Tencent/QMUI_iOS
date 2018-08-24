@@ -969,7 +969,7 @@ static QMUIAlertController *alertControllerAppearance;
     alertControllerCount--;
 }
 
-- (void)addAction:(QMUIAlertAction *)action {
+- (void)addAction:(nonnull QMUIAlertAction *)action {
     if (action.style == QMUIAlertActionStyleCancel && self.cancelAction) {
         [NSException raise:@"QMUIAlertController使用错误" format:@"同一个alertController不可以同时添加两个cancel按钮"];
     }

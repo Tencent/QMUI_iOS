@@ -205,7 +205,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic,weak) id<QMUIAlertControllerDelegate>delegate;
 
 /// 增加一个按钮
-- (void)addAction:(QMUIAlertAction *)action;
+- (void)addAction:(nonnull QMUIAlertAction *)action;
 
 // 增加一个“取消”按钮，点击后 alertController 会被 hide
 - (void)addCancelAction;
