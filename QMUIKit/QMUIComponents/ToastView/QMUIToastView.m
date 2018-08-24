@@ -34,7 +34,7 @@
     return [self initWithView:nil];
 }
 
-- (instancetype)initWithView:(UIView *)view {
+- (nonnull instancetype)initWithView:(nonnull UIView *)view {
     NSAssert(view, @"view不能为空");
     if (self = [super initWithFrame:view.bounds]) {
         _parentView = view;
@@ -307,7 +307,7 @@
     return returnFlag;
 }
 
-+ (instancetype)toastInView:(UIView *)view {
++ (nullable instancetype)toastInView:(UIView *)view {
     NSEnumerator *subviewsEnum = [view.subviews reverseObjectEnumerator];
     for (UIView *subview in subviewsEnum) {
         if ([subview isKindOfClass:self]) {
