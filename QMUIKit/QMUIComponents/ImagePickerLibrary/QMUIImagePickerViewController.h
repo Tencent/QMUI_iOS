@@ -134,6 +134,6 @@
 
 @interface QMUIImagePickerViewController (UIAppearance)
 
-+ (instancetype)appearance;
++ (nonnull instancetype)appearance;
 
 @end

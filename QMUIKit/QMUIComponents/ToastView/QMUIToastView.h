@@ -37,7 +37,7 @@ typedef NS_ENUM(NSInteger, QMUIToastViewPosition) {
  *
  * @param view ToastView的superView。
  */
-- (instancetype)initWithView:(UIView *)view NS_DESIGNATED_INITIALIZER;
+- (nonnull instancetype)initWithView:(nonnull UIView *)view NS_DESIGNATED_INITIALIZER;
 
 /**
  * parentView是ToastView初始化的时候传进去的那个view。
@@ -151,7 +151,7 @@ typedef NS_ENUM(NSInteger, QMUIToastViewPosition) {
  * @param view ToastView的superView。
  * @return 返回一个QMUIToastView的实例。
  */
-+ (instancetype)toastInView:(UIView *)view;
++ (nullable instancetype)toastInView:(UIView *)view;
 
 /**
  * 工具方法。返回`view`里面所有的ToastView，如果没有则返回nil。

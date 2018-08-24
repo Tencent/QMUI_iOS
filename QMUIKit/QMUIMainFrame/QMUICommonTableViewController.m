@@ -46,7 +46,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     return [self init];
 }
 
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
         [self didInitializeWithStyle:UITableViewStylePlain];
     }

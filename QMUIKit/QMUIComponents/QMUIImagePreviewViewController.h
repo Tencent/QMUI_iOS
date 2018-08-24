@@ -76,5 +76,5 @@
 
 @interface QMUIImagePreviewViewController (UIAppearance)
 
-+ (instancetype)appearance;
++ (nonnull instancetype)appearance;
 @end

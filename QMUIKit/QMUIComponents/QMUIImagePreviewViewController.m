@@ -20,7 +20,7 @@
 }
 
 static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!imagePreviewViewControllerAppearance) {
