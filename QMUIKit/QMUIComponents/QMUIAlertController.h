@@ -51,7 +51,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
  *
  *  @return QMUIAlertController按钮的实例
  */
-+ (instancetype)actionWithTitle:(nullable NSString *)title style:(QMUIAlertActionStyle)style handler:(nullable void (^)(__kindof QMUIAlertController *aAlertController, QMUIAlertAction *action))handler;
++ (nonnull instancetype)actionWithTitle:(nullable NSString *)title style:(QMUIAlertActionStyle)style handler:(nullable void (^)(__kindof QMUIAlertController *aAlertController, QMUIAlertAction *action))handler;
 
 /// `QMUIAlertAction`对应的 button 对象
 @property(nonatomic, strong, readonly) QMUIButton *button;
@@ -196,10 +196,10 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 
 
 /// 默认初始化方法
-- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
+- (nonnull instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
 
 /// 通过类方法初始化实例
-+ (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
++ (nonnull instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
 
 /// @see `QMUIAlertControllerDelegate`
 @property(nonatomic,weak) id<QMUIAlertControllerDelegate>delegate;
