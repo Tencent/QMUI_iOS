@@ -271,7 +271,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 
 @interface QMUIAlertController (UIAppearance)
 
-+ (instancetype)appearance;
++ (nonnull instancetype)appearance;
 
 @end
 

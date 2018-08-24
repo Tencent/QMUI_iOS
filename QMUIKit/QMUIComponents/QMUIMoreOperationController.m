@@ -39,7 +39,7 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 }
 
 static QMUIMoreOperationController *moreOperationViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self resetAppearance];

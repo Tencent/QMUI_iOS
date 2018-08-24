@@ -127,7 +127,7 @@
 
 @interface QMUIDialogViewController (UIAppearance)
 
-+ (instancetype)appearance;
++ (nonnull instancetype)appearance;
 @end
 
 /// 表示没有选中的item

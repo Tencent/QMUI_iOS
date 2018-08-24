@@ -28,7 +28,7 @@
 }
 
 static QMUIDialogViewController *dialogViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!dialogViewControllerAppearance) {
@@ -443,7 +443,7 @@ EndIgnoreClangWarning
 }
 
 static QMUIDialogSelectionViewController *dialogSelectionViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!dialogSelectionViewControllerAppearance) {
@@ -651,7 +651,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 }
 
 static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!dialogTextFieldViewControllerAppearance) {

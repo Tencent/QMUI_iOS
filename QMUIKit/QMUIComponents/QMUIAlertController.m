@@ -111,7 +111,7 @@ static NSUInteger alertControllerCount = 0;
 }
 
 static QMUIAlertController *alertControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self resetAppearance];

@@ -19,7 +19,7 @@
 @implementation QMUIModalPresentationViewController (UIAppearance)
 
 static QMUIModalPresentationViewController *appearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self initDefaultAppearance];
