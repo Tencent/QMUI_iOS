@@ -49,7 +49,7 @@
     _actionButtonFont = appearance.actionButtonFont;
     _textLabelTextColor = appearance.textLabelTextColor;
     _detailTextLabelTextColor = appearance.detailTextLabelTextColor;
-    _actionButtonTitleColor = appearance.actionButtonTitleColor;
+    self.actionButtonTitleColor = appearance.actionButtonTitleColor;
     
     self.scrollView = [[UIScrollView alloc] init];
     if (@available(iOS 11, *)) {
