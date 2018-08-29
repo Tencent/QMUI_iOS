@@ -62,7 +62,7 @@
         size = CGSizeMax;
     }
     
-    BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
+    BOOL isImageViewShowing = !!self.currentImage;
     BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
     CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
     CGSize titleTotalSize = CGSizeZero;// 包含 titleEdgeInsets 那些空间
@@ -77,7 +77,7 @@
             // 图片和文字上下排版时，宽度以文字或图片的最大宽度为最终宽度
             if (isImageViewShowing) {
                 CGFloat imageLimitWidth = contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
-                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)];// 假设图片高度必定完整显示
+                CGSize imageSize = self.currentImage.size;
                 imageSize.width = fmin(imageSize.width, imageLimitWidth);
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
@@ -102,7 +102,7 @@
             
             if (isImageViewShowing) {
                 CGFloat imageLimitHeight = contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
-                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)];// 假设图片宽度必定完整显示，高度不超过按钮内容
+                CGSize imageSize = self.currentImage.size;
                 imageSize.height = fmin(imageSize.height, imageLimitHeight);
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
@@ -134,7 +134,7 @@
         return;
     }
     
-    BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
+    BOOL isImageViewShowing = !!self.currentImage;
     BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
     CGSize imageLimitSize = CGSizeZero;
     CGSize titleLimitSize = CGSizeZero;
@@ -449,9 +449,7 @@
         if (highlighted) {
             self.alpha = ButtonHighlightedAlpha;
         } else {
-            [UIView animateWithDuration:0.25f animations:^{
-                self.alpha = 1;
-            }];
+            self.alpha = 1;
         }
     }
 }
@@ -461,9 +459,7 @@
     if (!enabled && self.adjustsButtonWhenDisabled) {
         self.alpha = ButtonDisabledAlpha;
     } else {
-        [UIView animateWithDuration:0.25f animations:^{
-            self.alpha = 1;
-        }];
+        self.alpha = 1;
     }
 }
 
@@ -518,13 +514,7 @@
         if (!normalImage) return;
         
         for (NSNumber *number in states) {
-            if (number.unsignedIntegerValue > UIControlStateNormal && [self qmui_hasCustomizedButtonPropWithType:QMUICustomizeButtonPropTypeImage forState:number.unsignedIntegerValue]) {
-                // 这个 state 自定义过 image，就不用处理
-                continue;
-            }
-            
             UIImage *image = [self imageForState:number.unsignedIntegerValue];
-            
             if (self.adjustsImageTintColorAutomatically) {
                 // 这里的 setImage: 操作不需要使用 renderingMode 对 image 重新处理，而是放到重写的 setImage:forState 里去做就行了
                 [self setImage:image forState:[number unsignedIntegerValue]];

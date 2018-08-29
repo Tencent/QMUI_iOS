@@ -101,6 +101,6 @@ extern const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets;
 
 @interface QMUIAlbumViewController (UIAppearance)
 
-+ (instancetype)appearance;
++ (nonnull instancetype)appearance;
 
 @end

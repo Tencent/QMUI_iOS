@@ -13,6 +13,7 @@
 #import "NSObject+QMUI.h"
 #import "UIImage+QMUI.h"
 #import "NSNumber+QMUI.h"
+#import "QMUILog.h"
 #import <objc/runtime.h>
 
 @interface UIView ()
@@ -47,6 +48,14 @@
 
 - (instancetype)qmui_initWithSize:(CGSize)size {
     return [self initWithFrame:CGRectMakeWithSize(size)];
+}
+
+- (void)setQmui_frameApplyTransform:(CGRect)qmui_frameApplyTransform {
+    self.frame = CGRectApplyAffineTransformWithAnchorPoint(qmui_frameApplyTransform, self.transform, self.layer.anchorPoint);
+}
+
+- (CGRect)qmui_frameApplyTransform {
+    return self.frame;
 }
 
 - (UIEdgeInsets)qmui_safeAreaInsets {
@@ -472,10 +481,22 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
 }
 
 - (void)qmui_setFrame:(CGRect)frame {
+    
+    // QMUIViewSelfSizingHeight 的功能
     if (CGRectGetWidth(frame) > 0 && isinf(CGRectGetHeight(frame))) {
         CGFloat height = flat([self sizeThatFits:CGSizeMake(CGRectGetWidth(frame), CGFLOAT_MAX)].height);
         frame = CGRectSetHeight(frame, height);
     }
+    
+    // 对非法的 frame，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
+    if (CGRectIsNaN(frame)) {
+        QMUILog(@"UIView (QMUI)", @"%@ setFrame:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGRect(frame), [NSThread callStackSymbols]);
+        NSAssert(NO, @"UIView setFrame: 出现 NaN");
+        if (!IS_DEBUG) {
+            frame = CGRectSafeValue(frame);
+        }
+    }
+    
     [self qmui_setFrame:frame];
 }
 

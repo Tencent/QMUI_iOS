@@ -89,10 +89,10 @@
 }
 
 - (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarName))block {
-    [NSObject qmui_enumrateIvarsOfClass:self.class usingBlock:block];
+    [NSObject qmui_enumrateIvarsOfClass:self.class includingInherited:NO usingBlock:block];
 }
 
-+ (void)qmui_enumrateIvarsOfClass:(Class)aClass usingBlock:(void (^)(Ivar ivar, NSString *ivarName))block {
++ (void)qmui_enumrateIvarsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar, NSString *))block {
     unsigned int outCount = 0;
     Ivar *ivars = class_copyIvarList(aClass, &outCount);
     for (unsigned int i = 0; i < outCount; i ++) {
@@ -100,23 +100,60 @@
         if (block) block(ivar, [NSString stringWithFormat:@"%s", ivar_getName(ivar)]);
     }
     free(ivars);
+    
+    if (includingInherited) {
+        Class superclass = class_getSuperclass(aClass);
+        if (superclass) {
+            [NSObject qmui_enumrateIvarsOfClass:superclass includingInherited:includingInherited usingBlock:block];
+        }
+    }
 }
 
-- (void)qmui_enumrateInstanceMethodsUsingBlock:(void (^)(SEL))block {
-    [NSObject qmui_enumrateInstanceMethodsOfClass:self.class usingBlock:block];
+- (void)qmui_enumratePropertiesUsingBlock:(void (^)(objc_property_t property, NSString *propertyName))block {
+    [NSObject qmui_enumratePropertiesOfClass:self.class includingInherited:NO usingBlock:block];
 }
 
-+ (void)qmui_enumrateInstanceMethodsOfClass:(Class)aClass usingBlock:(void (^)(SEL selector))block {
++ (void)qmui_enumratePropertiesOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(objc_property_t, NSString *))block {
+    unsigned int propertiesCount = 0;
+    objc_property_t *properties = class_copyPropertyList(aClass, &propertiesCount);
+    
+    for (unsigned int i = 0; i < propertiesCount; i++) {
+        objc_property_t property = properties[i];
+        if (block) block(property, [NSString stringWithFormat:@"%s", property_getName(property)]);
+    }
+    
+    free(properties);
+    
+    if (includingInherited) {
+        Class superclass = class_getSuperclass(aClass);
+        if (superclass) {
+            [NSObject qmui_enumratePropertiesOfClass:superclass includingInherited:includingInherited usingBlock:block];
+        }
+    }
+}
+
+- (void)qmui_enumrateInstanceMethodsUsingBlock:(void (^)(Method, SEL))block {
+    [NSObject qmui_enumrateInstanceMethodsOfClass:self.class includingInherited:NO usingBlock:block];
+}
+
++ (void)qmui_enumrateInstanceMethodsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Method, SEL))block {
     unsigned int methodCount = 0;
     Method *methods = class_copyMethodList(aClass, &methodCount);
     
     for (unsigned int i = 0; i < methodCount; i++) {
         Method method = methods[i];
         SEL selector = method_getName(method);
-        if (block) block(selector);
+        if (block) block(method, selector);
     }
     
     free(methods);
+    
+    if (includingInherited) {
+        Class superclass = class_getSuperclass(aClass);
+        if (superclass) {
+            [NSObject qmui_enumrateInstanceMethodsOfClass:superclass includingInherited:includingInherited usingBlock:block];
+        }
+    }
 }
 
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL))block {

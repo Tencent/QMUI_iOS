@@ -185,7 +185,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     self.imageView.image = image;
     
     // 更新 imageView 的大小时，imageView 可能已经被缩放过，所以要应用当前的缩放
-    self.imageView.frame = CGRectApplyAffineTransform(CGRectMakeWithSize(image.size), self.imageView.transform);
+    self.imageView.qmui_frameApplyTransform = CGRectMakeWithSize(image.size);
     
     [self hideViews];
     self.imageView.hidden = NO;
@@ -219,7 +219,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     _livePhotoView.hidden = NO;
     
     // 更新 livePhotoView 的大小时，livePhotoView 可能已经被缩放过，所以要应用当前的缩放
-    _livePhotoView.frame = CGRectApplyAffineTransform(CGRectMakeWithSize(livePhoto.size), _livePhotoView.transform);
+    _livePhotoView.qmui_frameApplyTransform = CGRectMakeWithSize(livePhoto.size);
     
     [self revertZooming];
 }
@@ -420,7 +420,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self initVideoRelatedViewsIfNeeded];
     _videoPlayerLayer.player = self.videoPlayer;
     // 更新 videoPlayerView 的大小时，videoView 可能已经被缩放过，所以要应用当前的缩放
-    self.videoPlayerView.frame = CGRectApplyAffineTransform(CGRectMakeWithSize(self.videoSize), self.videoPlayerView.transform);
+    self.videoPlayerView.qmui_frameApplyTransform = CGRectMakeWithSize(self.videoSize);
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleVideoPlayToEndEvent) name:AVPlayerItemDidPlayToEndTimeNotification object:videoPlayerItem];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground) name:UIApplicationDidEnterBackgroundNotification object:nil];

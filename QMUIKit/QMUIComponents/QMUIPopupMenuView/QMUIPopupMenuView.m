@@ -7,17 +7,10 @@
 //
 
 #import "QMUIPopupMenuView.h"
-#import "QMUIButton.h"
+#import "QMUICore.h"
 #import "UIView+QMUI.h"
 #import "CALayer+QMUI.h"
-#import "UIButton+QMUI.h"
 #import "NSArray+QMUI.h"
-#import "QMUICore.h"
-
-@interface QMUIPopupMenuItem ()
-
-@property(nonatomic, strong, readwrite) QMUIButton *button;
-@end
 
 @interface QMUIPopupMenuView ()
 
@@ -32,29 +25,33 @@
 
 @implementation QMUIPopupMenuView
 
-- (void)setItems:(NSArray<QMUIPopupMenuItem *> *)items {
-    [_items enumerateObjectsUsingBlock:^(QMUIPopupMenuItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
+- (void)setItems:(NSArray<__kindof QMUIPopupMenuBaseItem *> *)items {
+    [_items enumerateObjectsUsingBlock:^(__kindof QMUIPopupMenuBaseItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
         item.menuView = nil;
     }];
     _items = items;
-    self.itemSections = @[_items];
+    if (!items) {
+        self.itemSections = nil;
+    } else {
+        self.itemSections = @[_items];
+    }
 }
 
-- (void)setItemSections:(NSArray<NSArray<QMUIPopupMenuItem *> *> *)itemSections {
-    [_itemSections qmui_enumerateNestedArrayWithBlock:^(QMUIPopupMenuItem *item, BOOL *stop) {
+- (void)setItemSections:(NSArray<NSArray<__kindof QMUIPopupMenuBaseItem *> *> *)itemSections {
+    [_itemSections qmui_enumerateNestedArrayWithBlock:^(__kindof QMUIPopupMenuBaseItem * item, BOOL *stop) {
         item.menuView = nil;
     }];
     _itemSections = itemSections;
     [self configureItems];
 }
 
-- (void)setItemConfigurationHandler:(void (^)(QMUIPopupMenuView *, QMUIPopupMenuItem *, NSInteger, NSInteger))itemConfigurationHandler {
+- (void)setItemConfigurationHandler:(void (^)(QMUIPopupMenuView *, __kindof QMUIPopupMenuBaseItem *, NSInteger, NSInteger))itemConfigurationHandler {
     _itemConfigurationHandler = [itemConfigurationHandler copy];
     if (_itemConfigurationHandler && self.itemSections.count) {
         for (NSInteger section = 0, sectionCount = self.itemSections.count; section < sectionCount; section ++) {
-            NSArray<QMUIPopupMenuItem *> *items = self.itemSections[section];
+            NSArray<QMUIPopupMenuBaseItem *> *items = self.itemSections[section];
             for (NSInteger row = 0, rowCount = items.count; row < rowCount; row ++) {
-                QMUIPopupMenuItem *item = items[row];
+                QMUIPopupMenuBaseItem *item = items[row];
                 _itemConfigurationHandler(self, item, section, row);
             }
         }
@@ -72,18 +69,15 @@
     [self.scrollView qmui_removeAllSubviews];
     
     for (NSInteger section = 0, sectionCount = self.itemSections.count; section < sectionCount; section ++) {
-        NSArray<QMUIPopupMenuItem *> *items = self.itemSections[section];
+        NSArray<QMUIPopupMenuBaseItem *> *items = self.itemSections[section];
         for (NSInteger row = 0, rowCount = items.count; row < rowCount; row ++) {
-            QMUIPopupMenuItem *item = items[row];
-            item.button.titleLabel.font = self.itemTitleFont;
-            item.button.highlightedBackgroundColor = self.itemHighlightedBackgroundColor;
-            item.button.imageEdgeInsets = UIEdgeInsetsMake(0, -self.imageMarginRight, 0, self.imageMarginRight);
-            item.button.contentEdgeInsets = UIEdgeInsetsMake(0, self.padding.left - item.button.imageEdgeInsets.left, 0, self.padding.right);
+            QMUIPopupMenuBaseItem *item = items[row];
             item.menuView = self;
+            [item updateAppearance];
             if (self.itemConfigurationHandler) {
                 self.itemConfigurationHandler(self, item, section, row);
             }
-            [self.scrollView addSubview:item.button];
+            [self.scrollView addSubview:item];
             
             // 配置分隔线，注意每一个 section 里的最后一行是不显示分隔线的
             BOOL shouldShowSeparatorAtRow = [self shouldShowSeparatorAtRow:row rowCount:rowCount inSection:section sectionCount:sectionCount];
@@ -129,11 +123,11 @@
 }
 
 - (CGSize)sizeThatFitsInContentView:(CGSize)size {
-    CGFloat height = UIEdgeInsetsGetVerticalValue(self.padding);
-    for (NSArray<QMUIPopupMenuItem *> *section in self.itemSections) {
-        height += section.count * self.itemHeight;
-    }
-    size.height = fmin(height, size.height);
+    __block CGFloat height = UIEdgeInsetsGetVerticalValue(self.padding);
+    [self.itemSections qmui_enumerateNestedArrayWithBlock:^(__kindof QMUIPopupMenuBaseItem *item, BOOL *stop) {
+        height += item.height >= 0 ? item.height : self.itemHeight;
+    }];
+    size.height = MIN(height, size.height);
     return size;
 }
 
@@ -145,11 +139,11 @@
     CGFloat contentWidth = CGRectGetWidth(self.scrollView.bounds);
     NSInteger separatorIndex = 0;
     for (NSInteger section = 0, sectionCount = self.itemSections.count; section < sectionCount; section ++) {
-        NSArray<QMUIPopupMenuItem *> *items = self.itemSections[section];
+        NSArray<QMUIPopupMenuBaseItem *> *items = self.itemSections[section];
         for (NSInteger row = 0, rowCount = items.count; row < rowCount; row ++) {
-            QMUIButton *button = items[row].button;
-            button.frame = CGRectMake(0, minY, contentWidth, self.itemHeight);
-            minY = CGRectGetMaxY(button.frame);
+            QMUIPopupMenuBaseItem *item = items[row];
+            item.frame = CGRectMake(0, minY, contentWidth, item.height >= 0 ? item.height : self.itemHeight);
+            minY = CGRectGetMaxY(item.frame);
             
             BOOL shouldShowSeparatorAtRow = [self shouldShowSeparatorAtRow:row rowCount:rowCount inSection:section sectionCount:sectionCount];
             if (shouldShowSeparatorAtRow) {
@@ -175,58 +169,26 @@
 
 + (void)setDefaultAppearanceForPopupMenuView {
     QMUIPopupMenuView *appearance = [QMUIPopupMenuView appearance];
+    appearance.shouldShowItemSeparator = NO;
+    appearance.shouldShowSectionSeparatorOnly = NO;
     appearance.separatorColor = UIColorSeparator;
     appearance.itemTitleFont = UIFontMake(16);
-    appearance.itemHighlightedBackgroundColor = TableViewCellSelectedBackgroundColor;
+    appearance.itemTitleColor = UIColorBlue;
     appearance.padding = UIEdgeInsetsMake([QMUIPopupContainerView appearance].cornerRadius / 2.0, 16, [QMUIPopupContainerView appearance].cornerRadius / 2.0, 16);
     appearance.itemHeight = 44;
-    appearance.imageMarginRight = 6;
     appearance.separatorInset = UIEdgeInsetsZero;
 }
 
 - (void)updateAppearanceForPopupMenuView {
     QMUIPopupMenuView *appearance = [QMUIPopupMenuView appearance];
+    self.shouldShowItemSeparator = appearance.shouldShowItemSeparator;
+    self.shouldShowSectionSeparatorOnly = appearance.shouldShowSectionSeparatorOnly;
     self.separatorColor = appearance.separatorColor;
     self.itemTitleFont = appearance.itemTitleFont;
-    self.itemHighlightedBackgroundColor = appearance.itemHighlightedBackgroundColor;
+    self.itemTitleColor = appearance.itemTitleColor;
     self.padding = appearance.padding;
     self.itemHeight = appearance.itemHeight;
-    self.imageMarginRight = appearance.imageMarginRight;
     self.separatorInset = appearance.separatorInset;
-}
-
-@end
-
-@implementation QMUIPopupMenuItem
-
-+ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)(QMUIPopupMenuView *, QMUIPopupMenuItem *))handler {
-    QMUIPopupMenuItem *item = [[QMUIPopupMenuItem alloc] init];
-    item.image = image;
-    item.title = title;
-    item.handler = handler;
-    
-    QMUIButton *button = [[QMUIButton alloc] qmui_initWithImage:image title:title];
-    button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-    button.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
-    [button addTarget:item action:@selector(handleButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
-    item.button = button;
-    return item;
-}
-
-- (void)setTitle:(NSString *)title {
-    _title = title;
-    [self.button setTitle:title forState:UIControlStateNormal];
-}
-
-- (void)setImage:(UIImage *)image {
-    _image = image;
-    [self.button setImage:image forState:UIControlStateNormal];
-}
-
-- (void)handleButtonEvent:(id)sender {
-    if (self.handler) {
-        self.handler(self.menuView, self);
-    }
 }
 
 @end

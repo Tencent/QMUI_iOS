@@ -99,7 +99,7 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
 }
 
 static QMUIAlbumViewController *albumViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken2;
     dispatch_once(&onceToken2, ^{
         if (!albumViewControllerAppearance) {

@@ -66,7 +66,7 @@ static NSUInteger alertControllerCount = 0;
 
 @implementation QMUIAlertAction
 
-+ (instancetype)actionWithTitle:(NSString *)title style:(QMUIAlertActionStyle)style handler:(void (^)(__kindof QMUIAlertController *, QMUIAlertAction *))handler {
++ (nonnull instancetype)actionWithTitle:(nullable NSString *)title style:(QMUIAlertActionStyle)style handler:(void (^)(__kindof QMUIAlertController *, QMUIAlertAction *))handler {
     QMUIAlertAction *alertAction = [[QMUIAlertAction alloc] init];
     alertAction.title = title;
     alertAction.style = style;
@@ -74,7 +74,7 @@ static NSUInteger alertControllerCount = 0;
     return alertAction;
 }
 
-- (instancetype)init {
+- (nonnull instancetype)init {
     self = [super init];
     if (self) {
         _button = [[QMUIButton alloc] init];
@@ -111,7 +111,7 @@ static NSUInteger alertControllerCount = 0;
 }
 
 static QMUIAlertController *alertControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self resetAppearance];
@@ -501,7 +501,7 @@ static QMUIAlertController *alertControllerAppearance;
     }
 }
 
-+ (instancetype)alertControllerWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
++ (nonnull instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     QMUIAlertController *alertController = [[self alloc] initWithTitle:title message:message preferredStyle:preferredStyle];
     if (alertController) {
         return alertController;
@@ -509,7 +509,7 @@ static QMUIAlertController *alertControllerAppearance;
     return nil;
 }
 
-- (instancetype)initWithTitle:(NSString *)title message:(NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
+- (nonnull instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     self = [self init];
     if (self) {
         
@@ -969,7 +969,7 @@ static QMUIAlertController *alertControllerAppearance;
     alertControllerCount--;
 }
 
-- (void)addAction:(QMUIAlertAction *)action {
+- (void)addAction:(nonnull QMUIAlertAction *)action {
     if (action.style == QMUIAlertActionStyleCancel && self.cancelAction) {
         [NSException raise:@"QMUIAlertController使用错误" format:@"同一个alertController不可以同时添加两个cancel按钮"];
     }

@@ -18,6 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (instancetype)qmui_initWithSize:(CGSize)size;
 
+/**
+ 将要设置的 frame 自定用 CGRectApplyAffineTransformWithAnchorPoint 处理后再设置
+ */
+@property(nonatomic, assign) CGRect qmui_frameApplyTransform;
+
 /// 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
 @property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
 
@@ -71,13 +76,13 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewBorderPosition) {
  */
 @interface UIView (QMUI_Border)
 
-/// 设置边框类型，支持组合，例如：`borderPosition = QMUIViewBorderPositionTop|QMUIViewBorderPositionBottom`
+/// 设置边框类型，支持组合，例如：`borderPosition = QMUIViewBorderPositionTop|QMUIViewBorderPositionBottom`。默认为 QMUIViewBorderPositionNone。
 @property(nonatomic, assign) QMUIViewBorderPosition qmui_borderPosition;
 
-/// 边框的大小，默认为PixelOne
+/// 边框的大小，默认为PixelOne。请注意修改 qmui_borderPosition 的值以将边框显示出来。
 @property(nonatomic, assign) IBInspectable CGFloat qmui_borderWidth;
 
-/// 边框的颜色，默认为UIColorSeparator
+/// 边框的颜色，默认为UIColorSeparator。请注意修改 qmui_borderPosition 的值以将边框显示出来。
 @property(nonatomic, strong) IBInspectable UIColor *qmui_borderColor;
 
 /// 虚线 : dashPhase默认是0，且当dashPattern设置了才有效

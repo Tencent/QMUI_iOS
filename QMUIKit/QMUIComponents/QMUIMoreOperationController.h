@@ -110,7 +110,7 @@
 
 @interface QMUIMoreOperationController (UIAppearance)
 
-+ (instancetype)appearance;
++ (nonnull instancetype)appearance;
 
 @end
 

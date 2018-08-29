@@ -125,7 +125,6 @@
 		CDC86FD81F68D617000E8829 /* QMUIOrderedDictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F791F68D5F9000E8829 /* QMUIOrderedDictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FD91F68D617000E8829 /* QMUIPieProgressView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F7B1F68D5F9000E8829 /* QMUIPieProgressView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FDA1F68D617000E8829 /* QMUIPopupContainerView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F7D1F68D5F9000E8829 /* QMUIPopupContainerView.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CDC86FDB1F68D617000E8829 /* QMUIPopupMenuView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F7F1F68D5F9000E8829 /* QMUIPopupMenuView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FDC1F68D617000E8829 /* QMUIEmotionInputManager.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F811F68D5F9000E8829 /* QMUIEmotionInputManager.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FDD1F68D617000E8829 /* QMUISearchBar.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F831F68D5F9000E8829 /* QMUISearchBar.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FDE1F68D617000E8829 /* QMUISearchController.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F851F68D5F9000E8829 /* QMUISearchController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -183,7 +182,6 @@
 		CDC870151F68D63B000E8829 /* QMUIOrderedDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F7A1F68D5F9000E8829 /* QMUIOrderedDictionary.m */; };
 		CDC870161F68D63B000E8829 /* QMUIPieProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F7C1F68D5F9000E8829 /* QMUIPieProgressView.m */; };
 		CDC870171F68D63B000E8829 /* QMUIPopupContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F7E1F68D5F9000E8829 /* QMUIPopupContainerView.m */; };
-		CDC870181F68D63B000E8829 /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F801F68D5F9000E8829 /* QMUIPopupMenuView.m */; };
 		CDC870191F68D63B000E8829 /* QMUIEmotionInputManager.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F821F68D5F9000E8829 /* QMUIEmotionInputManager.m */; };
 		CDC8701A1F68D63B000E8829 /* QMUISearchBar.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F841F68D5F9000E8829 /* QMUISearchBar.m */; };
 		CDC8701B1F68D63B000E8829 /* QMUISearchController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F861F68D5F9000E8829 /* QMUISearchController.m */; };
@@ -214,6 +212,14 @@
 		CDD071FE2060F82700343AB6 /* QMUICellHeightCache.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD071FC2060F82700343AB6 /* QMUICellHeightCache.m */; };
 		CDD12D3C1FBB320E00114EA9 /* NSArray+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD12D3A1FBB320E00114EA9 /* NSArray+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDD12D3D1FBB320E00114EA9 /* NSArray+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD12D3B1FBB320E00114EA9 /* NSArray+QMUI.m */; };
+		CDD7C0D4212300A000D6FA1E /* QMUIRuntime.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD7C0D3212300A000D6FA1E /* QMUIRuntime.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CDD7C2B5212C4E0600D6FA1E /* QMUIPopupMenuItemProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD7C2B4212C4E0600D6FA1E /* QMUIPopupMenuItemProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CDD7C2B8212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD7C2B6212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CDD7C2B9212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD7C2B7212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.m */; };
+		CDD7C2BC212C510B00D6FA1E /* QMUIPopupMenuButtonItem.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD7C2BA212C510B00D6FA1E /* QMUIPopupMenuButtonItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CDD7C2BD212C510B00D6FA1E /* QMUIPopupMenuButtonItem.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD7C2BB212C510B00D6FA1E /* QMUIPopupMenuButtonItem.m */; };
+		CDD7C2C0212C528500D6FA1E /* QMUIPopupMenuView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD7C2BE212C528400D6FA1E /* QMUIPopupMenuView.m */; };
+		CDD7C2C1212C528500D6FA1E /* QMUIPopupMenuView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD7C2BF212C528400D6FA1E /* QMUIPopupMenuView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDE418FB20761A0F002ED021 /* UIBarItem+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDE418F920761A0F002ED021 /* UIBarItem+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDE418FC20761A0F002ED021 /* UIBarItem+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDE418FA20761A0F002ED021 /* UIBarItem+QMUI.m */; };
 		CDEA6D081F4B07E700F627AF /* UIGestureRecognizer+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDEA6D061F4B07E700F627AF /* UIGestureRecognizer+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -397,8 +403,6 @@
 		CDC86F7C1F68D5F9000E8829 /* QMUIPieProgressView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIPieProgressView.m; sourceTree = "<group>"; };
 		CDC86F7D1F68D5F9000E8829 /* QMUIPopupContainerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIPopupContainerView.h; sourceTree = "<group>"; };
 		CDC86F7E1F68D5F9000E8829 /* QMUIPopupContainerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupContainerView.m; sourceTree = "<group>"; };
-		CDC86F7F1F68D5F9000E8829 /* QMUIPopupMenuView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuView.h; sourceTree = "<group>"; };
-		CDC86F801F68D5F9000E8829 /* QMUIPopupMenuView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupMenuView.m; sourceTree = "<group>"; };
 		CDC86F811F68D5F9000E8829 /* QMUIEmotionInputManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIEmotionInputManager.h; sourceTree = "<group>"; };
 		CDC86F821F68D5F9000E8829 /* QMUIEmotionInputManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIEmotionInputManager.m; sourceTree = "<group>"; };
 		CDC86F831F68D5F9000E8829 /* QMUISearchBar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUISearchBar.h; sourceTree = "<group>"; };
@@ -457,6 +461,14 @@
 		CDD071FC2060F82700343AB6 /* QMUICellHeightCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUICellHeightCache.m; sourceTree = "<group>"; };
 		CDD12D3A1FBB320E00114EA9 /* NSArray+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSArray+QMUI.h"; sourceTree = "<group>"; };
 		CDD12D3B1FBB320E00114EA9 /* NSArray+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSArray+QMUI.m"; sourceTree = "<group>"; };
+		CDD7C0D3212300A000D6FA1E /* QMUIRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIRuntime.h; sourceTree = "<group>"; };
+		CDD7C2B4212C4E0600D6FA1E /* QMUIPopupMenuItemProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuItemProtocol.h; sourceTree = "<group>"; };
+		CDD7C2B6212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuBaseItem.h; sourceTree = "<group>"; };
+		CDD7C2B7212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupMenuBaseItem.m; sourceTree = "<group>"; };
+		CDD7C2BA212C510B00D6FA1E /* QMUIPopupMenuButtonItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuButtonItem.h; sourceTree = "<group>"; };
+		CDD7C2BB212C510B00D6FA1E /* QMUIPopupMenuButtonItem.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupMenuButtonItem.m; sourceTree = "<group>"; };
+		CDD7C2BE212C528400D6FA1E /* QMUIPopupMenuView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIPopupMenuView.m; sourceTree = "<group>"; };
+		CDD7C2BF212C528400D6FA1E /* QMUIPopupMenuView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIPopupMenuView.h; sourceTree = "<group>"; };
 		CDE418F920761A0F002ED021 /* UIBarItem+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIBarItem+QMUI.h"; sourceTree = "<group>"; };
 		CDE418FA20761A0F002ED021 /* UIBarItem+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIBarItem+QMUI.m"; sourceTree = "<group>"; };
 		CDEA6D061F4B07E700F627AF /* UIGestureRecognizer+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIGestureRecognizer+QMUI.h"; sourceTree = "<group>"; };
@@ -757,8 +769,7 @@
 				CDC86F7C1F68D5F9000E8829 /* QMUIPieProgressView.m */,
 				CDC86F7D1F68D5F9000E8829 /* QMUIPopupContainerView.h */,
 				CDC86F7E1F68D5F9000E8829 /* QMUIPopupContainerView.m */,
-				CDC86F7F1F68D5F9000E8829 /* QMUIPopupMenuView.h */,
-				CDC86F801F68D5F9000E8829 /* QMUIPopupMenuView.m */,
+				CDD7C2B3212C4DED00D6FA1E /* QMUIPopupMenuView */,
 				CDC86F831F68D5F9000E8829 /* QMUISearchBar.h */,
 				CDC86F841F68D5F9000E8829 /* QMUISearchBar.m */,
 				CDC86F851F68D5F9000E8829 /* QMUISearchController.h */,
@@ -873,6 +884,7 @@
 				CDC86FB11F68D5F9000E8829 /* QMUICore.h */,
 				CDC86FB21F68D5F9000E8829 /* QMUIHelper.h */,
 				CDC86FB31F68D5F9000E8829 /* QMUIHelper.m */,
+				CDD7C0D3212300A000D6FA1E /* QMUIRuntime.h */,
 			);
 			path = QMUICore;
 			sourceTree = "<group>";
@@ -890,6 +902,20 @@
 				CDC86FBC1F68D5F9000E8829 /* QMUITabBarViewController.m */,
 			);
 			path = QMUIMainFrame;
+			sourceTree = "<group>";
+		};
+		CDD7C2B3212C4DED00D6FA1E /* QMUIPopupMenuView */ = {
+			isa = PBXGroup;
+			children = (
+				CDD7C2B6212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.h */,
+				CDD7C2B7212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.m */,
+				CDD7C2BA212C510B00D6FA1E /* QMUIPopupMenuButtonItem.h */,
+				CDD7C2BB212C510B00D6FA1E /* QMUIPopupMenuButtonItem.m */,
+				CDD7C2B4212C4E0600D6FA1E /* QMUIPopupMenuItemProtocol.h */,
+				CDD7C2BF212C528400D6FA1E /* QMUIPopupMenuView.h */,
+				CDD7C2BE212C528400D6FA1E /* QMUIPopupMenuView.m */,
+			);
+			path = QMUIPopupMenuView;
 			sourceTree = "<group>";
 		};
 		D021DE34205E801100FFA408 /* QMUICellSizeKeyCache */ = {
@@ -919,6 +945,11 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDD7C2C1212C528500D6FA1E /* QMUIPopupMenuView.h in Headers */,
+				CDD7C2BC212C510B00D6FA1E /* QMUIPopupMenuButtonItem.h in Headers */,
+				CDD7C2B8212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.h in Headers */,
+				CDD7C2B5212C4E0600D6FA1E /* QMUIPopupMenuItemProtocol.h in Headers */,
+				CDD7C0D4212300A000D6FA1E /* QMUIRuntime.h in Headers */,
 				CD9D6EBC210F8CA20004E222 /* CAAnimation+QMUI.h in Headers */,
 				CD9D6E6E210C8DEC0004E222 /* QMUILogger+QMUIConfigurationTemplate.h in Headers */,
 				CD18CDFE20EE167200EED53C /* UITableViewCell+QMUI.h in Headers */,
@@ -985,7 +1016,6 @@
 				CDC86FD81F68D617000E8829 /* QMUIOrderedDictionary.h in Headers */,
 				CDC86FD91F68D617000E8829 /* QMUIPieProgressView.h in Headers */,
 				CDC86FDA1F68D617000E8829 /* QMUIPopupContainerView.h in Headers */,
-				CDC86FDB1F68D617000E8829 /* QMUIPopupMenuView.h in Headers */,
 				CDC86FDC1F68D617000E8829 /* QMUIEmotionInputManager.h in Headers */,
 				CDC86FDD1F68D617000E8829 /* QMUISearchBar.h in Headers */,
 				CDC86FDE1F68D617000E8829 /* QMUISearchController.h in Headers */,
@@ -1138,12 +1168,15 @@
 				CDB8CB5C1DCC870700769DF0 /* NSObject+QMUI.m in Sources */,
 				FEB3639020D9061000D0F321 /* QMUIVisualEffectView.m in Sources */,
 				CDB8CBA41DCC870700769DF0 /* UIButton+QMUI.m in Sources */,
+				CDD7C2B9212C4E7400D6FA1E /* QMUIPopupMenuBaseItem.m in Sources */,
 				CDB8CBD81DCC870800769DF0 /* UITableView+QMUI.m in Sources */,
 				CD82C0B0206A2C3D0046EED2 /* QMUIMultipleDelegates.m in Sources */,
+				CDD7C2C0212C528500D6FA1E /* QMUIPopupMenuView.m in Sources */,
 				CD9D6EBD210F8CA20004E222 /* CAAnimation+QMUI.m in Sources */,
 				CD18CDFF20EE167200EED53C /* UITableViewCell+QMUI.m in Sources */,
 				CDB8CBE41DCC870800769DF0 /* UIWindow+QMUI.m in Sources */,
 				CD43CB18207B98A10090346B /* QMUIButton.m in Sources */,
+				CDD7C2BD212C510B00D6FA1E /* QMUIPopupMenuButtonItem.m in Sources */,
 				CD6BE14F2058C64E00BE093E /* QMUICellHeightKeyCache.m in Sources */,
 				CDB8CBC81DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
 				CD046C4A2018688F00092035 /* QMUILogger.m in Sources */,
@@ -1206,7 +1239,6 @@
 				CDC870151F68D63B000E8829 /* QMUIOrderedDictionary.m in Sources */,
 				CDC870161F68D63B000E8829 /* QMUIPieProgressView.m in Sources */,
 				CDC870171F68D63B000E8829 /* QMUIPopupContainerView.m in Sources */,
-				CDC870181F68D63B000E8829 /* QMUIPopupMenuView.m in Sources */,
 				CDC163C7204D441000E4CC13 /* QMUILogManagerViewController.m in Sources */,
 				CDC870191F68D63B000E8829 /* QMUIEmotionInputManager.m in Sources */,
 				CDC8701A1F68D63B000E8829 /* QMUISearchBar.m in Sources */,

@@ -9,6 +9,7 @@
 #import "UITableView+QMUI.h"
 #import "QMUICore.h"
 #import "UIScrollView+QMUI.h"
+#import "QMUILog.h"
 
 const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 
@@ -19,6 +20,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     dispatch_once(&onceToken, ^{
         ExchangeImplementations([self class], @selector(initWithFrame:style:), @selector(qmui_initWithFrame:style:));
         ExchangeImplementations([self class], @selector(sizeThatFits:), @selector(qmui_sizeThatFits:));
+        ExchangeImplementations([self class], @selector(scrollToRowAtIndexPath:atScrollPosition:animated:), @selector(qmui_scrollToRowAtIndexPath:atScrollPosition:animated:));
     });
 }
 
@@ -249,6 +251,26 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
         return canScroll;
     } else {
         return [super qmui_canScroll];
+    }
+}
+
+// 防止 release 版本滚动到不合法的 indexPath 会 crash
+- (void)qmui_scrollToRowAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(UITableViewScrollPosition)scrollPosition animated:(BOOL)animated {
+    BOOL isIndexPathLegal = YES;
+    NSInteger numberOfSections = [self numberOfSections];
+    if (indexPath.section >= numberOfSections) {
+        isIndexPathLegal = NO;
+    } else {
+        NSInteger rows = [self numberOfRowsInSection:indexPath.section];
+        if (indexPath.row >= rows) {
+            isIndexPathLegal = NO;
+        }
+    }
+    if (!isIndexPathLegal) {
+        QMUILog(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", self, indexPath, [NSThread callStackSymbols]);
+        NSAssert(NO, @"出现不合法的indexPath");
+    } else {
+        [self qmui_scrollToRowAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
     }
 }
 

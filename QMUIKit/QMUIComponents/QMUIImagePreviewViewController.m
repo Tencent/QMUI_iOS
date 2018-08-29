@@ -9,6 +9,7 @@
 #import "QMUIImagePreviewViewController.h"
 #import "QMUICore.h"
 #import "CALayer+QMUI.h"
+#import "UIView+QMUI.h"
 
 @implementation QMUIImagePreviewViewController (UIAppearance)
 
@@ -20,7 +21,7 @@
 }
 
 static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!imagePreviewViewControllerAppearance) {
@@ -95,7 +96,7 @@ EndIgnoreClangWarning
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    self.imagePreviewView.frame = CGRectApplyAffineTransform(self.view.bounds, self.imagePreviewView.transform);
+    self.imagePreviewView.qmui_frameApplyTransform = self.view.bounds;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -349,6 +350,10 @@ EndIgnoreClangWarning
 - (void)exitPreviewByFadingAnimation:(BOOL)isFading orToRect:(CGRect)rect {
     
     if (isFading) {
+        if (!self.backgroundColorTemporarily) {
+            // 如果是手势触发的 exit，在手势 began 时就已经设置好 backgroundColorTemporarily 了，所以这里只为那种单击或者用代码 exit 的情况
+            self.backgroundColorTemporarily = self.view.backgroundColor;
+        }
         [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.view.alpha = 0;
         } completion:^(BOOL finished) {
@@ -435,7 +440,7 @@ EndIgnoreClangWarning
     self.gestureZoomImageView.transform = CGAffineTransformIdentity;
     self.gestureBeganLocation = CGPointZero;
     self.gestureZoomImageView = nil;
-    self.view.backgroundColor = self.backgroundColorTemporarily;
+    self.view.backgroundColor = self.backgroundColorTemporarily;// 重置回之前的遮罩背景色，因此要求每一种 exit 方式在 exit 之前都要先给 self.backgroundColorTemporarily 赋值
 }
 
 @end

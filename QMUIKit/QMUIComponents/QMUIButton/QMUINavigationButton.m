@@ -355,9 +355,12 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     } else {
         if (self.qmui_navigationBar && [self.qmui_navigationBar.delegate isKindOfClass:[UINavigationController class]]) {
             UINavigationController *navController = (UINavigationController *)self.qmui_navigationBar.delegate;
+            
+            QMUILog(@"UINavigationItem (QMUINavigationButton)", @"navigationController is %@, topViewController is %@, viewControllers is %@, willAppearByInteractivePopGestureRecognizer is %@, navigationControllerPopGestureRecognizerChanging is %@", navController, navController.topViewController, navController.viewControllers, StringFromBOOL(navController.topViewController.qmui_willAppearByInteractivePopGestureRecognizer), StringFromBOOL(navController.topViewController.qmui_navigationControllerPopGestureRecognizerChanging));
+            
             if (navController.topViewController.qmui_willAppearByInteractivePopGestureRecognizer && navController.topViewController.qmui_navigationControllerPopGestureRecognizerChanging) {
                 // 注意，判断条件里的 qmui_navigationControllerPopGestureRecognizerChanging 关键在于，它是在 viewWillAppear: 执行后才被置为 YES，而 QMUICommonViewController 是在 viewWillAppear: 里调用 setNavigationItems:，所以刚好过滤了这种场景。因为测试过，在 viewWillAppear: 里操作 items 是没问题的，但在那之后的操作就会有问题。
-                QMUILog(@"UINavigationItem (QMUINavigationButton)", @"拦截了一次可能产生顶部按钮混乱的操作，navigationController is %@, topViewController is %@", navController, navController.topViewController);
+                QMUILog(@"UINavigationItem (QMUINavigationButton)", @"拦截了一次可能产生顶部按钮混乱的操作");
                 return YES;
             }
         }

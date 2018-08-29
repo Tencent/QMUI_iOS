@@ -26,15 +26,15 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     NSAssert(NO, @"请使用initWithView:初始化");
-    return [self initWithView:nil];
+    return [self initWithView:[[UIView alloc] init]];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     NSAssert(NO, @"请使用initWithView:初始化");
-    return [self initWithView:nil];
+    return [self initWithView:[[UIView alloc] init]];
 }
 
-- (instancetype)initWithView:(UIView *)view {
+- (nonnull instancetype)initWithView:(nonnull UIView *)view {
     NSAssert(view, @"view不能为空");
     if (self = [super initWithFrame:view.bounds]) {
         _parentView = view;
@@ -149,7 +149,7 @@
         }
         
         CGRect contentRect = CGRectFlatMake(contentViewX, contentViewY, contentViewSize.width, contentViewSize.height);
-        self.contentView.frame = CGRectApplyAffineTransform(contentRect, self.contentView.transform);
+        self.contentView.qmui_frameApplyTransform = contentRect;
     }
     if (self.backgroundView) {
         // backgroundView的frame跟contentView一样，contentView里面的subviews如果需要在视觉上跟backgroundView有个padding，那么就自己在自定义的contentView里面做。
@@ -307,7 +307,7 @@
     return returnFlag;
 }
 
-+ (instancetype)toastInView:(UIView *)view {
++ (nullable instancetype)toastInView:(UIView *)view {
     NSEnumerator *subviewsEnum = [view.subviews reverseObjectEnumerator];
     for (UIView *subview in subviewsEnum) {
         if ([subview isKindOfClass:self]) {

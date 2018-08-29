@@ -9,6 +9,7 @@
 #import "QMUIModalPresentationViewController.h"
 #import "QMUICore.h"
 #import "UIViewController+QMUI.h"
+#import "UIView+QMUI.h"
 #import "QMUIKeyboardManager.h"
 
 @interface UIViewController ()
@@ -19,7 +20,7 @@
 @implementation QMUIModalPresentationViewController (UIAppearance)
 
 static QMUIModalPresentationViewController *appearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self initDefaultAppearance];
@@ -134,7 +135,7 @@ static QMUIModalPresentationViewController *appearance;
     if (self.layoutBlock) {
         self.layoutBlock(self.view.bounds, self.keyboardHeight, contentViewFrame);
     } else {
-        self.contentView.frame = contentViewFrame;
+        self.contentView.qmui_frameApplyTransform = contentViewFrame;
     }
 }
 
@@ -542,9 +543,6 @@ static QMUIModalPresentationViewController *appearance;
     contentViewSize.width = fmin(contentViewLimitSize.width, contentViewSize.width);
     contentViewSize.height = fmin(contentViewLimitSize.height, contentViewSize.height);
     CGRect contentViewFrame = CGRectMake(CGFloatGetCenter(contentViewContainerSize.width, contentViewSize.width) + self.contentViewMargins.left, CGFloatGetCenter(contentViewContainerSize.height, contentViewSize.height) + self.contentViewMargins.top, contentViewSize.width, contentViewSize.height);
-    
-    // showingAnimation、hidingAnimation里会通过设置contentView的transform来做动画，所以可能在showing的过程中设置了transform后，系统触发viewDidLayoutSubviews，在viewDidLayoutSubviews里计算的frame又是最终状态的frame，与showing时的transform冲突，导致动画过程中浮层跳动或者位置错误，所以为了保证layout时计算出来的frame与showing/hiding时计算的frame一致，这里给frame应用了transform。但这种处理方法也有局限：如果你在showingAnimation/hidingAnimation里对contentView.frame的更改不是通过修改transform而是直接修改frame来得到结果，那么这里这句CGRectApplyAffineTransform就没用了，viewDidLayoutSubviews里算出来的frame依然会和showingAnimation/hidingAnimation冲突。
-    contentViewFrame = CGRectApplyAffineTransform(contentViewFrame, self.contentView.transform);
     return contentViewFrame;
 }
 

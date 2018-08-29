@@ -11,6 +11,7 @@
 #import "QMUICollectionViewPagingLayout.h"
 #import "NSObject+QMUI.h"
 #import "UICollectionView+QMUI.h"
+#import "UIView+QMUI.h"
 #import "QMUIEmptyView.h"
 #import "QMUILog.h"
 #import "QMUIPieProgressView.h"
@@ -36,7 +37,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    self.zoomImageView.frame = CGRectApplyAffineTransform(self.contentView.bounds, self.zoomImageView.transform);
+    self.zoomImageView.qmui_frameApplyTransform = self.contentView.bounds;
 }
 
 @end

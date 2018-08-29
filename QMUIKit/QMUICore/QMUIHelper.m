@@ -252,7 +252,7 @@ static CGFloat pixelOne = -1.0f;
 }
 
 + (void)inspectContextSize:(CGSize)size {
-    if (size.width < 0 || size.height < 0) {
+    if (!CGSizeIsValidated(size)) {
         NSAssert(NO, @"QMUI CGPostError, %@:%d %s, 非法的size：%@\n%@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, __PRETTY_FUNCTION__, NSStringFromCGSize(size), [NSThread callStackSymbols]);
     }
 }
