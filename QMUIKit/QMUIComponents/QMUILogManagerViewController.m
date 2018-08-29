@@ -153,24 +153,24 @@
     menuView.maximumWidth = 124;
     menuView.safetyMarginsOfSuperview = UIEdgeInsetsSetRight(menuView.safetyMarginsOfSuperview, 6);
     menuView.items = @[
-                       [QMUIPopupMenuItem itemWithImage:nil title:@"开启全部" handler:^(QMUIPopupMenuView *aMenuView, QMUIPopupMenuItem *aItem) {
+                       [QMUIPopupMenuButtonItem itemWithImage:nil title:@"开启全部" handler:^(QMUIPopupMenuButtonItem *aItem) {
                            for (NSString *logName in self.allNames) {
                                [[QMUILogger sharedInstance].logNameManager setEnabled:YES forLogName:logName];
                            }
                            [self reloadData];
-                           [aMenuView hideWithAnimated:YES];
+                           [aItem.menuView hideWithAnimated:YES];
                        }],
-                       [QMUIPopupMenuItem itemWithImage:nil title:@"禁用全部" handler:^(QMUIPopupMenuView *aMenuView, QMUIPopupMenuItem *aItem) {
+                       [QMUIPopupMenuButtonItem itemWithImage:nil title:@"禁用全部" handler:^(QMUIPopupMenuButtonItem *aItem) {
                            for (NSString *logName in self.allNames) {
                                [[QMUILogger sharedInstance].logNameManager setEnabled:NO forLogName:logName];
                            }
                            [self reloadData];
-                           [aMenuView hideWithAnimated:YES];
+                           [aItem.menuView hideWithAnimated:YES];
                        }],
-                       [QMUIPopupMenuItem itemWithImage:nil title:@"清空全部" handler:^(QMUIPopupMenuView *aMenuView, QMUIPopupMenuItem *aItem) {
+                       [QMUIPopupMenuButtonItem itemWithImage:nil title:@"清空全部" handler:^(QMUIPopupMenuButtonItem *aItem) {
                            [[QMUILogger sharedInstance].logNameManager removeAllNames];
                            [self reloadData];
-                           [aMenuView hideWithAnimated:YES];
+                           [aItem.menuView hideWithAnimated:YES];
                        }]];
     [menuView layoutWithTargetView:self.navigationItem.rightBarButtonItem.qmui_view];
     [menuView showWithAnimated:YES];

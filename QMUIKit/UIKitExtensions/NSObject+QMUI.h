@@ -86,31 +86,49 @@
 
 
 /**
- 使用 block 遍历当前实例的所有成员变量（也即 _xxx 那种）
+ 使用 block 遍历指定 class 的所有成员变量（也即 _xxx 那种），不包含 property 对应的 _property 成员变量，也不包含 superclasses 里定义的变量
 
  @param block 用于遍历的 block
  */
 - (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
 
 /**
- 使用 block 遍历指定 class 的所有成员变量（也即 _xxx 那种）
+ 使用 block 遍历指定 class 的所有成员变量（也即 _xxx 那种），不包含 property 对应的 _property 成员变量
 
  @param aClass 指定的 class
+ @param includingInherited 是否要包含由继承链带过来的 ivars
  @param block  用于遍历的 block
  */
-+ (void)qmui_enumrateIvarsOfClass:(Class)aClass usingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
++ (void)qmui_enumrateIvarsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
 
 /**
- 使用 block 遍历当前实例的所有方法，父类的方法不包含在内
+ 使用 block 遍历指定 class 的所有属性，不包含 superclasses 里定义的 property
+
+ @param block 用于遍历的 block
  */
-- (void)qmui_enumrateInstanceMethodsUsingBlock:(void (^)(SEL selector))block;
+- (void)qmui_enumratePropertiesUsingBlock:(void (^)(objc_property_t property, NSString *propertyName))block;
 
 /**
- 使用 block 遍历指定的某个类的实例方法，该类的父类方法不包含在内
- *  @param aClass   要遍历的某个类
- *  @param block    遍历时使用的 block，参数为某一个方法
+ 使用 block 遍历指定 class 的所有属性
+
+ @param aClass 指定的 class
+ @param includingInherited 是否要包含由继承链带过来的 property
+ @param block 用于遍历的 block
  */
-+ (void)qmui_enumrateInstanceMethodsOfClass:(Class)aClass usingBlock:(void (^)(SEL selector))block;
++ (void)qmui_enumratePropertiesOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(objc_property_t property, NSString *propertyName))block;
+
+/**
+ 使用 block 遍历当前实例的所有方法，不包含 superclasses 里定义的 method
+ */
+- (void)qmui_enumrateInstanceMethodsUsingBlock:(void (^)(Method method, SEL selector))block;
+
+/**
+ 使用 block 遍历指定的某个类的实例方法
+ @param aClass   指定的 class
+ @param includingInherited 是否要包含由继承链带过来的 method
+ @param block    用于遍历的 block
+ */
++ (void)qmui_enumrateInstanceMethodsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Method method, SEL selector))block;
 
 /**
  遍历某个 protocol 里的所有方法

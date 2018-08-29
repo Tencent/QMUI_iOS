@@ -26,12 +26,12 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     NSAssert(NO, @"请使用initWithView:初始化");
-    return [self initWithView:nil];
+    return [self initWithView:[[UIView alloc] init]];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     NSAssert(NO, @"请使用initWithView:初始化");
-    return [self initWithView:nil];
+    return [self initWithView:[[UIView alloc] init]];
 }
 
 - (nonnull instancetype)initWithView:(nonnull UIView *)view {
@@ -149,7 +149,7 @@
         }
         
         CGRect contentRect = CGRectFlatMake(contentViewX, contentViewY, contentViewSize.width, contentViewSize.height);
-        self.contentView.frame = CGRectApplyAffineTransform(contentRect, self.contentView.transform);
+        self.contentView.qmui_frameApplyTransform = contentRect;
     }
     if (self.backgroundView) {
         // backgroundView的frame跟contentView一样，contentView里面的subviews如果需要在视觉上跟backgroundView有个padding，那么就自己在自定义的contentView里面做。

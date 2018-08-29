@@ -16,14 +16,16 @@
 @property(nonatomic, strong) CADisplayLink *displayLink;
 @property(nonatomic, assign) CGFloat offsetX;
 @property(nonatomic, assign) CGFloat textWidth;
-
-@property(nonatomic, strong) CAGradientLayer *fadeLeftLayer;
-@property(nonatomic, strong) CAGradientLayer *fadeRightLayer;
+@property(nonatomic, assign) CGFloat fadeStartPercent; // 渐变开始的百分比，默认为0，不建议改
+@property(nonatomic, assign) CGFloat fadeEndPercent; // 渐变结束的百分比，例如0.2，则表示 0~20% 是渐变区间
 
 @property(nonatomic, assign) BOOL isFirstDisplay;
 
+@property(nonatomic, strong) CAGradientLayer *fadeLayer;
+
 /// 绘制文本时重复绘制的次数，用于实现首尾连接的滚动效果，1 表示不首尾连接，大于 1 表示首尾连接。
 @property(nonatomic, assign) NSInteger textRepeatCount;
+
 @end
 
 @implementation QMUIMarqueeLabel
@@ -48,12 +50,11 @@
 
 - (void)didInitialize {
     self.speed = .5;
+    self.fadeStartPercent = 0;
+    self.fadeEndPercent = .2;
     self.pauseDurationWhenMoveToEdge = 2.5;
     self.spacingBetweenHeadToTail = 40;
     self.automaticallyValidateVisibleFrame = YES;
-    self.fadeWidth = 20;
-    self.fadeStartColor = UIColorMakeWithRGBA(255, 255, 255, 1);
-    self.fadeEndColor = UIColorMakeWithRGBA(255, 255, 255, 0);
     self.shouldFadeAtEdge = YES;
     self.textStartAfterFade = NO;
     
@@ -115,8 +116,9 @@
     // 考虑渐变遮罩的偏移
     CGFloat textOffsetXByFade = 0;
     BOOL shouldTextStartAfterFade = self.shouldFadeAtEdge && self.textStartAfterFade && self.textWidth > CGRectGetWidth(self.bounds);
-    if (shouldTextStartAfterFade && textInitialX < self.fadeWidth) {
-        textOffsetXByFade = self.fadeWidth;
+    CGFloat fadeWidth = CGRectGetWidth(self.bounds) * .5 * MAX(0, self.fadeEndPercent - self.fadeStartPercent);
+    if (shouldTextStartAfterFade && textInitialX < fadeWidth) {
+        textOffsetXByFade = fadeWidth;
     }
     textInitialX += textOffsetXByFade;
     
@@ -130,13 +132,9 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    if (self.fadeLeftLayer) {
-        self.fadeLeftLayer.frame = CGRectMake(0, 0, self.fadeWidth, CGRectGetHeight(self.bounds));
-        [self.layer qmui_bringSublayerToFront:self.fadeLeftLayer];// 显示非英文字符时，UILabel 内部会额外多出一层 layer 盖住了这里的 fadeLayer，所以要手动提到最前面
-    }
-    if (self.fadeRightLayer) {
-        self.fadeRightLayer.frame = CGRectMake(CGRectGetWidth(self.bounds) - self.fadeWidth, 0, self.fadeWidth, CGRectGetHeight(self.bounds));
-        [self.layer qmui_bringSublayerToFront:self.fadeRightLayer];// 显示非英文字符时，UILabel 内部会额外多出一层 layer 盖住了这里的 fadeLayer，所以要手动提到最前面
+    
+    if (self.fadeLayer) {
+        self.fadeLayer.frame = self.bounds;
     }
 }
 
@@ -181,7 +179,8 @@
 }
 
 - (BOOL)shouldPlayDisplayLink {
-    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textWidth > CGRectGetWidth(self.bounds);
+    CGFloat fadeWidth = CGRectGetWidth(self.bounds) * .5 * MAX(0, self.fadeEndPercent - self.fadeStartPercent);
+    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && (self.textWidth + fadeWidth) > CGRectGetWidth(self.bounds);
     
     // 如果 label.frame 在 window 可视区域之外，也视为不可见，暂停掉 displayLink
     if (result && self.automaticallyValidateVisibleFrame) {
@@ -194,78 +193,22 @@
     return result;
 }
 
-- (void)setOffsetX:(CGFloat)offsetX {
-    _offsetX = offsetX;
-    [self updateFadeLayersHidden];
-}
-
 - (void)setShouldFadeAtEdge:(BOOL)shouldFadeAtEdge {
     _shouldFadeAtEdge = shouldFadeAtEdge;
     if (shouldFadeAtEdge) {
-        [self initFadeLayersIfNeeded];
-    }
-    [self updateFadeLayersHidden];
-}
-
-- (void)setFadeStartColor:(UIColor *)fadeStartColor {
-    _fadeStartColor = fadeStartColor;
-    [self updateFadeLayerColors];
-}
-
-- (void)setFadeEndColor:(UIColor *)fadeEndColor {
-    _fadeEndColor = fadeEndColor;
-    [self updateFadeLayerColors];
-}
-
-- (void)updateFadeLayerColors {
-    if (self.fadeLeftLayer) {
-        if (self.fadeStartColor && self.fadeEndColor) {
-            self.fadeLeftLayer.colors = @[(id)self.fadeStartColor.CGColor,
-                                          (id)self.fadeEndColor.CGColor];
-        } else {
-            self.fadeLeftLayer.colors = nil;
+        _fadeLayer = [CAGradientLayer layer];
+        self.fadeLayer.locations = @[@(self.fadeStartPercent), @(self.fadeEndPercent), @(1 - self.fadeEndPercent), @(1 - self.fadeStartPercent)];
+        self.fadeLayer.startPoint = CGPointMake(0, .5);
+        self.fadeLayer.endPoint = CGPointMake(1, .5);
+        self.fadeLayer.colors = @[(id)UIColorMakeWithRGBA(255, 255, 255, 0).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 1).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 1).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 0).CGColor];
+        self.layer.mask = self.fadeLayer;
+    } else {
+        if (self.layer.mask == self.fadeLayer) {
+            self.layer.mask = nil;
         }
     }
-    if (self.fadeRightLayer) {
-        if (self.fadeStartColor && self.fadeEndColor) {
-            self.fadeRightLayer.colors = @[(id)self.fadeStartColor.CGColor,
-                                           (id)self.fadeEndColor.CGColor];
-        } else {
-            self.fadeRightLayer.colors = nil;
-        }
-    }
-}
-
-- (void)updateFadeLayersHidden {
-    if (!self.fadeLeftLayer || !self.fadeRightLayer) {
-        return;
-    }
     
-    BOOL shouldShowFadeLeftLayer = self.shouldFadeAtEdge && (self.offsetX < 0 || (self.offsetX == 0 && !self.isFirstDisplay));
-    self.fadeLeftLayer.hidden = !shouldShowFadeLeftLayer;
-    
-    BOOL shouldShowFadeRightLayer = self.shouldFadeAtEdge && (self.textWidth > CGRectGetWidth(self.bounds) && self.offsetX != self.textWidth - CGRectGetWidth(self.bounds));
-    self.fadeRightLayer.hidden = !shouldShowFadeRightLayer;
-}
-
-- (void)initFadeLayersIfNeeded {
-    if (!self.fadeLeftLayer) {
-        self.fadeLeftLayer = [CAGradientLayer layer];// 请保留自带的 hidden 动画
-        self.fadeLeftLayer.startPoint = CGPointMake(0, .5);
-        self.fadeLeftLayer.endPoint = CGPointMake(1, .5);
-        [self.layer addSublayer:self.fadeLeftLayer];
-        [self setNeedsLayout];
-    }
-    
-    if (!self.fadeRightLayer) {
-        self.fadeRightLayer = [CAGradientLayer layer];// 请保留自带的 hidden 动画
-        self.fadeRightLayer.startPoint = CGPointMake(1, .5);
-        self.fadeRightLayer.endPoint = CGPointMake(0, .5);
-        [self.layer addSublayer:self.fadeRightLayer];
-        [self setNeedsLayout];
-    }
-    
-    [self updateFadeLayerColors];
+    [self setNeedsLayout];
 }
 
 #pragma mark - Superclass

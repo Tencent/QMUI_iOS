@@ -16,6 +16,13 @@
 @property(readonly) NSUInteger count;
 @property(nonatomic, copy, readonly) NSArray<KeyType> *allKeys;
 
+- (void)addObject:(ObjectType)object forKey:(KeyType)key;
+- (void)addObjects:(NSArray<ObjectType> *)objects forKeys:(NSArray<KeyType> *)keys;
+- (void)insertObject:(ObjectType)object forKey:(KeyType)key atIndex:(NSInteger)index;
+- (void)insertObjects:(NSArray<ObjectType> *)objects forKeys:(NSArray<KeyType> *)keys atIndex:(NSInteger)index;
+- (void)removeObject:(ObjectType)object forKey:(KeyType)key;
+- (void)removeObject:(ObjectType)object atIndex:(NSInteger)index;
 - (ObjectType)objectForKey:(KeyType)key;
+- (ObjectType)objectAtIndex:(NSInteger)index;
 
 @end

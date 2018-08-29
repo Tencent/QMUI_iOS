@@ -2,6 +2,9 @@
 
 #import <UIKit/UIKit.h>
 
+#ifndef QMUIKit_h
+#define QMUIKit_h
+
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
 #endif
@@ -242,8 +245,24 @@
 #import "QMUIPopupContainerView.h"
 #endif
 
+#if __has_include("QMUIPopupMenuBaseItem.h")
+#import "QMUIPopupMenuBaseItem.h"
+#endif
+
+#if __has_include("QMUIPopupMenuButtonItem.h")
+#import "QMUIPopupMenuButtonItem.h"
+#endif
+
+#if __has_include("QMUIPopupMenuItemProtocol.h")
+#import "QMUIPopupMenuItemProtocol.h"
+#endif
+
 #if __has_include("QMUIPopupMenuView.h")
 #import "QMUIPopupMenuView.h"
+#endif
+
+#if __has_include("QMUIRuntime.h")
+#import "QMUIRuntime.h"
 #endif
 
 #if __has_include("QMUISearchBar.h")
@@ -457,3 +476,5 @@
 #if __has_include("UIWindow+QMUI.h")
 #import "UIWindow+QMUI.h"
 #endif
+
+#endif /* QMUIKit_h */

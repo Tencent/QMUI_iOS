@@ -30,6 +30,16 @@
 @property(nonatomic, assign) IBInspectable float progress;
 
 /**
+ 外边框的大小，默认为 1。
+ */
+@property(nonatomic, assign) IBInspectable CGFloat borderWidth;
+
+/**
+ 外边框与内部扇形之间的间隙，默认为 0。
+ */
+@property(nonatomic, assign) IBInspectable CGFloat borderInset;
+
+/**
  修改当前的进度，会触发 UIControlEventValueChanged 事件
 
  @param progress 当前的进度，取值范围 [0.0-1.0]

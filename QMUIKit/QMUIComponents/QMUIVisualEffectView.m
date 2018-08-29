@@ -7,7 +7,7 @@
 //
 
 #import "QMUIVisualEffectView.h"
-#import "QMUICommonDefines.h"
+#import "QMUICore.h"
 #import "CALayer+QMUI.h"
 
 @interface QMUIVisualEffectView ()

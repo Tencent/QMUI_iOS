@@ -8,8 +8,48 @@
 
 #import "CALayer+QMUI.h"
 #import "QMUICore.h"
+#import "QMUILog.h"
 
 @implementation CALayer (QMUI)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        SEL selectors[] = {
+            @selector(setBounds:),
+            @selector(setPosition:)
+        };
+        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
+            SEL originalSelector = selectors[index];
+            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+        }
+    });
+}
+
+- (void)qmui_setBounds:(CGRect)bounds {
+    // 对非法的 bounds，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
+    if (CGRectIsNaN(bounds)) {
+        QMUILog(@"CALayer (QMUI)", @"%@ setBounds:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGRect(bounds), [NSThread callStackSymbols]);
+        NSAssert(NO, @"CALayer setBounds: 出现 NaN");
+        if (!IS_DEBUG) {
+            bounds = CGRectSafeValue(bounds);
+        }
+    }
+    [self qmui_setBounds:bounds];
+}
+
+- (void)qmui_setPosition:(CGPoint)position {
+    // 对非法的 position，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
+    if (isnan(position.x) || isnan(position.y)) {
+        QMUILog(@"CALayer (QMUI)", @"%@ setPosition:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGPoint(position), [NSThread callStackSymbols]);
+        NSAssert(NO, @"CALayer setPosition: 出现 NaN");
+        if (!IS_DEBUG) {
+            position = CGPointMake(CGFloatSafeValue(position.x), CGFloatSafeValue(position.y));
+        }
+    }
+    [self qmui_setPosition:position];
+}
 
 - (void)qmui_sendSublayerToBack:(CALayer *)sublayer {
     if (sublayer.superlayer == self) {
@@ -105,10 +145,12 @@
     
     return layer;
 }
+
 + (CAShapeLayer *)qmui_separatorDashLayerInHorizontal {
     CAShapeLayer *layer = [CAShapeLayer qmui_separatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:YES];
     return layer;
 }
+
 + (CAShapeLayer *)qmui_separatorDashLayerInVertical {
     CAShapeLayer *layer = [CAShapeLayer qmui_separatorDashLayerWithLineLength:2 lineSpacing:2 lineWidth:PixelOne lineColor:UIColorSeparatorDashed.CGColor isHorizontal:NO];
     return layer;
