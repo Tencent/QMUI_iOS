@@ -11,6 +11,7 @@
 #import "UIControl+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
 #import "UIView+QMUI.h"
+#import "QMUIButton/QMUIButton.h"
 
 @interface QMUIEmptyView ()
 
@@ -49,8 +50,8 @@
     _actionButtonFont = appearance.actionButtonFont;
     _textLabelTextColor = appearance.textLabelTextColor;
     _detailTextLabelTextColor = appearance.detailTextLabelTextColor;
-    _actionButtonTitleColor = appearance.actionButtonTitleColor;
-    
+    self.actionButtonTitleColor = appearance.actionButtonTitleColor;
+
     self.scrollView = [[UIScrollView alloc] init];
     if (@available(iOS 11, *)) {
         self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
@@ -82,7 +83,7 @@
     self.detailTextLabel.numberOfLines = 0;
     [self.contentView addSubview:self.detailTextLabel];
     
-    _actionButton = [[UIButton alloc] init];
+    _actionButton = [[QMUIButton alloc] init];
     self.actionButton.qmui_outsideEdge = UIEdgeInsetsMake(-20, -20, -20, -20);
     self.actionButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [self.contentView addSubview:self.actionButton];
