@@ -449,9 +449,7 @@
         if (highlighted) {
             self.alpha = ButtonHighlightedAlpha;
         } else {
-            [UIView animateWithDuration:0.25f animations:^{
-                self.alpha = 1;
-            }];
+            self.alpha = 1;
         }
     }
 }
@@ -461,9 +459,7 @@
     if (!enabled && self.adjustsButtonWhenDisabled) {
         self.alpha = ButtonDisabledAlpha;
     } else {
-        [UIView animateWithDuration:0.25f animations:^{
-            self.alpha = 1;
-        }];
+        self.alpha = 1;
     }
 }
 
