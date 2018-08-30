@@ -8,10 +8,8 @@
 
 #import <UIKit/UIKit.h>
 #import "QMUIPopupContainerView.h"
-#import "QMUIPopupMenuItemProtocol.h"
-#import "QMUIPopupMenuBaseItem.h"
 #import "QMUIPopupMenuButtonItem.h"
-
+typedef UIView<QMUIPopupMenuItemProtocol> QMUIPopupMenuBaseItem;
 /**
  *  用于弹出浮层里显示一行一行的菜单的控件。
  *  使用方式：

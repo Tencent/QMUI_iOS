@@ -5,9 +5,8 @@
 //  Created by MoLice on 2018/8/21.
 //  Copyright © 2018年 QMUI Team. All rights reserved.
 //
-
-#import "QMUIPopupMenuBaseItem.h"
-
+#import <UIKit/UIKit.h>
+#import "QMUIPopupMenuItemProtocol.h"
 @class QMUIButton;
 
 /**
@@ -15,7 +14,7 @@
  *  支持显示图片和标题，以及点击事件的回调。
  *  可在 QMUIPopupMenuView 里统一修改菜单项的样式，如果某个菜单项需要特殊调整，可通过 QMUIPopupMenuButtonItem.button 拿到 view 并进行调整。
  */
-@interface QMUIPopupMenuButtonItem : QMUIPopupMenuBaseItem
+@interface QMUIPopupMenuButtonItem : UIView<QMUIPopupMenuItemProtocol>
 
 /// item 里的图片，默认在左边，也可通过 item.button.imagePosition 修改图片的位置
 @property(nonatomic, strong, nullable) UIImage *image;

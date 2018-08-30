@@ -48,7 +48,6 @@
 }
 
 - (void)setTitle:(NSString *)title {
-    [super setTitle:title];
     [self.button setTitle:title forState:UIControlStateNormal];
 }
 
