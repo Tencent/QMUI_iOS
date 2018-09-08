@@ -78,7 +78,7 @@
  *
  *  @return alpha通道为1.0，其他rgb通道与原UIColor对象一致的新UIColor对象
  */
-- (UIColor *)qmui_colorWithoutAlpha;
+- (nullable UIColor *)qmui_colorWithoutAlpha;
 
 /**
  *  计算当前color叠加了alpha之后放在指定颜色的背景上的色值

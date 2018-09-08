@@ -279,12 +279,12 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 @property(nonatomic, assign, readonly) BOOL qmui_isCustomizedBackBarButtonItem;
 
 /// 获取内部的 QMUINavigationButton（如果有的话）
-@property(nonatomic, strong, readonly) QMUINavigationButton *qmui_navigationButton;
+@property(nonatomic, nullable, strong, readonly) QMUINavigationButton *qmui_navigationButton;
 @end
 
 @interface UINavigationItem (QMUINavigationButton)
 
-@property(nonatomic, weak, readonly) UINavigationBar *qmui_navigationBar;
+@property(nonatomic, nullable, weak, readonly) UINavigationBar *qmui_navigationBar;
 @property(nonatomic, copy) NSArray<UIBarButtonItem *> *tempLeftBarButtonItems;
 @property(nonatomic, copy) NSArray<UIBarButtonItem *> *tempRightBarButtonItems;
 @end
@@ -296,7 +296,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 @interface UINavigationBar (QMUINavigationButton)
 
 /// 获取 navigationBar 内部的 contentView
-@property(nonatomic, weak, readonly) UIView *qmui_contentView;
+@property(nonatomic, nullable, weak, readonly) UIView *qmui_contentView;
 
 /// 判断当前的 UINavigationBar 的返回按钮是不是自定义的
 @property(nonatomic, assign) BOOL qmui_customizingBackBarButtonItem;
@@ -315,7 +315,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     return self.qmui_isCustomizedBarButtonItem && ((QMUINavigationButton *)self.customView).type == QMUINavigationButtonTypeBack;
 }
 
-- (QMUINavigationButton *)qmui_navigationButton {
+- (nullable QMUINavigationButton *)qmui_navigationButton {
     if ([self.customView isKindOfClass:[QMUINavigationButton class]]) {
         return (QMUINavigationButton *)self.customView;
     }
@@ -486,7 +486,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     return [self qmui_rightBarButtonItems];
 }
 
-- (UINavigationBar *)qmui_navigationBar {
+- (nullable UINavigationBar *)qmui_navigationBar {
     // UINavigationItem 内部有个方法可以获取 navigationBar
     if ([self respondsToSelector:@selector(navigationBar)]) {
         return [self performSelector:@selector(navigationBar)];
@@ -601,7 +601,7 @@ static char kAssociatedObjectKey_tempRightBarButtonItems;
     });
 }
 
-- (UIView *)qmui_contentView {
+- (nullable UIView *)qmui_contentView {
     for (UIView *subview in self.subviews) {
         if ([NSStringFromClass(subview.class) containsString:@"ContentView"]) {
             return subview;

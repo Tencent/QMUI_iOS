@@ -63,7 +63,7 @@
 
 @implementation QMUIStaticTableViewCellDataSource (Manual)
 
-- (QMUIStaticTableViewCellData *)cellDataAtIndexPath:(NSIndexPath *)indexPath {
+- (nullable QMUIStaticTableViewCellData *)cellDataAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section >= self.cellDataSections.count) {
         QMUILog(NSStringFromClass(self.class), @"cellDataWithIndexPath:%@, data not exist in section!", indexPath);
         return nil;
@@ -85,7 +85,7 @@
     return [NSString stringWithFormat:@"cell_%@", @(data.identifier)];
 }
 
-- (QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+- (nullable QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     QMUIStaticTableViewCellData *data = [self cellDataAtIndexPath:indexPath];
     if (!data) {

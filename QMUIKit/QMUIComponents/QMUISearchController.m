@@ -28,7 +28,7 @@ BeginIgnoreDeprecatedWarning
 
 @interface QMUISearchResultsTableViewController : QMUICommonTableViewController
 
-@property(nonatomic,weak) id<QMUISearchResultsTableViewControllerDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUISearchResultsTableViewControllerDelegate> delegate;
 @end
 
 @implementation QMUISearchResultsTableViewController

@@ -11,8 +11,8 @@
 
 @interface QMUITableView : UITableView
 
-@property(nonatomic, weak) id<QMUITableViewDelegate> delegate;
-@property(nonatomic, weak) id<QMUITableViewDataSource> dataSource;
+@property(nonatomic, nullable, weak) id<QMUITableViewDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUITableViewDataSource> dataSource;
 
 @end
 

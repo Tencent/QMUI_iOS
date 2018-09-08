@@ -50,7 +50,7 @@
  */
 @interface QMUIZoomImageView : UIView <UIScrollViewDelegate>
 
-@property(nonatomic, weak) id<QMUIZoomImageViewDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUIZoomImageViewDelegate> delegate;
 
 @property(nonatomic, strong, readonly) UIScrollView *scrollView;
 
@@ -113,7 +113,7 @@
 - (void)endPlayingVideo;
 
 /// 获取当前正在显示的图片/视频的容器
-@property(nonatomic, weak, readonly) __kindof UIView *contentView;
+@property(nonatomic, nullable, weak, readonly) __kindof UIView *contentView;
 
 /**
  *  获取当前正在显示的图片/视频在整个 QMUIZoomImageView 坐标系里的 rect（会按照当前的缩放状态来计算）

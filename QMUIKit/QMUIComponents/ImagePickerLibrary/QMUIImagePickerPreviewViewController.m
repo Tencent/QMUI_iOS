@@ -398,7 +398,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     }
 }
 
-+ (UIImage *)animatedGIFWithData:(NSData *)data {
++ (nullable UIImage *)animatedGIFWithData:(nullable NSData *)data {
     // http://www.jianshu.com/p/767af9c690a3
     // https://github.com/rs/SDWebImage
     if (!data) {

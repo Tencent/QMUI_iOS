@@ -883,7 +883,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 
-- (UIView *)contentView {
+- (nullable UIView *)contentView {
     if (_imageView) {
         return _imageView;
     }

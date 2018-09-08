@@ -12,7 +12,7 @@
 @interface NSString (QMUI)
 
 /// 将字符串按一个一个字符拆成数组，类似 JavaScript 里的 split("")，如果多个空格，则每个空格也会当成一个 item
-- (NSArray<NSString *> *)qmui_toArray;
+- (nullable NSArray<NSString *> *)qmui_toArray;
 
 /// 将字符串按一个一个字符拆成数组，类似 JavaScript 里的 split("")，但会自动过滤掉空白字符
 - (NSArray<NSString *> *)qmui_toTrimmedArray;
@@ -33,7 +33,7 @@
 + (NSString *)qmui_hexStringWithInteger:(NSInteger)integer;
 
 /// 把参数列表拼接成一个字符串并返回，相当于用另一种语法来代替 [NSString stringWithFormat:]
-+ (NSString *)qmui_stringByConcat:(id)firstArgv, ...;
++ (nullable NSString *)qmui_stringByConcat:(id)firstArgv, ...;
 
 /**
  * 将秒数转换为同时包含分钟和秒数的格式的字符串，例如 100->"01:40"

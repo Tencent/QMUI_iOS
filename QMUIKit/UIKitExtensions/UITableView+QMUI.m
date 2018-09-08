@@ -71,7 +71,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     self.sectionIndexBackgroundColor = TableSectionIndexBackgroundColor;
 }
 
-- (NSIndexPath *)qmui_indexPathForRowAtView:(UIView *)view {
+- (nullable NSIndexPath *)qmui_indexPathForRowAtView:(nullable UIView *)view {
     if (!view || !view.superview) {
         return nil;
     }

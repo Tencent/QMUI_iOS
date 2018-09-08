@@ -36,7 +36,7 @@
  */
 @interface QMUITextField : UITextField
 
-@property(nonatomic, weak) id<QMUITextFieldDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUITextFieldDelegate> delegate;
 
 /**
  *  修改 placeholder 的颜色，默认是 UIColorPlaceholder。

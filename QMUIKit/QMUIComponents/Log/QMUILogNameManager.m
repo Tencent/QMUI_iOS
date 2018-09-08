@@ -34,7 +34,7 @@ NSString *const QMUILoggerAllNamesKeyInUserDefaults = @"QMUILoggerAllNamesKeyInU
     return self;
 }
 
-- (NSDictionary<NSString *,NSNumber *> *)allNames {
+- (nullable NSDictionary<NSString *,NSNumber *> *)allNames {
     if (self.mutableAllNames.count) {
         return [self.mutableAllNames copy];
     }

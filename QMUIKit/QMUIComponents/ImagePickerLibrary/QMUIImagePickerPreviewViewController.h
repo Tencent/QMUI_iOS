@@ -34,7 +34,7 @@
 
 @interface QMUIImagePickerPreviewViewController : QMUIImagePreviewViewController <QMUIImagePreviewViewDelegate>
 
-@property(nonatomic, weak) id<QMUIImagePickerPreviewViewControllerDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUIImagePickerPreviewViewControllerDelegate> delegate;
 
 @property(nonatomic, strong) UIColor *toolBarBackgroundColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, strong) UIColor *toolBarTintColor UI_APPEARANCE_SELECTOR;

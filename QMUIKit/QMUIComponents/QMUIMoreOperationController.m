@@ -22,7 +22,7 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 }
 
 @property(nonatomic, weak) QMUIMoreOperationController *moreOperationController;
-@property(nonatomic, copy) void (^handler)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView);
+@property(nonatomic, copy, nullable) void (^handler)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView);
 
 // 被添加到某个 QMUIMoreOperationController 时要调用，用于更新 itemView 的样式，以及 moreOperationController 属性的指针
 // @param moreOperationController 如果为空，则会自动使用 [QMUIMoreOperationController appearance]
@@ -393,7 +393,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     [self setViewNeedsLayoutIfLoaded];
 }
 
-- (QMUIMoreOperationItemView *)itemViewWithTag:(NSInteger)tag {
+- (nullable QMUIMoreOperationItemView *)itemViewWithTag:(NSInteger)tag {
     __block QMUIMoreOperationItemView *result = nil;
     [self.mutableItems qmui_enumerateNestedArrayWithBlock:^(QMUIMoreOperationItemView *itemView, BOOL *stop) {
         if (itemView.tag == tag) {
@@ -404,7 +404,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     return result;
 }
 
-- (NSIndexPath *)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView {
+- (nullable NSIndexPath *)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView {
     for (NSInteger section = 0; section < self.mutableItems.count; section++) {
         NSInteger index = [self.mutableItems[section] indexOfObject:itemView];
         if (index != NSNotFound) {
@@ -661,7 +661,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 @dynamic tag;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image selectedImage:(UIImage *)selectedImage title:(NSString *)title selectedTitle:(NSString *)selectedTitle handler:(void (^)(QMUIMoreOperationController *, QMUIMoreOperationItemView *))handler {
++ (instancetype)itemViewWithImage:(nullable UIImage *)image selectedImage:(nullable UIImage *)selectedImage title:(nullable NSString *)title selectedTitle:(nullable NSString *)selectedTitle handler:(nullable QMUIMoreOperationItemViewHandler)handler {
     QMUIMoreOperationItemView *itemView = [[QMUIMoreOperationItemView alloc] init];
     [itemView setImage:image forState:UIControlStateNormal];
     [itemView setImage:selectedImage forState:UIControlStateSelected];
@@ -674,25 +674,25 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     return itemView;
 }
 
-+ (instancetype)itemViewWithImage:(UIImage *)image title:(NSString *)title handler:(void (^)(QMUIMoreOperationController *, QMUIMoreOperationItemView *))handler {
++ (instancetype)itemViewWithImage:(nullable UIImage *)image title:(nullable NSString *)title handler:(nullable QMUIMoreOperationItemViewHandler)handler {
     return [self itemViewWithImage:image selectedImage:nil title:title selectedTitle:nil handler:handler];
 }
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                            title:(NSString *)title
++ (instancetype)itemViewWithImage:(nullable UIImage *)image
+                            title:(nullable NSString *)title
                               tag:(NSInteger)tag
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler {
+                          handler:(nullable QMUIMoreOperationItemViewHandler)handler {
     QMUIMoreOperationItemView *itemView = [self itemViewWithImage:image title:title handler:handler];
     itemView.tag = tag;
     return itemView;
 }
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                    selectedImage:(UIImage *)selectedImage
-                            title:(NSString *)title
-                    selectedTitle:(NSString *)selectedTitle
++ (instancetype)itemViewWithImage:(nullable UIImage *)image
+                    selectedImage:(nullable UIImage *)selectedImage
+                            title:(nullable NSString *)title
+                    selectedTitle:(nullable NSString *)selectedTitle
                               tag:(NSInteger)tag
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler {
+                          handler:(nullable QMUIMoreOperationItemViewHandler)handler {
     QMUIMoreOperationItemView *itemView = [self itemViewWithImage:image selectedImage:selectedImage title:title selectedTitle:selectedTitle handler:handler];
     itemView.tag = tag;
     return itemView;
@@ -740,7 +740,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     return MAX(-1, _tag - kQMUIMoreOperationItemViewTagOffset);// 为什么这里用-1而不是0：如果一个 itemView 通过带 tag: 参数初始化，那么 itemView.tag 最小值为 0，而如果一个 itemView 不通过带 tag: 的参数初始化，那么 itemView.tag 固定为 0，可见 tag 为 0 代表的意义不唯一，为了消除歧义，这里用 -1 代表那种不使用 tag: 参数初始化的 itemView
 }
 
-- (NSIndexPath *)indexPath {
+- (nullable NSIndexPath *)indexPath {
     if (self.moreOperationController) {
         return [self.moreOperationController indexPathWithItemView:self];
     }

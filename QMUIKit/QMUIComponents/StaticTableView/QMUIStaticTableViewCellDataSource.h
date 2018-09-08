@@ -41,7 +41,7 @@
  *  从 dataSource 里获取处于 indexPath 位置的 QMUIStaticTableViewCellData 对象
  *  @param indexPath cell 所处的位置
  */
-- (QMUIStaticTableViewCellData *)cellDataAtIndexPath:(NSIndexPath *)indexPath;
+- (nullable QMUIStaticTableViewCellData *)cellDataAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
  *  根据 dataSource 计算出指定的 indexPath 的 cell 所对应的 reuseIdentifier（static tableView 里一般每个 cell 的 reuseIdentifier 都是不一样的，避免复用）
@@ -53,7 +53,7 @@
  *  用于结合 indexPath 和 dataSource 生成 cell 的方法，其中 cell 使用的是 QMUITableViewCell
  *  @prama indexPath 当前 cell 的 indexPath
  */
-- (__kindof QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath;
+- (nullable __kindof QMUITableViewCell *)cellForRowAtIndexPath:(NSIndexPath *)indexPath;
 
 /**
  *  从 dataSource 里获取指定位置的 cell 的高度

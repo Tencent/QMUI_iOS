@@ -243,7 +243,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     return NSNotFound;
 }
 
-- (QMUIZoomImageView *)zoomImageViewAtIndex:(NSUInteger)index {
+- (nullable QMUIZoomImageView *)zoomImageViewAtIndex:(NSUInteger)index {
     QMUIImagePreviewCell *cell = (QMUIImagePreviewCell *)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:index inSection:0]];
     return cell.zoomImageView;
 }

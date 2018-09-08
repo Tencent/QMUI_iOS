@@ -13,7 +13,7 @@
 
 @implementation NSString (QMUI)
 
-- (NSArray<NSString *> *)qmui_toArray {
+- (nullable NSArray<NSString *> *)qmui_toArray {
     if (!self.length) {
         return nil;
     }
@@ -102,7 +102,7 @@
     return hexString;
 }
 
-+ (NSString *)qmui_stringByConcat:(id)firstArgv, ... {
++ (nullable NSString *)qmui_stringByConcat:(id)firstArgv, ... {
     if (firstArgv) {
         NSMutableString *result = [[NSMutableString alloc] initWithFormat:@"%@", firstArgv];
         

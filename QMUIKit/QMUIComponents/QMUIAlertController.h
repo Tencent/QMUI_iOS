@@ -196,13 +196,13 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 
 
 /// 默认初始化方法
-- (nonnull instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
+- (instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
 
 /// 通过类方法初始化实例
-+ (nonnull instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
++ (instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
 
 /// @see `QMUIAlertControllerDelegate`
-@property(nonatomic,weak) id<QMUIAlertControllerDelegate>delegate;
+@property(nonatomic, nullable, weak) id<QMUIAlertControllerDelegate>delegate;
 
 /// 增加一个按钮
 - (void)addAction:(nonnull QMUIAlertAction *)action;

@@ -145,7 +145,7 @@
     return 0;
 }
 
-- (UIColor *)qmui_colorWithoutAlpha {
+- (nullable UIColor *)qmui_colorWithoutAlpha {
     CGFloat r;
     CGFloat g;
     CGFloat b;

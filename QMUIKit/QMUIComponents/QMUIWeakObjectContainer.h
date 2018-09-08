@@ -18,6 +18,6 @@
 - (instancetype)initWithObject:(id)object;
 
 /// 获取原始对象 object，如果 object 已被释放则该属性返回 nil
-@property (nonatomic, readonly, weak) id object;
+@property (nonatomic, readonly, nullable, weak) id object;
 
 @end

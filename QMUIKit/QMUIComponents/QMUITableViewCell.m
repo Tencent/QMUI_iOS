@@ -268,7 +268,7 @@
 
 #pragma mark - Touch Event
 
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     UIView *view = [super hitTest:point withEvent:event];
     if (!view) {
         return nil;

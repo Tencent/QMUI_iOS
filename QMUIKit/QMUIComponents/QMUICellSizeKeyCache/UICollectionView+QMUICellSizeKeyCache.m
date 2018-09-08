@@ -113,7 +113,7 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
     return (NSMutableDictionary<NSNumber *, QMUICellSizeKeyCache *> *)objc_getAssociatedObject(self, &kAssociatedObjectKey_qmuiAllKeyCaches);
 }
 
-- (QMUICellSizeKeyCache *)qmui_currentCellSizeKeyCache {
+- (nullable QMUICellSizeKeyCache *)qmui_currentCellSizeKeyCache {
     CGFloat width = [self widthForCacheKey];
     if (width <= 0) {
         return nil;

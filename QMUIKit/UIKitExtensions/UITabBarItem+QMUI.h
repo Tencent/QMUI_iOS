@@ -23,6 +23,6 @@
  */
 - (UIImageView *)qmui_imageView;
 
-+ (UIImageView *)qmui_imageViewInTabBarButton:(UIView *)tabBarButton;
++ (nullable UIImageView *)qmui_imageViewInTabBarButton:(UIView *)tabBarButton;
 
 @end

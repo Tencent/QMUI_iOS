@@ -28,7 +28,7 @@
  *
  *  @warning 注意返回的indexPath有可能为nil，要做保护。
  */
-- (NSIndexPath *)qmui_indexPathForItemAtView:(id)sender;
+- (nullable NSIndexPath *)qmui_indexPathForItemAtView:(id)sender;
 
 /**
  *  判断当前 indexPath 的 item 是否为可视的 item
@@ -47,6 +47,6 @@
  *
  *  @warning 若可视区域为CGRectZero，则返回nil
  */
-- (NSIndexPath *)qmui_indexPathForFirstVisibleCell;
+- (nullable NSIndexPath *)qmui_indexPathForFirstVisibleCell;
 
 @end

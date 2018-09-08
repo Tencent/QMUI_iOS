@@ -53,7 +53,7 @@
 /**
  *  获取当前所有的 target UIResponder，若不存在则返回 nil
  */
-- (NSArray<UIResponder *> *)allTargetResponders;
+- (nullable NSArray<UIResponder *> *)allTargetResponders;
 
 /**
  *  移除 targetResponder 跟 keyboardManager 的关系，如果成功会返回 YES
@@ -87,12 +87,12 @@
 /**
  *  键盘面板的私有view，可能为nil
  */
-+ (UIView *)keyboardView;
++ (nullable UIView *)keyboardView;
 
 /**
  *  键盘面板所在的私有window，可能为nil
  */
-+ (UIWindow *)keyboardWindow;
++ (nullable UIWindow *)keyboardWindow;
 
 /**
  *  是否有键盘在显示

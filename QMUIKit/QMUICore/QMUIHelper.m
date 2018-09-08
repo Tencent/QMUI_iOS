@@ -38,7 +38,7 @@ NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
     return [QMUIHelper imageInBundle:bundle withName:name];
 }
 
-+ (UIImage *)imageInBundle:(NSBundle *)bundle withName:(NSString *)name {
++ (nullable UIImage *)imageInBundle:(NSBundle *)bundle withName:(NSString *)name {
     if (bundle && name) {
         if ([UIImage respondsToSelector:@selector(imageNamed:inBundle:compatibleWithTraitCollection:)]) {
             return [UIImage imageNamed:name inBundle:bundle compatibleWithTraitCollection:nil];
@@ -50,7 +50,7 @@ NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
     return nil;
 }
 
-+ (NSDictionary *)parseBundleName:(NSString *)bundleName {
++ (nullable NSDictionary *)parseBundleName:(NSString *)bundleName {
     NSArray *bundleData = [bundleName componentsSeparatedByString:@"."];
     if (bundleData.count == 2) {
         return @{@"name":bundleData[0], @"type":bundleData[1]};

@@ -55,7 +55,7 @@
  */
 - (instancetype)initWithContentsViewController:(UIViewController *)viewController;
 
-@property(nonatomic, weak) id<QMUISearchControllerDelegate> searchResultsDelegate;
+@property(nonatomic, nullable, weak) id<QMUISearchControllerDelegate> searchResultsDelegate;
 
 /// 搜索框
 @property(nonatomic, strong, readonly) UISearchBar *searchBar;

@@ -60,7 +60,7 @@ static NSUInteger alertControllerCount = 0;
 @property(nonatomic, copy, readwrite) NSString *title;
 @property(nonatomic, assign, readwrite) QMUIAlertActionStyle style;
 @property(nonatomic, copy) void (^handler)(QMUIAlertController *aAlertController, QMUIAlertAction *action);
-@property(nonatomic, weak) id<QMUIAlertActionDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUIAlertActionDelegate> delegate;
 
 @end
 
@@ -501,15 +501,12 @@ static QMUIAlertController *alertControllerAppearance;
     }
 }
 
-+ (nonnull instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
++ (instancetype)alertControllerWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     QMUIAlertController *alertController = [[self alloc] initWithTitle:title message:message preferredStyle:preferredStyle];
-    if (alertController) {
-        return alertController;
-    }
-    return nil;
+    return alertController;
 }
 
-- (nonnull instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
+- (instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle {
     self = [self init];
     if (self) {
         

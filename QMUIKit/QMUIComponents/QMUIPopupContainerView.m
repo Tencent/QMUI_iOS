@@ -619,7 +619,7 @@
     return self;
 }
 
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     UIView *result = [super hitTest:point withEvent:event];
     if (result == self) {
         if (!self.popupContainerView.automaticallyHidesWhenUserTap) {
@@ -642,7 +642,7 @@
 @implementation QMUIPopupContainerViewWindow
 
 // 避免 UIWindow 拦截掉事件，保证让事件继续往背后传递
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+- (nullable UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     UIView *result = [super hitTest:point withEvent:event];
     if (result == self) {
         return nil;

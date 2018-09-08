@@ -59,7 +59,7 @@ static char kAssociatedObjectKey_willAppearByInteractivePopGestureRecognizer;
 
 @interface UIViewController (QMUINavigationControllerTransition)
 
-@property(nonatomic, weak) id<QMUI_viewWillAppearNotifyDelegate> qmui_viewWillAppearNotifyDelegate;
+@property(nonatomic, nullable, weak) id<QMUI_viewWillAppearNotifyDelegate> qmui_viewWillAppearNotifyDelegate;
 
 @end
 
@@ -99,7 +99,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     objc_setAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate, [[QMUIWeakObjectContainer alloc] initWithObject:qmui_viewWillAppearNotifyDelegate], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (id<QMUI_viewWillAppearNotifyDelegate>)qmui_viewWillAppearNotifyDelegate {
+- (nullable id<QMUI_viewWillAppearNotifyDelegate>)qmui_viewWillAppearNotifyDelegate {
     id weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate);
     if ([weakContainer isKindOfClass:[QMUIWeakObjectContainer class]]) {
         id notifyDelegate = [weakContainer object];
@@ -257,7 +257,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     return poppedViewControllers;
 }
 
-- (NSArray<UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated {
+- (nullable NSArray<UIViewController *> *)popToRootViewControllerAnimated:(BOOL)animated {
     // 在配合 tabBarItem 使用的情况下，快速重复点击相同 item 可能会重复调用 popToRootViewControllerAnimated:，而此时其实已经处于 rootViewController 了，就没必要继续走后续的流程，否则一些变量会得不到重置。
     if (self.topViewController == self.qmui_rootViewController) {
         return nil;

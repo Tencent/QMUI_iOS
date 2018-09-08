@@ -76,7 +76,7 @@ extern const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets;
  */
 @interface QMUIAlbumViewController : QMUICommonTableViewController
 
-@property(nonatomic, weak) id<QMUIAlbumViewControllerDelegate> albumViewControllerDelegate;
+@property(nonatomic, nullable, weak) id<QMUIAlbumViewControllerDelegate> albumViewControllerDelegate;
 
 /// 相册列表 cell 的高度，同时也是相册预览图的宽高，默认57
 @property(nonatomic, assign) CGFloat albumTableViewCellHeight UI_APPEARANCE_SELECTOR;

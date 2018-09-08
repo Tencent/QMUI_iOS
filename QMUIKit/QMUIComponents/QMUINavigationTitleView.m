@@ -137,7 +137,7 @@
 }
 
 // 找到 titleView 所在的 navigationBar（iOS 11 及以后，titleView.superview.superview == navigationBar，iOS 10 及以前，titleView.superview == navigationBar）
-- (UINavigationBar *)navigationBarSuperviewForSubview:(UIView *)subview {
+- (nullable UINavigationBar *)navigationBarSuperviewForSubview:(UIView *)subview {
     if (!subview.superview) {
         return nil;
     }

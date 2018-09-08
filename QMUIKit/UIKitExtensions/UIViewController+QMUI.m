@@ -165,7 +165,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     return YES;
 }
 
-- (UIViewController *)qmui_previousViewController {
+- (nullable UIViewController *)qmui_previousViewController {
     if (self.navigationController.viewControllers && self.navigationController.viewControllers.count > 1 && self.navigationController.topViewController == self) {
         NSUInteger count = self.navigationController.viewControllers.count;
         return (UIViewController *)[self.navigationController.viewControllers objectAtIndex:count - 2];
@@ -173,7 +173,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     return nil;
 }
 
-- (NSString *)qmui_previousViewControllerTitle {
+- (nullable NSString *)qmui_previousViewControllerTitle {
     UIViewController *previousViewController = [self qmui_previousViewController];
     if (previousViewController) {
         return previousViewController.title;
@@ -193,7 +193,7 @@ void qmui_loadViewIfNeeded (id current_self, SEL current_cmd) {
     return result;
 }
 
-- (UIViewController *)qmui_visibleViewControllerIfExist {
+- (nullable UIViewController *)qmui_visibleViewControllerIfExist {
     
     if (self.presentedViewController) {
         return [self.presentedViewController qmui_visibleViewControllerIfExist];

@@ -35,7 +35,7 @@
 }
 
 /// 递归找到view在哪个cell里，不存在则返回nil
-- (UICollectionViewCell *)parentCellForView:(UIView *)view {
+- (nullable UICollectionViewCell *)parentCellForView:(UIView *)view {
     if (!view.superview) {
         return nil;
     }
@@ -47,7 +47,7 @@
     return [self parentCellForView:view.superview];
 }
 
-- (NSIndexPath *)qmui_indexPathForItemAtView:(id)sender {
+- (nullable NSIndexPath *)qmui_indexPathForItemAtView:(id)sender {
     if (sender && [sender isKindOfClass:[UIView class]]) {
         UIView *view = (UIView *)sender;
         UICollectionViewCell *parentCell = [self parentCellForView:view];
@@ -77,7 +77,7 @@
     return visibleItems;
 }
 
-- (NSIndexPath *)qmui_indexPathForFirstVisibleCell {
+- (nullable NSIndexPath *)qmui_indexPathForFirstVisibleCell {
     NSArray *visibleIndexPaths = [self qmui_indexPathsForVisibleItems];
     if (!visibleIndexPaths || visibleIndexPaths.count <= 0) {
         return nil;

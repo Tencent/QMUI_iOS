@@ -61,7 +61,7 @@ typedef NS_ENUM (NSUInteger, QMUIImagePreviewMediaType) {
  */
 @interface QMUIImagePreviewView : UIView<UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 
-@property(nonatomic, weak) id<QMUIImagePreviewViewDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUIImagePreviewViewDelegate> delegate;
 @property(nonatomic, strong, readonly) UICollectionView *collectionView;
 @property(nonatomic, strong, readonly) QMUICollectionViewPagingLayout *collectionViewLayout;
 
@@ -86,5 +86,5 @@ typedef NS_ENUM (NSUInteger, QMUIImagePreviewMediaType) {
  *  获取某个 index 对应的 zoomImageView
  *  @return 指定的 index 所在的 zoomImageView，若该 index 对应的图片当前不可见（不处于可视区域），则返回 nil
  */
-- (QMUIZoomImageView *)zoomImageViewAtIndex:(NSUInteger)index;
+- (nullable QMUIZoomImageView *)zoomImageViewAtIndex:(NSUInteger)index;
 @end

@@ -56,7 +56,7 @@
     }
 }
 
-- (UIView *)thumbViewIfExist {
+- (nullable UIView *)thumbViewIfExist {
     // thumbView 并非在一开始就存在，而是在某个时机才生成的，所以可能返回 nil
     UIView *thumbView = [self valueForKey:@"thumbView"];
     return thumbView;

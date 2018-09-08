@@ -42,7 +42,7 @@
 
 @interface QMUILogger : NSObject
 
-@property(nullable, nonatomic, weak) id<QMUILoggerDelegate> delegate;
+@property(nullable, nonatomic, nullable, weak) id<QMUILoggerDelegate> delegate;
 @property(nonnull, nonatomic, strong) QMUILogNameManager *logNameManager;
 
 + (nonnull instancetype)sharedInstance;

@@ -16,7 +16,7 @@
     return [self.class qmui_imageViewInTabBarButton:self.qmui_view];
 }
 
-+ (UIImageView *)qmui_imageViewInTabBarButton:(UIView *)tabBarButton {
++ (nullable UIImageView *)qmui_imageViewInTabBarButton:(UIView *)tabBarButton {
     
     if (!tabBarButton) {
         return nil;

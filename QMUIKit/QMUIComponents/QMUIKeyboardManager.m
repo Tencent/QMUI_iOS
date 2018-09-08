@@ -30,13 +30,13 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
 
 @interface UIView (KeyboardManager)
 
-- (id)qmui_findFirstResponder;
+- (nullable id)qmui_findFirstResponder;
 
 @end
 
 @implementation UIView (KeyboardManager)
 
-- (id)qmui_findFirstResponder {
+- (nullable id)qmui_findFirstResponder {
     if (self.isFirstResponder) {
         return self;
     }
@@ -261,7 +261,7 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
     return YES;
 }
 
-- (NSArray<UIResponder *> *)allTargetResponders {
+- (nullable NSArray<UIResponder *> *)allTargetResponders {
     NSMutableArray *targetResponders = nil;
     for (int i = 0; i < self.targetResponderValues.count; i++) {
         if (!targetResponders) {
@@ -283,14 +283,14 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
     return NO;
 }
 
-- (NSValue *)packageTargetResponder:(UIResponder *)targetResponder {
+- (nullable NSValue *)packageTargetResponder:(UIResponder *)targetResponder {
     if (![targetResponder isKindOfClass:[UIResponder class]]) {
         return nil;
     }
     return [NSValue valueWithNonretainedObject:targetResponder];
 }
 
-- (UIResponder *)unPackageTargetResponder:(NSValue *)value {
+- (nullable UIResponder *)unPackageTargetResponder:(nullable NSValue *)value {
     if (!value) {
         return nil;
     }
@@ -535,7 +535,7 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
     }
 }
 
-+ (UIWindow *)keyboardWindow {
++ (nullable UIWindow *)keyboardWindow {
     
     for (UIWindow *window in [UIApplication sharedApplication].windows) {
         if ([self getKeyboardViewFromWindow:window]) {
@@ -617,7 +617,7 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
     return distance;
 }
 
-+ (UIView *)keyboardView {
++ (nullable UIView *)keyboardView {
     for (UIWindow *window in [UIApplication sharedApplication].windows) {
         UIView *view = [self getKeyboardViewFromWindow:window];
         if (view) {
@@ -627,7 +627,7 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
     return nil;
 }
 
-+ (UIView *)getKeyboardViewFromWindow:(UIWindow *)window {
++ (nullable UIView *)getKeyboardViewFromWindow:(UIWindow *)window {
     
     if (!window) return nil;
     

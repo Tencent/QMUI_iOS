@@ -19,19 +19,19 @@
 @optional
 
 /// 即将显示操作面板
-- (void)willPresentMoreOperationController:(QMUIMoreOperationController *)moreOperationController;
+- (void)willPresentMoreOperationController:(nonnull QMUIMoreOperationController *)moreOperationController;
 
 /// 已经显示操作面板
-- (void)didPresentMoreOperationController:(QMUIMoreOperationController *)moreOperationController;
+- (void)didPresentMoreOperationController:(nonnull QMUIMoreOperationController *)moreOperationController;
 
 /// 即将降下操作面板，cancelled参数是用来区分是否触发了maskView或者cancelButton按钮降下面板还是手动调用hide方法来降下面板。
-- (void)willDismissMoreOperationController:(QMUIMoreOperationController *)moreOperationController cancelled:(BOOL)cancelled;
+- (void)willDismissMoreOperationController:(nonnull QMUIMoreOperationController *)moreOperationController cancelled:(BOOL)cancelled;
 
 /// 已经降下操作面板，cancelled参数是用来区分是否触发了maskView或者cancelButton按钮降下面板还是手动调用hide方法来降下面板。
-- (void)didDismissMoreOperationController:(QMUIMoreOperationController *)moreOperationController cancelled:(BOOL)cancelled;
+- (void)didDismissMoreOperationController:(nonnull QMUIMoreOperationController *)moreOperationController cancelled:(BOOL)cancelled;
 
 /// itemView 点击事件，可以与 itemView.handler 共存，可通过 itemView.tag 或者 itemView.indexPath 来区分不同的 itemView
-- (void)moreOperationController:(QMUIMoreOperationController *)moreOperationController didSelectItemView:(QMUIMoreOperationItemView *)itemView;
+- (void)moreOperationController:(nonnull QMUIMoreOperationController *)moreOperationController didSelectItemView:(nonnull QMUIMoreOperationItemView *)itemView;
 @end
 
 
@@ -67,7 +67,7 @@
 @property(nonatomic, assign) CGFloat cancelButtonHeight UI_APPEARANCE_SELECTOR;// 取消按钮的高度
 @property(nonatomic, assign) CGFloat cancelButtonMarginTop UI_APPEARANCE_SELECTOR;// 取消按钮距离内容面板的间距
 
-@property(nonatomic, weak) id<QMUIMoreOperationControllerDelegate> delegate;
+@property(nonatomic, nullable, weak) id<QMUIMoreOperationControllerDelegate> delegate;
 
 @property(nonatomic, strong, readonly) UIView *contentView;// 放 UIScrollView 的容器，与 cancelButton 区分开
 @property(nonatomic, strong, readonly) NSArray<UIScrollView *> *scrollViews;// 获取当前的所有 UIScrollView
@@ -90,10 +90,10 @@
 - (void)removeItemViewAtIndexPath:(NSIndexPath *)indexPath;
 
 /// 获取指定 tag 的 itemView，如果不存在则返回 nil
-- (QMUIMoreOperationItemView *)itemViewWithTag:(NSInteger)tag;
+- (nullable QMUIMoreOperationItemView *)itemViewWithTag:(NSInteger)tag;
 
 /// 获取指定 itemView 在当前控件里的 indexPath，如果不存在则返回 nil
-- (NSIndexPath *)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView;
+- (nullable NSIndexPath *)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView;
 
 /// 弹出面板，一般在 init 完并且设置好 items 之后就调用这个接口来显示面板
 - (void)showFromBottom;
@@ -114,32 +114,32 @@
 
 @end
 
-
+typedef void(^QMUIMoreOperationItemViewHandler)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView);
 @interface QMUIMoreOperationItemView : QMUIButton
 
-@property(nonatomic, assign, readonly) NSIndexPath *indexPath;
+@property(nonatomic, nullable, assign, readonly) NSIndexPath *indexPath;
 @property(nonatomic, assign) NSInteger tag;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                            title:(NSString *)title
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
++ (instancetype)itemViewWithImage:(nullable UIImage *)image
+                            title:(nullable NSString *)title
+                          handler:(nullable QMUIMoreOperationItemViewHandler)handler;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                    selectedImage:(UIImage *)selectedImage
-                            title:(NSString *)title
-                    selectedTitle:(NSString *)selectedTitle
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
++ (instancetype)itemViewWithImage:(nullable UIImage *)image
+                    selectedImage:(nullable UIImage *)selectedImage
+                            title:(nullable NSString *)title
+                    selectedTitle:(nullable NSString *)selectedTitle
+                          handler:(nullable QMUIMoreOperationItemViewHandler)handler;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                            title:(NSString *)title
++ (instancetype)itemViewWithImage:(nullable UIImage *)image
+                            title:(nullable NSString *)title
                               tag:(NSInteger)tag
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
+                          handler:(nullable QMUIMoreOperationItemViewHandler)handler;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                    selectedImage:(UIImage *)selectedImage
-                            title:(NSString *)title
-                    selectedTitle:(NSString *)selectedTitle
++ (instancetype)itemViewWithImage:(nullable UIImage *)image
+                    selectedImage:(nullable UIImage *)selectedImage
+                            title:(nullable NSString *)title
+                    selectedTitle:(nullable NSString *)selectedTitle
                               tag:(NSInteger)tag
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
+                          handler:(nullable QMUIMoreOperationItemViewHandler)handler;
 
 @end

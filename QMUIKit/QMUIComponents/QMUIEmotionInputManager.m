@@ -51,7 +51,7 @@
     return self;
 }
 
-- (UIView<QMUIEmotionInputViewProtocol> *)boundInputView {
+- (nullable UIView<QMUIEmotionInputViewProtocol> *)boundInputView {
     if (self.boundTextField) {
         return (UIView<QMUIEmotionInputViewProtocol> *)self.boundTextField;
     } else if (self.boundTextView) {

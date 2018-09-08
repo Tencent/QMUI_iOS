@@ -254,7 +254,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     return 0;
 }
 
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+- (nullable UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
     NSString *title = [self tableView:tableView realTitleForHeaderInSection:section];
     if (title) {
         QMUITableViewHeaderFooterView *headerView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:QMUICommonTableViewControllerSectionHeaderIdentifier];
@@ -266,7 +266,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     return nil;
 }
 
-- (UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+- (nullable UIView *)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
     NSString *title = [self tableView:tableView realTitleForFooterInSection:section];
     if (title) {
         QMUITableViewHeaderFooterView *footerView = [tableView dequeueReusableHeaderFooterViewWithIdentifier:QMUICommonTableViewControllerSectionFooterIdentifier];
@@ -303,7 +303,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 }
 
 // 是否有定义某个section的header title
-- (NSString *)tableView:(UITableView *)tableView realTitleForHeaderInSection:(NSInteger)section {
+- (nullable NSString *)tableView:(UITableView *)tableView realTitleForHeaderInSection:(NSInteger)section {
     if ([tableView.dataSource respondsToSelector:@selector(tableView:titleForHeaderInSection:)]) {
         NSString *sectionTitle = [tableView.dataSource tableView:tableView titleForHeaderInSection:section];
         if (sectionTitle && sectionTitle.length > 0) {
@@ -314,7 +314,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 }
 
 // 是否有定义某个section的footer title
-- (NSString *)tableView:(UITableView *)tableView realTitleForFooterInSection:(NSInteger)section {
+- (nullable NSString *)tableView:(UITableView *)tableView realTitleForFooterInSection:(NSInteger)section {
     if ([tableView.dataSource respondsToSelector:@selector(tableView:titleForFooterInSection:)]) {
         NSString *sectionFooter = [tableView.dataSource tableView:tableView titleForFooterInSection:section];
         if (sectionFooter && sectionFooter.length > 0) {

@@ -54,7 +54,7 @@ typedef NS_ENUM(NSInteger, QMUIImageResizingMode) {
  @param actionBlock 实际的图片绘制操作，在这里只管绘制就行，不用手动生成 image
  @return 返回绘制完的图片
  */
-+ (UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock;
++ (nullable UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock;
 
 /// 获取当前图片的像素大小，如果是多倍图，会被放大到一倍来算
 @property(nonatomic, assign, readonly) CGSize qmui_sizeInPixel;
@@ -77,7 +77,7 @@ typedef NS_ENUM(NSInteger, QMUIImageResizingMode) {
  *
  *  @return 已经置灰的图片
  */
-- (UIImage *)qmui_grayImage;
+- (nullable UIImage *)qmui_grayImage;
 
 /**
  *  设置一张图片的透明度

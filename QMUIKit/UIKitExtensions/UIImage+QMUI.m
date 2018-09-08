@@ -30,7 +30,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return [NSString stringWithFormat:@"%@, scale = %@", [self qmui_description], @(self.scale)];
 }
 
-+ (UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock {
++ (nullable UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock {
     if (!actionBlock || CGSizeIsEmpty(size)) {
         return nil;
     }
@@ -77,7 +77,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 	}
 }
 
-- (UIImage *)qmui_grayImage {
+- (nullable UIImage *)qmui_grayImage {
     // CGBitmapContextCreate 是无倍数的，所以要自己换算成1倍
     CGSize size = self.qmui_sizeInPixel;
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();

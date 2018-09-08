@@ -86,7 +86,7 @@
 
 @interface QMUIImagePickerViewController : QMUICommonViewController<UICollectionViewDataSource, UICollectionViewDelegate, QMUIImagePickerPreviewViewControllerDelegate>
 
-@property(nonatomic, weak) id<QMUIImagePickerViewControllerDelegate> imagePickerViewControllerDelegate;
+@property(nonatomic, nullable, weak) id<QMUIImagePickerViewControllerDelegate> imagePickerViewControllerDelegate;
 
 /// 图片的最小尺寸，布局时如果有剩余空间，会将空间分配给图片大小，所以最终显示出来的大小不一定等于minimumImageWidth。默认是75。
 @property(nonatomic, assign) CGFloat minimumImageWidth UI_APPEARANCE_SELECTOR;
