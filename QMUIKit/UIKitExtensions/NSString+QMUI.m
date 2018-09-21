@@ -9,6 +9,7 @@
 #import "NSString+QMUI.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "NSArray+QMUI.h"
+#import "NSCharacterSet+QMUI.h"
 #import <objc/runtime.h>
 
 @implementation NSString (QMUI)
@@ -54,6 +55,10 @@
             result[4], result[5], result[6], result[7],
             result[8], result[9], result[10], result[11],
             result[12], result[13], result[14], result[15]];
+}
+
+- (NSString *)qmui_stringByEncodingUserInputQuery {
+    return [self stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet qmui_URLUserInputQueryAllowedCharacterSet]];
 }
 
 + (NSString *)hexLetterStringWithInteger:(NSInteger)integer {

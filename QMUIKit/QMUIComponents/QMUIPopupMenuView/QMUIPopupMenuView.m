@@ -16,6 +16,7 @@
 
 @property(nonatomic, strong) UIScrollView *scrollView;
 @property(nonatomic, strong) NSMutableArray<CALayer *> *itemSeparatorLayers;
+@property(nonatomic, strong) NSMutableArray<CALayer *> *sectionSeparatorLayers;
 @end
 
 @interface QMUIPopupMenuView (UIAppearance)
@@ -58,15 +59,18 @@
     }
 }
 
-- (BOOL)shouldShowSeparatorAtRow:(NSInteger)row rowCount:(NSInteger)rowCount inSection:(NSInteger)section sectionCount:(NSInteger)sectionCount {
-    return (!self.shouldShowSectionSeparatorOnly && self.shouldShowItemSeparator && row < rowCount - 1) || (self.shouldShowSectionSeparatorOnly && row == rowCount - 1 && section < sectionCount - 1);
-}
-
 - (void)configureItems {
     NSInteger globalItemIndex = 0;
+    NSInteger separatorIndex = 0;
     
     // 移除所有 item
     [self.scrollView qmui_removeAllSubviews];
+    [self.itemSeparatorLayers enumerateObjectsUsingBlock:^(CALayer * _Nonnull layer, NSUInteger idx, BOOL * _Nonnull stop) {
+        layer.hidden = YES;
+    }];
+    [self.sectionSeparatorLayers enumerateObjectsUsingBlock:^(CALayer * _Nonnull layer, NSUInteger idx, BOOL * _Nonnull stop) {
+        layer.hidden = YES;
+    }];
     
     for (NSInteger section = 0, sectionCount = self.itemSections.count; section < sectionCount; section ++) {
         NSArray<QMUIPopupMenuBaseItem *> *items = self.itemSections[section];
@@ -80,26 +84,62 @@
             [self.scrollView addSubview:item];
             
             // 配置分隔线，注意每一个 section 里的最后一行是不显示分隔线的
-            BOOL shouldShowSeparatorAtRow = [self shouldShowSeparatorAtRow:row rowCount:rowCount inSection:section sectionCount:sectionCount];
-            if (globalItemIndex < self.itemSeparatorLayers.count) {
-                CALayer *separatorLayer = self.itemSeparatorLayers[globalItemIndex];
-                if (shouldShowSeparatorAtRow) {
-                    separatorLayer.hidden = NO;
-                    separatorLayer.backgroundColor = self.separatorColor.CGColor;
+            BOOL shouldShowItemSeparator = self.shouldShowItemSeparator && row < rowCount - 1;
+            if (shouldShowItemSeparator) {
+                CALayer *separatorLayer = nil;
+                if (separatorIndex < self.itemSeparatorLayers.count) {
+                    separatorLayer = self.itemSeparatorLayers[separatorIndex];
                 } else {
-                    separatorLayer.hidden = YES;
+                    separatorLayer = [CALayer qmui_separatorLayer];
+                    [self.scrollView.layer addSublayer:separatorLayer];
+                    [self.itemSeparatorLayers addObject:separatorLayer];
                 }
-            } else if (shouldShowSeparatorAtRow) {
-                CALayer *separatorLayer = [CALayer layer];
-                [separatorLayer qmui_removeDefaultAnimations];
-                separatorLayer.backgroundColor = self.separatorColor.CGColor;
-                [self.scrollView.layer addSublayer:separatorLayer];
-                [self.itemSeparatorLayers addObject:separatorLayer];
+                separatorLayer.hidden = NO;
+                separatorLayer.backgroundColor = self.itemSeparatorColor.CGColor;
+                separatorIndex++;
             }
             
             globalItemIndex++;
         }
+        
+        BOOL shouldShowSectionSeparator = self.shouldShowSectionSeparator && section < sectionCount - 1;
+        if (shouldShowSectionSeparator) {
+            CALayer *separatorLayer = nil;
+            if (section < self.sectionSeparatorLayers.count) {
+                separatorLayer = self.sectionSeparatorLayers[section];
+            } else {
+                separatorLayer = [CALayer qmui_separatorLayer];
+                [self.scrollView.layer addSublayer:separatorLayer];
+                [self.sectionSeparatorLayers addObject:separatorLayer];
+            }
+            separatorLayer.hidden = NO;
+            separatorLayer.backgroundColor = self.sectionSeparatorColor.CGColor;
+        }
     }
+}
+
+- (void)setItemSeparatorInset:(UIEdgeInsets)itemSeparatorInset {
+    _itemSeparatorInset = itemSeparatorInset;
+    [self setNeedsLayout];
+}
+
+- (void)setItemSeparatorColor:(UIColor *)itemSeparatorColor {
+    _itemSeparatorColor = itemSeparatorColor;
+    [self.itemSeparatorLayers enumerateObjectsUsingBlock:^(CALayer * _Nonnull layer, NSUInteger idx, BOOL * _Nonnull stop) {
+        layer.backgroundColor = itemSeparatorColor.CGColor;
+    }];
+}
+
+- (void)setSectionSeparatorInset:(UIEdgeInsets)sectionSeparatorInset {
+    _sectionSeparatorInset = sectionSeparatorInset;
+    [self setNeedsLayout];
+}
+
+- (void)setSectionSeparatorColor:(UIColor *)sectionSeparatorColor {
+    _sectionSeparatorColor = sectionSeparatorColor;
+    [self.sectionSeparatorLayers enumerateObjectsUsingBlock:^(CALayer * _Nonnull layer, NSUInteger idx, BOOL * _Nonnull stop) {
+        layer.backgroundColor = sectionSeparatorColor.CGColor;
+    }];
 }
 
 #pragma mark - (UISubclassingHooks)
@@ -118,15 +158,20 @@
     [self.contentView addSubview:self.scrollView];
     
     self.itemSeparatorLayers = [[NSMutableArray alloc] init];
+    self.sectionSeparatorLayers = [[NSMutableArray alloc] init];
     
     [self updateAppearanceForPopupMenuView];
 }
 
 - (CGSize)sizeThatFitsInContentView:(CGSize)size {
+    __block CGFloat width = 0;
     __block CGFloat height = UIEdgeInsetsGetVerticalValue(self.padding);
     [self.itemSections qmui_enumerateNestedArrayWithBlock:^(__kindof QMUIPopupMenuBaseItem *item, BOOL *stop) {
         height += item.height >= 0 ? item.height : self.itemHeight;
+        CGSize itemSize = [item sizeThatFits:CGSizeMake(size.width, height)];
+        width = MAX(width, MIN(itemSize.width, size.width));
     }];
+    size.width = width;
     size.height = MIN(height, size.height);
     return size;
 }
@@ -145,11 +190,17 @@
             item.frame = CGRectMake(0, minY, contentWidth, item.height >= 0 ? item.height : self.itemHeight);
             minY = CGRectGetMaxY(item.frame);
             
-            BOOL shouldShowSeparatorAtRow = [self shouldShowSeparatorAtRow:row rowCount:rowCount inSection:section sectionCount:sectionCount];
-            if (shouldShowSeparatorAtRow) {
-                self.itemSeparatorLayers[separatorIndex].frame = CGRectMake(self.separatorInset.left, minY - PixelOne + self.separatorInset.top - self.separatorInset.bottom, contentWidth - UIEdgeInsetsGetHorizontalValue(self.separatorInset), PixelOne);
-                separatorIndex++;
+            if (self.shouldShowItemSeparator && row < rowCount - 1) {
+                CALayer *layer = self.itemSeparatorLayers[separatorIndex];
+                if (!layer.hidden) {
+                    layer.frame = CGRectMake(self.padding.left + self.itemSeparatorInset.left, minY - PixelOne + self.itemSeparatorInset.top - self.itemSeparatorInset.bottom, contentWidth - UIEdgeInsetsGetHorizontalValue(self.padding) - UIEdgeInsetsGetHorizontalValue(self.itemSeparatorInset), PixelOne);
+                    separatorIndex++;
+                }
             }
+        }
+        
+        if (self.shouldShowSectionSeparator && section < sectionCount - 1) {
+            self.sectionSeparatorLayers[section].frame = CGRectMake(0, minY - PixelOne + self.sectionSeparatorInset.top - self.sectionSeparatorInset.bottom, contentWidth - UIEdgeInsetsGetHorizontalValue(self.sectionSeparatorInset), PixelOne);
         }
     }
     minY += self.padding.bottom;
@@ -170,25 +221,29 @@
 + (void)setDefaultAppearanceForPopupMenuView {
     QMUIPopupMenuView *appearance = [QMUIPopupMenuView appearance];
     appearance.shouldShowItemSeparator = NO;
-    appearance.shouldShowSectionSeparatorOnly = NO;
-    appearance.separatorColor = UIColorSeparator;
+    appearance.itemSeparatorColor = UIColorSeparator;
+    appearance.itemSeparatorInset = UIEdgeInsetsZero;
+    appearance.shouldShowSectionSeparator = NO;
+    appearance.sectionSeparatorColor = UIColorSeparator;
+    appearance.sectionSeparatorInset = UIEdgeInsetsZero;
     appearance.itemTitleFont = UIFontMake(16);
     appearance.itemTitleColor = UIColorBlue;
     appearance.padding = UIEdgeInsetsMake([QMUIPopupContainerView appearance].cornerRadius / 2.0, 16, [QMUIPopupContainerView appearance].cornerRadius / 2.0, 16);
     appearance.itemHeight = 44;
-    appearance.separatorInset = UIEdgeInsetsZero;
 }
 
 - (void)updateAppearanceForPopupMenuView {
     QMUIPopupMenuView *appearance = [QMUIPopupMenuView appearance];
     self.shouldShowItemSeparator = appearance.shouldShowItemSeparator;
-    self.shouldShowSectionSeparatorOnly = appearance.shouldShowSectionSeparatorOnly;
-    self.separatorColor = appearance.separatorColor;
+    self.itemSeparatorColor = appearance.itemSeparatorColor;
+    self.itemSeparatorInset = appearance.itemSeparatorInset;
+    self.shouldShowSectionSeparator = appearance.shouldShowSectionSeparator;
+    self.sectionSeparatorColor = appearance.sectionSeparatorColor;
+    self.sectionSeparatorInset = appearance.sectionSeparatorInset;
     self.itemTitleFont = appearance.itemTitleFont;
     self.itemTitleColor = appearance.itemTitleColor;
     self.padding = appearance.padding;
     self.itemHeight = appearance.itemHeight;
-    self.separatorInset = appearance.separatorInset;
 }
 
 @end

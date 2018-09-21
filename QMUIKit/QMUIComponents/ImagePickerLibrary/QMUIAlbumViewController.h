@@ -11,17 +11,6 @@
 #import "QMUITableViewCell.h"
 #import "QMUIAssetsGroup.h"
 
-// 相册预览图的大小默认值
-extern const CGFloat QMUIAlbumViewControllerDefaultAlbumTableViewCellHeight;
-// 相册预览大小（正方形）
-extern const CGFloat QMUIAlbumViewControllerDefaultAlbumImageSize;
-// 相册名称的字号默认值
-extern const CGFloat QMUIAlbumTableViewCellDefaultAlbumNameFontSize;
-// 相册资源数量的字号默认值
-extern const CGFloat QMUIAlbumTableViewCellDefaultAlbumAssetsNumberFontSize;
-// 相册名称的 insets 默认值
-extern const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets;
-
 
 @class QMUIImagePickerViewController;
 @class QMUIAlbumViewController;
@@ -58,11 +47,13 @@ extern const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets;
 
 @interface QMUIAlbumTableViewCell : QMUITableViewCell
 
-@property(nonatomic, assign) CGFloat albumImageSize UI_APPEARANCE_SELECTOR; // 相册缩略图的 insets
-@property(nonatomic, assign) CGFloat albumImageMarginLeft UI_APPEARANCE_SELECTOR; // 相册缩略图的 left
-@property(nonatomic, assign) CGFloat albumNameFontSize UI_APPEARANCE_SELECTOR; // 相册名称的字号
-@property(nonatomic, assign) UIEdgeInsets albumNameInsets UI_APPEARANCE_SELECTOR; // 相册名称的 insets
-@property(nonatomic, assign) CGFloat albumAssetsNumberFontSize UI_APPEARANCE_SELECTOR; // 相册资源数量的字号
+@property(nonatomic, assign) CGFloat albumImageSize UI_APPEARANCE_SELECTOR; // 相册缩略图的大小
+@property(nonatomic, assign) CGFloat albumImageMarginLeft UI_APPEARANCE_SELECTOR; // 相册缩略图的 left，-1 表示自动保持与上下 margin 相等
+@property(nonatomic, assign) UIEdgeInsets albumNameInsets UI_APPEARANCE_SELECTOR; // 相册名称的上下左右间距
+@property(nonatomic, strong) UIFont *albumNameFont UI_APPEARANCE_SELECTOR; // 相册名的字体
+@property(nonatomic, strong) UIColor *albumNameColor UI_APPEARANCE_SELECTOR; // 相册名的颜色
+@property(nonatomic, strong) UIFont *albumAssetsNumberFont UI_APPEARANCE_SELECTOR; // 相册资源数量的字体
+@property(nonatomic, strong) UIColor *albumAssetsNumberColor UI_APPEARANCE_SELECTOR; // 相册资源数量的颜色
 
 @end
 

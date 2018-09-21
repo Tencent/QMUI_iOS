@@ -99,8 +99,12 @@
 - (void)copyString:(id)sender {
     if (self.canPerformCopyAction) {
         UIPasteboard *pasteboard = [UIPasteboard generalPasteboard];
-        if (self.text) {
-            pasteboard.string = self.text;
+        NSString *stringToCopy = self.text;
+        if (stringToCopy) {
+            pasteboard.string = stringToCopy;
+            if (self.didCopyBlock) {
+                self.didCopyBlock(self, stringToCopy);
+            }
         }
     }
 }

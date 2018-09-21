@@ -104,7 +104,7 @@
 /**
  使用 block 遍历指定 class 的所有属性，不包含 superclasses 里定义的 property
 
- @param block 用于遍历的 block
+ @param block 用于遍历的 block，如果要获取 property 的信息，推荐用 QMUIPropertyDescriptor。
  */
 - (void)qmui_enumratePropertiesUsingBlock:(void (^)(objc_property_t property, NSString *propertyName))block;
 
@@ -113,7 +113,8 @@
 
  @param aClass 指定的 class
  @param includingInherited 是否要包含由继承链带过来的 property
- @param block 用于遍历的 block
+ @param block 用于遍历的 block，如果要获取 property 的信息，推荐用 QMUIPropertyDescriptor。
+ @see https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html#//apple_ref/doc/uid/TP40008048-CH101-SW1
  */
 + (void)qmui_enumratePropertiesOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(objc_property_t property, NSString *propertyName))block;
 

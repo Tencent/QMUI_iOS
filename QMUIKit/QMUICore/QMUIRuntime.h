@@ -6,10 +6,33 @@
 //  Copyright © 2018年 QMUI Team. All rights reserved.
 //
 
-#ifndef QMUIRuntime_h
-#define QMUIRuntime_h
-
 #import <objc/runtime.h>
+#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+/// 以高级语言的方式描述一个 objc_property_t 的各种属性，请使用 `+descriptorWithProperty` 生成对象后直接读取对象的各种值。
+@interface QMUIPropertyDescriptor : NSObject
+
+@property(nonatomic, strong) NSString *name;
+@property(nonatomic, assign) SEL getter;
+@property(nonatomic, assign) SEL setter;
+
+@property(nonatomic, assign) BOOL isAtomic;
+@property(nonatomic, assign) BOOL isNonatomic;
+
+@property(nonatomic, assign) BOOL isAssign;
+@property(nonatomic, assign) BOOL isWeak;
+@property(nonatomic, assign) BOOL isStrong;
+@property(nonatomic, assign) BOOL isCopy;
+
+@property(nonatomic, assign) BOOL isReadonly;
+@property(nonatomic, assign) BOOL isReadwrite;
+
+@property(nonatomic, copy) NSString *type;
+
++ (instancetype)descriptorWithProperty:(objc_property_t)property;
+
+@end
 
 #pragma mark - Method
 
@@ -228,5 +251,3 @@ _QMUIGetIvarValueGenerator(Selector, SEL)
 CG_INLINE id getObjectIvarValue(id object, Ivar ivar) {
     return object_getIvar(object, ivar);
 }
-
-#endif /* QMUIRuntime_h */

@@ -102,17 +102,24 @@
 #define DEVICE_HEIGHT (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height)
 
 // 设备屏幕尺寸
-// iPhoneX
+
+// 是否全面屏设备
+#define IS_NOTCHED_SCREEN [QMUIHelper isNotchedScreen]
+// iPhone XS Max
+#define IS_65INCH_SCREEN [QMUIHelper is65InchScreen]
+// iPhone XR
+#define IS_61INCH_SCREEN [QMUIHelper is61InchScreen]
+// iPhone X/XS
 #define IS_58INCH_SCREEN [QMUIHelper is58InchScreen]
-// iPhone6/7/8 Plus
+// iPhone 6/7/8 Plus
 #define IS_55INCH_SCREEN [QMUIHelper is55InchScreen]
-// iPhone6/7/8
+// iPhone 6/7/8
 #define IS_47INCH_SCREEN [QMUIHelper is47InchScreen]
-// iPhone5/5s/SE
+// iPhone 5/5S/SE
 #define IS_40INCH_SCREEN [QMUIHelper is40InchScreen]
-// iPhone4/4s
+// iPhone 4/4S
 #define IS_35INCH_SCREEN [QMUIHelper is35InchScreen]
-// iPhone4/4s/5/5s/SE
+// iPhone 4/4S/5/5S/SE
 #define IS_320WIDTH_SCREEN (IS_35INCH_SCREEN || IS_40INCH_SCREEN)
 
 // 是否Retina
@@ -123,6 +130,9 @@
 
 #pragma mark - 变量-布局相关
 
+// 获取一个像素
+#define PixelOne [QMUIHelper pixelOne]
+
 // bounds && nativeBounds / scale && nativeScale
 #define ScreenBoundsSize ([[UIScreen mainScreen] bounds].size)
 #define ScreenNativeBoundsSize ([[UIScreen mainScreen] nativeBounds].size)
@@ -130,19 +140,19 @@
 #define ScreenNativeScale ([[UIScreen mainScreen] nativeScale])
 
 // toolBar相关frame
-#define ToolBarHeight (IS_LANDSCAPE ? PreferredVarForUniversalDevicesIncludingIPhoneX(44, 44, 53, 32, 32, 32) : PreferredVarForUniversalDevicesIncludingIPhoneX(44, 44, 83, 44, 44, 44))
+#define ToolBarHeight ((IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44) + PreferredValueForNotchedDevice(39, 0))
 
 // tabBar相关frame
-#define TabBarHeight (IS_LANDSCAPE ? PreferredVarForUniversalDevicesIncludingIPhoneX(49, 49, 53, 32, 32, 32) : PreferredVarForUniversalDevicesIncludingIPhoneX(49, 49, 83, 49, 49, 49))
+#define TabBarHeight (PreferredValueForNotchedDevice(IS_LANDSCAPE ? 32 : 49, 49) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
 
 // 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算)
 #define StatusBarHeight ([UIApplication sharedApplication].statusBarHidden ? 0 : [[UIApplication sharedApplication] statusBarFrame].size.height)
 
 // 状态栏高度(如果状态栏不可见，也会返回一个普通状态下可见的高度)
-#define StatusBarHeightConstant ([UIApplication sharedApplication].statusBarHidden ? PreferredVarForUniversalDevicesIncludingIPhoneX(20, 20, 44, 20, 20, 20) : [[UIApplication sharedApplication] statusBarFrame].size.height)
+#define StatusBarHeightConstant ([UIApplication sharedApplication].statusBarHidden ? PreferredValueForNotchedDevice(44, 20) : [[UIApplication sharedApplication] statusBarFrame].size.height)
 
 // navigationBar 的静态高度
-#define NavigationBarHeight (IS_LANDSCAPE ? PreferredVarForDevices(44, 32, 32, 32) : 44)
+#define NavigationBarHeight (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44)
 
 // 代表(导航栏+状态栏)，这里用于获取其高度
 // @warn 如果是用于 viewController，请使用 UIViewController(QMUI) qmui_navigationBarMaxYInViewCoordinator 代替
@@ -151,20 +161,24 @@
 // 同上，这里用于获取它的静态常量值
 #define NavigationContentTopConstant (StatusBarHeightConstant + NavigationBarHeight)
 
-// IPhoneX 安全区域的静态值
-#define IPhoneXSafeAreaInsets [QMUIHelper safeAreaInsetsForIPhoneX]
+// iPhoneX 系列全面屏手机的安全区域的静态值
+#define SafeAreaInsetsConstantForDeviceWithNotch [QMUIHelper safeAreaInsetsForDeviceWithNotch]
 
-// 获取一个像素
-#define PixelOne [QMUIHelper pixelOne]
+// 按屏幕宽度来区分不同 iPhone 尺寸，iPhone XS Max/XR/Plus 归为一类，iPhone X/8/7/6 归为一类。
+// iPad 也会视为最大的屏幕宽度来处理
+#define PreferredValueForiPhone(_65or61or55inch, _47or58inch, _40inch, _35inch) PreferredValueForDeviceIncludingiPad(_65or61or55inch, _65or61or55inch, _47or58inch, _40inch, _35inch)
 
-// 获取最合适的适配值，默认以varFor55Inch为准，也即偏向大屏，特殊的，iPhone X 虽然英寸值更大，但由于宽度与 47inch 相等，因此布局上使用与 47inch 一样的值
-#define PreferredVarForDevices(varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch) PreferredVarForUniversalDevices(varFor55Inch, varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch)
+// 同上，单独将 iPad 区分对待
+#define PreferredValueForDeviceIncludingiPad(_iPad, _65or61or55inch, _47or58inch, _40inch, _35inch) PreferredValueForAll(_iPad, _65or61or55inch, _65or61or55inch, _47or58inch, _65or61or55inch, _47or58inch, _40inch, _35inch)
 
-// 同上，加多一个iPad的参数
-#define PreferredVarForUniversalDevices(varForPad, varFor55Inch, varFor47or58Inch, varFor40Inch, varFor35Inch) PreferredVarForUniversalDevicesIncludingIPhoneX(varForPad, varFor55Inch, varFor47or58Inch, varFor47or58Inch, varFor40Inch, varFor35Inch)
+// 区分全面屏（iPhone X 系列）和非全面屏
+#define PreferredValueForNotchedDevice(_notchedDevice, _otherDevice) ([QMUIHelper isNotchedScreen] ? _notchedDevice : _otherDevice)
 
-// 同上，包含 iPhoneX
-#define PreferredVarForUniversalDevicesIncludingIPhoneX(varForPad, varFor55Inch, varFor58Inch, varFor47Inch, varFor40Inch, varFor35Inch) (IS_IPAD ? varForPad : (IS_35INCH_SCREEN ? varFor35Inch : (IS_40INCH_SCREEN ? varFor40Inch : (IS_47INCH_SCREEN ? varFor47Inch : (IS_55INCH_SCREEN ? (IS_ZOOMEDMODE ? varFor47Inch : varFor55Inch) : varFor58Inch)))))
+// 将所有屏幕按照宽松/紧凑分类，其中 iPad、iPhone XS Max/XR/Plus 均为宽松屏幕，但开启了放大模式的设备均会视为紧凑屏幕
+#define PreferredValueForVisualDevice(_regular, _compact) ([QMUIHelper isRegularScreen] ? _regular : _compact)
+
+// 区分全部的设备类型
+#define PreferredValueForAll(_iPad, _65inch, _61inch, _58inch, _55inch, _47inch, _40inch, _35inch) (IS_IPAD ? _iPad : (IS_35INCH_SCREEN ? _35inch : (IS_40INCH_SCREEN ? _40inch : ((IS_47INCH_SCREEN || (IS_55INCH_SCREEN && IS_ZOOMEDMODE)) ? _47inch : (IS_55INCH_SCREEN ? _55inch : ((IS_58INCH_SCREEN || ((IS_61INCH_SCREEN || IS_65INCH_SCREEN) && IS_ZOOMEDMODE)) ? _58inch : (IS_61INCH_SCREEN ? _61inch : _65inch)))))))
 
 #pragma mark - 方法-创建器
 

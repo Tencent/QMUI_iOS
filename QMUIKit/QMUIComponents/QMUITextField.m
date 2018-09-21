@@ -81,21 +81,6 @@
     self.attributedPlaceholder = [[NSAttributedString alloc] initWithString:self.placeholder attributes:@{NSForegroundColorAttributeName: self.placeholderColor}];
 }
 
-#pragma mark - TextInsets
-
-- (CGRect)textRectForBounds:(CGRect)bounds {
-    bounds = CGRectInsetEdges(bounds, self.textInsets);
-    CGRect resultRect = [super textRectForBounds:bounds];
-    return resultRect;
-}
-
-- (CGRect)editingRectForBounds:(CGRect)bounds {
-    bounds = CGRectInsetEdges(bounds, self.textInsets);
-    return [super editingRectForBounds:bounds];
-}
-
-#pragma mark - TextPosition
-
 - (void)layoutSubviews {
     [super layoutSubviews];
     
@@ -139,6 +124,25 @@
 
 - (NSUInteger)lengthWithString:(NSString *)string {
     return self.shouldCountingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
+}
+
+#pragma mark - Positioning Overrides
+
+- (CGRect)textRectForBounds:(CGRect)bounds {
+    bounds = CGRectInsetEdges(bounds, self.textInsets);
+    CGRect resultRect = [super textRectForBounds:bounds];
+    return resultRect;
+}
+
+- (CGRect)editingRectForBounds:(CGRect)bounds {
+    bounds = CGRectInsetEdges(bounds, self.textInsets);
+    return [super editingRectForBounds:bounds];
+}
+
+- (CGRect)clearButtonRectForBounds:(CGRect)bounds {
+    CGRect result = [super clearButtonRectForBounds:bounds];
+    result = CGRectOffset(result, self.clearButtonPositionAdjustment.horizontal, self.clearButtonPositionAdjustment.vertical);
+    return result;
 }
 
 @end

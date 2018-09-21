@@ -8,6 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class QMUIButton;
+
 @protocol QMUIEmptyViewLoadingViewProtocol <NSObject>
 
 @optional
@@ -26,7 +28,7 @@
 @property(nonatomic, strong, readonly) UIImageView *imageView;
 @property(nonatomic, strong, readonly) UILabel *textLabel;
 @property(nonatomic, strong, readonly) UILabel *detailTextLabel;
-@property(nonatomic, strong, readonly) UIButton *actionButton;
+@property(nonatomic, strong, readonly) QMUIButton *actionButton;
 
 // 可通过调整这些insets来控制间距
 @property(nonatomic, assign) UIEdgeInsets imageViewInsets UI_APPEARANCE_SELECTOR;   // 默认为(0, 0, 36, 0)

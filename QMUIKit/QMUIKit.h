@@ -21,6 +21,10 @@
 #import "NSAttributedString+QMUI.h"
 #endif
 
+#if __has_include("NSCharacterSet+QMUI.h")
+#import "NSCharacterSet+QMUI.h"
+#endif
+
 #if __has_include("NSNumber+QMUI.h")
 #import "NSNumber+QMUI.h"
 #endif

@@ -70,7 +70,22 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         free(classes);
     }
     
+    if (IS_DEBUG && self.sendAnalyticsToQMUITeam) {
+        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:[NSOperationQueue new] usingBlock:^(NSNotification * _Nonnull note) {
+            [self sendAnalytics];
+        }];
+    }
+    
     QMUI_hasAppliedInitialTemplate = YES;
+}
+
+- (void)sendAnalytics {
+    NSString *appInfo = [NSString stringWithFormat:@"appId=%@&appName=%@&version=%@&platform=iOS", [NSBundle mainBundle].bundleIdentifier.qmui_stringByEncodingUserInputQuery, ((NSString *)[NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"]).qmui_stringByEncodingUserInputQuery, ((NSString *)[NSBundle bundleForClass:[self class]].infoDictionary[@"CFBundleShortVersionString"]).qmui_stringByEncodingUserInputQuery];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://qmuiteam.com/analytics/usageReport"]];
+    request.HTTPMethod = @"POST";
+    request.HTTPBody = [appInfo dataUsingEncoding:NSUTF8StringEncoding];
+    NSURLSession *session = [NSURLSession sharedSession];
+    [[session dataTaskWithRequest:request] resume];
 }
 
 #pragma mark - Initialize default values
@@ -246,7 +261,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     
     #pragma mark - Others
     
-    self.supportedOrientationMask = UIInterfaceOrientationMaskPortrait;
+    self.supportedOrientationMask = UIInterfaceOrientationMaskAll;
     self.automaticallyRotateDeviceOrientation = NO;
     self.statusbarStyleLightInitially = NO;
     self.needsBackBarButtonItemTitle = NO;
@@ -254,6 +269,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.preventConcurrentNavigationControllerTransitions = YES;
     self.navigationBarHiddenInitially = NO;
     self.shouldFixTabBarTransitionBugInIPhoneX = NO;
+    self.sendAnalyticsToQMUITeam = YES;
 }
 
 - (void)setNavBarButtonFont:(UIFont *)navBarButtonFont {

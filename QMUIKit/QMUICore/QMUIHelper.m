@@ -11,6 +11,7 @@
 #import "NSNumber+QMUI.h"
 #import <AVFoundation/AVFoundation.h>
 #import <math.h>
+#import <sys/utsname.h>
 
 NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
 
@@ -275,10 +276,23 @@ static CGFloat pixelOne = -1.0f;
 
 @implementation QMUIHelper (Device)
 
++ (NSString *)deviceModel {
+    if (IS_SIMULATOR) {
+        // Simulator doesn't return the identifier for the actual physical model, but returns it as an environment variable
+        // 模拟器不返回物理机器信息，但会通过环境变量的方式返回
+        return [NSString stringWithFormat:@"%s", getenv("SIMULATOR_MODEL_IDENTIFIER")];
+    }
+    
+    // See https://www.theiphonewiki.com/wiki/Models for identifiers
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
+}
+
 static NSInteger isIPad = -1;
 + (BOOL)isIPad {
     if (isIPad < 0) {
-        // [[[UIDevice currentDevice] model] isEqualToString:@"iPad"] 无法判断模拟器，改为以下方式
+        // [[[UIDevice currentDevice] model] isEqualToString:@"iPad"] 无法判断模拟器 iPad，所以改为以下方式
         isIPad = UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ? 1 : 0;
     }
     return isIPad > 0;
@@ -322,9 +336,37 @@ static NSInteger isSimulator = -1;
     return isSimulator > 0;
 }
 
++ (BOOL)isNotchedScreen {
+    return [self is65InchScreen] || [self is61InchScreen] || [self is58InchScreen];
+}
+
++ (BOOL)isRegularScreen {
+    return [self isIPad] || (!IS_ZOOMEDMODE && ([self is65InchScreen] || [self is61InchScreen] || [self is55InchScreen]));
+}
+
+static NSInteger is65InchScreen = -1;
++ (BOOL)is65InchScreen {
+    if (is65InchScreen < 0) {
+        // Since iPhone XS Max and iPhone XR share the same resolution, we have to distinguish them using the model identifiers
+        // 由于 iPhone XS Max 和 iPhone XR 的屏幕宽高是一致的，我们通过机器 Identifier 加以区别
+        is65InchScreen = (DEVICE_WIDTH == self.screenSizeFor65Inch.width && DEVICE_HEIGHT == self.screenSizeFor65Inch.height && ([[QMUIHelper deviceModel] isEqualToString:@"iPhone11,4"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,6"])) ? 1 : 0;
+    }
+    return is65InchScreen > 0;
+}
+
+static NSInteger is61InchScreen = -1;
++ (BOOL)is61InchScreen {
+    if (is61InchScreen < 0) {
+        is61InchScreen = (DEVICE_WIDTH == self.screenSizeFor61Inch.width && DEVICE_HEIGHT == self.screenSizeFor61Inch.height && [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,8"]) ? 1 : 0;
+    }
+    return is61InchScreen > 0;
+}
+
 static NSInteger is58InchScreen = -1;
 + (BOOL)is58InchScreen {
     if (is58InchScreen < 0) {
+        // Both iPhone XS and iPhone X share the same actual screen sizes, so no need to compare identifiers
+        // iPhone XS 和 iPhone X 的物理尺寸是一致的，因此无需比较机器 Identifier
         is58InchScreen = (DEVICE_WIDTH == self.screenSizeFor58Inch.width && DEVICE_HEIGHT == self.screenSizeFor58Inch.height) ? 1 : 0;
     }
     return is58InchScreen > 0;
@@ -362,6 +404,14 @@ static NSInteger is35InchScreen = -1;
     return is35InchScreen > 0;
 }
 
++ (CGSize)screenSizeFor65Inch {
+    return CGSizeMake(414, 896);
+}
+
++ (CGSize)screenSizeFor61Inch {
+    return CGSizeMake(414, 896);
+}
+
 + (CGSize)screenSizeFor58Inch {
     return CGSizeMake(375, 812);
 }
@@ -382,8 +432,8 @@ static NSInteger is35InchScreen = -1;
     return CGSizeMake(320, 480);
 }
 
-+ (UIEdgeInsets)safeAreaInsetsForIPhoneX {
-    if (![self is58InchScreen]) {
++ (UIEdgeInsets)safeAreaInsetsForDeviceWithNotch {
+    if (![self isNotchedScreen]) {
         return UIEdgeInsetsZero;
     }
     
@@ -409,7 +459,7 @@ static NSInteger is35InchScreen = -1;
 static NSInteger isHighPerformanceDevice = -1;
 + (BOOL)isHighPerformanceDevice {
     if (isHighPerformanceDevice < 0) {
-        isHighPerformanceDevice = PreferredVarForUniversalDevices(1, 1, 1, 0, 0);
+        isHighPerformanceDevice = PreferredValueForDeviceIncludingiPad(1, 1, 1, 0, 0);
     }
     return isHighPerformanceDevice > 0;
 }

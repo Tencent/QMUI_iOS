@@ -51,6 +51,11 @@
 @property(nonatomic, assign) UIEdgeInsets textInsets;
 
 /**
+ clearButton 在默认位置上的偏移
+ */
+@property(nonatomic, assign) UIOffset clearButtonPositionAdjustment UI_APPEARANCE_SELECTOR;
+
+/**
  *  当通过 `setText:`、`setAttributedText:`等方式修改文字时，是否应该自动触发 UIControlEventEditingChanged 事件及 UITextFieldTextDidChangeNotification 通知。
  *
  *  默认为YES（注意系统的 UITextField 对这种行为默认是 NO）

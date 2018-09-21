@@ -370,7 +370,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 - (void)qmui_setLeftBarButtonItem:(UIBarButtonItem *)item animated:(BOOL)animated {
     if ([self detectSetItemsWhenPopping]) {
-        self.tempLeftBarButtonItems = @[item];
+        self.tempLeftBarButtonItems = item ? @[item] : nil;
         return;
     }
     
@@ -430,7 +430,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 - (void)qmui_setRightBarButtonItem:(UIBarButtonItem *)item animated:(BOOL)animated {
     if ([self detectSetItemsWhenPopping]) {
-        self.tempRightBarButtonItems = @[item];
+        self.tempRightBarButtonItems = item ? @[item] : nil;
         return;
     }
     
