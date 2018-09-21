@@ -44,6 +44,11 @@
 }
 
 - (UIImage *)posterImageWithSize:(CGSize)size {
+    // 系统的隐藏相册不应该显示缩略图
+    if (self.phAssetCollection.assetCollectionSubtype == PHAssetCollectionSubtypeSmartAlbumAllHidden) {
+        return [QMUIHelper imageWithName:@"QMUI_hiddenAlbum"];
+    }
+    
     __block UIImage *resultImage;
     NSInteger count = self.phFetchResult.count;
     if (count > 0) {

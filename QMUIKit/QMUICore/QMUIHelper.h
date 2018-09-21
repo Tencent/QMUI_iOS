@@ -124,26 +124,51 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 @interface QMUIHelper (Device)
 
++ (NSString *)deviceModel;
+
 + (BOOL)isIPad;
 + (BOOL)isIPadPro;
 + (BOOL)isIPod;
 + (BOOL)isIPhone;
 + (BOOL)isSimulator;
 
+/// 是否全面屏类型的设备
++ (BOOL)isNotchedScreen;
+
+/// 将屏幕分为普通和紧凑两种，这个方法用于判断是否为普通屏幕
++ (BOOL)isRegularScreen;
+
+/// iPhone XS Max
++ (BOOL)is65InchScreen;
+
+/// iPhone XR
++ (BOOL)is61InchScreen;
+
+/// iPhone X/XS
 + (BOOL)is58InchScreen;
+
+/// iPhone 8 Plus
 + (BOOL)is55InchScreen;
+
+/// iPhone 8
 + (BOOL)is47InchScreen;
+
+/// iPhone 5
 + (BOOL)is40InchScreen;
+
+/// iPhone 4
 + (BOOL)is35InchScreen;
 
++ (CGSize)screenSizeFor65Inch;
++ (CGSize)screenSizeFor61Inch;
 + (CGSize)screenSizeFor58Inch;
 + (CGSize)screenSizeFor55Inch;
 + (CGSize)screenSizeFor47Inch;
 + (CGSize)screenSizeFor40Inch;
 + (CGSize)screenSizeFor35Inch;
 
-// 用于获取 iPhoneX 安全区域的 insets
-+ (UIEdgeInsets)safeAreaInsetsForIPhoneX;
+// 用于获取 iPhone X 系列全面屏手机的安全区域的 insets
++ (UIEdgeInsets)safeAreaInsetsForDeviceWithNotch;
 
 /// 判断当前设备是否高性能设备，只会判断一次，以后都直接读取结果，所以没有性能问题
 + (BOOL)isHighPerformanceDevice;

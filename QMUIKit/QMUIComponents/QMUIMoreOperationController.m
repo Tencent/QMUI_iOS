@@ -186,7 +186,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     __block CGFloat layoutY = CGRectGetHeight(self.view.bounds);
     
     if (!self.extendLayer.hidden) {
-        self.extendLayer.frame = CGRectMake(0, layoutY, CGRectGetWidth(self.view.bounds), IPhoneXSafeAreaInsets.bottom);
+        self.extendLayer.frame = CGRectMake(0, layoutY, CGRectGetWidth(self.view.bounds), SafeAreaInsetsConstantForDeviceWithNotch.bottom);
         if (self.view.clipsToBounds) {
             QMUILog(@"QMUIMoreOperationController", @"%@ 需要显示 extendLayer，但却被父级 clip 掉了，可能看不到", NSStringFromClass(self.class));
         }

@@ -777,10 +777,10 @@ static QMUIAlertController *alertControllerAppearance;
             contentHeight -= self.sheetContentMargin.top;
         }
         
-        CGRect containerRect = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.bounds)) / 2, screenSpaceHeight - contentHeight - IPhoneXSafeAreaInsets.bottom, CGRectGetWidth(self.containerView.bounds), contentHeight + (self.isExtendBottomLayout ? IPhoneXSafeAreaInsets.bottom : 0));
+        CGRect containerRect = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.bounds)) / 2, screenSpaceHeight - contentHeight - SafeAreaInsetsConstantForDeviceWithNotch.bottom, CGRectGetWidth(self.containerView.bounds), contentHeight + (self.isExtendBottomLayout ? SafeAreaInsetsConstantForDeviceWithNotch.bottom : 0));
         self.containerView.frame = CGRectFlatted(CGRectApplyAffineTransform(containerRect, self.containerView.transform));
         
-        self.extendLayer.frame = CGRectFlatMake(0, CGRectGetHeight(self.containerView.bounds) - IPhoneXSafeAreaInsets.bottom - 1, CGRectGetWidth(self.containerView.bounds), IPhoneXSafeAreaInsets.bottom + 1);
+        self.extendLayer.frame = CGRectFlatMake(0, CGRectGetHeight(self.containerView.bounds) - SafeAreaInsetsConstantForDeviceWithNotch.bottom - 1, CGRectGetWidth(self.containerView.bounds), SafeAreaInsetsConstantForDeviceWithNotch.bottom + 1);
     }
 }
 

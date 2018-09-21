@@ -75,7 +75,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     [super didInitialize];
     if (dialogViewControllerAppearance) {
         self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
-        self.dialogViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].dialogViewMargins, IPhoneXSafeAreaInsets);
+        self.dialogViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].dialogViewMargins, SafeAreaInsetsConstantForDeviceWithNotch);
         self.maximumContentViewWidth = [QMUIDialogViewController appearance].maximumContentViewWidth;
         self.backgroundColor = [QMUIDialogViewController appearance].backgroundColor;
         self.titleTintColor = [QMUIDialogViewController appearance].titleTintColor;

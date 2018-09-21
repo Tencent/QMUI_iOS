@@ -117,7 +117,7 @@
 
 @interface QMUIMoreOperationItemView : QMUIButton
 
-@property(nonatomic, assign, readonly) NSIndexPath *indexPath;
+@property(nonatomic, strong, readonly) NSIndexPath *indexPath;
 @property(nonatomic, assign) NSInteger tag;
 
 + (instancetype)itemViewWithImage:(UIImage *)image

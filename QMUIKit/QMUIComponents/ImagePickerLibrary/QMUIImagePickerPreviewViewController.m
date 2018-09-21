@@ -23,8 +23,6 @@
 #import "UIControl+QMUI.h"
 #import "QMUILog.h"
 
-#define TopToolBarViewHeight (20 + NavigationBarHeight + IPhoneXSafeAreaInsets.top)
-
 #pragma mark - QMUIImagePickerPreviewViewController (UIAppearance)
 
 @implementation QMUIImagePickerPreviewViewController (UIAppearance)
@@ -116,8 +114,8 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    self.topToolBarView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), TopToolBarViewHeight);
-    CGFloat topToolbarPaddingTop = IPhoneXSafeAreaInsets.top;
+    self.topToolBarView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), NavigationContentTopConstant);
+    CGFloat topToolbarPaddingTop = SafeAreaInsetsConstantForDeviceWithNotch.top;
     CGFloat topToolbarContentHeight = CGRectGetHeight(self.topToolBarView.bounds) - topToolbarPaddingTop;
     self.backButton.frame = CGRectSetXY(self.backButton.frame, 16, topToolbarPaddingTop + CGFloatGetCenter(topToolbarContentHeight, CGRectGetHeight(self.backButton.frame)));
     if (!self.checkboxButton.hidden) {
@@ -364,11 +362,16 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
             imageView.tag = imageAsset.requestID;
         } else if (imageAsset.assetSubType == QMUIAssetSubTypeGIF) {
             [imageAsset requestImageData:^(NSData *imageData, NSDictionary<NSString *,id> *info, BOOL isGIF, BOOL isHEIC) {
-                UIImage *resultImage = [QMUIImagePickerPreviewViewController animatedGIFWithData:imageData];
-                imageView.image = resultImage;
+                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                    UIImage *resultImage = [UIImage qmui_animatedImageWithData:imageData];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        imageView.image = resultImage;
+                    });
+                });
             }];
         } else {
             imageView.tag = -1;
+            imageView.image = [imageAsset thumbnailWithSize:CGSizeMake([QMUIImagePickerViewController appearance].minimumImageWidth, [QMUIImagePickerViewController appearance].minimumImageWidth)];
             imageAsset.requestID = [imageAsset requestOriginImageWithCompletion:^void(UIImage *result, NSDictionary *info) {
                 // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
                 // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
@@ -396,55 +399,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
             imageView.tag = imageAsset.requestID;
         }
     }
-}
-
-+ (UIImage *)animatedGIFWithData:(NSData *)data {
-    // http://www.jianshu.com/p/767af9c690a3
-    // https://github.com/rs/SDWebImage
-    if (!data) {
-        return nil;
-    }
-    CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
-    size_t count = CGImageSourceGetCount(source);
-    UIImage *animatedImage;
-    if (count <= 1) {
-        animatedImage = [[UIImage alloc] initWithData:data];
-    } else {
-        NSMutableArray <UIImage *> *images = [NSMutableArray array];
-        NSTimeInterval duration = 0.0f;
-        for (size_t i = 0; i < count; i++) {
-            CGImageRef image = CGImageSourceCreateImageAtIndex(source, i, NULL);
-            duration += [self frameDurationAtIndex:i source:source];
-            [images addObject:[UIImage imageWithCGImage:image scale:[UIScreen mainScreen].scale orientation:UIImageOrientationUp]];
-            CGImageRelease(image);
-        }
-        if (!duration) {
-            duration = (1.0f / 10.0f) * count;
-        }
-        animatedImage = [UIImage animatedImageWithImages:images duration:duration];
-    }
-    CFRelease(source);
-    return animatedImage;
-}
-
-+ (float)frameDurationAtIndex:(NSUInteger)index source:(CGImageSourceRef)source {
-    // http://www.jianshu.com/p/767af9c690a3
-    // https://github.com/rs/SDWebImage
-    float frameDuration = 0.1f;
-    CFDictionaryRef cfFrameProperties = CGImageSourceCopyPropertiesAtIndex(source, index, nil);
-    NSDictionary <NSString *, NSDictionary *> *frameProperties = (__bridge NSDictionary *)cfFrameProperties;
-    NSDictionary <NSString *, NSNumber *> *gifProperties = frameProperties[(NSString *)kCGImagePropertyGIFDictionary];
-    NSNumber *delayTimeUnclampedProp = gifProperties[(NSString *)kCGImagePropertyGIFUnclampedDelayTime];
-    if (delayTimeUnclampedProp) {
-        frameDuration = [delayTimeUnclampedProp floatValue];
-    } else {
-        NSNumber *delayTimeProp = gifProperties[(NSString *)kCGImagePropertyGIFDelayTime];
-        if (delayTimeProp) {
-            frameDuration = [delayTimeProp floatValue];
-        }
-    }
-    CFRelease(cfFrameProperties);
-    return frameDuration;
 }
 
 @end

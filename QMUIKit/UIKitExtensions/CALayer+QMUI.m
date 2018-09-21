@@ -10,12 +10,18 @@
 #import "QMUICore.h"
 #import "QMUILog.h"
 
+@interface CALayer ()
+
+@property(nonatomic, assign) float qmui_speedBeforePause;
+@end
+
 @implementation CALayer (QMUI)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SEL selectors[] = {
+            @selector(init),
             @selector(setBounds:),
             @selector(setPosition:)
         };
@@ -25,6 +31,47 @@
             ExchangeImplementations([self class], originalSelector, swizzledSelector);
         }
     });
+}
+
+static char kAssociatedObjectKey_speedBeforePause;
+- (void)setQmui_speedBeforePause:(float)qmui_speedBeforePause {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_speedBeforePause, @(qmui_speedBeforePause), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (float)qmui_speedBeforePause {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_speedBeforePause)) floatValue];
+}
+
+static char kAssociatedObjectKey_pause;
+- (void)setQmui_pause:(BOOL)qmui_pause {
+    if (qmui_pause == self.qmui_pause) {
+        return;
+    }
+    
+    if (qmui_pause) {
+        self.qmui_speedBeforePause = self.speed;
+        CFTimeInterval pausedTime = [self convertTime:CACurrentMediaTime() fromLayer:nil];
+        self.speed = 0;
+        self.timeOffset = pausedTime;
+    } else {
+        CFTimeInterval pausedTime = self.timeOffset;
+        self.speed = self.qmui_speedBeforePause;
+        self.timeOffset = 0;
+        self.beginTime = 0;
+        CFTimeInterval timeSincePause = [self convertTime:CACurrentMediaTime() fromLayer:nil] - pausedTime;
+        self.beginTime = timeSincePause;
+    }
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_pause, @(qmui_pause), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)qmui_pause {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_pause)) boolValue];
+}
+
+- (instancetype)qmui_init {
+    [self qmui_init];
+    self.qmui_speedBeforePause = self.speed;
+    return self;
 }
 
 - (void)qmui_setBounds:(CGRect)bounds {

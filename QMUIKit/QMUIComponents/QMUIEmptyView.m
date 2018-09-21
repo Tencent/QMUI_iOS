@@ -11,6 +11,7 @@
 #import "UIControl+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
 #import "UIView+QMUI.h"
+#import "QMUIButton.h"
 
 @interface QMUIEmptyView ()
 
@@ -82,7 +83,7 @@
     self.detailTextLabel.numberOfLines = 0;
     [self.contentView addSubview:self.detailTextLabel];
     
-    _actionButton = [[UIButton alloc] init];
+    _actionButton = [[QMUIButton alloc] init];
     self.actionButton.qmui_outsideEdge = UIEdgeInsetsMake(-20, -20, -20, -20);
     self.actionButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [self.contentView addSubview:self.actionButton];
@@ -294,7 +295,7 @@
     appearance.imageViewInsets = UIEdgeInsetsMake(0, 0, 36, 0);
     appearance.loadingViewInsets = UIEdgeInsetsMake(0, 0, 36, 0);
     appearance.textLabelInsets = UIEdgeInsetsMake(0, 0, 10, 0);
-    appearance.detailTextLabelInsets = UIEdgeInsetsMake(0, 0, 10, 0);
+    appearance.detailTextLabelInsets = UIEdgeInsetsMake(0, 0, 14, 0);
     appearance.actionButtonInsets = UIEdgeInsetsZero;
     appearance.verticalOffset = -30;
     

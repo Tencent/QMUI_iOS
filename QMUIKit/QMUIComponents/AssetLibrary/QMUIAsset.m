@@ -200,13 +200,7 @@ static NSString * const kAssetInfoSize = @"size";
                 BOOL isGIF = self.assetSubType == QMUIAssetSubTypeGIF;
                 BOOL isHEIC = [dataUTI isEqualToString:@"public.heic"];
                 NSDictionary<NSString *, id> *originInfo = phAssetInfo[kAssetInfoOriginInfo];
-                /**
-                 *  这里不在主线程执行，若用户在该 block 中操作 UI 时会产生一些问题，
-                 *  为了避免这种情况，这里该 block 主动放到主线程执行。
-                 */
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(phAssetInfo[kAssetInfoImageData], originInfo, isGIF, isHEIC);
-                });
+                completion(phAssetInfo[kAssetInfoImageData], originInfo, isGIF, isHEIC);
             }
         }];
     } else {

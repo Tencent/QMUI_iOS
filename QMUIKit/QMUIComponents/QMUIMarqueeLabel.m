@@ -78,6 +78,7 @@
     }
     self.offsetX = 0;
     self.displayLink.paused = ![self shouldPlayDisplayLink];
+    [self checkIfShouldShowGradientLayer];
 }
 
 - (void)setText:(NSString *)text {
@@ -85,6 +86,7 @@
     self.offsetX = 0;
     self.textWidth = [self sizeThatFits:CGSizeMax].width;
     self.displayLink.paused = ![self shouldPlayDisplayLink];
+    [self checkIfShouldShowGradientLayer];
 }
 
 - (void)setAttributedText:(NSAttributedString *)attributedText {
@@ -92,6 +94,7 @@
     self.offsetX = 0;
     self.textWidth = [self sizeThatFits:CGSizeMax].width;
     self.displayLink.paused = ![self shouldPlayDisplayLink];
+    [self checkIfShouldShowGradientLayer];
 }
 
 - (void)setFrame:(CGRect)frame {
@@ -100,6 +103,7 @@
     if (isSizeChanged) {
         self.offsetX = 0;
         self.displayLink.paused = ![self shouldPlayDisplayLink];
+        [self checkIfShouldShowGradientLayer];
     }
 }
 
@@ -179,8 +183,7 @@
 }
 
 - (BOOL)shouldPlayDisplayLink {
-    CGFloat fadeWidth = CGRectGetWidth(self.bounds) * .5 * MAX(0, self.fadeEndPercent - self.fadeStartPercent);
-    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && (self.textWidth + fadeWidth) > CGRectGetWidth(self.bounds);
+    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textWidth > CGRectGetWidth(self.bounds);
     
     // 如果 label.frame 在 window 可视区域之外，也视为不可见，暂停掉 displayLink
     if (result && self.automaticallyValidateVisibleFrame) {
@@ -195,7 +198,14 @@
 
 - (void)setShouldFadeAtEdge:(BOOL)shouldFadeAtEdge {
     _shouldFadeAtEdge = shouldFadeAtEdge;
-    if (shouldFadeAtEdge) {
+    
+    [self checkIfShouldShowGradientLayer];
+}
+
+- (void)checkIfShouldShowGradientLayer {
+    BOOL shouldShowFadeLayer = self.window && self.shouldFadeAtEdge && CGRectGetWidth(self.bounds) > 0 && self.textWidth > CGRectGetWidth(self.bounds);
+    
+    if (shouldShowFadeLayer) {
         _fadeLayer = [CAGradientLayer layer];
         self.fadeLayer.locations = @[@(self.fadeStartPercent), @(self.fadeEndPercent), @(1 - self.fadeEndPercent), @(1 - self.fadeStartPercent)];
         self.fadeLayer.startPoint = CGPointMake(0, .5);

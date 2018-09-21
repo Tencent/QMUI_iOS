@@ -42,6 +42,10 @@
     return self;
 }
 
+- (CGSize)sizeThatFits:(CGSize)size {
+    return [self.button sizeThatFits:size];
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
     self.button.frame = self.bounds;
@@ -56,7 +60,7 @@
     _image = image;
     [self.button setImage:image forState:UIControlStateNormal];
     if (image) {
-        self.button.imageEdgeInsets = UIEdgeInsetsMake(0, -self.imageMarginRight, 0, self.imageMarginRight);
+        self.button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, self.imageMarginRight);
     } else {
         self.button.imageEdgeInsets = UIEdgeInsetsZero;
     }
@@ -76,7 +80,7 @@
 - (void)updateAppearance {
     self.button.titleLabel.font = self.menuView.itemTitleFont;
     [self.button setTitleColor:self.menuView.itemTitleColor forState:UIControlStateNormal];
-    self.button.contentEdgeInsets = UIEdgeInsetsMake(0, self.menuView.padding.left - self.button.imageEdgeInsets.left, 0, self.menuView.padding.right);
+    self.button.contentEdgeInsets = UIEdgeInsetsMake(0, self.menuView.padding.left, 0, self.menuView.padding.right);
 }
 
 @end

@@ -19,20 +19,6 @@
 #import <Photos/PHCollection.h>
 #import <Photos/PHFetchResult.h>
 
-// 相册预览图的大小默认值
-const CGFloat QMUIAlbumViewControllerDefaultAlbumTableViewCellHeight = 67;
-// 相册预览大小（正方形），如果想要跟图片一样高，则设置成跟 QMUIAlbumViewControllerDefaultAlbumTableViewCellHeight 一样的值就好了
-const CGFloat QMUIAlbumViewControllerDefaultAlbumImageSize = 57;
-// 相册缩略图的 left，默认 -1，表示和上下一样大
-const CGFloat QMUIAlbumViewControllerDefaultAlbumImageLeft = -1;
-// 相册名称的字号默认值
-const CGFloat QMUIAlbumTableViewCellDefaultAlbumNameFontSize = 16;
-// 相册资源数量的字号默认值
-const CGFloat QMUIAlbumTableViewCellDefaultAlbumAssetsNumberFontSize = 16;
-// 相册名称的 insets 默认值
-const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
-
-
 #pragma mark - QMUIAlbumTableViewCell
 
 @implementation QMUIAlbumTableViewCell
@@ -40,11 +26,13 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        [QMUIAlbumTableViewCell appearance].albumImageSize = QMUIAlbumViewControllerDefaultAlbumImageSize;
-        [QMUIAlbumTableViewCell appearance].albumImageMarginLeft = QMUIAlbumViewControllerDefaultAlbumImageLeft;
-        [QMUIAlbumTableViewCell appearance].albumNameFontSize = QMUIAlbumTableViewCellDefaultAlbumNameFontSize;
-        [QMUIAlbumTableViewCell appearance].albumNameInsets = QMUIAlbumTableViewCellDefaultAlbumNameInsets;
-        [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize = QMUIAlbumTableViewCellDefaultAlbumAssetsNumberFontSize;
+        [QMUIAlbumTableViewCell appearance].albumImageSize = 72;
+        [QMUIAlbumTableViewCell appearance].albumImageMarginLeft = 16;
+        [QMUIAlbumTableViewCell appearance].albumNameInsets = UIEdgeInsetsMake(0, 14, 0, 3);
+        [QMUIAlbumTableViewCell appearance].albumNameFont = UIFontMake(17);
+        [QMUIAlbumTableViewCell appearance].albumNameColor = TableViewCellTitleLabelColor;
+        [QMUIAlbumTableViewCell appearance].albumAssetsNumberFont = UIFontMake(17);
+        [QMUIAlbumTableViewCell appearance].albumAssetsNumberColor = TableViewCellTitleLabelColor;
     });
 }
 
@@ -52,26 +40,29 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
     [super didInitializeWithStyle:style];
     self.albumImageSize = [QMUIAlbumTableViewCell appearance].albumImageSize;
     self.albumImageMarginLeft = [QMUIAlbumTableViewCell appearance].albumImageMarginLeft;
-    self.albumNameFontSize = [QMUIAlbumTableViewCell appearance].albumNameFontSize;
     self.albumNameInsets = [QMUIAlbumTableViewCell appearance].albumNameInsets;
-    self.albumAssetsNumberFontSize = [QMUIAlbumTableViewCell appearance].albumAssetsNumberFontSize;
+    self.albumNameFont = [QMUIAlbumTableViewCell appearance].albumNameFont;
+    self.albumNameColor = [QMUIAlbumTableViewCell appearance].albumNameColor;
+    self.albumAssetsNumberFont = [QMUIAlbumTableViewCell appearance].albumAssetsNumberFont;
+    self.albumAssetsNumberColor = [QMUIAlbumTableViewCell appearance].albumAssetsNumberColor;
     
     self.imageView.contentMode = UIViewContentModeScaleAspectFill;
     self.imageView.clipsToBounds = YES;
-    self.detailTextLabel.textColor = UIColorGrayDarken;
+    self.imageView.layer.borderWidth = PixelOne;
+    self.imageView.layer.borderColor = UIColorMakeWithRGBA(0, 0, 0, .1).CGColor;
 }
 
 - (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath {
     [super updateCellAppearanceWithIndexPath:indexPath];
-    self.textLabel.font = UIFontBoldMake(self.albumNameFontSize);
-    self.detailTextLabel.font = UIFontMake(self.albumAssetsNumberFontSize);
+    self.textLabel.font = self.albumNameFont;
+    self.detailTextLabel.font = self.albumAssetsNumberFont;
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
     
     CGFloat imageEdgeTop = CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), self.albumImageSize);
-    CGFloat imageEdgeLeft = self.albumImageMarginLeft == QMUIAlbumViewControllerDefaultAlbumImageLeft ? imageEdgeTop : self.albumImageMarginLeft;
+    CGFloat imageEdgeLeft = self.albumImageMarginLeft == -1 ? imageEdgeTop : self.albumImageMarginLeft;
     self.imageView.frame = CGRectMake(imageEdgeLeft, imageEdgeTop, self.albumImageSize, self.albumImageSize);
     
     self.textLabel.frame = CGRectSetXY(self.textLabel.frame, CGRectGetMaxX(self.imageView.frame) + self.albumNameInsets.left, [self.textLabel qmui_topWhenCenterInSuperview]);
@@ -82,6 +73,26 @@ const UIEdgeInsets QMUIAlbumTableViewCellDefaultAlbumNameInsets = {0, 8, 0, 4};
     }
     
     self.detailTextLabel.frame = CGRectSetXY(self.detailTextLabel.frame, CGRectGetMaxX(self.textLabel.frame) + self.albumNameInsets.right, [self.detailTextLabel qmui_topWhenCenterInSuperview]);
+}
+
+- (void)setAlbumNameFont:(UIFont *)albumNameFont {
+    _albumNameFont = albumNameFont;
+    self.textLabel.font = albumNameFont;
+}
+
+- (void)setAlbumNameColor:(UIColor *)albumNameColor {
+    _albumNameColor = albumNameColor;
+    self.textLabel.textColor = albumNameColor;
+}
+
+- (void)setAlbumAssetsNumberFont:(UIFont *)albumAssetsNumberFont {
+    _albumAssetsNumberFont = albumAssetsNumberFont;
+    self.detailTextLabel.font = albumAssetsNumberFont;
+}
+
+- (void)setAlbumAssetsNumberColor:(UIColor *)albumAssetsNumberColor {
+    _albumAssetsNumberColor = albumAssetsNumberColor;
+    self.detailTextLabel.textColor = albumAssetsNumberColor;
 }
 
 @end
@@ -104,7 +115,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
     dispatch_once(&onceToken2, ^{
         if (!albumViewControllerAppearance) {
             albumViewControllerAppearance = [[QMUIAlbumViewController alloc] init];
-            albumViewControllerAppearance.albumTableViewCellHeight = QMUIAlbumViewControllerDefaultAlbumTableViewCellHeight;
+            albumViewControllerAppearance.albumTableViewCellHeight = 88;
         }
     });
     return albumViewControllerAppearance;
@@ -241,7 +252,7 @@ static QMUIAlbumViewController *albumViewControllerAppearance;
     // 显示相册名称
     cell.textLabel.text = [assetsGroup name];
     // 显示相册中所包含的资源数量
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"(%@)", @(assetsGroup.numberOfAssets)];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"· %@", @(assetsGroup.numberOfAssets)];
     [cell updateCellAppearanceWithIndexPath:indexPath];
     return cell;
 }

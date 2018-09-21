@@ -63,7 +63,7 @@
     }
     
     BOOL isImageViewShowing = !!self.currentImage;
-    BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
+    BOOL isTitleLabelShowing = !!self.currentTitle || self.currentAttributedTitle;
     CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
     CGSize titleTotalSize = CGSizeZero;// 包含 titleEdgeInsets 那些空间
     CGFloat spacingBetweenImageAndTitle = flat(isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0);// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
@@ -135,7 +135,7 @@
     }
     
     BOOL isImageViewShowing = !!self.currentImage;
-    BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
+    BOOL isTitleLabelShowing = !!self.currentTitle || !!self.currentAttributedTitle;
     CGSize imageLimitSize = CGSizeZero;
     CGSize titleLimitSize = CGSizeZero;
     CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
@@ -266,8 +266,12 @@
             }
         }
         
-        self.imageView.frame = CGRectFlatted(imageFrame);
-        self.titleLabel.frame = CGRectFlatted(titleFrame);
+        if (isImageViewShowing) {
+            self.imageView.frame = CGRectFlatted(imageFrame);
+        }
+        if (isTitleLabelShowing) {
+            self.titleLabel.frame = CGRectFlatted(titleFrame);
+        }
         
     } else if (self.imagePosition == QMUIButtonImagePositionLeft || self.imagePosition == QMUIButtonImagePositionRight) {
         
@@ -395,8 +399,12 @@
             }
         }
         
-        self.imageView.frame = CGRectFlatted(imageFrame);
-        self.titleLabel.frame = CGRectFlatted(titleFrame);
+        if (isImageViewShowing) {
+            self.imageView.frame = CGRectFlatted(imageFrame);
+        }
+        if (isTitleLabelShowing) {
+            self.titleLabel.frame = CGRectFlatted(titleFrame);
+        }
     }
 }
 

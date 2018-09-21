@@ -10,7 +10,7 @@
 #import "QMUIPopupMenuItemProtocol.h"
 
 /**
- 用于 QMUIPopupMenuView 的 item 基类，便于自定义各种类型的 item。若有 subview 请直接添加到 self 上，布局也是写到 layoutSubviews 里即可。
+ 用于 QMUIPopupMenuView 的 item 基类，便于自定义各种类型的 item。若有 subview 请直接添加到 self 上，自身大小的计算请写到 sizeThatFits:，布局写到 layoutSubviews。
  */
 @interface QMUIPopupMenuBaseItem : UIView <QMUIPopupMenuItemProtocol>
 

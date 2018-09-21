@@ -28,4 +28,7 @@
 /// 如果打开了`canPerformCopyAction`，则长按时背景色将会被改为`highlightedBackgroundColor`
 @property(nonatomic,strong) IBInspectable UIColor *highlightedBackgroundColor;
 
+/// 点击了“复制”后的回调
+@property(nonatomic, copy) void (^didCopyBlock)(QMUILabel *label, NSString *stringCopied);
+
 @end

@@ -238,6 +238,25 @@ typedef NS_ENUM(NSInteger, QMUIImageResizingMode) {
 - (UIImage *)qmui_imageWithMaskImage:(UIImage *)maskImage usingMaskImageMode:(BOOL)usingMaskImageMode;
 
 /**
+ 将 data 转换成 animated UIImage（如果非 animated 则转换成普通 UIImage），image 倍数为 1（与系统的 [UIImage animatedImageWithData:] 接口一致）
+
+ @param data 图片文件的 data
+ @return 转换成的 UIImage
+ */
++ (UIImage *)qmui_animatedImageWithData:(NSData *)data;
+
+/**
+ 将 data 转换成 animated UIImage（如果非 animated 则转换成普通 UIImage）
+
+ @param data 图片文件的 data
+ @param scale 图片的倍数，0 表示获取当前设备的屏幕倍数
+ @return 转换成的 UIImage
+ @see http://www.jianshu.com/p/767af9c690a3
+ @see https://github.com/rs/SDWebImage
+ */
++ (UIImage *)qmui_animatedImageWithData:(NSData *)data scale:(CGFloat)scale;
+
+/**
  *  创建一个size为(4, 4)的纯色的UIImage
  *
  *  @param color 图片的颜色

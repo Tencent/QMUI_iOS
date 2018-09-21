@@ -65,11 +65,9 @@ static char kAssociatedObjectKey_qmuiDelegates;
     NSString *delegateGetterKey = NSStringFromSelector(getter);
     if (!self.qmuimd_delegates[delegateGetterKey]) {
         objc_property_t prop = class_getProperty(self.class, delegateGetterKey.UTF8String);
-        const char *propAttributes = property_getAttributes(prop);
-        NSString *attributes = [NSString stringWithUTF8String:propAttributes];
-        if ([attributes containsString:@"&"]) {
-            // & means strong property
-            // @see https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtPropertyIntrospection.html#//apple_ref/doc/uid/TP40008048-CH101-SW5
+        QMUIPropertyDescriptor *property = [QMUIPropertyDescriptor descriptorWithProperty:prop];
+        if (property.isStrong) {
+            // strong property
             self.qmuimd_delegates[delegateGetterKey] = [QMUIMultipleDelegates strongDelegates];
         } else {
             // weak property

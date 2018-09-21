@@ -388,6 +388,58 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return returnImage;
 }
 
++ (UIImage *)qmui_animatedImageWithData:(NSData *)data {
+    return [self qmui_animatedImageWithData:data scale:1];
+}
+
++ (UIImage *)qmui_animatedImageWithData:(NSData *)data scale:(CGFloat)scale {
+    // http://www.jianshu.com/p/767af9c690a3
+    // https://github.com/rs/SDWebImage
+    if (!data) {
+        return nil;
+    }
+    CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
+    size_t count = CGImageSourceGetCount(source);
+    UIImage *animatedImage = nil;
+    if (count <= 1) {
+        animatedImage = [[UIImage alloc] initWithData:data];
+    } else {
+        NSMutableArray<UIImage *> *images = [[NSMutableArray alloc] init];
+        NSTimeInterval duration = 0.0f;
+        for (size_t i = 0; i < count; i++) {
+            CGImageRef image = CGImageSourceCreateImageAtIndex(source, i, NULL);
+            duration += [self qmui_frameDurationAtIndex:i source:source];
+            UIImage *frameImage = [UIImage imageWithCGImage:image scale:scale == 0 ? ScreenScale : scale orientation:UIImageOrientationUp];
+            [images addObject:frameImage];
+            CGImageRelease(image);
+        }
+        if (!duration) {
+            duration = (1.0f / 10.0f) * count;
+        }
+        animatedImage = [UIImage animatedImageWithImages:images duration:duration];
+    }
+    CFRelease(source);
+    return animatedImage;
+}
+
++ (float)qmui_frameDurationAtIndex:(NSUInteger)index source:(CGImageSourceRef)source {
+    float frameDuration = 0.1f;
+    CFDictionaryRef cfFrameProperties = CGImageSourceCopyPropertiesAtIndex(source, index, nil);
+    NSDictionary<NSString *, NSDictionary *> *frameProperties = (__bridge NSDictionary *)cfFrameProperties;
+    NSDictionary<NSString *, NSNumber *> *gifProperties = frameProperties[(NSString *)kCGImagePropertyGIFDictionary];
+    NSNumber *delayTimeUnclampedProp = gifProperties[(NSString *)kCGImagePropertyGIFUnclampedDelayTime];
+    if (delayTimeUnclampedProp) {
+        frameDuration = [delayTimeUnclampedProp floatValue];
+    } else {
+        NSNumber *delayTimeProp = gifProperties[(NSString *)kCGImagePropertyGIFDelayTime];
+        if (delayTimeProp) {
+            frameDuration = [delayTimeProp floatValue];
+        }
+    }
+    CFRelease(cfFrameProperties);
+    return frameDuration;
+}
+
 + (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size path:(UIBezierPath *)path addClip:(BOOL)addClip {
     size = CGSizeFlatted(size);
     return [UIImage qmui_imageWithSize:size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
