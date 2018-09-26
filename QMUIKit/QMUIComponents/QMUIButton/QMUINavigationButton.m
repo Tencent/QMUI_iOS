@@ -73,10 +73,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     self.adjustsImageWhenHighlighted = NO;
     self.adjustsImageWhenDisabled = NO;
     
-    if (@available(iOS 11, *)) {
-        self.translatesAutoresizingMaskIntoConstraints = NO;// 打开这个才能让 iOS 11 下的 alignmentRectInsets 生效
-    }
-    
     switch (self.type) {
         case QMUINavigationButtonTypeNormal:
             break;
@@ -173,13 +169,8 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         
         // 对于奇数大小的字号，不同 iOS 版本的偏移策略不同，统一一下
         if (self.titleLabel.font.pointSize / 2.0 > 0) {
-            if (@available(iOS 11, *)) {
-                insets.top = PixelOne;
-                insets.bottom = -PixelOne;
-            } else {
-                insets.top = -PixelOne;
-                insets.bottom = PixelOne;
-            }
+            insets.top = -PixelOne;
+            insets.bottom = PixelOne;
         }
     } else if (self.type == QMUINavigationButtonTypeImage) {
         // 图片类型的按钮，分别对最左、最右那个按钮调整 inset（这里与 UINavigationItem(QMUINavigationButton) 里的 position 赋值配合使用）

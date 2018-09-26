@@ -77,7 +77,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     [self.view addSubview:self.topToolBarView];
     
     _backButton = [[QMUINavigationButton alloc] initWithType:QMUINavigationButtonTypeBack];
-    [self.backButton sizeToFit];
     [self.backButton addTarget:self action:@selector(handleCancelPreviewImage:) forControlEvents:UIControlEventTouchUpInside];
     self.backButton.qmui_outsideEdge = UIEdgeInsetsMake(-30, -20, -50, -80);
     [self.topToolBarView addSubview:self.backButton];
@@ -117,9 +116,9 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     self.topToolBarView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), NavigationContentTopConstant);
     CGFloat topToolbarPaddingTop = SafeAreaInsetsConstantForDeviceWithNotch.top;
     CGFloat topToolbarContentHeight = CGRectGetHeight(self.topToolBarView.bounds) - topToolbarPaddingTop;
-    self.backButton.frame = CGRectSetXY(self.backButton.frame, 16, topToolbarPaddingTop + CGFloatGetCenter(topToolbarContentHeight, CGRectGetHeight(self.backButton.frame)));
+    self.backButton.frame = CGRectSetXY(self.backButton.frame, 16 + self.view.qmui_safeAreaInsets.left, topToolbarPaddingTop + CGFloatGetCenter(topToolbarContentHeight, CGRectGetHeight(self.backButton.frame)));
     if (!self.checkboxButton.hidden) {
-        self.checkboxButton.frame = CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - CGRectGetWidth(self.checkboxButton.frame), topToolbarPaddingTop + CGFloatGetCenter(topToolbarContentHeight, CGRectGetHeight(self.checkboxButton.frame)));
+        self.checkboxButton.frame = CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.topToolBarView.frame) - 10 - self.view.qmui_safeAreaInsets.right - CGRectGetWidth(self.checkboxButton.frame), topToolbarPaddingTop + CGFloatGetCenter(topToolbarContentHeight, CGRectGetHeight(self.checkboxButton.frame)));
     }
 }
 
