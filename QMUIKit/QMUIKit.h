@@ -5,6 +5,8 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
+static NSString * const QMUI_VERSION = @"2.8.1";
+
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
 #endif

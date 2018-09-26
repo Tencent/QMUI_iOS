@@ -149,7 +149,7 @@
 #define StatusBarHeight ([UIApplication sharedApplication].statusBarHidden ? 0 : [[UIApplication sharedApplication] statusBarFrame].size.height)
 
 // 状态栏高度(如果状态栏不可见，也会返回一个普通状态下可见的高度)
-#define StatusBarHeightConstant ([UIApplication sharedApplication].statusBarHidden ? PreferredValueForNotchedDevice(44, 20) : [[UIApplication sharedApplication] statusBarFrame].size.height)
+#define StatusBarHeightConstant ([UIApplication sharedApplication].statusBarHidden ? PreferredValueForNotchedDevice(IS_LANDSCAPE ? 0 : 44, 20) : [[UIApplication sharedApplication] statusBarFrame].size.height)
 
 // navigationBar 的静态高度
 #define NavigationBarHeight (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44)
