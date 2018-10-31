@@ -135,10 +135,12 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUICellHeightKeyCache' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUICellHeightKeyCache/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewProtocols'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
     ss.subspec 'QMUICellSizeKeyCache' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUICellSizeKeyCache/*.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
     ss.subspec 'QMUICollectionViewPagingLayout' do |sss|
@@ -343,6 +345,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIStaticTableView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/StaticTableView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
   end
