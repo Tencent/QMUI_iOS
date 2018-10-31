@@ -111,13 +111,13 @@
         self.maximumWidth = appearance.maximumWidth;
         self.loadingViewSize = appearance.loadingViewSize;
         self.loadingViewMarginRight = appearance.loadingViewMarginRight;
-        self.horizontalTitleFont = appearance.horizontalTitleFont;
-        self.horizontalSubtitleFont = appearance.horizontalSubtitleFont;
+        self.horizontalTitleFont = appearance.horizontalTitleFont ?: [UINavigationBar appearance].titleTextAttributes[NSFontAttributeName];
+        self.horizontalSubtitleFont = appearance.horizontalSubtitleFont ?: self.horizontalTitleFont;
         self.verticalTitleFont = appearance.verticalTitleFont;
         self.verticalSubtitleFont = appearance.verticalSubtitleFont;
         self.accessoryViewOffset = appearance.accessoryViewOffset;
         self.subAccessoryViewOffset = appearance.subAccessoryViewOffset;
-        self.tintColor = NavBarTitleColor;
+        self.tintColor = NavBarTitleColor ?: [UINavigationBar appearance].titleTextAttributes[NSForegroundColorAttributeName];
     }
     return self;
 }

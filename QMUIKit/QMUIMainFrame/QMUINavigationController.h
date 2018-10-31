@@ -107,16 +107,19 @@
 /// @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请使用系统提供的 - preferredStatusBarStyle 方法
 - (BOOL)shouldSetStatusBarStyleLight;
 
-/// 设置titleView的tintColor
+/// 设置 titleView 的 tintColor
 - (nullable UIColor *)titleViewTintColor;
 
-/// 设置导航栏的背景图，默认为NavBarBackgroundImage
+/// 设置导航栏的背景图，默认为 NavBarBackgroundImage
 - (nullable UIImage *)navigationBarBackgroundImage;
 
-/// 设置导航栏底部的分隔线图片，默认为NavBarShadowImage，必须在navigationBar设置了背景图后才有效
+/// 设置导航栏底部的分隔线图片，默认为 NavBarShadowImage，必须在 navigationBar 设置了背景图后才有效（系统限制如此）
 - (nullable UIImage *)navigationBarShadowImage;
 
-/// 设置当前导航栏的UIBarButtonItem的tintColor，默认为NavBarTintColor
+/// 设置当前导航栏的 barTintColor，默认为 NavBarBarTintColor
+- (nullable UIColor *)navigationBarBarTintColor;
+
+/// 设置当前导航栏的 UIBarButtonItem 的 tintColor，默认为NavBarTintColor
 - (nullable UIColor *)navigationBarTintColor;
 
 /// 设置系统返回按钮title，如果返回nil则使用系统默认的返回按钮标题
@@ -134,7 +137,7 @@
 - (BOOL)preferredNavigationBarHidden;
 
 /**
- *  当切换界面时，如果不同界面导航栏的显示状态不同，可以通过 shouldCustomizeNavigationBarTransitionIfHideable 设置是否需要接管导航栏的显示和隐藏。从而不需要在各自的界面的 viewWillAppear 和 viewWillDisappear 里面去管理导航栏的状态。
+ *  当切换界面时，如果不同界面导航栏的显隐状态不同，可以通过 shouldCustomizeNavigationBarTransitionIfHideable 设置是否需要接管导航栏的显示和隐藏。从而不需要在各自的界面的 viewWillAppear 和 viewWillDisappear 里面去管理导航栏的状态。
  *  @see UINavigationController+NavigationBarTransition.h
  *  @see preferredNavigationBarHidden
  */

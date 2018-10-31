@@ -843,7 +843,7 @@ static QMUIAlertController *alertControllerAppearance;
                 }
             }];
         } else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
-            weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.containerView.bounds), 0);
+            weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
                 weakSelf.maskView.alpha = 1;
                 weakSelf.containerView.layer.transform = CATransform3DIdentity;
@@ -869,7 +869,7 @@ static QMUIAlertController *alertControllerAppearance;
         } else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
                 weakSelf.maskView.alpha = 0;
-                weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.containerView.bounds), 0);
+                weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
             } completion:^(BOOL finished) {
                 if (completion) {
                     completion(finished);
@@ -955,7 +955,7 @@ static QMUIAlertController *alertControllerAppearance;
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
             weakSelf.containerView.alpha = 0;
         } else {
-            weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.containerView.bounds), 0);
+            weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
         }
         if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
             [weakSelf.delegate didHideAlertController:weakSelf];

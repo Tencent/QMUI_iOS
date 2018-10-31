@@ -11,6 +11,7 @@
 #import "QMUIStaticTableViewCellDataSource.h"
 #import <objc/runtime.h>
 #import "QMUILog.h"
+#import "QMUIMultipleDelegates.h"
 
 @interface QMUIStaticTableViewCellDataSource ()
 
@@ -71,11 +72,23 @@ id staticCell_cellForRow (id current_self, SEL current_cmd, UITableView *tableVi
 
 - (void)staticCell_setDataSource:(id<UITableViewDataSource>)dataSource {
     if (dataSource && self.qmui_staticCellDataSource) {
-        // 这些 addMethod 的操作必须要在系统的 setDataSource 执行前就执行，否则 tableView 可能会认为不存在这些 method
-        // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
-        [self addSelector:@selector(numberOfSectionsInTableView:) withImplementation:(IMP)staticCell_numberOfSections types:"l@:@" forObject:dataSource];
-        [self addSelector:@selector(tableView:numberOfRowsInSection:) withImplementation:(IMP)staticCell_numberOfRows types:"l@:@l" forObject:dataSource];
-        [self addSelector:@selector(tableView:cellForRowAtIndexPath:) withImplementation:(IMP)staticCell_cellForRow types:"@@:@@" forObject:dataSource];
+        void (^addSelectorBlock)(id<UITableViewDataSource>) = ^void(id<UITableViewDataSource> aDataSource) {
+            // 这些 addMethod 的操作必须要在系统的 setDataSource 执行前就执行，否则 tableView 可能会认为不存在这些 method
+            // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
+            [self addSelector:@selector(numberOfSectionsInTableView:) withImplementation:(IMP)staticCell_numberOfSections types:"l@:@" forObject:aDataSource];
+            [self addSelector:@selector(tableView:numberOfRowsInSection:) withImplementation:(IMP)staticCell_numberOfRows types:"l@:@l" forObject:aDataSource];
+            [self addSelector:@selector(tableView:cellForRowAtIndexPath:) withImplementation:(IMP)staticCell_cellForRow types:"@@:@@" forObject:aDataSource];
+        };
+        if ([dataSource isKindOfClass:[QMUIMultipleDelegates class]]) {
+            NSPointerArray *delegates = [((QMUIMultipleDelegates *)dataSource).delegates copy];
+            for (id delegate in delegates) {
+                if ([delegate conformsToProtocol:@protocol(UITableViewDataSource)]) {
+                    addSelectorBlock((id<UITableViewDataSource>)delegate);
+                }
+            }
+        } else {
+            addSelectorBlock((id<UITableViewDataSource>)dataSource);
+        }
     }
     
     [self staticCell_setDataSource:dataSource];
@@ -97,11 +110,23 @@ void staticCell_accessoryButtonTapped (id current_self, SEL current_cmd, UITable
 
 - (void)staticCell_setDelegate:(id<UITableViewDelegate>)delegate {
     if (delegate && self.qmui_staticCellDataSource) {
-        // 这些 addMethod 的操作必须要在系统的 setDataSource 执行前就执行，否则 tableView 可能会认为不存在这些 method
-        // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
-        [self addSelector:@selector(tableView:heightForRowAtIndexPath:) withImplementation:(IMP)staticCell_heightForRow types:"d@:@@" forObject:delegate];
-        [self addSelector:@selector(tableView:didSelectRowAtIndexPath:) withImplementation:(IMP)staticCell_didSelectRow types:"v@:@@" forObject:delegate];
-        [self addSelector:@selector(tableView:accessoryButtonTappedForRowWithIndexPath:) withImplementation:(IMP)staticCell_accessoryButtonTapped types:"v@:@@" forObject:delegate];
+        void (^addSelectorBlock)(id<UITableViewDelegate>) = ^void(id<UITableViewDelegate> aDelegate) {
+            // 这些 addMethod 的操作必须要在系统的 setDelegate 执行前就执行，否则 tableView 可能会认为不存在这些 method
+            // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
+            [self addSelector:@selector(tableView:heightForRowAtIndexPath:) withImplementation:(IMP)staticCell_heightForRow types:"d@:@@" forObject:aDelegate];
+            [self addSelector:@selector(tableView:didSelectRowAtIndexPath:) withImplementation:(IMP)staticCell_didSelectRow types:"v@:@@" forObject:aDelegate];
+            [self addSelector:@selector(tableView:accessoryButtonTappedForRowWithIndexPath:) withImplementation:(IMP)staticCell_accessoryButtonTapped types:"v@:@@" forObject:aDelegate];
+        };
+        if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+            NSPointerArray *delegates = [((QMUIMultipleDelegates *)delegate).delegates copy];
+            for (id d in delegates) {
+                if ([d conformsToProtocol:@protocol(UITableViewDelegate)]) {
+                    addSelectorBlock((id<UITableViewDelegate>)d);
+                }
+            }
+        } else {
+            addSelectorBlock((id<UITableViewDelegate>)delegate);
+        }
     }
     
     [self staticCell_setDelegate:delegate];

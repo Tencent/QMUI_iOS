@@ -5,7 +5,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"2.8.1";
+static NSString * const QMUI_VERSION = @"2.9.0";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -227,6 +227,14 @@ static NSString * const QMUI_VERSION = @"2.8.1";
 #import "QMUIMultipleDelegates.h"
 #endif
 
+#if __has_include("QMUINavigationBarScrollingAnimator.h")
+#import "QMUINavigationBarScrollingAnimator.h"
+#endif
+
+#if __has_include("QMUINavigationBarScrollingSnapAnimator.h")
+#import "QMUINavigationBarScrollingSnapAnimator.h"
+#endif
+
 #if __has_include("QMUINavigationButton.h")
 #import "QMUINavigationButton.h"
 #endif
@@ -269,6 +277,10 @@ static NSString * const QMUI_VERSION = @"2.8.1";
 
 #if __has_include("QMUIRuntime.h")
 #import "QMUIRuntime.h"
+#endif
+
+#if __has_include("QMUIScrollAnimator.h")
+#import "QMUIScrollAnimator.h"
 #endif
 
 #if __has_include("QMUISearchBar.h")
@@ -417,6 +429,10 @@ static NSString * const QMUI_VERSION = @"2.8.1";
 
 #if __has_include("UILabel+QMUI.h")
 #import "UILabel+QMUI.h"
+#endif
+
+#if __has_include("UINavigationBar+QMUI.h")
+#import "UINavigationBar+QMUI.h"
 #endif
 
 #if __has_include("UINavigationBar+Transition.h")

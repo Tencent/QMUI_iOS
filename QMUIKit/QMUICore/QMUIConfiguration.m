@@ -332,12 +332,15 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)updateNavigationBarTitleAttributesIfNeeded {
     if (self.navBarTitleFont || self.navBarTitleColor) {
-        NSMutableDictionary<NSString *, id> *titleTextAttributes = [[NSMutableDictionary alloc] init];
+        NSMutableDictionary<NSAttributedStringKey, id> *titleTextAttributes = [UINavigationBar appearance].titleTextAttributes.mutableCopy;
+        if (!titleTextAttributes) {
+            titleTextAttributes = [[NSMutableDictionary alloc] init];
+        }
         if (self.navBarTitleFont) {
-            [titleTextAttributes setValue:self.navBarTitleFont forKey:NSFontAttributeName];
+            titleTextAttributes[NSFontAttributeName] = self.navBarTitleFont;
         }
         if (self.navBarTitleColor) {
-            [titleTextAttributes setValue:self.navBarTitleColor forKey:NSForegroundColorAttributeName];
+            titleTextAttributes[NSForegroundColorAttributeName] = self.navBarTitleColor;
         }
         [UINavigationBar appearance].titleTextAttributes = titleTextAttributes;
         [QMUIHelper visibleViewController].navigationController.navigationBar.titleTextAttributes = titleTextAttributes;

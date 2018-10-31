@@ -12,7 +12,7 @@
 #import "UIView+QMUI.h"
 #import "UIScrollView+QMUI.h"
 #import "QMUITableViewProtocols.h"
-#import <objc/runtime.h>
+#import "QMUIMultipleDelegates.h"
 
 @interface UITableView ()
 
@@ -51,7 +51,10 @@ static char kAssociatedObjectKey_qmuiCacheCellHeightByKeyAutomatically;
             self.delegate = self.delegate;
         } else {
             id <QMUITableViewDelegate> tempDelegate = (id<QMUITableViewDelegate>)self.delegate;
-            self.delegate = nil;
+            // 如果正在使用 QMUIMultipleDelegate，那么它内部会自己先设置为 nil，因此这里不需要额外再弄一次。而且如果这里设置为 nil，反而会使 QMUIMultipleDelegate 内的所有 delegate 都被清空
+            if (![tempDelegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+                self.delegate = nil;
+            }
             self.delegate = tempDelegate;
         }
     }
@@ -124,14 +127,27 @@ static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
         if (!qmui_methodsReplacedClasses) {
             qmui_methodsReplacedClasses = [NSMutableSet set];
         }
-        if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(delegate.class)]) {
-            return;
+        
+        void (^addSelectorBlock)(id<QMUITableViewDelegate>) = ^void(id<QMUITableViewDelegate> aDelegate) {
+            if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(aDelegate.class)]) {
+                return;
+            }
+            [qmui_methodsReplacedClasses addObject:NSStringFromClass(aDelegate.class)];
+            
+            [self handleWillDisplayCellMethodForDelegate:aDelegate];
+            [self handleHeightForRowMethodForDelegate:aDelegate];
+        };
+        
+        if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+            NSPointerArray *delegates = [((QMUIMultipleDelegates *)delegate).delegates copy];
+            for (id d in delegates) {
+                if ([d conformsToProtocol:@protocol(QMUITableViewDelegate)]) {
+                    addSelectorBlock((id<QMUITableViewDelegate>)d);
+                }
+            }
+        } else {
+            addSelectorBlock((id<QMUITableViewDelegate>)delegate);
         }
-        [qmui_methodsReplacedClasses addObject:NSStringFromClass(delegate.class)];
-        
-        [self handleWillDisplayCellMethodForDelegate:delegate];
-        [self handleHeightForRowMethodForDelegate:delegate];
-        
     }
 }
 

@@ -10,7 +10,7 @@
 #import "QMUICore.h"
 #import "QMUICellSizeKeyCache.h"
 #import "UIScrollView+QMUI.h"
-#import <objc/runtime.h>
+#import "QMUIMultipleDelegates.h"
 
 //@interface UICollectionViewCell (QMUICellSizeKeyCache)
 //
@@ -178,10 +178,23 @@ static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
         if (!qmui_methodsReplacedClasses) {
             qmui_methodsReplacedClasses = [NSMutableSet set];
         }
-        if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(delegate.class)]) {
-            return;
+        void (^addSelectorBlock)(id<UICollectionViewDelegate>) = ^void(id<UICollectionViewDelegate> aDelegate) {
+            if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(aDelegate.class)]) {
+                return;
+            }
+            [qmui_methodsReplacedClasses addObject:NSStringFromClass(aDelegate.class)];
+        };
+        
+        if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+            NSPointerArray *delegates = [((QMUIMultipleDelegates *)delegate).delegates copy];
+            for (id d in delegates) {
+                if ([d conformsToProtocol:@protocol(UICollectionViewDelegate)]) {
+                    addSelectorBlock((id<UICollectionViewDelegate>)d);
+                }
+            }
+        } else {
+            addSelectorBlock((id<UICollectionViewDelegate>)delegate);
         }
-        [qmui_methodsReplacedClasses addObject:NSStringFromClass(delegate.class)];
     }
 }
 

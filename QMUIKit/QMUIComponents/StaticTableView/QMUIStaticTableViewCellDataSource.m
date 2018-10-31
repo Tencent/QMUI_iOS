@@ -13,6 +13,7 @@
 #import "UITableView+QMUIStaticCell.h"
 #import <objc/runtime.h>
 #import "QMUILog.h"
+#import "QMUIMultipleDelegates.h"
 
 @interface QMUIStaticTableViewCellDataSource ()
 @end
@@ -47,8 +48,13 @@
     } else {
         id<UITableViewDelegate> tempDelegate = tableView.delegate;
         id<UITableViewDataSource> tempDataSource = tableView.dataSource;
-        tableView.delegate = nil;
-        tableView.dataSource = nil;
+        // 如果正在使用 QMUIMultipleDelegate，那么它内部会自己先设置为 nil，因此这里不需要额外再弄一次。而且如果这里设置为 nil，反而会使 QMUIMultipleDelegate 内的所有 delegate 都被清空
+        if (![tempDelegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+            tableView.delegate = nil;
+        }
+        if (![tempDataSource isKindOfClass:[QMUIMultipleDelegates class]]) {
+            tableView.dataSource = nil;
+        }
         tableView.delegate = tempDelegate;
         tableView.dataSource = tempDataSource;
     }

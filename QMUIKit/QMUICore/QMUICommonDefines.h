@@ -636,12 +636,18 @@ CGRectSetXY(CGRect rect, CGFloat x, CGFloat y) {
 
 CG_INLINE CGRect
 CGRectSetWidth(CGRect rect, CGFloat width) {
+    if (width < 0) {
+        return rect;
+    }
     rect.size.width = flat(width);
     return rect;
 }
 
 CG_INLINE CGRect
 CGRectSetHeight(CGRect rect, CGFloat height) {
+    if (height < 0) {
+        return rect;
+    }
     rect.size.height = flat(height);
     return rect;
 }
