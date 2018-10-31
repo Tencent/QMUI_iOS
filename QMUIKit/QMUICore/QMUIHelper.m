@@ -560,6 +560,21 @@ NSString *const QMUISpringAnimationKey = @"QMUISpringAnimationKey";
     [view.layer addAnimation:springAnimation forKey:QMUISpringAnimationKey];
 }
 
++ (void)executeAnimationBlock:(void (^)(void))animationBlock completionBlock:(void (^)(void))completionBlock {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [CATransaction setCompletionBlock:^{
+            if (completionBlock) {
+                completionBlock();
+            }
+        }];
+        [CATransaction begin];
+        if (animationBlock) {
+            animationBlock();
+        }
+        [CATransaction commit];
+    });
+}
+
 @end
 
 @implementation QMUIHelper (SystemVersion)

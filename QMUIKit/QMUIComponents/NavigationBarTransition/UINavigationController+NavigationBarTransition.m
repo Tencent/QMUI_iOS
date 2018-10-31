@@ -15,6 +15,7 @@
 #import "UINavigationBar+Transition.h"
 #import "QMUICommonViewController.h"
 #import "QMUINavigationTitleView.h"
+#import "UINavigationBar+QMUI.h"
 
 @interface _QMUITransitionNavigationBar : UINavigationBar
 
@@ -26,8 +27,7 @@
     [super layoutSubviews];
     if (@available(iOS 11, *)) {
         // iOS 11 以前，自己 init 的 navigationBar，它的 backgroundView 默认会一直保持与 navigationBar 的高度相等，但 iOS 11 Beta 1-5 里，自己 init 的 navigationBar.backgroundView.height 默认一直是 44，所以才加上这个兼容
-        UIView *backgroundView = [self valueForKey:@"backgroundView"];
-        backgroundView.frame = self.bounds;
+        self.qmui_backgroundView.frame = self.bounds;
     }
 }
 
@@ -83,6 +83,7 @@
 
 - (void)NavigationBarTransition_viewDidAppear:(BOOL)animated {
     if (self.transitionNavigationBar) {
+
         [UIViewController replaceStyleForNavigationBar:self.transitionNavigationBar withNavigationBar:self.navigationController.navigationBar];
         [self removeTransitionNavigationBar];
         self.lockTransitionNavigationBar = YES;
@@ -91,7 +92,12 @@
         [transitionCoordinator containerView].backgroundColor = self.originContainerViewBackgroundColor;
         self.view.clipsToBounds = self.originClipsToBounds;
     }
-    self.prefersNavigationBarBackgroundViewHidden = NO;
+    
+    if (self.navigationController.viewControllers.count && [self.navigationController.viewControllers containsObject:self]) {
+        // 防止一些 childViewController 走到这里
+        self.prefersNavigationBarBackgroundViewHidden = NO;
+    }
+    
     [self NavigationBarTransition_viewDidAppear:animated];
 }
 
@@ -99,7 +105,6 @@
     if (self.transitionNavigationBar) {
         [self removeTransitionNavigationBar];
         self.lockTransitionNavigationBar = NO;
-        
         self.view.clipsToBounds = self.originClipsToBounds;
     }
     [self NavigationBarTransition_viewDidDisappear:animated];
@@ -118,8 +123,7 @@
         
         BOOL shouldCustomNavigationBarTransition = NO;
         
-        if (!self.transitionNavigationBar) {
-            
+        if (!self.transitionNavigationBar || !self.transitionNavigationBar.superview) {
             if (isPushingViewContrller) {
                 if ([toViewController canCustomNavigationBarTransitionWhenPushAppearing] ||
                     [fromViewController canCustomNavigationBarTransitionWhenPushDisappearing]) {
@@ -131,7 +135,6 @@
                     shouldCustomNavigationBarTransition = YES;
                 }
             }
-            
             if (shouldCustomNavigationBarTransition) {
                 if (self.navigationController.navigationBar.translucent) {
                     // 如果原生bar是半透明的，需要给containerView加个背景色，否则有可能会看到下面的默认黑色背景色
@@ -165,18 +168,22 @@
     if (customBar.barStyle != originBar.barStyle) {
         customBar.barStyle = originBar.barStyle;
     }
+    
     if (customBar.translucent != originBar.translucent) {
         customBar.translucent = originBar.translucent;
     }
+    
     if (![customBar.barTintColor isEqual:originBar.barTintColor]) {
         customBar.barTintColor = originBar.barTintColor;
     }
+    
     UIImage *backgroundImage = [originBar backgroundImageForBarMetrics:UIBarMetricsDefault];
-    if (backgroundImage && CGSizeEqualToSize(backgroundImage.size, CGSizeZero)) {
+    if (backgroundImage && backgroundImage.size.width <= 0 && backgroundImage.size.height <= 0) {
         // 假设这里的图片时通过`[UIImage new]`这种形式创建的，那么会navBar会奇怪地显示为系统默认navBar的样式。不知道为什么 navController 设置自己的 navBar 为 [UIImage new] 却没事，所以这里做个保护。
         backgroundImage = [UIImage qmui_imageWithColor:UIColorClear];
     }
     [customBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
+    
     [customBar setShadowImage:originBar.shadowImage];
     
     self.transitionNavigationBar = customBar;
@@ -188,18 +195,17 @@
 }
 
 - (void)removeTransitionNavigationBar {
-    if (!self.transitionNavigationBar) {
+    if (!self.transitionNavigationBar || !self.transitionNavigationBar.superview) {
         return;
     }
     [self.transitionNavigationBar removeFromSuperview];
-    self.transitionNavigationBar = nil;
 }
 
 - (void)resizeTransitionNavigationBarFrame {
     if (!self.view.window) {
         return;
     }
-    UIView *backgroundView = [self.navigationController.navigationBar valueForKey:@"backgroundView"];
+    UIView *backgroundView = self.navigationController.navigationBar.qmui_backgroundView;
     CGRect rect = [backgroundView.superview convertRect:backgroundView.frame toView:self.view];
     self.transitionNavigationBar.frame = rect;
 }
@@ -242,15 +248,20 @@
             }
         }
         
+        // 导航栏的背景色
+        if ([vc respondsToSelector:@selector(navigationBarBarTintColor)]) {
+            UIColor *barTintColor = [vc navigationBarBarTintColor];
+            viewController.navigationController.navigationBar.barTintColor = barTintColor;
+        } else {
+            viewController.navigationController.navigationBar.barTintColor = NavBarBarTintColor;
+        }
+        
         // 导航栏的背景
         if ([vc respondsToSelector:@selector(navigationBarBackgroundImage)]) {
             UIImage *backgroundImage = [vc navigationBarBackgroundImage];
             [viewController.navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
         } else {
-            UIImage *backgroundImage = NavBarBackgroundImage;
-            if (backgroundImage) {
-                [viewController.navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
-            }
+            [viewController.navigationController.navigationBar setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
         }
         
         // 导航栏底部的分隔线
@@ -258,10 +269,7 @@
             UIImage *shadowImage = [vc navigationBarShadowImage];
             [viewController.navigationController.navigationBar setShadowImage:shadowImage];
         } else {
-            UIImage *shadowImage = NavBarShadowImage;
-            if (shadowImage) {
-                [viewController.navigationController.navigationBar setShadowImage:shadowImage];
-            }
+            [viewController.navigationController.navigationBar setShadowImage:NavBarShadowImage];
         }
         
         // 导航栏上控件的主题色
@@ -269,10 +277,7 @@
             UIColor *tintColor = [vc navigationBarTintColor];
             viewController.navigationController.navigationBar.tintColor = tintColor;
         } else {
-            UIColor *tintColor = NavBarTintColor;
-            if (tintColor) {
-                viewController.navigationController.navigationBar.tintColor = tintColor;
-            }
+            viewController.navigationController.navigationBar.tintColor = NavBarTintColor;
         }
         
         // 导航栏title的颜色
@@ -284,13 +289,10 @@
                 // TODO: molice 对 UIViewController 也支持修改 title 颜色
             }
         } else {
-            UIColor *tintColor = NavBarTitleColor;
-            if (tintColor) {
-                if ([vc isKindOfClass:[QMUICommonViewController class]]) {
-                    ((QMUICommonViewController *)vc).titleView.tintColor = tintColor;
-                } else {
-                    // TODO: molice 对 UIViewController 也支持修改 title 颜色
-                }
+            if ([vc isKindOfClass:[QMUICommonViewController class]]) {
+                ((QMUICommonViewController *)vc).titleView.tintColor = NavBarTitleColor;
+            } else {
+                // TODO: molice 对 UIViewController 也支持修改 title 颜色
             }
         }
     }
@@ -299,8 +301,8 @@
 + (void)replaceStyleForNavigationBar:(UINavigationBar *)navbarA withNavigationBar:(UINavigationBar *)navbarB {
     navbarB.barStyle = navbarA.barStyle;
     navbarB.barTintColor = navbarA.barTintColor;
-    [navbarB setBackgroundImage:[navbarA backgroundImageForBarMetrics:UIBarMetricsDefault] forBarMetrics:UIBarMetricsDefault];
     [navbarB setShadowImage:navbarA.shadowImage];
+    [navbarB setBackgroundImage:[navbarA backgroundImageForBarMetrics:UIBarMetricsDefault] forBarMetrics:UIBarMetricsDefault];
 }
 
 // 该 viewController 是否实现自定义 navBar 动画的协议
@@ -456,7 +458,12 @@
 }
 
 - (void)setPrefersNavigationBarBackgroundViewHidden:(BOOL)prefersNavigationBarBackgroundViewHidden {
-    [[self.navigationController.navigationBar valueForKey:@"backgroundView"] setHidden:prefersNavigationBarBackgroundViewHidden];
+    // 从某个版本开始，发现从有 navBar 的界面返回无 navBar 的界面，backgroundView 会跑出来，发现是被系统重新设置了显示，所以改用其他的方法来隐藏 backgroundView，就是 mask。
+    if (prefersNavigationBarBackgroundViewHidden) {
+        self.navigationController.navigationBar.qmui_backgroundView.layer.mask = [CALayer layer];
+    } else {
+        self.navigationController.navigationBar.qmui_backgroundView.layer.mask = nil;
+    }
     objc_setAssociatedObject(self, @selector(prefersNavigationBarBackgroundViewHidden), [[NSNumber alloc] initWithBool:prefersNavigationBarBackgroundViewHidden], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 

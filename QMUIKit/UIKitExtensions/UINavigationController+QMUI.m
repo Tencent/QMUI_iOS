@@ -138,11 +138,11 @@ static char originGestureDelegateKey;
     if (gestureRecognizer == self.interactivePopGestureRecognizer) {
         id<UIGestureRecognizerDelegate>originGestureDelegate = objc_getAssociatedObject(self, &originGestureDelegateKey);
         if ([originGestureDelegate respondsToSelector:@selector(gestureRecognizer:shouldReceiveTouch:)]) {
-            if ([self shouldForceEnableInteractivePopGestureRecognizer]) {
+            BOOL originalValue = [originGestureDelegate gestureRecognizer:gestureRecognizer shouldReceiveTouch:touch];
+            if (!originalValue && [self shouldForceEnableInteractivePopGestureRecognizer]) {
                 return YES;
             }
-            // 调用默认的实现
-            return [originGestureDelegate gestureRecognizer:gestureRecognizer shouldReceiveTouch:touch];
+            return originalValue;
         }
     }
     return YES;

@@ -32,11 +32,13 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SEL selectors[] = {
+            @selector(tintColorDidChange),
             // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
             @selector(convertPoint:toView:),
             @selector(convertPoint:fromView:),
             @selector(convertRect:toView:),
-            @selector(convertRect:fromView:)
+            @selector(convertRect:fromView:),
+            @selector(hitTest:withEvent:)
         };
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
@@ -67,6 +69,40 @@
 
 - (void)qmui_removeAllSubviews {
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+}
+
+- (void)qmui_tintColorDidChange {
+    [self qmui_tintColorDidChange];
+    if (self.qmui_tintColorDidChangeBlock) {
+        self.qmui_tintColorDidChangeBlock(self);
+    }
+}
+
+static char kAssociatedObjectKey_tintColorDidChagneBlock;
+- (void)setQmui_tintColorDidChangeBlock:(void (^)(__kindof UIView * _Nonnull))qmui_tintColorDidChangeBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_tintColorDidChagneBlock, qmui_tintColorDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^)(__kindof UIView *))qmui_tintColorDidChangeBlock {
+    return (void (^)(__kindof UIView *))objc_getAssociatedObject(self, &kAssociatedObjectKey_tintColorDidChagneBlock);
+}
+
+- (nullable UIView *)qmui_hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
+    UIView *originalView = [self qmui_hitTest:point withEvent:event];
+    if (self.qmui_hitTestBlock) {
+        UIView *view = self.qmui_hitTestBlock(point, event, originalView);
+        return view;
+    }
+    return originalView;
+}
+
+static char kAssociatedObjectKey_hitTestBlock;
+- (void)setQmui_hitTestBlock:(__kindof UIView * (^)(CGPoint, UIEvent *, __kindof UIView *))qmui_hitTestBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_hitTestBlock, qmui_hitTestBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (__kindof UIView * (^)(CGPoint, UIEvent *, __kindof UIView *))qmui_hitTestBlock {
+    return (__kindof UIView * (^)(CGPoint, UIEvent *, __kindof UIView *))objc_getAssociatedObject(self, &kAssociatedObjectKey_hitTestBlock);
 }
 
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion {
@@ -369,9 +405,7 @@ static char kAssociatedObjectKey_hasDebugColor;
     self.qmui_borderLayer.lineWidth = borderWidth;
     self.qmui_borderLayer.strokeColor = self.qmui_borderColor.CGColor;
     self.qmui_borderLayer.lineDashPhase = self.qmui_dashPhase;
-    if (self.qmui_dashPattern) {
-        self.qmui_borderLayer.lineDashPattern = self.qmui_dashPattern;
-    }
+    self.qmui_borderLayer.lineDashPattern = self.qmui_dashPattern;
     
     UIBezierPath *path = nil;
     
@@ -379,24 +413,38 @@ static char kAssociatedObjectKey_hasDebugColor;
         path = [UIBezierPath bezierPath];
     }
     
-    if ((self.qmui_borderPosition & QMUIViewBorderPositionTop) == QMUIViewBorderPositionTop) {
-        [path moveToPoint:CGPointMake(0, borderWidth / 2)];
-        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), borderWidth / 2)];
+    CGFloat (^adjustsLocation)(CGFloat, CGFloat, CGFloat) = ^CGFloat(CGFloat inside, CGFloat center, CGFloat outside) {
+        return self.qmui_borderLocation == QMUIViewBorderLocationInside ? inside : (self.qmui_borderLocation == QMUIViewBorderLocationCenter ? center : outside);
+    };
+    
+    BOOL shouldShowTopBorder = (self.qmui_borderPosition & QMUIViewBorderPositionTop) == QMUIViewBorderPositionTop;
+    BOOL shouldShowLeftBorder = (self.qmui_borderPosition & QMUIViewBorderPositionLeft) == QMUIViewBorderPositionLeft;
+    BOOL shouldShowBottomBorder = (self.qmui_borderPosition & QMUIViewBorderPositionBottom) == QMUIViewBorderPositionBottom;
+    BOOL shouldShowRightBorder = (self.qmui_borderPosition & QMUIViewBorderPositionRight) == QMUIViewBorderPositionRight;
+    
+    CGFloat lineOffset = adjustsLocation(borderWidth / 2.0, 0, -borderWidth / 2.0);// 为了像素对齐而做的偏移
+    CGFloat lineCapOffset = adjustsLocation(0, borderWidth / 2.0, borderWidth);// 两条相邻的边框连接的位置
+    
+    if (shouldShowTopBorder) {
+        [path moveToPoint:CGPointMake(shouldShowLeftBorder ? -lineCapOffset : 0, lineOffset)];
+        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) + (shouldShowRightBorder ? lineCapOffset : 0), lineOffset)];
     }
     
-    if ((self.qmui_borderPosition & QMUIViewBorderPositionLeft) == QMUIViewBorderPositionLeft) {
-        [path moveToPoint:CGPointMake(borderWidth / 2, 0)];
-        [path addLineToPoint:CGPointMake(borderWidth / 2, CGRectGetHeight(self.bounds) - 0)];
+    if (shouldShowLeftBorder) {
+        [path moveToPoint:CGPointMake(lineOffset, shouldShowTopBorder ? -lineCapOffset : 0)];
+        [path addLineToPoint:CGPointMake(lineOffset, CGRectGetHeight(self.bounds) + (shouldShowBottomBorder ? lineCapOffset : 0))];
     }
     
-    if ((self.qmui_borderPosition & QMUIViewBorderPositionBottom) == QMUIViewBorderPositionBottom) {
-        [path moveToPoint:CGPointMake(0, CGRectGetHeight(self.bounds) - borderWidth / 2)];
-        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds) - borderWidth / 2)];
+    if (shouldShowBottomBorder) {
+        CGFloat y = CGRectGetHeight(self.bounds) - lineOffset;
+        [path moveToPoint:CGPointMake(shouldShowLeftBorder ? -lineCapOffset : 0, y)];
+        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) + (shouldShowRightBorder ? lineCapOffset : 0), y)];
     }
     
-    if ((self.qmui_borderPosition & QMUIViewBorderPositionRight) == QMUIViewBorderPositionRight) {
-        [path moveToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, 0)];
-        [path addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) - borderWidth / 2, CGRectGetHeight(self.bounds))];
+    if (shouldShowRightBorder) {
+        CGFloat x = CGRectGetWidth(self.bounds) - lineOffset;
+        [path moveToPoint:CGPointMake(x, shouldShowTopBorder ? -lineCapOffset : 0)];
+        [path addLineToPoint:CGPointMake(x, CGRectGetHeight(self.bounds) + (shouldShowBottomBorder ? lineCapOffset : 0))];
     }
     
     self.qmui_borderLayer.path = path.CGPath;
@@ -405,6 +453,16 @@ static char kAssociatedObjectKey_hasDebugColor;
 - (void)setDefaultStyle {
     self.qmui_borderWidth = PixelOne;
     self.qmui_borderColor = UIColorSeparator;
+}
+
+static char kAssociatedObjectKey_borderLocation;
+- (void)setQmui_borderLocation:(QMUIViewBorderLocation)qmui_borderLocation {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_borderLocation, @(qmui_borderLocation), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self setNeedsLayout];
+}
+
+- (QMUIViewBorderLocation)qmui_borderLocation {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_borderLocation)) unsignedIntegerValue];
 }
 
 static char kAssociatedObjectKey_borderPosition;

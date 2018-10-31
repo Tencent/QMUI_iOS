@@ -379,7 +379,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     viewControllerWillDisappear.qmui_poppingByInteractivePopGestureRecognizer = YES;
     viewControllerWillDisappear.qmui_willAppearByInteractivePopGestureRecognizer = NO;
     
-    viewControllerWillDisappear.qmui_poppingByInteractivePopGestureRecognizer = NO;
+    viewControllerWillAppear.qmui_poppingByInteractivePopGestureRecognizer = NO;
     viewControllerWillAppear.qmui_willAppearByInteractivePopGestureRecognizer = YES;
     
     if (state == UIGestureRecognizerStateBegan) {

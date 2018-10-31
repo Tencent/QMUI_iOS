@@ -130,10 +130,6 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
     self.modalPresentationViewController.modal = YES;
 }
 
-- (void)dealloc {
-    NSLog(@"");
-}
-
 - (void)setCornerRadius:(CGFloat)cornerRadius {
     _cornerRadius = cornerRadius;
     if ([self isViewLoaded]) {

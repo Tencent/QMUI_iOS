@@ -234,4 +234,6 @@ extern NSString * __nonnull const QMUISpringAnimationKey;
 
 + (void)actionSpringAnimationForView:(nonnull UIView *)view;
 
++ (void)executeAnimationBlock:(void (^)(void))animationBlock completionBlock:(void (^)(void))completionBlock;
+
 @end

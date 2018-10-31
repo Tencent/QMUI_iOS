@@ -14,7 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UIView (QMUI)
 
 /**
- *  相当于 initWithFrame:CGRectMake(0, 0, size.width, size.height)
+ 相当于 initWithFrame:CGRectMake(0, 0, size.width, size.height)
+
+ @param size 初始化时的 size
+ @return 初始化得到的实例
  */
 - (instancetype)qmui_initWithSize:(CGSize)size;
 
@@ -23,10 +26,29 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property(nonatomic, assign) CGRect qmui_frameApplyTransform;
 
-/// 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
+/**
+ 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
+ */
 @property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
 
+/**
+ 移除当前所有 subviews
+ */
 - (void)qmui_removeAllSubviews;
+
+/**
+ 当 tintColorDidChange 被调用的时候会调用这个 block，就不用重写方法了
+ @param view 当前的 view 本身，方便使用，省去 weak 操作
+ */
+@property(nonatomic, copy) void (^qmui_tintColorDidChangeBlock)(__kindof UIView *view);
+
+/**
+ 当 hitTest:withEvent: 被调用时会调用这个 block，就不用重写方法了
+ @param point 事件产生的 point
+ @param event 事件
+ @param super 的返回结果
+ */
+@property(nonatomic, copy) __kindof UIView * (^qmui_hitTestBlock)(CGPoint point, UIEvent *event, __kindof UIView *originalView);
 
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion;
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations completion:(void (^)(BOOL finished))completion;
@@ -68,6 +90,12 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewBorderPosition) {
     QMUIViewBorderPositionRight     = 1 << 3
 };
 
+typedef enum : NSUInteger {
+    QMUIViewBorderLocationInside,
+    QMUIViewBorderLocationCenter,
+    QMUIViewBorderLocationOutside
+} QMUIViewBorderLocation;
+
 /**
  *  UIView (QMUI_Border) 为 UIView 方便地显示某几个方向上的边框。
  *
@@ -76,6 +104,9 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewBorderPosition) {
  */
 @interface UIView (QMUI_Border)
 
+/// 设置边框的位置，默认为 QMUIViewBorderLocationInside，与 view.layer.border 一致。
+@property(nonatomic, assign) QMUIViewBorderLocation qmui_borderLocation;
+
 /// 设置边框类型，支持组合，例如：`borderPosition = QMUIViewBorderPositionTop|QMUIViewBorderPositionBottom`。默认为 QMUIViewBorderPositionNone。
 @property(nonatomic, assign) QMUIViewBorderPosition qmui_borderPosition;
 
@@ -83,15 +114,15 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewBorderPosition) {
 @property(nonatomic, assign) IBInspectable CGFloat qmui_borderWidth;
 
 /// 边框的颜色，默认为UIColorSeparator。请注意修改 qmui_borderPosition 的值以将边框显示出来。
-@property(nonatomic, strong) IBInspectable UIColor *qmui_borderColor;
+@property(nullable, nonatomic, strong) IBInspectable UIColor *qmui_borderColor;
 
 /// 虚线 : dashPhase默认是0，且当dashPattern设置了才有效
 /// qmui_dashPhase 表示虚线起始的偏移，qmui_dashPattern 可以传一个数组，表示“lineWidth，lineSpacing，lineWidth，lineSpacing...”的顺序，至少传 2 个。
 @property(nonatomic, assign) CGFloat qmui_dashPhase;
-@property(nonatomic, copy)   NSArray <NSNumber *> *qmui_dashPattern;
+@property(nullable, nonatomic, copy)   NSArray <NSNumber *> *qmui_dashPattern;
 
 /// border的layer
-@property(nonatomic, strong, readonly) CAShapeLayer *qmui_borderLayer;
+@property(nullable, nonatomic, strong, readonly) CAShapeLayer *qmui_borderLayer;
 
 @end
 

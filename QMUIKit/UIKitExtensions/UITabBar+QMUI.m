@@ -22,12 +22,50 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 
 @implementation UITabBar (QMUI)
 
+- (UIView *)qmui_backgroundView {
+    return [self valueForKey:@"_backgroundView"];
+}
+
+- (UIImageView *)qmui_shadowImageView {
+    if (@available(iOS 10, *)) {
+        // iOS 10 及以后，在 UITabBar 初始化之后就能获取到 backgroundView 和 shadowView 了
+        return [self.qmui_backgroundView valueForKey:@"_shadowView"];
+    }
+    // iOS 9 及以前，shadowView 要在 UITabBar 第一次 layoutSubviews 之后才会被创建，直至 UITabBarController viewWillAppear: 时仍未能获取到 shadowView，所以为了省去调用时机的考虑，这里获取不到的时候会主动触发一次 tabBar 的布局
+    UIImageView *shadowView = [self valueForKey:@"_shadowView"];
+    if (!shadowView) {
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
+        shadowView = [self valueForKey:@"_shadowView"];
+    }
+    return shadowView;
+}
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         ExchangeImplementations([self class], @selector(setItems:animated:), @selector(qmui_setItems:animated:));
         ExchangeImplementations([self class], @selector(setSelectedItem:), @selector(qmui_setSelectedItem:));
         ExchangeImplementations([self class], @selector(setFrame:), @selector(qmuiTabBar_setFrame:));
+        
+        if (@available(iOS 12.1, *)) {
+            // https://github.com/QMUI/QMUI_iOS/issues/410
+            OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+                return ^(UIView *selfObject, CGRect firstArgv) {
+                    
+                    if ([selfObject isKindOfClass:originClass]) {
+                        if (!CGRectIsEmpty(selfObject.frame) && CGRectIsEmpty(firstArgv)) {
+                            return;
+                        }
+                    }
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, CGRect);
+                    originSelectorIMP = (void (*)(id, SEL, CGRect))originIMP;
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                };
+            });
+        }
     });
 }
 
@@ -102,7 +140,7 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
     
     // 修复这个 bug：https://github.com/QMUI/QMUI_iOS/issues/309
     if (@available(iOS 11, *)) {
-        if ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32)) {
+        if (IS_NOTCHED_SCREEN && ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32))) {// 只关注全面屏设备下的这两种非正常的 tabBar 高度即可
             CGFloat bottomSafeAreaInsets = self.safeAreaInsets.bottom > 0 ? self.safeAreaInsets.bottom : self.superview.safeAreaInsets.bottom;// 注意，如果只是拿 self.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
             frame.size.height += bottomSafeAreaInsets;
             frame.origin.y -= bottomSafeAreaInsets;

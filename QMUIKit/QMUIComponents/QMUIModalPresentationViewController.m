@@ -93,7 +93,14 @@ static QMUIModalPresentationViewController *appearance;
         self.maximumContentViewWidth = appearance.maximumContentViewWidth;
         self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
         self.modalPresentationStyle = UIModalPresentationCustom;
-        self.supportedOrientationMask = SupportedOrientationMask;
+        
+        // 这一段是给以 present 方式显示的浮层用的，其他方式显示的浮层，会在 supportedInterfaceOrientations 里实时获取支持的设备方向
+        UIViewController *visibleViewController = [QMUIHelper visibleViewController];
+        if (visibleViewController) {
+            self.supportedOrientationMask = visibleViewController.supportedInterfaceOrientations;
+        } else {
+            self.supportedOrientationMask = SupportedOrientationMask;
+        }
         
         if (self != appearance) {
             self.keyboardManager = [[QMUIKeyboardManager alloc] initWithDelegate:self];
@@ -141,8 +148,6 @@ static QMUIModalPresentationViewController *appearance;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
-    self.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
     
     if (self.shownInWindowMode) {
         // 只有使用showWithAnimated:completion:显示出来的浮层，才需要修改之前就记住的animated的值
