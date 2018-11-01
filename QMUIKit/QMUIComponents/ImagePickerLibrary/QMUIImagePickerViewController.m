@@ -20,7 +20,6 @@
 #import "CALayer+QMUI.h"
 #import "UIView+QMUI.h"
 #import <MobileCoreServices/MobileCoreServices.h>
-#import "NSString+QMUI.h"
 #import "QMUIEmptyView.h"
 #import "UIControl+QMUI.h"
 #import "QMUILog.h"
@@ -337,29 +336,14 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         identifier = kImageOrUnknownCellIdentifier;
     }
     QMUIImagePickerCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
-    cell.assetIdentifier = imageAsset.identifier;
-    
-    // 异步请求资源对应的缩略图
-    [imageAsset requestThumbnailImageWithSize:[self referenceImageSize] completion:^(UIImage *result, NSDictionary *info) {
-        if ([cell.assetIdentifier isEqualToString:imageAsset.identifier]) {
-            cell.contentImageView.image = result;
-        } else {
-            cell.contentImageView.image = nil;
-        }
-    }];
-    
-    if (imageAsset.assetType == QMUIAssetTypeVideo) {
-        cell.videoDurationLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:imageAsset.duration];
-    }
+    [cell renderWithAsset:imageAsset referenceSize:[self referenceImageSize]];
     
     [cell.checkboxButton addTarget:self action:@selector(handleCheckBoxButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-    
     cell.selectable = self.allowsMultipleSelection;
     if (cell.selectable) {
         // 如果该图片的 QMUIAsset 被包含在已选择图片的数组中，则控制该图片被选中
         cell.checked = [self.selectedImageAssetArray containsObject:imageAsset];
     }
-    [cell setNeedsLayout];
     return cell;
 }
 

@@ -14,6 +14,11 @@
 /// 获取<b>rootViewController</b>
 - (nullable UIViewController *)qmui_rootViewController;
 
+- (void)qmui_pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
+- (UIViewController *)qmui_popViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion;
+- (NSArray<UIViewController *> *)qmui_popToViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion;
+- (NSArray<UIViewController *> *)qmui_popToRootViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion;
+
 @end
 
 

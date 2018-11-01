@@ -123,7 +123,7 @@
         
         BOOL shouldCustomNavigationBarTransition = NO;
         
-        if (!self.transitionNavigationBar || !self.transitionNavigationBar.superview) {
+        if (!self.transitionNavigationBar) {
             if (isPushingViewContrller) {
                 if ([toViewController canCustomNavigationBarTransitionWhenPushAppearing] ||
                     [fromViewController canCustomNavigationBarTransitionWhenPushDisappearing]) {
@@ -195,10 +195,11 @@
 }
 
 - (void)removeTransitionNavigationBar {
-    if (!self.transitionNavigationBar || !self.transitionNavigationBar.superview) {
+    if (!self.transitionNavigationBar) {
         return;
     }
     [self.transitionNavigationBar removeFromSuperview];
+    self.transitionNavigationBar = nil;
 }
 
 - (void)resizeTransitionNavigationBarFrame {

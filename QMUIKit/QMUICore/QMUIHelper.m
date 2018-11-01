@@ -547,32 +547,14 @@ static char kAssociatedObjectKey_orientationBeforeChangedByHelper;
 
 @end
 
-NSString *const QMUISpringAnimationKey = @"QMUISpringAnimationKey";
-
 @implementation QMUIHelper (Animation)
 
-+ (void)actionSpringAnimationForView:(UIView *)view {
-    NSTimeInterval duration = 0.6;
-    CAKeyframeAnimation *springAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
-    springAnimation.values = @[@.85, @1.15, @.9, @1.0,];
-    springAnimation.keyTimes = @[@(0.0 / duration), @(0.15 / duration) , @(0.3 / duration), @(0.45 / duration),];
-    springAnimation.duration = duration;
-    [view.layer addAnimation:springAnimation forKey:QMUISpringAnimationKey];
-}
-
-+ (void)executeAnimationBlock:(void (^)(void))animationBlock completionBlock:(void (^)(void))completionBlock {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [CATransaction setCompletionBlock:^{
-            if (completionBlock) {
-                completionBlock();
-            }
-        }];
-        [CATransaction begin];
-        if (animationBlock) {
-            animationBlock();
-        }
-        [CATransaction commit];
-    });
++ (void)executeAnimationBlock:(__attribute__((noescape)) void (^)(void))animationBlock completionBlock:(__attribute__((noescape)) void (^)(void))completionBlock {
+    if (!animationBlock) return;
+    [CATransaction begin];
+    [CATransaction setCompletionBlock:completionBlock];
+    animationBlock();
+    [CATransaction commit];
 }
 
 @end

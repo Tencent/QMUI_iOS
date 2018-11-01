@@ -21,15 +21,24 @@ static NSString * const kContentTypeOfLastAlbumKeyPrefix = @"QMUIContentTypeOfLa
 @implementation QMUIImagePickerHelper
 
 + (void)springAnimationOfImageSelectedCountChangeWithCountLabel:(UILabel *)label {
-    [QMUIHelper actionSpringAnimationForView:label];
+    [self actionSpringAnimationForView:label];
 }
 
 + (void)springAnimationOfImageCheckedWithCheckboxButton:(UIButton *)button {
-    [QMUIHelper actionSpringAnimationForView:button];
+    [self actionSpringAnimationForView:button];
+}
+
++ (void)actionSpringAnimationForView:(UIView *)view {
+    NSTimeInterval duration = 0.6;
+    CAKeyframeAnimation *springAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
+    springAnimation.values = @[@.85, @1.15, @.9, @1.0,];
+    springAnimation.keyTimes = @[@(0.0 / duration), @(0.15 / duration) , @(0.3 / duration), @(0.45 / duration),];
+    springAnimation.duration = duration;
+    [view.layer addAnimation:springAnimation forKey:@"imagePickerActionSpring"];
 }
 
 + (void)removeSpringAnimationOfImageCheckedWithCheckboxButton:(UIButton *)button {
-    [button.layer removeAnimationForKey:QMUISpringAnimationKey];
+    [button.layer removeAnimationForKey:@"imagePickerActionSpring"];
 }
 
 + (QMUIAssetsGroup *)assetsGroupOfLastPickerAlbumWithUserIdentify:(NSString *)userIdentify {
