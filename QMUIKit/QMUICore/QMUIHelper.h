@@ -228,12 +228,14 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 @end
 
-extern NSString * __nonnull const QMUISpringAnimationKey;
-
 @interface QMUIHelper (Animation)
 
-+ (void)actionSpringAnimationForView:(nonnull UIView *)view;
+/**
+ 在 animationBlock 里的操作完成之后会调用 completionBlock，常用于一些不提供 completionBlock 的系统动画操作，例如 [UINavigationController pushViewController:animated:YES] 的场景，注意 UIScrollView 系列的滚动无法使用这个方法。
 
-+ (void)executeAnimationBlock:(void (^)(void))animationBlock completionBlock:(void (^)(void))completionBlock;
+ @param animationBlock 要进行的带动画的操作
+ @param completionBlock 操作完成后的回调
+ */
++ (void)executeAnimationBlock:(nonnull __attribute__((noescape)) void (^)(void))animationBlock completionBlock:(nullable __attribute__((noescape)) void (^)(void))completionBlock;
 
 @end

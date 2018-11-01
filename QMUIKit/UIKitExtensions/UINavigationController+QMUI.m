@@ -47,6 +47,36 @@
     return self.viewControllers.firstObject;
 }
 
+- (void)qmui_pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion {
+    [QMUIHelper executeAnimationBlock:^{
+        [self pushViewController:viewController animated:animated];
+    } completionBlock:completion];
+}
+
+- (UIViewController *)qmui_popViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion {
+    __block UIViewController *result = nil;
+    [QMUIHelper executeAnimationBlock:^{
+        result = [self popViewControllerAnimated:animated];
+    } completionBlock:completion];
+    return result;
+}
+
+- (NSArray<UIViewController *> *)qmui_popToViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion {
+    __block NSArray<UIViewController *> *result = nil;
+    [QMUIHelper executeAnimationBlock:^{
+        result = [self popToViewController:viewController animated:animated];
+    } completionBlock:completion];
+    return result;
+}
+
+- (NSArray<UIViewController *> *)qmui_popToRootViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion {
+    __block NSArray<UIViewController *> *result = nil;
+    [QMUIHelper executeAnimationBlock:^{
+        result = [self popToRootViewControllerAnimated:animated];
+    } completionBlock:completion];
+    return result;
+}
+
 static char originGestureDelegateKey;
 - (void)qmui_viewDidLoad {
     [self qmui_viewDidLoad];
