@@ -99,10 +99,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @see QMUIDialogViewController
  *  @see QMUIMoreOperationController
  */
-@interface QMUIModalPresentationViewController : UIViewController {
-    UITapGestureRecognizer      *_dimmingViewTapGestureRecognizer;
-    CGFloat                     _keyboardHeight;
-}
+@interface QMUIModalPresentationViewController : UIViewController
 
 @property(nonatomic, weak) IBOutlet id<QMUIModalPresentationViewControllerDelegate> delegate;
 
@@ -174,6 +171,10 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 
 /// 是否以 addSubview 的方式显示，建议在显示之后才使用，否则可能不准确。
 @property(nonatomic, assign, readonly, getter=isShownInSubviewMode) BOOL shownInSubviewMode;
+
+/// 只响应 modal.view 上的 view 所产生的键盘事件，当为 NO 时，只要有键盘事件产生，浮层都会重新计算布局。
+/// 默认为 YES，也即只响应浮层上的 view 引起的键盘位置变化。
+@property(nonatomic, assign) BOOL onlyRespondsToKeyboardEventFromDescendantViews;
 
 /**
  *  管理自定义的浮层布局，将会在浮层显示前、控件的容器大小发生变化时（例如横竖屏、来电状态栏）被调用

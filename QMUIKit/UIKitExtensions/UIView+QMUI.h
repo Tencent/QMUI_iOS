@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay usingSpringWithDamping:(CGFloat)dampingRatio initialSpringVelocity:(CGFloat)velocity options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion;
 @end
 
+
 @interface UIView (QMUI_Runtime)
 
 /**
@@ -64,6 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return YES 表示当前类重写了指定的方法，NO 表示没有重写，使用的是 UIView 默认的实现
  */
 - (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector;
+
 @end
 
 
@@ -128,6 +130,17 @@ typedef enum : NSUInteger {
 
 
 /**
+ *  方便地将某个 UIView 截图并转成一个 UIImage，注意如果这个 UIView 本身做了 transform，也不会在截图上反映出来，截图始终都是原始 UIView 的截图。
+ */
+@interface UIView (QMUI_Snapshotting)
+
+- (UIImage *)qmui_snapshotLayerImage;
+- (UIImage *)qmui_snapshotImageAfterScreenUpdates:(BOOL)afterScreenUpdates;
+
+@end
+
+
+/**
  当某个 UIView 在 setFrame: 时高度传这个值，则会自动将 sizeThatFits 算出的高度设置为当前 view 的高度，相当于以下这段代码的简化：
  @code
  // 以前这么写
@@ -183,6 +196,7 @@ extern const CGFloat QMUIViewSelfSizingHeight;
 
 @end
 
+
 @interface UIView (CGAffineTransform)
 
 /// 获取当前 view 的 transform scale x
@@ -197,15 +211,6 @@ extern const CGFloat QMUIViewSelfSizingHeight;
 /// 获取当前 view 的 transform translation y
 @property(nonatomic, assign, readonly) CGFloat qmui_translationY;
 
-@end
-
-/**
- *  方便地将某个 UIView 截图并转成一个 UIImage，注意如果这个 UIView 本身做了 transform，也不会在截图上反映出来，截图始终都是原始 UIView 的截图。
- */
-@interface UIView (QMUI_Snapshotting)
-
-- (UIImage *)qmui_snapshotLayerImage;
-- (UIImage *)qmui_snapshotImageAfterScreenUpdates:(BOOL)afterScreenUpdates;
 @end
 
 NS_ASSUME_NONNULL_END

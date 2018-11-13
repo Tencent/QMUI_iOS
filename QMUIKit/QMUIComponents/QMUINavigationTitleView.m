@@ -117,7 +117,7 @@
         self.verticalSubtitleFont = appearance.verticalSubtitleFont;
         self.accessoryViewOffset = appearance.accessoryViewOffset;
         self.subAccessoryViewOffset = appearance.subAccessoryViewOffset;
-        self.tintColor = NavBarTitleColor ?: [UINavigationBar appearance].titleTextAttributes[NSForegroundColorAttributeName];
+        self.tintColor = QMUICMIActivated ? NavBarTitleColor : [UINavigationBar appearance].titleTextAttributes[NSForegroundColorAttributeName];
     }
     return self;
 }

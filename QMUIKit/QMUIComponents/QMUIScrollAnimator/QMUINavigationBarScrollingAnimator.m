@@ -39,7 +39,8 @@
             }
             
             CGFloat progress = animator.progress;
-            if ((progress <= 0 && animator.progressZeroReached) || (progress >= 1 && animator.progressOneReached)) {
+            
+            if (!animator.continuous && ((progress <= 0 && animator.progressZeroReached) || (progress >= 1 && animator.progressOneReached))) {
                 return;
             }
             animator.progressZeroReached = progress <= 0;

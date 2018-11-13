@@ -68,6 +68,12 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
     self.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     self.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
+    if (self.type == QMUINavigationButtonTypeImage) {
+        if (@available(iOS 11, *)) {
+            // 让 iOS 11 及以后也能走到 alignmentRectInsets，iOS 10 及以前的系统就算不置为 NO 也可以走到 alignmentRectInsets，从而保证 image 类型的按钮的布局、间距与系统的保持一致
+            self.translatesAutoresizingMaskIntoConstraints = NO;
+        }
+    }
     
     // 系统默认对 highlighted 和 disabled 的图片的表现是变身色，但 UIBarButtonItem 是 alpha，为了与 UIBarButtonItem  表现一致，这里禁用了 UIButton 默认的行为，然后通过重写 setImage:forState:，自动将 normal image 处理为对应的 highlighted image 和 disabled image
     self.adjustsImageWhenHighlighted = NO;
@@ -88,10 +94,14 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         }
             break;
         case QMUINavigationButtonTypeBack: {
-            UIImage *backIndicatorImage = NavBarBackIndicatorImage;
+            UIImage *backIndicatorImage = [UINavigationBar appearance].backIndicatorImage;
             if (!backIndicatorImage) {
-                // 配置表没有自定义的图片，则按照系统的返回按钮图片样式创建一张
-                backIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(13, 23) lineWidth:3 tintColor:NavBarTintColor];
+                // 配置表没有自定义的图片，则按照系统的返回按钮图片样式创建一张，颜色按照 tintColor 来
+                UIColor *tintColor = QMUICMIActivated ? NavBarTintColor : ({
+                    UIView *view = [[UIView alloc] init];
+                    view.tintColor;
+                });
+                backIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(13, 23) lineWidth:3 tintColor:tintColor];
             }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];
             [self setImage:[backIndicatorImage qmui_imageWithAlpha:NavBarHighlightedAlpha] forState:UIControlStateHighlighted];
@@ -151,7 +161,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     [self setTitleColor:[self.tintColor colorWithAlphaComponent:NavBarDisabledAlpha] forState:UIControlStateDisabled];
 }
 
-// 对按钮内容添加偏移，让UIBarButtonItem适配最新设备的系统行为，统一位置。注意 iOS 11 不会走到这里来
+// 对按钮内容添加偏移，让UIBarButtonItem适配最新设备的系统行为，统一位置。注意 iOS 11 及以后，只有 image 类型的才会走进来
 - (UIEdgeInsets)alignmentRectInsets {
     
     UIEdgeInsets insets = [super alignmentRectInsets];
@@ -246,7 +256,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 }
 
 + (instancetype)qmui_closeItemWithTarget:(nullable id)target action:(nullable SEL)action {
-    return [[UIBarButtonItem alloc] initWithImage:NavBarCloseButtonImage style:UIBarButtonItemStylePlain target:target action:action];
+    UIBarButtonItem *closeItem = [[UIBarButtonItem alloc] initWithImage:NavBarCloseButtonImage style:UIBarButtonItemStylePlain target:target action:action];
+    closeItem.accessibilityLabel = @"关闭";
+    return closeItem;
 }
 
 + (instancetype)qmui_fixedSpaceItemWithWidth:(CGFloat)width {

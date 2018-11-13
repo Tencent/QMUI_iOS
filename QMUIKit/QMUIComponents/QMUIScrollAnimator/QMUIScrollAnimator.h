@@ -30,6 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 当 enabled 为 NO 时，即便 scrollView 滚动，didScrollBlock 也不会被调用。默认为 YES。
 @property(nonatomic, assign) BOOL enabled;
 
+/// 立即根据当前的滚动位置更新状态
+- (void)updateScroll;
+
 @end
 
 NS_ASSUME_NONNULL_END

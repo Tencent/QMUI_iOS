@@ -29,7 +29,9 @@
     return description;
 }
 
-+ (UIColor *)qmui_colorWithHexString: (NSString *) hexString {
++ (UIColor *)qmui_colorWithHexString:(NSString *)hexString {
+    if (hexString.length <= 0) return nil;
+    
     NSString *colorString = [[hexString stringByReplacingOccurrencesOfString: @"#" withString: @""] uppercaseString];
     CGFloat alpha, red, blue, green;
     switch ([colorString length]) {

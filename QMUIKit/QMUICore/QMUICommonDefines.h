@@ -213,6 +213,17 @@
 #define QMUIViewAnimationOptionsCurveOut (7<<16)
 #define QMUIViewAnimationOptionsCurveIn (8<<16)
 
+#pragma mark - 无障碍访问
+CG_INLINE void
+AddAccessibilityLabel(NSObject *obj, NSString *label) {
+    obj.accessibilityLabel = label;
+}
+
+CG_INLINE void
+AddAccessibilityHint(NSObject *obj, NSString *hint) {
+    obj.accessibilityHint = hint;
+}
+
 
 #pragma mark - 其他
 

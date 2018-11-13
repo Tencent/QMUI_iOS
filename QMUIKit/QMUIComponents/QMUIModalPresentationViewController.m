@@ -91,6 +91,7 @@ static QMUIModalPresentationViewController *appearance;
         self.animationStyle = appearance.animationStyle;
         self.contentViewMargins = appearance.contentViewMargins;
         self.maximumContentViewWidth = appearance.maximumContentViewWidth;
+        self.onlyRespondsToKeyboardEventFromDescendantViews = YES;
         self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
         self.modalPresentationStyle = UIModalPresentationCustom;
         
@@ -570,14 +571,13 @@ static QMUIModalPresentationViewController *appearance;
 #pragma mark - <QMUIKeyboardManagerDelegate>
 
 - (void)keyboardWillChangeFrameWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
-    CGRect keyboardRect = [QMUIKeyboardManager convertKeyboardRect:[keyboardUserInfo endFrame] toView:self.view];
-    CGRect intersectionRect = CGRectIntersection(self.view.bounds, keyboardRect);
-    CGFloat keyboardHeight = 0;
-    if (CGRectIsValidated(intersectionRect)) {
-        keyboardHeight = CGRectGetHeight(intersectionRect);
+    if (self.onlyRespondsToKeyboardEventFromDescendantViews) {
+        UIResponder *firstResponder = keyboardUserInfo.targetResponder;
+        if (!firstResponder || !([firstResponder isKindOfClass:[UIView class]] && [(UIView *)firstResponder isDescendantOfView:self.view])) {
+            return;
+        }
     }
-    self.keyboardHeight = keyboardHeight;
-    
+    self.keyboardHeight = [keyboardUserInfo heightInView:self.view];
     [self updateLayout];
 }
 
@@ -672,7 +672,6 @@ static QMUIModalPresentationViewController *appearance;
 - (void)layoutSubviews {
     [super layoutSubviews];
     if (self.rootViewController) {
-        
         // https://github.com/QMUI/QMUI_iOS/issues/375
         UIView *rootView = self.rootViewController.view;
         if (CGRectGetMinY(rootView.frame) > 0 && ![UIApplication sharedApplication].statusBarHidden && StatusBarHeight > CGRectGetMinY(rootView.frame)) {

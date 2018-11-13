@@ -366,7 +366,7 @@ EndIgnoreDeprecatedWarning
 #pragma mark - <QMUINavigationControllerDelegate>
 
 - (BOOL)preferredNavigationBarHidden {
-    return self.searchController.active ? YES : [super preferredNavigationBarHidden];
+    return self.searchController.active && self.searchController.hidesNavigationBarDuringPresentation ? YES : [super preferredNavigationBarHidden];
 }
 
 @end

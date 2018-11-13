@@ -232,6 +232,10 @@ static char kAssociatedObjectKey_cancelButtonFont;
 }
 
 - (void)qmui_styledAsQMUISearchBar {
+    if (!QMUICMIActivated) {
+        return;
+    }
+    
     // 搜索框的字号及 placeholder 的字号
     UIFont *font = SearchBarFont;
     if (font) {
@@ -241,13 +245,13 @@ static char kAssociatedObjectKey_cancelButtonFont;
     // 搜索框的文字颜色
     UIColor *textColor = SearchBarTextColor;
     if (textColor) {
-        self.qmui_textColor = SearchBarTextColor;
+        self.qmui_textColor = textColor;
     }
 
     // placeholder 的文字颜色
     UIColor *placeholderColor = SearchBarPlaceholderColor;
     if (placeholderColor) {
-        self.qmui_placeholderColor = SearchBarPlaceholderColor;
+        self.qmui_placeholderColor = placeholderColor;
     }
 
     self.placeholder = @"搜索";

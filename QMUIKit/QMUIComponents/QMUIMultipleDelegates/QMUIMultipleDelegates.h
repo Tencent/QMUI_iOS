@@ -17,6 +17,7 @@
 + (instancetype)strongDelegates;
 
 @property(nonatomic, strong, readonly) NSPointerArray *delegates;
+@property(nonatomic, weak) NSObject *parentObject;
 
 - (void)addDelegate:(id)delegate;
 - (BOOL)removeDelegate:(id)delegate;

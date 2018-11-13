@@ -45,6 +45,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign, readonly) float progress;
 
 /**
+ 如果为 NO，则当 progress 的值不再变化（例如达到 0 后继续往上滚动，或者达到 1 后继续往下滚动）时，就不会再触发动画，从而提升性能。
+ 
+ 如果为 YES，则任何时候只要有滚动产生，动画就会被触发，适合运用到类似 Plain Style 的 UITableView 里在滚动时也要适配停靠的 sectionHeader 的场景（因为需要不断计算当前正在停靠的 sectionHeader 是哪一个）。
+ 
+ 默认为 NO
+ */
+@property(nonatomic, assign) BOOL continuous;
+
+/**
  用于控制不同滚动位置下的表现，总的动画 block，如果定义了这个，则滚动时不会再调用后面那几个 block
  @param animator 当前的 animator 对象
  @param progress 当前滚动位置处于 offsetYToStartAnimation 到 (offsetYToStartAnimation + distanceToStopAnimation) 之间的哪个进度

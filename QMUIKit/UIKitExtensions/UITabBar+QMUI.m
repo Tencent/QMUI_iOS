@@ -49,13 +49,21 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
         ExchangeImplementations([self class], @selector(setFrame:), @selector(qmuiTabBar_setFrame:));
         
         if (@available(iOS 12.1, *)) {
-            // https://github.com/QMUI/QMUI_iOS/issues/410
             OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
                 return ^(UIView *selfObject, CGRect firstArgv) {
                     
                     if ([selfObject isKindOfClass:originClass]) {
+                        
+                        // https://github.com/QMUI/QMUI_iOS/issues/410
                         if (!CGRectIsEmpty(selfObject.frame) && CGRectIsEmpty(firstArgv)) {
                             return;
+                        }
+                        
+                        // https://github.com/QMUI/QMUI_iOS/issues/422
+                        if (IS_NOTCHED_SCREEN) {
+                            if ((CGRectGetHeight(selfObject.frame) == 48 && CGRectGetHeight(firstArgv) == 33) || (CGRectGetHeight(selfObject.frame) == 31 && CGRectGetHeight(firstArgv) == 20)) {
+                                return;
+                            }
                         }
                     }
                     

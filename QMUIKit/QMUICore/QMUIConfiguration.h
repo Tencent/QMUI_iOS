@@ -33,6 +33,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// 标志当前项目是否有使用配置表功能
+@property(nonatomic, assign, readonly) BOOL active;
+
 #pragma mark - Global Color
 
 @property(nonatomic, strong) UIColor            *clearColor;
@@ -218,6 +221,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Others
 
+@property(nonatomic, assign) BOOL               automaticCustomNavigationBarTransitionStyle;
 @property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
 @property(nonatomic, assign) BOOL               automaticallyRotateDeviceOrientation;
 @property(nonatomic, assign) BOOL               statusbarStyleLightInitially;
@@ -226,6 +230,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               preventConcurrentNavigationControllerTransitions;
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
 @property(nonatomic, assign) BOOL               shouldFixTabBarTransitionBugInIPhoneX;
+@property(nonatomic, assign) BOOL               shouldAssertResizableImageCapInsetsError;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
 
 NS_ASSUME_NONNULL_END

@@ -30,7 +30,7 @@
  *  @see QMUINavigationTitleView
  *  @see QMUIEmptyView
  */
-@interface QMUICommonViewController : UIViewController<QMUINavigationControllerDelegate>
+@interface QMUICommonViewController : UIViewController
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil NS_DESIGNATED_INITIALIZER;
 - (nullable instancetype)initWithCoder:(NSCoder *)aDecoder NS_DESIGNATED_INITIALIZER;
@@ -145,6 +145,15 @@
  *  @param notification test
  */
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification;
+
+@end
+
+@interface QMUICommonViewController (QMUINavigationController)<QMUINavigationControllerDelegate>
+
+/**
+ 从 QMUINavigationControllerAppearanceDelegate 系列接口获取当前界面希望的导航栏样式并设置到导航栏上
+ */
+- (void)updateNavigationBarAppearance;
 
 @end
 

@@ -80,15 +80,18 @@
     }
     
     // 点击空白区域降下键盘 QMUICommonViewController (QMUIKeyboard)
-    
-    _hideKeyboadDelegateObject = [[QMUIViewControllerHideKeyboardDelegateObject alloc] initWithViewController:self];
-    
-    _hideKeyboardTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:nil action:NULL];
-    self.hideKeyboardTapGestureRecognizer.delegate = _hideKeyboadDelegateObject;
-    self.hideKeyboardTapGestureRecognizer.enabled = NO;
-    [self.view addGestureRecognizer:self.hideKeyboardTapGestureRecognizer];
-    
-    _hideKeyboardManager = [[QMUIKeyboardManager alloc] initWithDelegate:_hideKeyboadDelegateObject];
+    // 如果子类重写了才初始化这些对象（即便子类 return NO）
+    BOOL shouldEnabledKeyboardObject = [self qmui_hasOverrideMethod:@selector(shouldHideKeyboardWhenTouchInView:) ofSuperclass:[QMUICommonViewController class]];
+    if (shouldEnabledKeyboardObject) {
+        _hideKeyboadDelegateObject = [[QMUIViewControllerHideKeyboardDelegateObject alloc] initWithViewController:self];
+        
+        _hideKeyboardTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:nil action:NULL];
+        self.hideKeyboardTapGestureRecognizer.delegate = _hideKeyboadDelegateObject;
+        self.hideKeyboardTapGestureRecognizer.enabled = NO;
+        [self.view addGestureRecognizer:self.hideKeyboardTapGestureRecognizer];
+        
+        _hideKeyboardManager = [[QMUIKeyboardManager alloc] initWithDelegate:_hideKeyboadDelegateObject];
+    }
     
     [self initSubviews];
 }
@@ -199,26 +202,6 @@
     return NO;
 }
 
-#pragma mark - <QMUINavigationControllerDelegate>
-
-- (BOOL)shouldSetStatusBarStyleLight {
-    return StatusbarStyleLightInitially;
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
-}
-
-- (BOOL)preferredNavigationBarHidden {
-    return NavigationBarHiddenInitially;
-}
-
-- (void)viewControllerKeepingAppearWhenSetViewControllersWithAnimated:(BOOL)animated {
-    // 通常和 viewWillAppear: 里做的事情保持一致
-    [self setupNavigationItems];
-    [self setupToolbarItems];
-}
-
 @end
 
 @implementation QMUICommonViewController (QMUISubclassingHooks)
@@ -237,6 +220,63 @@
 
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification {
     // 子类重写
+}
+
+@end
+
+@implementation QMUICommonViewController (QMUINavigationController)
+
+- (void)updateNavigationBarAppearance {
+    UINavigationBar *navigationBar = self.navigationController.navigationBar;
+    if (!navigationBar) return;
+    
+    if ([self respondsToSelector:@selector(shouldSetStatusBarStyleLight)]) {
+        if ([self shouldSetStatusBarStyleLight]) {
+            if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
+                [QMUIHelper renderStatusBarStyleLight];
+            }
+        } else {
+            if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
+                [QMUIHelper renderStatusBarStyleDark];
+            }
+        }
+    }
+    
+    if ([self respondsToSelector:@selector(navigationBarBackgroundImage)]) {
+        [navigationBar setBackgroundImage:[self navigationBarBackgroundImage] forBarMetrics:UIBarMetricsDefault];
+    }
+    if ([self respondsToSelector:@selector(navigationBarBarTintColor)]) {
+        navigationBar.barTintColor = [self navigationBarBarTintColor];
+    }
+    if ([self respondsToSelector:@selector(navigationBarShadowImage)]) {
+        navigationBar.shadowImage = [self navigationBarShadowImage];
+    }
+    if ([self respondsToSelector:@selector(navigationBarTintColor)]) {
+        navigationBar.tintColor = [self navigationBarTintColor];
+    }
+    if ([self respondsToSelector:@selector(titleViewTintColor)]) {
+        self.titleView.tintColor = [self titleViewTintColor];
+    }
+}
+
+#pragma mark - <QMUINavigationControllerDelegate>
+
+- (BOOL)shouldSetStatusBarStyleLight {
+    return StatusbarStyleLightInitially;
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+}
+
+- (BOOL)preferredNavigationBarHidden {
+    return NavigationBarHiddenInitially;
+}
+
+- (void)viewControllerKeepingAppearWhenSetViewControllersWithAnimated:(BOOL)animated {
+    // 通常和 viewWillAppear: 里做的事情保持一致
+    [self setupNavigationItems];
+    [self setupToolbarItems];
 }
 
 @end
@@ -295,8 +335,7 @@
 
 - (void)keyboardWillShowWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
     if (![self.viewController qmui_isViewLoadedAndVisible]) return;
-    BOOL hasOverrideMethod = [self.viewController qmui_hasOverrideMethod:@selector(shouldHideKeyboardWhenTouchInView:) ofSuperclass:[QMUICommonViewController class]];
-    self.viewController.hideKeyboardTapGestureRecognizer.enabled = hasOverrideMethod;
+    self.viewController.hideKeyboardTapGestureRecognizer.enabled = YES;
 }
 
 - (void)keyboardWillHideWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {

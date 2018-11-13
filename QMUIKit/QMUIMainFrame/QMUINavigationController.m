@@ -154,14 +154,9 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     self.delegate = self.delegator;
     
     // UIView.tintColor 并不支持 UIAppearance 协议，所以不能通过 appearance 来设置，只能在实例里设置
-    UIColor *tintColor = NavBarTintColor;
-    if (tintColor) {
-        self.navigationBar.tintColor = tintColor;
-    }
-    
-    tintColor = ToolBarTintColor;
-    if (tintColor) {
-        self.toolbar.tintColor = tintColor;
+    if (QMUICMIActivated) {
+        self.navigationBar.tintColor = NavBarTintColor;
+        self.toolbar.tintColor = ToolBarTintColor;
     }
 }
 
@@ -325,7 +320,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     if (self.isViewControllerTransiting || !viewController) {
-        QMUILog(NSStringFromClass(self.class), @"%@, 上一次界面切换的动画尚未结束就试图进行新的 push 操作，为了避免产生 bug，拦截了这次 push。\n%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@", NSStringFromClass(self.class),  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
+        QMUILogWarn(NSStringFromClass(self.class), @"%@, 上一次界面切换的动画尚未结束就试图进行新的 push 操作，为了避免产生 bug，拦截了这次 push。\n%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@", NSStringFromClass(self.class),  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
         return;
     }
     
@@ -335,7 +330,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     }
     
     if (self.presentedViewController) {
-        QMUILog(NSStringFromClass(self.class), @"push 的时候 navigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
+        QMUILogWarn(NSStringFromClass(self.class), @"push 的时候 navigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
     }
     
     UIViewController *currentViewController = self.topViewController;
@@ -351,7 +346,14 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
             }
         }
     }
+    
     [super pushViewController:viewController animated:animated];
+    
+    // 某些情况下 push 操作可能会被系统拦截，实际上该 push 并不生效，这种情况下应当恢复相关标志位，否则会影响后续的 push 操作
+    // https://github.com/QMUI/QMUI_iOS/issues/426
+    if (![self.viewControllers containsObject:viewController]) {
+        self.isViewControllerTransiting = NO;
+    }
 }
 
 // 重写这个方法才能让 viewControllers 对 statusBar 的控制生效

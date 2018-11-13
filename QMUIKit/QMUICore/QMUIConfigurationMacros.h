@@ -20,6 +20,8 @@
 
 #define QMUICMI ({[[QMUIConfiguration sharedInstance] applyInitialTemplate];[QMUIConfiguration sharedInstance];})
 
+/// 标志当前项目是否正使用配置表功能
+#define QMUICMIActivated            [QMUICMI active]
 
 #pragma mark - Global Color
 
@@ -214,6 +216,7 @@
 
 #pragma mark - Others
 
+#define AutomaticCustomNavigationBarTransitionStyle [QMUICMI automaticCustomNavigationBarTransitionStyle] // 界面 push/pop 时是否要自动根据两个界面的 barTintColor/backgroundImage/shadowImage 的样式差异来决定是否使用自定义的导航栏效果
 #define SupportedOrientationMask                        [QMUICMI supportedOrientationMask]          // 默认支持的横竖屏方向
 #define AutomaticallyRotateDeviceOrientation            [QMUICMI automaticallyRotateDeviceOrientation]  // 是否在界面切换或 viewController.supportedOrientationMask 发生变化时自动旋转屏幕，默认为 NO
 #define StatusbarStyleLightInitially                    [QMUICMI statusbarStyleLightInitially]      // 默认的状态栏内容是否使用白色，默认为NO，也即黑色
@@ -222,5 +225,6 @@
 #define PreventConcurrentNavigationControllerTransitions [QMUICMI preventConcurrentNavigationControllerTransitions] // PreventConcurrentNavigationControllerTransitions : 自动保护 QMUINavigationController 在上一次 push/pop 尚未结束的时候就进行下一次 push/pop 的行为，避免产生 crash
 #define NavigationBarHiddenInitially                    [QMUICMI navigationBarHiddenInitially]      // preferredNavigationBarHidden 的初始值，默认为NO
 #define ShouldFixTabBarTransitionBugInIPhoneX           [QMUICMI shouldFixTabBarTransitionBugInIPhoneX] // 是否需要自动修复 iOS 11 下，iPhone X 的设备在 push 界面时，tabBar 会瞬间往上跳的 bug
+#define ShouldAssertResizableImageCapInsetsError        [QMUICMI shouldAssertResizableImageCapInsetsError] // UIImage (QMUI) 里的 resizableImage 遇到错误的 inset 值时是否需要以 NSAssert 的方式的方式提醒，默认为 NO，NO 则用 QMUILog
 #define SendAnalyticsToQMUITeam                         [QMUICMI sendAnalyticsToQMUITeam] // 是否允许在 DEBUG 模式下上报 Bundle Identifier 和 Display Name 给 QMUI 统计用
 

@@ -1,4 +1,4 @@
-;//
+//
 //  QMUIDialogViewController.m
 //  WeRead
 //

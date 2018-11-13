@@ -42,6 +42,10 @@
     _scrollView = scrollView;
 }
 
+- (void)updateScroll {
+    [self scrollViewDidScroll:self.scrollView];
+}
+
 #pragma mark - <UIScrollViewDelegate>
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {

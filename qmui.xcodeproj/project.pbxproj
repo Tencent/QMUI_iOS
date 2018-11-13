@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1178D5692198258700AA30E5 /* NSURL+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 1178D5672198258700AA30E5 /* NSURL+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1178D56A2198258700AA30E5 /* NSURL+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = 1178D5682198258700AA30E5 /* NSURL+QMUI.m */; };
 		AA8860BA2107455C005E4054 /* QMUIWeakObjectContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = AA8860B82107455C005E4054 /* QMUIWeakObjectContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA8860BB2107455C005E4054 /* QMUIWeakObjectContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8860B92107455C005E4054 /* QMUIWeakObjectContainer.m */; };
 		CD046C412018668900092035 /* QMUILogItem.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C3F2018668900092035 /* QMUILogItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -252,6 +254,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1178D5672198258700AA30E5 /* NSURL+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURL+QMUI.h"; sourceTree = "<group>"; };
+		1178D5682198258700AA30E5 /* NSURL+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURL+QMUI.m"; sourceTree = "<group>"; };
 		165F43DC1ADB786E0057EF6A /* QMUIViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIViewController.h; sourceTree = "<group>"; };
 		165F43DD1ADB786E0057EF6A /* QMUIViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIViewController.m; sourceTree = "<group>"; };
 		6D03A56D1B53895D003BDDE4 /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
@@ -738,6 +742,8 @@
 				CDB8CABD1DCC870700769DF0 /* UIViewController+QMUI.m */,
 				CDB8CABE1DCC870700769DF0 /* UIWindow+QMUI.h */,
 				CDB8CABF1DCC870700769DF0 /* UIWindow+QMUI.m */,
+				1178D5672198258700AA30E5 /* NSURL+QMUI.h */,
+				1178D5682198258700AA30E5 /* NSURL+QMUI.m */,
 			);
 			path = UIKitExtensions;
 			sourceTree = "<group>";
@@ -986,6 +992,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1178D5692198258700AA30E5 /* NSURL+QMUI.h in Headers */,
 				CD18BC7321760D5900E2A4E6 /* QMUINavigationBarScrollingAnimator.h in Headers */,
 				CD766F7A216B52F3005155BD /* UINavigationBar+QMUI.h in Headers */,
 				CD349BB72160B83D008653D4 /* QMUINavigationBarScrollingSnapAnimator.h in Headers */,
@@ -1251,6 +1258,7 @@
 				CDB8CBE01DCC870800769DF0 /* UIViewController+QMUI.m in Sources */,
 				FE1FBCAA1E8BA61300C6C01A /* UITextField+QMUI.m in Sources */,
 				CDD071FE2060F82700343AB6 /* QMUICellHeightCache.m in Sources */,
+				1178D56A2198258700AA30E5 /* NSURL+QMUI.m in Sources */,
 				D021DE3C205E80EB00FFA408 /* QMUICellSizeKeyCache.m in Sources */,
 				CDB8CB541DCC870700769DF0 /* CALayer+QMUI.m in Sources */,
 				CDB8CBBC1DCC870800769DF0 /* UIImageView+QMUI.m in Sources */,
