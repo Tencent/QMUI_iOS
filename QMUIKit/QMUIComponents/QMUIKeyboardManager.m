@@ -316,8 +316,10 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive) {
         return NO;
     }
-    if (![[notification.userInfo valueForKey:UIKeyboardIsLocalUserInfoKey] boolValue]) {
-        return NO;
+    if (@available(iOS 9, *)) {
+        if (![[notification.userInfo valueForKey:UIKeyboardIsLocalUserInfoKey] boolValue]) {
+            return NO;
+        }
     }
     return YES;
 }
