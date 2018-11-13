@@ -1,6 +1,5 @@
 //
 //  QMUISearchController.h
-//  Test
 //
 //  Created by MoLice on 16/5/25.
 //  Copyright © 2016年 MoLice. All rights reserved.

@@ -61,6 +61,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
                     if ([template shouldApplyTemplateAutomatically]) {
                         QMUI_hasAppliedInitialTemplate = YES;
                         [template applyConfigurationTemplate];
+                        _active = YES;// 标志配置表已生效
                         // 只应用第一个 shouldApplyTemplateAutomatically 的主题
                         // Only apply the first template returned
                         break;
@@ -265,6 +266,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     
     #pragma mark - Others
     
+    self.automaticCustomNavigationBarTransitionStyle = NO;
     self.supportedOrientationMask = UIInterfaceOrientationMaskAll;
     self.automaticallyRotateDeviceOrientation = NO;
     self.statusbarStyleLightInitially = NO;
@@ -273,6 +275,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.preventConcurrentNavigationControllerTransitions = YES;
     self.navigationBarHiddenInitially = NO;
     self.shouldFixTabBarTransitionBugInIPhoneX = NO;
+    self.shouldAssertResizableImageCapInsetsError = NO;
     self.sendAnalyticsToQMUITeam = YES;
 }
 

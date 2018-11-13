@@ -28,9 +28,8 @@
 
 - (void)didInitialize {
     // UIView.tintColor 并不支持 UIAppearance 协议，所以不能通过 appearance 来设置，只能在实例里设置
-    UIColor *tintColor = TabBarTintColor;
-    if (tintColor) {
-        self.tabBar.tintColor = tintColor;
+    if (QMUICMIActivated) {
+        self.tabBar.tintColor = TabBarTintColor;
     }
 }
 

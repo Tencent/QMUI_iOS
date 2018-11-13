@@ -37,3 +37,10 @@ typedef enum : NSUInteger {
 @property(nonatomic, assign) UIEdgeInsets contentEdgeInsets;
 @property(nonatomic, assign) UIEdgeInsets accessoryViewMargins;
 @end
+
+@interface QMUITableViewHeaderFooterView (UISubclassingHooks)
+
+/// 子类重写，用于修改样式，会在 parentTableView、type 属性发生变化的时候被调用
+- (void)updateAppearance;
+
+@end

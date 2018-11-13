@@ -68,10 +68,14 @@ static char kAssociatedObjectKey_qmuiDelegates;
         QMUIPropertyDescriptor *property = [QMUIPropertyDescriptor descriptorWithProperty:prop];
         if (property.isStrong) {
             // strong property
-            self.qmuimd_delegates[delegateGetterKey] = [QMUIMultipleDelegates strongDelegates];
+            QMUIMultipleDelegates *strongDelegates = [QMUIMultipleDelegates strongDelegates];
+            strongDelegates.parentObject = self;
+            self.qmuimd_delegates[delegateGetterKey] = strongDelegates;
         } else {
             // weak property
-            self.qmuimd_delegates[delegateGetterKey] = [QMUIMultipleDelegates weakDelegates];
+            QMUIMultipleDelegates *weakDelegates = [QMUIMultipleDelegates weakDelegates];
+            weakDelegates.parentObject = self;
+            self.qmuimd_delegates[delegateGetterKey] = weakDelegates;
         }
     }
     
@@ -111,7 +115,7 @@ static char kAssociatedObjectKey_qmuiDelegates;
             }
             
             // 将类似 textView.delegate = textView 的情况标志起来，避免产生循环调用 https://github.com/QMUI/QMUI_iOS/issues/346
-            selfObject.qmui_delegatesSelf = [delegates.delegates qmui_containsPointer:(__bridge void * _Nullable)(aDelegate)];
+            selfObject.qmui_delegatesSelf = [delegates.delegates qmui_containsPointer:(__bridge void * _Nullable)(selfObject)];
             
             originSelectorIMP(selfObject, originDelegateSetter, nil);// 先置为 nil 再设置 delegates，从而避免这个问题 https://github.com/QMUI/QMUI_iOS/issues/305
             originSelectorIMP(selfObject, originDelegateSetter, delegates);// 不管外面将什么 object 传给 setDelegate:，最终实际上传进去的都是 QMUIMultipleDelegates 容器

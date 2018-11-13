@@ -148,25 +148,20 @@
  *  因为系统的UINavigationController只有一个navBar，所以会导致在切换controller的时候，如果两个controller的navBar状态不一致（包括backgroundImage、shadowImage、barTintColor等等），就会导致在刚要切换的瞬间，navBar的状态都立马变成下一个controller所设置的样式了，为了解决这种情况，QMUI给出了一个方案，有四个方法可以决定你在转场的时候要不要使用自定义的navBar来模仿真实的navBar。具体方法如下：
  *  @see UINavigationController+NavigationBarTransition.h
  */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPushAppearing;
+- (BOOL)shouldCustomNavigationBarTransitionWhenPushAppearing DEPRECATED_ATTRIBUTE;
+- (BOOL)shouldCustomNavigationBarTransitionWhenPushDisappearing DEPRECATED_ATTRIBUTE;
+- (BOOL)shouldCustomNavigationBarTransitionWhenPopAppearing DEPRECATED_ATTRIBUTE;
+- (BOOL)shouldCustomNavigationBarTransitionWhenPopDisappearing DEPRECATED_ATTRIBUTE;
 
 /**
- *  同上
+ *  设置导航栏转场的时候是否需要使用自定义的 push / pop transition 效果。<br/>
+ *  如果前后两个界面 controller 返回的 key 不一致，那么则说明需要自定义。<br/>
+ *  不实现这个方法，或者实现了但返回 nil，都视为希望使用默认样式。<br/>
+ *  @warning 四个老接口 shouldCustomNavigationBarTransitionxxx 已经废弃不建议使用，不过还是会支持，建议都是用新接口
  *  @see UINavigationController+NavigationBarTransition.h
+ *  @see 配置表有开关 AutomaticCustomNavigationBarTransitionStyle 支持自动判断样式，无需实现这个方法
  */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPushDisappearing;
-
-/**
- *  同上
- *  @see UINavigationController+NavigationBarTransition.h
- */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPopAppearing;
-
-/**
- *  同上
- *  @see UINavigationController+NavigationBarTransition.h
- */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPopDisappearing;
+- (nullable NSString *)customNavigationBarTransitionKey;
 
 /**
  *  自定义navBar效果过程中UINavigationController的containerView的背景色

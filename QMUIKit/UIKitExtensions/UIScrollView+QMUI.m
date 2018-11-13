@@ -23,7 +23,7 @@
 }
 
 - (BOOL)qmui_alreadyAtTop {
-    if (self.contentOffset.y == -self.qmui_contentInset.top) {
+    if (((NSInteger)self.contentOffset.y) == -((NSInteger)self.qmui_contentInset.top)) {
         return YES;
     }
     
@@ -35,7 +35,7 @@
         return YES;
     }
     
-    if (self.contentOffset.y == self.contentSize.height + self.qmui_contentInset.bottom - CGRectGetHeight(self.bounds)) {
+    if (((NSInteger)self.contentOffset.y) == ((NSInteger)self.contentSize.height + self.qmui_contentInset.bottom - CGRectGetHeight(self.bounds))) {
         return YES;
     }
     

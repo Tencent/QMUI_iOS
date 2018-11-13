@@ -81,6 +81,15 @@
     [self checkIfShouldShowGradientLayer];
 }
 
+- (void)setFadeWidthPercent:(CGFloat)fadeWidthPercent {
+    if (!betweenOrEqual(0.0, fadeWidthPercent, 1.0)) {
+        return;
+    }
+    _fadeWidthPercent = fadeWidthPercent;
+    
+    self.fadeEndPercent = fadeWidthPercent;
+}
+
 - (void)setText:(NSString *)text {
     [super setText:text];
     self.offsetX = 0;

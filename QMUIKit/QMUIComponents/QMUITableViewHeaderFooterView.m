@@ -26,7 +26,7 @@
     return self;
 }
 
-- (void)updateStyleIfCan {
+- (void)updateAppearance {
     if (!self.parentTableView) return;
     if (self.type == QMUITableViewHeaderFooterViewTypeUnknow) return;
     
@@ -50,6 +50,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     if (self.accessoryView) {
+        [self.accessoryView sizeToFit];
         self.accessoryView.qmui_right = self.contentView.qmui_width - self.contentEdgeInsets.right - self.accessoryViewMargins.right;
         self.accessoryView.qmui_top = self.contentEdgeInsets.top + CGFloatGetCenter(self.contentView.qmui_height - UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets), self.accessoryView.qmui_height) + self.accessoryViewMargins.top - self.accessoryViewMargins.bottom;
     }
@@ -57,8 +58,7 @@
     [self.titleLabel sizeToFit];
     self.titleLabel.qmui_left = self.contentEdgeInsets.left;
     self.titleLabel.qmui_extendToRight = self.accessoryView ? self.accessoryView.qmui_left - self.accessoryViewMargins.left : self.contentView.qmui_width - self.contentEdgeInsets.right;
-    self.titleLabel.qmui_top = self.contentEdgeInsets.top;
-    self.titleLabel.qmui_extendToBottom = self.contentView.qmui_height - self.contentEdgeInsets.bottom;
+    self.titleLabel.qmui_top = self.contentEdgeInsets.top + CGFloatGetCenter(self.contentView.qmui_height - UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets), self.titleLabel.qmui_height);
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -89,12 +89,12 @@
 
 - (void)setParentTableView:(UITableView *)parentTableView {
     _parentTableView = parentTableView;
-    [self updateStyleIfCan];
+    [self updateAppearance];
 }
 
 - (void)setType:(QMUITableViewHeaderFooterViewType)type {
     _type = type;
-    [self updateStyleIfCan];
+    [self updateAppearance];
 }
 
 - (void)setContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets {

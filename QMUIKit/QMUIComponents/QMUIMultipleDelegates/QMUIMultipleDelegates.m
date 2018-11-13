@@ -63,7 +63,7 @@
     NSPointerArray *delegates = [self.delegates copy];
     for (id delegate in delegates) {
         result = [delegate methodSignatureForSelector:aSelector];
-        if (result) {
+        if (result && [delegate respondsToSelector:aSelector]) {
             return result;
         }
     }
@@ -104,7 +104,6 @@
         
         // 判断 qmui_delegatesSelf 是为了解决这个 issue：https://github.com/QMUI/QMUI_iOS/issues/346
         BOOL isDelegateSelf = ((NSObject *)delegate).qmui_delegatesSelf;
-        
         if (delegateCanRespondToSelector && !isDelegateSelf) {
             return YES;
         }
@@ -113,7 +112,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"%@%@", [super description], self.delegates];
+    return [NSString stringWithFormat:@"%@, parentObject is %@, %@", [super description], self.parentObject, self.delegates];
 }
 
 @end

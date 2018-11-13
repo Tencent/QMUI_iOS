@@ -99,7 +99,7 @@
         }
     }
     if (!isIndexPathLegal) {
-        QMUILog(@"UICollectionView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", self, indexPath, [NSThread callStackSymbols]);
+        QMUILogWarn(@"UICollectionView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", self, indexPath, [NSThread callStackSymbols]);
         NSAssert(NO, @"出现不合法的indexPath");
     } else {
         [self qmui_scrollToItemAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];

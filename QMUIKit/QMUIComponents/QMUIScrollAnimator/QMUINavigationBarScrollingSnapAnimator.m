@@ -23,34 +23,32 @@
     self = [super init];
     if (self) {
         
-        __weak __typeof(self)weakSelf = self;
-        
         self.adjustsOffsetYWithInsetTopAutomatically = YES;
         
         self.didScrollBlock = ^(QMUINavigationBarScrollingSnapAnimator * _Nonnull animator) {
-            if (!weakSelf.navigationBar) {
+            if (!animator.navigationBar) {
                 UINavigationBar *navigationBar = [QMUIHelper visibleViewController].navigationController.navigationBar;
                 if (navigationBar) {
-                    weakSelf.navigationBar = navigationBar;
+                    animator.navigationBar = navigationBar;
                 }
             }
-            if (!weakSelf.navigationBar) {
-                NSLog(@"无法自动找到 UINavigationBar，请通过 %@.%@ 手动设置一个", NSStringFromClass(weakSelf.class), NSStringFromSelector(@selector(navigationBar)));
+            if (!animator.navigationBar) {
+                NSLog(@"无法自动找到 UINavigationBar，请通过 %@.%@ 手动设置一个", NSStringFromClass(animator.class), NSStringFromSelector(@selector(navigationBar)));
                 return;
             }
             
-            if (weakSelf.animationBlock) {
-                if (weakSelf.offsetYReached) {
-                    if (!weakSelf.alreadyCalledScrollDownAnimation) {
-                        weakSelf.animationBlock(weakSelf, YES);
-                        weakSelf.alreadyCalledScrollDownAnimation = YES;
-                        weakSelf.alreadyCalledScrollUpAnimation = NO;
+            if (animator.animationBlock) {
+                if (animator.offsetYReached) {
+                    if (animator.continuous || !animator.alreadyCalledScrollDownAnimation) {
+                        animator.animationBlock(animator, YES);
+                        animator.alreadyCalledScrollDownAnimation = YES;
+                        animator.alreadyCalledScrollUpAnimation = NO;
                     }
                 } else {
-                    if (!weakSelf.alreadyCalledScrollUpAnimation) {
-                        weakSelf.animationBlock(weakSelf, NO);
-                        weakSelf.alreadyCalledScrollUpAnimation = YES;
-                        weakSelf.alreadyCalledScrollDownAnimation = NO;
+                    if (animator.continuous || !animator.alreadyCalledScrollUpAnimation) {
+                        animator.animationBlock(animator, NO);
+                        animator.alreadyCalledScrollUpAnimation = YES;
+                        animator.alreadyCalledScrollDownAnimation = NO;
                     }
                 }
             }

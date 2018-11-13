@@ -10,6 +10,7 @@
 #import "QMUICore.h"
 #import "UIBezierPath+QMUI.h"
 #import "UIColor+QMUI.h"
+#import "QMUILog.h"
 #import <Accelerate/Accelerate.h>
 
 CG_INLINE CGSize
@@ -39,9 +40,14 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 - (UIImage *)qmui_resizableImageWithCapInsets:(UIEdgeInsets)capInsets resizingMode:(UIImageResizingMode)resizingMode {
-    if (UIEdgeInsetsGetHorizontalValue(capInsets) >= self.size.width || UIEdgeInsetsGetVerticalValue(capInsets) >= self.size.height) {
-        // 如果命中这个 NSAssert，请减小 capInsets 的值
-        NSAssert(NO, @"UIImage (QMUI) resizableImageWithCapInsets 传进来的 capInsets 的水平/垂直方向的和应该小于图片本身的大小，否则会导致 render 时出现 invalid context 0x0 的错误");
+    if (!CGSizeIsEmpty(self.size) && (UIEdgeInsetsGetHorizontalValue(capInsets) >= self.size.width || UIEdgeInsetsGetVerticalValue(capInsets) >= self.size.height)) {
+        // 如果命中这个判断，请减小 capInsets 的值
+        NSString *text = @"UIImage (QMUI) resizableImageWithCapInsets 传进来的 capInsets 的水平/垂直方向的和应该小于图片本身的大小，否则会导致 render 时出现 invalid context 0x0 的错误";
+        if (ShouldAssertResizableImageCapInsetsError) {
+            NSAssert(NO, text);
+        } else {
+            QMUILogWarn(@"UIImage (QMUI)", @"%@", text);
+        }
     }
     return [self qmui_resizableImageWithCapInsets:capInsets resizingMode:resizingMode];
 }

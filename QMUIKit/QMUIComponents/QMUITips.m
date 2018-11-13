@@ -284,11 +284,11 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (void)hideAllTipsInView:(UIView *)view {
-    [self hideAllToastInView:view animated:YES];
+    [self hideAllToastInView:view animated:NO];
 }
 
 + (void)hideAllTips {
-    [self hideAllToastInView:DefaultTipsParentView animated:YES];
+    [self hideAllToastInView:nil animated:NO];
 }
 
 @end

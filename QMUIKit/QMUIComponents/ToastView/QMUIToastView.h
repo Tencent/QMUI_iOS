@@ -136,29 +136,29 @@ typedef NS_ENUM(NSInteger, QMUIToastViewPosition) {
 @interface QMUIToastView (ToastTool)
 
 /**
- * 工具方法。隐藏`view`里面的所有ToastView。
+ * 工具方法。隐藏`view`里面的所有 ToastView
  *
- * @param view 即将隐藏的ToastView的superView。
+ * @param view 即将隐藏的 ToastView 的 superView，如果 view = nil 则移除所有内存中的 ToastView
  * @param animated 是否需要通过动画隐藏。
  *
- * @return 如果成功隐藏一个ToastView则返回YES，失败则NO。
+ * @return 如果成功隐藏一个 ToastView 则返回 YES，失败则 NO
  */
 + (BOOL)hideAllToastInView:(UIView *)view animated:(BOOL)animated;
 
 /**
- * 工具方法。返回`view`里面最顶级的ToastView，如果没有则返回nil。
+ * 工具方法。返回`view`里面最顶部的 ToastView
  *
- * @param view ToastView的superView。
- * @return 返回一个QMUIToastView的实例。
+ * @param view ToastView 的 superView
+ * @return 返回一个 QMUIToastView 的实例
  */
-+ (nullable instancetype)toastInView:(UIView *)view;
++ (nullable __kindof UIView *)toastInView:(UIView *)view;
 
 /**
- * 工具方法。返回`view`里面所有的ToastView，如果没有则返回nil。
+ * 工具方法。返回`view`里面所有的 ToastView
  *
- * @param view ToastView的superView。
- * @return 包含所有QMUIToastView的数组。
+ * @param view ToastView 的 superView
+ * @return 包含所有 view 里面的所有 QMUIToastView，如果 view = nil 则返回所有内存中的 ToastView
  */
-+ (NSArray <QMUIToastView *> *)allToastInView:(UIView *)view;
++ (nullable NSArray <QMUIToastView *> *)allToastInView:(UIView *)view;
 
 @end

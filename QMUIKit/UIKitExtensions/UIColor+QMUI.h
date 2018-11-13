@@ -23,12 +23,12 @@
  *
  * @return UIColor对象
  */
-+ (UIColor *)qmui_colorWithHexString:(NSString *)hexString;
++ (nullable UIColor *)qmui_colorWithHexString:(nullable NSString *)hexString;
 
 /**
  *  将当前色值转换为hex字符串，通道排序是AARRGGBB（与Android保持一致）
  */
-- (NSString *)qmui_hexString;
+- (nullable NSString *)qmui_hexString;
 
 /**
  *  获取当前UIColor对象里的红色色值

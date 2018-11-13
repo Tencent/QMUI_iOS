@@ -7,12 +7,14 @@
 //
 
 #import "CALayer+QMUI.h"
+#import "UIView+QMUI.h"
 #import "QMUICore.h"
 #import "QMUILog.h"
 
 @interface CALayer ()
 
 @property(nonatomic, assign) float qmui_speedBeforePause;
+
 @end
 
 @implementation CALayer (QMUI)
@@ -23,7 +25,8 @@
         SEL selectors[] = {
             @selector(init),
             @selector(setBounds:),
-            @selector(setPosition:)
+            @selector(setPosition:),
+            @selector(setCornerRadius:)
         };
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
@@ -42,12 +45,20 @@ static char kAssociatedObjectKey_speedBeforePause;
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_speedBeforePause)) floatValue];
 }
 
+static char kAssociatedObjectKey_cornerRadius;
+- (void)setQmui_originCornerRadius:(CGFloat)qmui_originCornerRadius {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_cornerRadius, @(qmui_originCornerRadius), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (CGFloat)qmui_originCornerRadius {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_cornerRadius)) floatValue];
+}
+
 static char kAssociatedObjectKey_pause;
 - (void)setQmui_pause:(BOOL)qmui_pause {
     if (qmui_pause == self.qmui_pause) {
         return;
     }
-    
     if (qmui_pause) {
         self.qmui_speedBeforePause = self.speed;
         CFTimeInterval pausedTime = [self convertTime:CACurrentMediaTime() fromLayer:nil];
@@ -68,16 +79,47 @@ static char kAssociatedObjectKey_pause;
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_pause)) boolValue];
 }
 
+static char kAssociatedObjectKey_maskedCorners;
+- (void)setQmui_maskedCorners:(QMUICornerMask)qmui_maskedCorners {
+    BOOL maskedCornersChanged = qmui_maskedCorners != self.qmui_maskedCorners;
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_maskedCorners, @(qmui_maskedCorners), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (@available(iOS 11, *)) {
+        self.maskedCorners = (CACornerMask)qmui_maskedCorners;
+    } else {
+        if (qmui_maskedCorners && ![self hasFourBorder]) {
+            [self qmui_setCornerRadius:0];
+        }
+        if (maskedCornersChanged) {
+            // 需要刷新mask
+            [self setNeedsLayout];
+        }
+    }
+    if (maskedCornersChanged) {
+        // 需要刷新border
+        if ([self.delegate respondsToSelector:@selector(layoutSublayersOfLayer:)]) {
+            UIView *view = (UIView *)self.delegate;
+            if (view.qmui_borderPosition > 0 && view.qmui_borderWidth > 0) {
+                [view layoutSublayersOfLayer:self];
+            }
+        }
+    }
+}
+
+- (QMUICornerMask)qmui_maskedCorners {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_maskedCorners) unsignedIntegerValue];
+}
+
 - (instancetype)qmui_init {
     [self qmui_init];
     self.qmui_speedBeforePause = self.speed;
+    self.qmui_maskedCorners = QMUILayerMinXMinYCorner|QMUILayerMaxXMinYCorner|QMUILayerMinXMaxYCorner|QMUILayerMaxXMaxYCorner;
     return self;
 }
 
 - (void)qmui_setBounds:(CGRect)bounds {
     // 对非法的 bounds，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
     if (CGRectIsNaN(bounds)) {
-        QMUILog(@"CALayer (QMUI)", @"%@ setBounds:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGRect(bounds), [NSThread callStackSymbols]);
+        QMUILogWarn(@"CALayer (QMUI)", @"%@ setBounds:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGRect(bounds), [NSThread callStackSymbols]);
         NSAssert(NO, @"CALayer setBounds: 出现 NaN");
         if (!IS_DEBUG) {
             bounds = CGRectSafeValue(bounds);
@@ -89,13 +131,40 @@ static char kAssociatedObjectKey_pause;
 - (void)qmui_setPosition:(CGPoint)position {
     // 对非法的 position，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
     if (isnan(position.x) || isnan(position.y)) {
-        QMUILog(@"CALayer (QMUI)", @"%@ setPosition:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGPoint(position), [NSThread callStackSymbols]);
+        QMUILogWarn(@"CALayer (QMUI)", @"%@ setPosition:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGPoint(position), [NSThread callStackSymbols]);
         NSAssert(NO, @"CALayer setPosition: 出现 NaN");
         if (!IS_DEBUG) {
             position = CGPointMake(CGFloatSafeValue(position.x), CGFloatSafeValue(position.y));
         }
     }
     [self qmui_setPosition:position];
+}
+
+- (void)qmui_setCornerRadius:(CGFloat)cornerRadius {
+    BOOL cornerRadiusChanged = self.qmui_originCornerRadius != cornerRadius;
+    self.qmui_originCornerRadius = cornerRadius;
+    if (@available(iOS 11, *)) {
+        [self qmui_setCornerRadius:cornerRadius];
+    } else {
+        if (self.qmui_maskedCorners && ![self hasFourBorder]) {
+            [self qmui_setCornerRadius:0];
+        } else {
+            [self qmui_setCornerRadius:cornerRadius];
+        }
+        if (cornerRadiusChanged) {
+            // 需要刷新mask
+            [self setNeedsLayout];
+        }
+    }
+    if (cornerRadiusChanged) {
+        // 需要刷新border
+        if ([self.delegate respondsToSelector:@selector(layoutSublayersOfLayer:)]) {
+            UIView *view = (UIView *)self.delegate;
+            if (view.qmui_borderPosition > 0 && view.qmui_borderWidth > 0) {
+                [view layoutSublayersOfLayer:self];
+            }
+        }
+    }
 }
 
 - (void)qmui_sendSublayerToBack:(CALayer *)sublayer {
@@ -215,6 +284,66 @@ static char kAssociatedObjectKey_pause;
     CALayer *layer = [self qmui_separatorLayer];
     layer.backgroundColor = TableViewSeparatorColor.CGColor;
     return layer;
+}
+
+- (BOOL)hasFourBorder {
+    return (self.qmui_maskedCorners & QMUILayerMinXMinYCorner) == QMUILayerMinXMinYCorner &&
+           (self.qmui_maskedCorners & QMUILayerMaxXMinYCorner) == QMUILayerMaxXMinYCorner &&
+           (self.qmui_maskedCorners & QMUILayerMinXMaxYCorner) == QMUILayerMinXMaxYCorner &&
+           (self.qmui_maskedCorners & QMUILayerMaxXMaxYCorner) == QMUILayerMaxXMaxYCorner;
+}
+
+@end
+
+@interface UIView (QMUI_CornerRadius)
+
+@end
+
+@implementation UIView (QMUI_CornerRadius)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ExchangeImplementations([self class], @selector(layoutSublayersOfLayer:), @selector(QMUICornerRadius_layoutSublayersOfLayer:));
+    });
+}
+
+- (void)QMUICornerRadius_layoutSublayersOfLayer:(CALayer *)layer {
+    [self QMUICornerRadius_layoutSublayersOfLayer:layer];
+    if (@available(iOS 11, *)) {
+    } else {
+        if (self.layer.qmui_maskedCorners) {
+            if (self.layer.qmui_originCornerRadius <= 0 || [self hasFourBorder]) {
+                self.layer.mask = nil;
+            } else {
+                CAShapeLayer *cornerMaskLayer = [CAShapeLayer layer];
+                UIRectCorner rectCorner = 0;
+                if ((self.layer.qmui_maskedCorners & QMUILayerMinXMinYCorner) == QMUILayerMinXMinYCorner) {
+                    rectCorner |= UIRectCornerTopLeft;
+                }
+                if ((self.layer.qmui_maskedCorners & QMUILayerMaxXMinYCorner) == QMUILayerMaxXMinYCorner) {
+                    rectCorner |= UIRectCornerTopRight;
+                }
+                if ((self.layer.qmui_maskedCorners & QMUILayerMinXMaxYCorner) == QMUILayerMinXMaxYCorner) {
+                    rectCorner |= UIRectCornerBottomLeft;
+                }
+                if ((self.layer.qmui_maskedCorners & QMUILayerMaxXMaxYCorner) == QMUILayerMaxXMaxYCorner) {
+                    rectCorner |= UIRectCornerBottomRight;
+                }
+                UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:self.bounds byRoundingCorners:rectCorner cornerRadii:CGSizeMake(self.layer.qmui_originCornerRadius, self.layer.qmui_originCornerRadius)];
+                cornerMaskLayer.frame = self.bounds;
+                cornerMaskLayer.path = path.CGPath;
+                self.layer.mask = cornerMaskLayer;
+            }
+        }
+    }
+}
+                
+- (BOOL)hasFourBorder {
+    return (self.layer.qmui_maskedCorners & QMUILayerMinXMinYCorner) == QMUILayerMinXMinYCorner &&
+           (self.layer.qmui_maskedCorners & QMUILayerMaxXMinYCorner) == QMUILayerMaxXMinYCorner &&
+           (self.layer.qmui_maskedCorners & QMUILayerMinXMaxYCorner) == QMUILayerMinXMaxYCorner &&
+           (self.layer.qmui_maskedCorners & QMUILayerMaxXMaxYCorner) == QMUILayerMaxXMaxYCorner;
 }
 
 @end

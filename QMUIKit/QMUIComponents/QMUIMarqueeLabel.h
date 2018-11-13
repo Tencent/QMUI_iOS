@@ -25,6 +25,9 @@
 /// 用于控制首尾连接的文字之间的间距，默认为 40pt。
 @property(nonatomic, assign) IBInspectable CGFloat spacingBetweenHeadToTail;
 
+// 用于控制左和右边两端的渐变区域的百分比，默认为 0.2，则是 20% 宽。
+@property(nonatomic, assign) IBInspectable CGFloat fadeWidthPercent;
+
 /**
  *  自动判断 label 的 frame 是否超出当前的 UIWindow 可视范围，超出则自动停止动画。默认为 YES。
  *  @warning 某些场景并无法触发这个自动检测（例如直接调整 label.superview 的 frame 而不是 label 自身的 frame），这种情况暂不处理。

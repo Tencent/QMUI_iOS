@@ -5,7 +5,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"2.9.0";
+static NSString * const QMUI_VERSION = @"2.9.1";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -49,6 +49,10 @@ static NSString * const QMUI_VERSION = @"2.9.0";
 
 #if __has_include("NSString+QMUI.h")
 #import "NSString+QMUI.h"
+#endif
+
+#if __has_include("NSURL+QMUI.h")
+#import "NSURL+QMUI.h"
 #endif
 
 #if __has_include("QMUIAlbumViewController.h")
