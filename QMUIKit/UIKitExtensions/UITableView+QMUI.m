@@ -262,9 +262,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
         isIndexPathLegal = NO;
     } else {
         NSInteger rows = [self numberOfRowsInSection:indexPath.section];
-        if (indexPath.row >= rows) {
-            isIndexPathLegal = NO;
-        }
+        isIndexPathLegal = rows > 0 ? indexPath.row < rows : indexPath.row == NSNotFound;
     }
     if (!isIndexPathLegal) {
         QMUILogWarn(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", self, indexPath, [NSThread callStackSymbols]);
