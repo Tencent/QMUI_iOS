@@ -86,12 +86,18 @@ static char kAssociatedObjectKey_maskedCorners;
     if (@available(iOS 11, *)) {
         self.maskedCorners = (CACornerMask)qmui_maskedCorners;
     } else {
-        if (qmui_maskedCorners && ![self hasFourBorder]) {
+        if (qmui_maskedCorners && ![self hasFourCornerRadius]) {
             [self qmui_setCornerRadius:0];
         }
         if (maskedCornersChanged) {
             // 需要刷新mask
-            [self setNeedsLayout];
+            if ([NSThread isMainThread]) {
+                [self setNeedsLayout];
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self setNeedsLayout];
+                });
+            }
         }
     }
     if (maskedCornersChanged) {
@@ -107,7 +113,7 @@ static char kAssociatedObjectKey_maskedCorners;
 
 - (QMUICornerMask)qmui_maskedCorners {
     return [objc_getAssociatedObject(self, &kAssociatedObjectKey_maskedCorners) unsignedIntegerValue];
-}
+} 
 
 - (instancetype)qmui_init {
     [self qmui_init];
@@ -141,12 +147,12 @@ static char kAssociatedObjectKey_maskedCorners;
 }
 
 - (void)qmui_setCornerRadius:(CGFloat)cornerRadius {
-    BOOL cornerRadiusChanged = self.qmui_originCornerRadius != cornerRadius;
+    BOOL cornerRadiusChanged = flat(self.qmui_originCornerRadius) != flat(cornerRadius);
     self.qmui_originCornerRadius = cornerRadius;
     if (@available(iOS 11, *)) {
         [self qmui_setCornerRadius:cornerRadius];
     } else {
-        if (self.qmui_maskedCorners && ![self hasFourBorder]) {
+        if (self.qmui_maskedCorners && ![self hasFourCornerRadius]) {
             [self qmui_setCornerRadius:0];
         } else {
             [self qmui_setCornerRadius:cornerRadius];
@@ -286,7 +292,7 @@ static char kAssociatedObjectKey_maskedCorners;
     return layer;
 }
 
-- (BOOL)hasFourBorder {
+- (BOOL)hasFourCornerRadius {
     return (self.qmui_maskedCorners & QMUILayerMinXMinYCorner) == QMUILayerMinXMinYCorner &&
            (self.qmui_maskedCorners & QMUILayerMaxXMinYCorner) == QMUILayerMaxXMinYCorner &&
            (self.qmui_maskedCorners & QMUILayerMinXMaxYCorner) == QMUILayerMinXMaxYCorner &&
@@ -308,15 +314,23 @@ static char kAssociatedObjectKey_maskedCorners;
     });
 }
 
+static NSString *kMaskName = @"QMUI_CornerRadius_Mask";
+
 - (void)QMUICornerRadius_layoutSublayersOfLayer:(CALayer *)layer {
     [self QMUICornerRadius_layoutSublayersOfLayer:layer];
     if (@available(iOS 11, *)) {
     } else {
+        if (self.layer.mask && ![self.layer.mask.name isEqualToString:kMaskName]) {
+            return;
+        }
         if (self.layer.qmui_maskedCorners) {
-            if (self.layer.qmui_originCornerRadius <= 0 || [self hasFourBorder]) {
-                self.layer.mask = nil;
+            if (self.layer.qmui_originCornerRadius <= 0 || [self hasFourCornerRadius]) {
+                if (self.layer.mask) {
+                    self.layer.mask = nil;
+                }
             } else {
                 CAShapeLayer *cornerMaskLayer = [CAShapeLayer layer];
+                cornerMaskLayer.name = kMaskName;
                 UIRectCorner rectCorner = 0;
                 if ((self.layer.qmui_maskedCorners & QMUILayerMinXMinYCorner) == QMUILayerMinXMinYCorner) {
                     rectCorner |= UIRectCornerTopLeft;
@@ -339,7 +353,7 @@ static char kAssociatedObjectKey_maskedCorners;
     }
 }
                 
-- (BOOL)hasFourBorder {
+- (BOOL)hasFourCornerRadius {
     return (self.layer.qmui_maskedCorners & QMUILayerMinXMinYCorner) == QMUILayerMinXMinYCorner &&
            (self.layer.qmui_maskedCorners & QMUILayerMaxXMinYCorner) == QMUILayerMaxXMinYCorner &&
            (self.layer.qmui_maskedCorners & QMUILayerMinXMaxYCorner) == QMUILayerMinXMaxYCorner &&
