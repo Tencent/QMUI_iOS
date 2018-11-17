@@ -417,14 +417,17 @@
         }
     }
     
-    UIColor *barTintColor1 = [vc1 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc1 navigationBarBarTintColor] : [UINavigationBar appearance].barTintColor;
-    UIColor *barTintColor2 = [vc2 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc2 navigationBarBarTintColor] : [UINavigationBar appearance].barTintColor;
-    if (barTintColor1 || barTintColor2) {
-        if (!barTintColor1 || !barTintColor2) {
-            return YES;
-        }
-        if (![barTintColor1 isEqual:barTintColor2]) {
-            return YES;
+    // 如果存在 backgroundImage，则 barTintColor 就算存在也不会被显示出来，所以这里只判断两个 backgroundImage 都不存在的时候
+    if (!bg1 && !bg2) {
+        UIColor *barTintColor1 = [vc1 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc1 navigationBarBarTintColor] : [UINavigationBar appearance].barTintColor;
+        UIColor *barTintColor2 = [vc2 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc2 navigationBarBarTintColor] : [UINavigationBar appearance].barTintColor;
+        if (barTintColor1 || barTintColor2) {
+            if (!barTintColor1 || !barTintColor2) {
+                return YES;
+            }
+            if (![barTintColor1 isEqual:barTintColor2]) {
+                return YES;
+            }
         }
     }
     

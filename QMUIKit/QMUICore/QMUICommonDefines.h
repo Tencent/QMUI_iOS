@@ -128,6 +128,9 @@
 // 是否放大模式（iPhone 6及以上的设备支持放大模式）
 #define IS_ZOOMEDMODE ([[UIScreen mainScreen] respondsToSelector:@selector(nativeScale)] ? (ScreenNativeScale > ScreenScale) : NO)
 
+// 判断该用户是否开启了系统偏好里加粗文本功能（Bold Text）
+#define IS_BOLDTEXT_ENABLED UIAccessibilityIsBoldTextEnabled()
+
 #pragma mark - 变量-布局相关
 
 // 获取一个像素
