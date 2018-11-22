@@ -42,7 +42,7 @@ QMUI iOS 支持 iOS 8+。
 - 关于 AutoLayout：通常可以配合 Masonry 等常见的 AutoLayout 框架使用，若遇到不兼容的个案请提 issue。
 - 关于 xib / storyboard：现已全面支持。
 - 关于 Swift：可以正常使用，如遇到问题请提 issue。
-- 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:73](https://github.com/QMUI/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L75-L79)，可直接查看。
+- 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:75](https://github.com/QMUI/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L75-L79)，可直接查看。
 
 ## 其他
 建议搭配 QMUI 专用的 Code Snippets 及文件模板使用：
