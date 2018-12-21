@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIHelper.h
 //  qmui
@@ -133,15 +134,14 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 + (NSString *)deviceModel;
 
 + (BOOL)isIPad;
-+ (BOOL)isIPadPro;
 + (BOOL)isIPod;
 + (BOOL)isIPhone;
 + (BOOL)isSimulator;
 
-/// 是否全面屏类型的设备
+/// 带物理凹槽的刘海屏或者使用 Home Indicator 类型的设备
 + (BOOL)isNotchedScreen;
 
-/// 将屏幕分为普通和紧凑两种，这个方法用于判断是否为普通屏幕
+/// 将屏幕分为普通和紧凑两种，这个方法用于判断普通屏幕
 + (BOOL)isRegularScreen;
 
 /// iPhone XS Max
@@ -173,37 +173,14 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 + (CGSize)screenSizeFor40Inch;
 + (CGSize)screenSizeFor35Inch;
 
-// 用于获取 iPhone X 系列全面屏手机的安全区域的 insets
++ (CGFloat)preferredLayoutAsSimilarScreenWidthForIPad;
+
+// 用于获取 isNotchedScreen 设备的 insets，注意对于 iPad Pro 11-inch 这种无刘海凹槽但却有使用 Home Indicator 的设备，它的 top 返回0，bottom 返回 safeAreaInsets.bottom 的值
 + (UIEdgeInsets)safeAreaInsetsForDeviceWithNotch;
 
 /// 判断当前设备是否高性能设备，只会判断一次，以后都直接读取结果，所以没有性能问题
 + (BOOL)isHighPerformanceDevice;
 
-@end
-
-@interface QMUIHelper (Orientation)
-
-/**
- *  旋转当前设备的方向到指定方向，一般用于 [UIViewController supportedInterfaceOrientations] 发生变化时主动触发界面方向的刷新
- *  @return 是否真正旋转了方向，YES 表示参数的方向和目前设备方向不一致，NO 表示一致也即不会旋转
- *  @see [QMUIConfiguration automaticallyRotateDeviceOrientation]
- */
-+ (BOOL)rotateToDeviceOrientation:(UIDeviceOrientation)orientation;
-
-/**
- *  记录手动旋转方向前的设备方向，当值不为 UIDeviceOrientationUnknown 时表示设备方向有经过了手动调整。默认值为 UIDeviceOrientationUnknown。
- *  @see [QMUIHelper rotateToDeviceOrientation]
- */
-@property(nonatomic, assign) UIDeviceOrientation orientationBeforeChangingByHelper;
-
-/// 根据指定的旋转方向计算出对应的旋转角度
-+ (CGFloat)angleForTransformWithInterfaceOrientation:(UIInterfaceOrientation)orientation;
-
-/// 根据当前设备的旋转方向计算出对应的CGAffineTransform
-+ (CGAffineTransform)transformForCurrentInterfaceOrientation;
-
-/// 根据指定的旋转方向计算出对应的CGAffineTransform
-+ (CGAffineTransform)transformWithInterfaceOrientation:(UIInterfaceOrientation)orientation;
 @end
 
 @interface QMUIHelper (UIApplication)
@@ -213,14 +190,14 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
  *
  *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
  */
-+ (void)renderStatusBarStyleDark;
++ (void)renderStatusBarStyleDark DEPRECATED_ATTRIBUTE;
 
 /**
  *  更改状态栏内容颜色为浅色
  *
  *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
  */
-+ (void)renderStatusBarStyleLight;
++ (void)renderStatusBarStyleLight DEPRECATED_ATTRIBUTE;
 
 /**
  * 把App的主要window置灰，用于浮层弹出时，请注意要在适当时机调用`resetDimmedApplicationWindow`恢复到正常状态

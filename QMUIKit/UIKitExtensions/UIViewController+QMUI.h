@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIViewController+QMUI.h
 //  qmui
@@ -15,8 +16,28 @@
 #import <UIKit/UIKit.h>
 #import "QMUICore.h"
 
+/// 在 App 的 rootViewController.view.frame.size 发生变化（例如横竖屏旋转，或者 iPad Split View 模式下调整大小）前发出通知，你可以通过 QMUIPrecedingAppSizeUserInfoKey 获取变化前的值（也即当前值），用 QMUIFollowingAppSizeUserInfoKey 获取变化后的值。
+extern NSNotificationName const QMUIAppSizeWillChangeNotification;
+
+/// 对应一个 NSValue 包裹的 CGSize 对象
+extern NSString *const QMUIPrecedingAppSizeUserInfoKey;
+
+/// 对应一个 NSValue 包裹的 CGSize 对象
+extern NSString *const QMUIFollowingAppSizeUserInfoKey;
+
+typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
+    QMUIViewControllerUnknow        = 1 << 0,   /// 初始化完成但尚未触发 viewDidLoad
+    QMUIViewControllerViewDidLoad   = 1 << 1,   /// 触发了 viewDidLoad
+    QMUIViewControllerWillAppear    = 1 << 2,   /// 触发了 viewWillAppear
+    QMUIViewControllerDidAppear     = 1 << 3,   /// 触发了 viewDidAppear
+    QMUIViewControllerWillDisappear = 1 << 4,   /// 触发了 viewWillDisappear
+    QMUIViewControllerDidDisappear  = 1 << 5,   /// 触发了 viewDidDisappear
+    
+    QMUIViewControllerVisible       = QMUIViewControllerWillAppear | QMUIViewControllerDidAppear,// 表示是否处于可视范围，判断时请用 & 运算，例如 qmui_visibleState & QMUIViewControllerVisible
+};
+
 /**
- *  @warning 在这里兼容了 iOS 9.0 以下的版本对 loadViewIfNeeded 方法的调用
+ *  @warning 这个 Category 里兼容了 iOS 8 下对 loadViewIfNeeded 方法的使用，所以 iOS 8 下也可以安全调用，建议搭配 BeginIgnoreAvailabilityWarning/EndIgnoreAvailabilityWarning 屏蔽 Xcode 的 warning。
  */
 @interface UIViewController (QMUI)
 
@@ -47,6 +68,16 @@
 - (BOOL)qmui_isViewLoadedAndVisible;
 
 /**
+ 获取当前 viewController 所处的的生命周期阶段（也即 viewDidLoad/viewWillApear/viewDidAppear/viewWillDisappear/viewDidDisappear）
+ */
+@property(nonatomic, assign, readonly) QMUIViewControllerVisibleState qmui_visibleState;
+
+/**
+ 在当前 viewController 生命周期发生变化的时候调用
+ */
+@property(nonatomic, copy) void (^qmui_visibleStateDidChangeBlock)(__kindof UIViewController *viewController, QMUIViewControllerVisibleState visibleState);
+
+/**
  *  UINavigationBar 在 self.view 坐标系里的 maxY，一般用于 self.view.subviews 布局时参考用
  *  @warning 注意由于使用了坐标系转换的计算，所以要求在 self.view.window 存在的情况下使用才可以，因此请勿在 viewDidLoad 内使用，建议在 viewDidLayoutSubviews、viewWillAppear: 里使用。
  *  @warning 如果不存在 UINavigationBar，则返回 0
@@ -66,6 +97,16 @@
  *  @warning 如果不存在 UITabBar，则返回 0
  */
 @property(nonatomic, assign, readonly) CGFloat qmui_tabBarSpacingInViewCoordinator;
+
+/**
+ 获取当前 viewController 的 statusBar 显隐状态，与系统 prefersStatusBarHidden 的区别在于，系统的方法在对 containerViewController（例如 UITabBarController、UINavigationController 等）调用时，返回的是 containerViewController 自身的 prefersStatusBarHidden 的值，但真正决定 statusBar 显隐的是该 containerViewController 的 childViewControllerForStatusBarHidden 的 prefersStatusBarHidden 的值，所以只有用 qmui_prefersStatusBarHidden 才能拿到真正的值。
+ */
+@property(nonatomic, assign, readonly) BOOL qmui_prefersStatusBarHidden;
+
+/**
+ 获取当前 viewController 的 statusBar style，与系统 preferredStatusBarStyle 的区别在于，系统的方法在对 containerViewController（例如 UITabBarController、UINavigationController 等）调用时，返回的是 containerViewController 自身的 preferredStatusBarStyle 的值，但真正决定 statusBar style 的是该 containerViewController 的 childViewControllerForStatusBarHidden 的 preferredStatusBarStyle 的值，所以只有用 qmui_preferredStatusBarStyle 才能拿到真正的值。
+ */
+@property(nonatomic, assign, readonly) UIStatusBarStyle qmui_preferredStatusBarStyle;
 
 @end
 

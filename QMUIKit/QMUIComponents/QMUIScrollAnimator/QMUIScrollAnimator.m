@@ -5,16 +5,18 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIScrollAnimator.m
 //  QMUIKit
 //
-//  Created by MoLice on 2018/S/30.
+//  Created by QMUI Team on 2018/S/30.
 //
 
 #import "QMUIScrollAnimator.h"
 #import "QMUIMultipleDelegates.h"
 #import "UIScrollView+QMUI.h"
+#import "UIView+QMUI.h"
 
 @interface QMUIScrollAnimator ()
 
@@ -55,7 +57,7 @@
 #pragma mark - <UIScrollViewDelegate>
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    if (self.enabled && scrollView == self.scrollView && scrollView.window && self.didScrollBlock) {
+    if (self.enabled && scrollView == self.scrollView && self.didScrollBlock && scrollView.qmui_visible) {
         self.didScrollBlock(self);
     }
 }

@@ -5,16 +5,18 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIImageView+QMUI.m
 //  qmui
 //
-//  Created by MoLice on 16/8/9.
+//  Created by QMUI Team on 16/8/9.
 //
 
 #import "UIImageView+QMUI.h"
 #import "QMUICore.h"
 #import "CALayer+QMUI.h"
+#import "UIView+QMUI.h"
 
 @interface UIImageView ()
 
@@ -29,9 +31,12 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SEL selectors[] = {
+            @selector(initWithImage:),
+            @selector(initWithImage:highlightedImage:),
             @selector(initWithFrame:),
             @selector(initWithCoder:),
             @selector(setImage:),
+            @selector(image),
             @selector(displayLayer:),
             @selector(didMoveToWindow),
             @selector(setHidden:),
@@ -46,27 +51,54 @@
     });
 }
 
+// 虽然 UIImageView.h 里并没有把两个 initWithImage: 方法标记为 NS_DESIGNATED_INITIALIZER，但实测它们就是 NS_DESIGNATED_INITIALIZER，不会互相调用，也不会调用 initWithFrame:、initWithCoder:
+- (instancetype)qimgv_initWithImage:(UIImage *)image {
+    [self qimgv_initWithImage:image];
+    [self qimgv_didInitialize];
+    return self;
+}
+
+- (instancetype)qimgv_initWithImage:(UIImage *)image highlightedImage:(UIImage *)highlightedImage {
+    [self qimgv_initWithImage:image highlightedImage:highlightedImage];
+    [self qimgv_didInitialize];
+    return self;
+}
+
 - (instancetype)qimgv_initWithFrame:(CGRect)frame {
     [self qimgv_initWithFrame:frame];
-    self.qmui_smoothAnimation = YES;
+    [self qimgv_didInitialize];
     return self;
 }
 
 - (instancetype)qimgv_initWithCoder:(NSCoder *)aDecoder {
     [self qimgv_initWithCoder:aDecoder];
-    self.qmui_smoothAnimation = YES;
+    [self qimgv_didInitialize];
     return self;
 }
 
+- (void)qimgv_didInitialize {
+    self.qmui_smoothAnimation = YES;
+}
+
 - (void)qimgv_setImage:(UIImage *)image {
-    if (self.qmui_smoothAnimation && image.images && image != self.qimgv_animatedImage) {
-        self.qimgv_animatedImage = image;
-        [self qimgv_requestToStartAnimation];
+    if (self.qmui_smoothAnimation && image.images) {
+        if (image != self.qimgv_animatedImage) {
+            [self qimgv_setImage:nil];
+            self.qimgv_animatedImage = image;
+            [self qimgv_requestToStartAnimation];
+        }
     } else {
         self.qimgv_animatedImage = nil;
         [self qimgv_stopAnimating];
         [self qimgv_setImage:image];
     }
+}
+
+- (UIImage *)qimgv_image {
+    if (self.qimgv_animatedImage) {
+        return self.qimgv_animatedImage;
+    }
+    return [self qimgv_image];
 }
 
 - (BOOL)qimgv_requestToStartAnimation {
@@ -106,7 +138,7 @@
 }
 
 - (BOOL)qimgv_canStartAnimation {
-    return self.window && !self.hidden && self.alpha > 0.01 && !CGRectIsEmpty(self.frame);
+    return self.qmui_visible && !CGRectIsEmpty(self.frame);
 }
 
 - (void)qimgv_didMoveToWindow {
@@ -173,10 +205,10 @@ static char kAssociatedObjectKey_currentImageIndex;
 static char kAssociatedObjectKey_smoothAnimation;
 - (void)setQmui_smoothAnimation:(BOOL)qmui_smoothAnimation {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_smoothAnimation, @(qmui_smoothAnimation), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (qmui_smoothAnimation && self.image.images) {
-        self.image = self.image;
+    if (qmui_smoothAnimation && self.image.images && self.image != self.qimgv_animatedImage) {
+        self.image = self.image;// 重新设置图片，触发动画
     } else if (!qmui_smoothAnimation && self.qimgv_animatedImage) {
-        self.image = self.qimgv_animatedImage;
+        self.image = self.image;// 交给 setImage 那边把动画清理掉
     }
 }
 

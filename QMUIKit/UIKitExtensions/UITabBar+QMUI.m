@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UITabBar+QMUI.m
 //  qmui
 //
-//  Created by MoLice on 2017/2/14.
+//  Created by QMUI Team on 2017/2/14.
 //
 
 #import "UITabBar+QMUI.h"
@@ -54,31 +55,35 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
         ExchangeImplementations([self class], @selector(setSelectedItem:), @selector(qmui_setSelectedItem:));
         ExchangeImplementations([self class], @selector(setFrame:), @selector(qmuiTabBar_setFrame:));
         
+        // 以下代码修复两个仅存在于 12.1.0 版本的系统 bug，实测 12.1.1 苹果已经修复
         if (@available(iOS 12.1, *)) {
-            OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
-                return ^(UIView *selfObject, CGRect firstArgv) {
-                    
-                    if ([selfObject isKindOfClass:originClass]) {
+            if (@available(iOS 12.1.1, *)) {
+            } else {
+                OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+                    return ^(UIView *selfObject, CGRect firstArgv) {
                         
-                        // https://github.com/QMUI/QMUI_iOS/issues/410
-                        if (!CGRectIsEmpty(selfObject.frame) && CGRectIsEmpty(firstArgv)) {
-                            return;
-                        }
-                        
-                        // https://github.com/QMUI/QMUI_iOS/issues/422
-                        if (IS_NOTCHED_SCREEN) {
-                            if ((CGRectGetHeight(selfObject.frame) == 48 && CGRectGetHeight(firstArgv) == 33) || (CGRectGetHeight(selfObject.frame) == 31 && CGRectGetHeight(firstArgv) == 20)) {
+                        if ([selfObject isKindOfClass:originClass]) {
+                            
+                            // https://github.com/QMUI/QMUI_iOS/issues/410
+                            if (!CGRectIsEmpty(selfObject.frame) && CGRectIsEmpty(firstArgv)) {
                                 return;
                             }
+                            
+                            // https://github.com/QMUI/QMUI_iOS/issues/422
+                            if (IS_NOTCHED_SCREEN) {
+                                if ((CGRectGetHeight(selfObject.frame) == 48 && CGRectGetHeight(firstArgv) == 33) || (CGRectGetHeight(selfObject.frame) == 31 && CGRectGetHeight(firstArgv) == 20)) {
+                                    return;
+                                }
+                            }
                         }
-                    }
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, CGRect);
-                    originSelectorIMP = (void (*)(id, SEL, CGRect))originIMP;
-                    originSelectorIMP(selfObject, originCMD, firstArgv);
-                };
-            });
+                        
+                        // call super
+                        void (*originSelectorIMP)(id, SEL, CGRect);
+                        originSelectorIMP = (void (*)(id, SEL, CGRect))originIMP;
+                        originSelectorIMP(selfObject, originCMD, firstArgv);
+                    };
+                });
+            }
         }
     });
 }
@@ -156,6 +161,9 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
     if (@available(iOS 11, *)) {
         if (IS_NOTCHED_SCREEN && ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32))) {// 只关注全面屏设备下的这两种非正常的 tabBar 高度即可
             CGFloat bottomSafeAreaInsets = self.safeAreaInsets.bottom > 0 ? self.safeAreaInsets.bottom : self.superview.safeAreaInsets.bottom;// 注意，如果只是拿 self.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
+            if (bottomSafeAreaInsets == CGRectGetHeight(self.frame)) {
+                return;// 由于这个系统 bug https://github.com/QMUI/QMUI_iOS/issues/446，这里先暂时屏蔽本次 frame 变化
+            }
             frame.size.height += bottomSafeAreaInsets;
             frame.origin.y -= bottomSafeAreaInsets;
         }

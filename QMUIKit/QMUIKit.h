@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 /// Automatically created by script in Build Phases
 
 #import <UIKit/UIKit.h>
@@ -12,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"2.9.1";
+static NSString * const QMUI_VERSION = @"2.9.3";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -184,6 +185,10 @@ static NSString * const QMUI_VERSION = @"2.9.1";
 
 #if __has_include("QMUIImagePreviewViewController.h")
 #import "QMUIImagePreviewViewController.h"
+#endif
+
+#if __has_include("QMUIImagePreviewViewTransitionAnimator.h")
+#import "QMUIImagePreviewViewTransitionAnimator.h"
 #endif
 
 #if __has_include("QMUIKeyboardManager.h")
@@ -436,6 +441,10 @@ static NSString * const QMUI_VERSION = @"2.9.1";
 
 #if __has_include("UIImageView+QMUI.h")
 #import "UIImageView+QMUI.h"
+#endif
+
+#if __has_include("UIInterface+QMUI.h")
+#import "UIInterface+QMUI.h"
 #endif
 
 #if __has_include("UILabel+QMUI.h")

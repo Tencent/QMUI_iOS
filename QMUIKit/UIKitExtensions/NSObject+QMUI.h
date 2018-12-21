@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  NSObject+QMUI.h
 //  qmui
 //
-//  Created by MoLice on 2016/11/1.
+//  Created by QMUI Team on 2016/11/1.
 //
 
 #import <Foundation/Foundation.h>
@@ -37,7 +38,7 @@
 
 /**
  对 super 发送消息
-
+ 
  @param aSelector 要发送的消息
  @return 消息执行后的结果
  @link http://stackoverflow.com/questions/14635024/using-objc-msgsendsuper-to-invoke-a-class-method @/link
@@ -46,7 +47,7 @@
 
 /**
  对 super 发送消息
-
+ 
  @param aSelector 要发送的消息
  @param object 作为参数传过去
  @return 消息执行后的结果
@@ -93,14 +94,14 @@
 
 /**
  使用 block 遍历指定 class 的所有成员变量（也即 _xxx 那种），不包含 property 对应的 _property 成员变量，也不包含 superclasses 里定义的变量
-
+ 
  @param block 用于遍历的 block
  */
 - (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
 
 /**
  使用 block 遍历指定 class 的所有成员变量（也即 _xxx 那种），不包含 property 对应的 _property 成员变量
-
+ 
  @param aClass 指定的 class
  @param includingInherited 是否要包含由继承链带过来的 ivars
  @param block  用于遍历的 block
@@ -109,14 +110,14 @@
 
 /**
  使用 block 遍历指定 class 的所有属性，不包含 superclasses 里定义的 property
-
+ 
  @param block 用于遍历的 block，如果要获取 property 的信息，推荐用 QMUIPropertyDescriptor。
  */
 - (void)qmui_enumratePropertiesUsingBlock:(void (^)(objc_property_t property, NSString *propertyName))block;
 
 /**
  使用 block 遍历指定 class 的所有属性
-
+ 
  @param aClass 指定的 class
  @param includingInherited 是否要包含由继承链带过来的 property
  @param block 用于遍历的 block，如果要获取 property 的信息，推荐用 QMUIPropertyDescriptor。
@@ -139,9 +140,91 @@
 
 /**
  遍历某个 protocol 里的所有方法
-
+ 
  @param protocol 要遍历的 protocol，例如 \@protocol(xxx)
  @param block 遍历过程中调用的 block
  */
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL selector))block;
+
+@end
+
+
+@interface NSObject (QMUI_DataBind)
+
+/**
+ 给对象绑定上另一个对象以供后续取出使用，如果 object 传入 nil 则会清除该 key 之前绑定的对象
+ 
+ @attention 被绑定的对象会被 strong 强引用
+ @note 内部是使用 objc_setAssociatedObject / objc_getAssociatedObject 来实现
+ 
+ @code
+ - (UITableViewCell *)cellForIndexPath:(NSIndexPath *)indexPath {
+ // 1）在这里给 button 绑定上 indexPath 对象
+ [cell strongBind:indexPath forKey:@"indexPath"];
+ }
+ 
+ - (void)didTapButton:(UIButton *)button {
+ // 2）在这里取出被点击的 button 的 indexPath 对象
+ NSIndexPath *indexPathTapped = [button getBindForKey:@"indexPath"];
+ }
+ @endcode
+ */
+- (void)qmui_bindObject:(id)object forKey:(NSString *)key;
+
+/**
+ 给对象绑定上另一个对象以供后续取出使用，但相比于 qmui_bindObject:forKey:，该方法不会 strong 强引用传入的 object
+ */
+- (void)qmui_bindObjectWeakly:(id)object forKey:(NSString *)key;
+
+/**
+ 取出之前使用 bind 方法绑定的对象
+ */
+- (id)qmui_getBindObjectForKey:(NSString *)key;
+
+/**
+ 给对象绑定上一个 double 值以供后续取出使用
+ */
+- (void)qmui_bindDouble:(double)doubleValue forKey:(NSString *)key;
+
+/**
+ 取出之前用 bindDouble:forKey: 绑定的值
+ */
+- (double)qmui_getBindDoubleForKey:(NSString *)key;
+
+/**
+ 给对象绑定上一个 BOOL 值以供后续取出使用
+ */
+- (void)qmui_bindBOOL:(BOOL)boolValue forKey:(NSString *)key;
+
+/**
+ 取出之前用 bindBOOL:forKey: 绑定的值
+ */
+- (BOOL)qmui_getBindBOOLForKey:(NSString *)key;
+
+/**
+ 给对象绑定上一个 long 值以供后续取出使用
+ */
+- (void)qmui_bindLong:(long)longValue forKey:(NSString *)key;
+
+/**
+ 取出之前用 bindLong:forKey: 绑定的值
+ */
+- (long)qmui_getBindLongForKey:(NSString *)key;
+
+/**
+ 移除之前使用 bind 方法绑定的对象
+ */
+- (void)qmui_clearBindForKey:(NSString *)key;
+
+/**
+ 移除之前使用 bind 方法绑定的所有对象
+ */
+- (void)qmui_clearAllBind;
+
+/**
+ 返回当前有绑定对象存在的所有的 key 的数组，如果不存在任何 key，则返回一个空数组
+ @note 数组中元素的顺序是随机的
+ */
+- (NSArray<NSString *> *)qmui_allBindKeys;
+
 @end

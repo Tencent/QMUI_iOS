@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIPopupContainerView.m
 //  qmui
 //
-//  Created by MoLice on 15/12/17.
+//  Created by QMUI Team on 15/12/17.
 //
 
 #import "QMUIPopupContainerView.h"
@@ -17,6 +18,7 @@
 #import "QMUICommonViewController.h"
 #import "UIViewController+QMUI.h"
 #import "QMUILog.h"
+#import "UIWindow+QMUI.h"
 
 @interface QMUIPopupContainerViewWindow : UIWindow
 
@@ -206,7 +208,7 @@
     BOOL isTextLabelShowing = [self isSubviewShowing:_textLabel];
     if (isImageViewShowing) {
         [_imageView sizeToFit];
-        _imageView.frame = CGRectSetXY(_imageView.frame, self.imageEdgeInsets.left, flat(CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), CGRectGetHeight(_imageView.frame)) + self.imageEdgeInsets.top));
+        _imageView.frame = CGRectSetXY(_imageView.frame, self.imageEdgeInsets.left, CGFloatGetCenter(CGRectGetHeight(self.contentView.bounds), CGRectGetHeight(_imageView.frame) + self.imageEdgeInsets.top));
     }
     if (isTextLabelShowing) {
         CGFloat textLabelMinX = (isImageViewShowing ? ceil(CGRectGetMaxX(_imageView.frame) + self.imageEdgeInsets.right) : 0) + self.textEdgeInsets.left;
@@ -469,6 +471,9 @@
 - (void)initPopupContainerViewWindowIfNeeded {
     if (!self.popupWindow) {
         self.popupWindow = [[QMUIPopupContainerViewWindow alloc] init];
+        if (@available(iOS 10, *)) {
+            self.popupWindow.qmui_capturesStatusBarAppearance = NO;
+        }
         self.popupWindow.backgroundColor = UIColorClear;
         self.popupWindow.windowLevel = UIWindowLevelQMUIAlertView;
         QMUIPopContainerViewController *viewController = [[QMUIPopContainerViewController alloc] init];

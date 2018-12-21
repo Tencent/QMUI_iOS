@@ -5,14 +5,16 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  NSObject+QMUI.m
 //  qmui
 //
-//  Created by MoLice on 2016/11/1.
+//  Created by QMUI Team on 2016/11/1.
 //
 
 #import "NSObject+QMUI.h"
+#import "QMUIWeakObjectContainer.h"
 #import <objc/message.h>
 
 @implementation NSObject (QMUI)
@@ -172,6 +174,116 @@
         }
     }
     free(methods);
+}
+
+@end
+
+
+@implementation NSObject (QMUI_DataBind)
+
+static char kAssociatedObjectKey_QMUIAllBindObjects;
+- (NSMutableDictionary<id, id> *)qmui_allBindObjects {
+    NSMutableDictionary<id, id> *dict = objc_getAssociatedObject(self, &kAssociatedObjectKey_QMUIAllBindObjects);
+    if (!dict) {
+        dict = [NSMutableDictionary dictionary];
+        objc_setAssociatedObject(self, &kAssociatedObjectKey_QMUIAllBindObjects, dict, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    return dict;
+}
+
+- (void)qmui_bindObject:(id)object forKey:(NSString *)key {
+    if (!key.length) {
+        NSAssert(NO, @"");
+        return;
+    }
+    if (object) {
+        [[self qmui_allBindObjects] setObject:object forKey:key];
+    } else {
+        [[self qmui_allBindObjects] removeObjectForKey:key];
+    }
+}
+
+- (void)qmui_bindObjectWeakly:(id)object forKey:(NSString *)key {
+    if (!key.length) {
+        NSAssert(NO, @"");
+        return;
+    }
+    if (object) {
+        QMUIWeakObjectContainer *container = [[QMUIWeakObjectContainer alloc] initWithObject:object];
+        [self qmui_bindObject:container forKey:key];
+    } else {
+        [[self qmui_allBindObjects] removeObjectForKey:key];
+    }
+}
+
+- (id)qmui_getBindObjectForKey:(NSString *)key {
+    if (!key.length) {
+        NSAssert(NO, @"");
+        return nil;
+    }
+    id storedObj = [[self qmui_allBindObjects] objectForKey:key];
+    if ([storedObj isKindOfClass:[QMUIWeakObjectContainer class]]) {
+        storedObj = [(QMUIWeakObjectContainer *)storedObj object];
+    }
+    return storedObj;
+}
+
+- (void)qmui_bindDouble:(double)doubleValue forKey:(NSString *)key {
+    [self qmui_bindObject:@(doubleValue) forKey:key];
+}
+
+- (double)qmui_getBindDoubleForKey:(NSString *)key {
+    id object = [self qmui_getBindObjectForKey:key];
+    if ([object isKindOfClass:[NSNumber class]]) {
+        double doubleValue = [(NSNumber *)object doubleValue];
+        return doubleValue;
+        
+    } else {
+        return 0.0;
+    }
+}
+
+- (void)qmui_bindBOOL:(BOOL)boolValue forKey:(NSString *)key {
+    [self qmui_bindObject:@(boolValue) forKey:key];
+}
+
+- (BOOL)qmui_getBindBOOLForKey:(NSString *)key {
+    id object = [self qmui_getBindObjectForKey:key];
+    if ([object isKindOfClass:[NSNumber class]]) {
+        BOOL boolValue = [(NSNumber *)object boolValue];
+        return boolValue;
+        
+    } else {
+        return NO;
+    }
+}
+
+- (void)qmui_bindLong:(long)longValue forKey:(NSString *)key {
+    [self qmui_bindObject:@(longValue) forKey:key];
+}
+
+- (long)qmui_getBindLongForKey:(NSString *)key {
+    id object = [self qmui_getBindObjectForKey:key];
+    if ([object isKindOfClass:[NSNumber class]]) {
+        long longValue = [(NSNumber *)object longValue];
+        return longValue;
+        
+    } else {
+        return 0;
+    }
+}
+
+- (void)qmui_clearBindForKey:(NSString *)key {
+    [self qmui_bindObject:nil forKey:key];
+}
+
+- (void)qmui_clearAllBind {
+    [[self qmui_allBindObjects] removeAllObjects];
+}
+
+- (NSArray<NSString *> *)qmui_allBindKeys {
+    NSArray<NSString *> *allKeys = [[self qmui_allBindObjects] allKeys];
+    return allKeys;
 }
 
 @end

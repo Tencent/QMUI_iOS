@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUINavigationController.m
 //  qmui
@@ -63,6 +64,24 @@ static char kAssociatedObjectKey_willAppearByInteractivePopGestureRecognizer;
 
 @end
 
+@interface _QMUINavigationControllerDelegator : NSObject <QMUINavigationControllerDelegate>
+
+@property(nonatomic, weak) QMUINavigationController *navigationController;
+@end
+
+@interface QMUINavigationController () <UIGestureRecognizerDelegate, QMUI_viewWillAppearNotifyDelegate>
+
+@property(nonatomic, strong) _QMUINavigationControllerDelegator *delegator;
+
+/// 记录当前是否正在 push/pop 界面的动画过程，如果动画尚未结束，不应该继续 push/pop 其他界面。
+/// 在 getter 方法里会根据配置表开关 PreventConcurrentNavigationControllerTransitions 的值来控制这个属性是否生效。
+@property(nonatomic, assign) BOOL isViewControllerTransiting;
+
+/// 即将要被pop的controller
+@property(nonatomic, weak) UIViewController *viewControllerPopping;
+
+@end
+
 @interface UIViewController (QMUINavigationControllerTransition)
 
 @property(nonatomic, weak) id<QMUI_viewWillAppearNotifyDelegate> qmui_viewWillAppearNotifyDelegate;
@@ -90,6 +109,9 @@ static char kAssociatedObjectKey_willAppearByInteractivePopGestureRecognizer;
 
 - (void)qmuiNav_viewDidAppear:(BOOL)animated {
     [self qmuiNav_viewDidAppear:animated];
+    if ([self.navigationController.viewControllers containsObject:self] && [self.navigationController isKindOfClass:[QMUINavigationController class]]) {
+        ((QMUINavigationController *)self.navigationController).isViewControllerTransiting = NO;
+    }
     self.qmui_poppingByInteractivePopGestureRecognizer = NO;
     self.qmui_willAppearByInteractivePopGestureRecognizer = NO;
 }
@@ -113,24 +135,6 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     }
     return nil;
 }
-
-@end
-
-@interface _QMUINavigationControllerDelegator : NSObject <QMUINavigationControllerDelegate>
-
-@property(nonatomic, weak) QMUINavigationController *navigationController;
-@end
-
-@interface QMUINavigationController () <UIGestureRecognizerDelegate, QMUI_viewWillAppearNotifyDelegate>
-
-@property(nonatomic, strong) _QMUINavigationControllerDelegator *delegator;
-
-/// 记录当前是否正在 push/pop 界面的动画过程，如果动画尚未结束，不应该继续 push/pop 其他界面。
-/// 在 getter 方法里会根据配置表开关 PreventConcurrentNavigationControllerTransitions 的值来控制这个属性是否生效。
-@property(nonatomic, assign) BOOL isViewControllerTransiting;
-
-/// 即将要被pop的controller
-@property(nonatomic, weak) UIViewController *viewControllerPopping;
 
 @end
 
@@ -206,11 +210,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewController) willPopInNavigationControllerWithAnimated:animated];
     }
     
-    QMUILog(@"NavigationItem", @"call popViewControllerAnimated:%@, current viewControllers = %@", StringFromBOOL(animated), self.viewControllers);
+//    QMUILog(@"NavigationItem", @"call popViewControllerAnimated:%@, current viewControllers = %@", StringFromBOOL(animated), self.viewControllers);
     
     viewController = [super popViewControllerAnimated:animated];
     
-    QMUILog(@"NavigationItem", @"pop viewController: %@", viewController);
+//    QMUILog(@"NavigationItem", @"pop viewController: %@", viewController);
     
     if ([viewController respondsToSelector:@selector(didPopInNavigationControllerWithAnimated:)]) {
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewController) didPopInNavigationControllerWithAnimated:animated];
@@ -362,11 +366,6 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     }
 }
 
-// 重写这个方法才能让 viewControllers 对 statusBar 的控制生效
-- (UIViewController *)childViewControllerForStatusBarStyle {
-    return self.topViewController;
-}
-
 #pragma mark - 自定义方法
 
 - (BOOL)isViewControllerTransiting {
@@ -428,24 +427,30 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     self.isViewControllerTransiting = NO;
 }
 
+#pragma mark - StatusBar
+
+- (UIViewController *)childViewControllerForStatusBarHidden {
+    return self.topViewController;
+}
+
+- (UIViewController *)childViewControllerForStatusBarStyle {
+    return self.topViewController;
+}
+
 #pragma mark - 屏幕旋转
 
 - (BOOL)shouldAutorotate {
-    return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController shouldAutorotate] : YES;
+    return [self.visibleViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.visibleViewController shouldAutorotate] : YES;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return [self.topViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.topViewController supportedInterfaceOrientations] : SupportedOrientationMask;
+    return [self.visibleViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.visibleViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 
 #pragma mark - HomeIndicator
 
 - (UIViewController *)childViewControllerForHomeIndicatorAutoHidden {
     return self.topViewController;
-}
-
-- (BOOL)prefersHomeIndicatorAutoHidden {
-    return NO;
 }
 
 @end
@@ -473,7 +478,6 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 
 - (void)navigationController:(QMUINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     navigationController.viewControllerPopping = nil;
-    navigationController.isViewControllerTransiting = NO;
     [navigationController didShowViewController:viewController animated:animated];
 }
 

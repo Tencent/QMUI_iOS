@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UISearchBar+QMUI.h
 //  qmui
 //
-//  Created by MoLice on 16/5/26.
+//  Created by QMUI Team on 16/5/26.
 //
 
 #import <Foundation/Foundation.h>
@@ -37,8 +38,10 @@
 /// 输入框相对于系统原有布局位置的上下左右的偏移，正值表示向内缩小，负值表示向外扩大
 @property(nonatomic, assign) UIEdgeInsets qmui_textFieldMargins UI_APPEARANCE_SELECTOR;
 
-/// 获取 searchBar 内的输入框
 @property(nullable, nonatomic, weak, readonly) UITextField *qmui_textField;
+
+/// 获取 searchBar 的背景 view，为一个 UIImageView 的子类 UISearchBarBackground，在 searchBar 初始化完即可被获取
+@property(nullable, nonatomic, weak, readonly) UIView *qmui_backgroundView;
 
 /// 获取 searchBar 内的取消按钮，注意 UISearchBar 的取消按钮是在 setShowsCancelButton:animated: 被调用之后才会生成
 @property(nullable, nonatomic, weak, readonly) UIButton *qmui_cancelButton;

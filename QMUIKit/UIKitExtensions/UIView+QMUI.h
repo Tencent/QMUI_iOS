@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIView+QMUI.h
 //  qmui
@@ -57,9 +58,27 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy) __kindof UIView * (^qmui_hitTestBlock)(CGPoint point, UIEvent *event, __kindof UIView *originalView);
 
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion;
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations completion:(void (^)(BOOL finished))completion;
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations completion:(void (^ __nullable)(BOOL finished))completion;
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations;
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay usingSpringWithDamping:(CGFloat)dampingRatio initialSpringVelocity:(CGFloat)velocity options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion;
+@end
+
+@interface UIView (QMUI_ViewController)
+
+/**
+ 判断当前的 view 是否属于可视（可视的定义为已存在于 view 层级树里，或者在所处的 UIViewController 的 [viewWillAppear, viewWillDisappear) 生命周期之间）
+ */
+@property(nonatomic, assign, readonly) BOOL qmui_visible;
+
+/**
+ 当前的 view 是否是某个 UIViewController.view
+ */
+@property(nonatomic, assign) BOOL qmui_isControllerRootView;
+
+/**
+ 获取当前 view 所在的 UIViewController，会递归查找 superview，因此注意使用场景不要有过于频繁的调用
+ */
+@property(nullable, nonatomic, weak, readonly) __kindof UIViewController *qmui_viewController;
 @end
 
 
@@ -71,21 +90,6 @@ NS_ASSUME_NONNULL_BEGIN
  *  @return YES 表示当前类重写了指定的方法，NO 表示没有重写，使用的是 UIView 默认的实现
  */
 - (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector;
-
-@end
-
-
-/**
- *  Debug UIView 的时候用，对某个 view 的 subviews 都添加一个半透明的背景色，方面查看 view 的布局情况
- */
-@interface UIView (QMUI_Debug)
-
-/// 是否需要添加debug背景色，默认NO
-@property(nonatomic, assign) BOOL qmui_shouldShowDebugColor;
-/// 是否每个view的背景色随机，如果不随机则统一使用半透明红色，默认NO
-@property(nonatomic, assign) BOOL qmui_needsDifferentDebugColor;
-/// 标记一个view是否已经被添加了debug背景色，外部一般不使用
-@property(nonatomic, assign, readonly) BOOL qmui_hasDebugColor;
 
 @end
 
@@ -216,6 +220,20 @@ extern const CGFloat QMUIViewSelfSizingHeight;
 
 /// 获取当前 view 的 transform translation y
 @property(nonatomic, assign, readonly) CGFloat qmui_translationY;
+
+@end
+
+/**
+ *  Debug UIView 的时候用，对某个 view 的 subviews 都添加一个半透明的背景色，方面查看 view 的布局情况
+ */
+@interface UIView (QMUI_Debug)
+
+/// 是否需要添加debug背景色，默认NO
+@property(nonatomic, assign) BOOL qmui_shouldShowDebugColor;
+/// 是否每个view的背景色随机，如果不随机则统一使用半透明红色，默认NO
+@property(nonatomic, assign) BOOL qmui_needsDifferentDebugColor;
+/// 标记一个view是否已经被添加了debug背景色，外部一般不使用
+@property(nonatomic, assign, readonly) BOOL qmui_hasDebugColor;
 
 @end
 

@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIBarItem+QMUIBadge.m
 //  QMUIKit
 //
-//  Created by MoLice on 2018/6/2.
+//  Created by QMUI Team on 2018/6/2.
 //
 
 #import "UIBarItem+QMUIBadge.h"
@@ -47,8 +48,8 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 保证配置表里的默认值正确被设置
-        ExchangeImplementations([UIBarItem class], @selector(init), @selector(qmui_init));
-        ExchangeImplementations([UIBarItem class], @selector(initWithCoder:), @selector(qmui_initWithCoder:));
+        ExchangeImplementations([UIBarItem class], @selector(init), @selector(qmuibaritem_init));
+        ExchangeImplementations([UIBarItem class], @selector(initWithCoder:), @selector(qmuibaritem_initWithCoder:));
         
         // 针对非 customView 的 UIBarButtonItem，负责将红点添加上去
         ExtendImplementationOfVoidMethodWithSingleArgument([UIBarButtonItem class], @selector(setView:), UIView *, ^(UIBarButtonItem *selfObject, UIView *firstArgv) {
@@ -91,19 +92,19 @@
     });
 }
 
-- (instancetype)qmui_init {
-    [self qmui_init];
-    [self didInitialize];
+- (instancetype)qmuibaritem_init {
+    [self qmuibaritem_init];
+    [self qmuibaritem_didInitialize];
     return self;
 }
 
-- (instancetype)qmui_initWithCoder:(NSCoder *)aDecoder {
-    [self qmui_initWithCoder:aDecoder];
-    [self didInitialize];
+- (instancetype)qmuibaritem_initWithCoder:(NSCoder *)aDecoder {
+    [self qmuibaritem_initWithCoder:aDecoder];
+    [self qmuibaritem_didInitialize];
     return self;
 }
 
-- (void)didInitialize {
+- (void)qmuibaritem_didInitialize {
     self.qmui_badgeBackgroundColor = BadgeBackgroundColor;
     self.qmui_badgeTextColor = BadgeTextColor;
     self.qmui_badgeFont = BadgeFont;

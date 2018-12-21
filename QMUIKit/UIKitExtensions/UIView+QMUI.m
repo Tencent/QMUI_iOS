@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIView+QMUI.m
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import "UIView+QMUI.h"
@@ -19,6 +20,7 @@
 #import "NSObject+QMUI.h"
 #import "UIImage+QMUI.h"
 #import "NSNumber+QMUI.h"
+#import "UIViewController+QMUI.h"
 #import "QMUILog.h"
 #import <objc/runtime.h>
 
@@ -40,16 +42,19 @@
     dispatch_once(&onceToken, ^{
         SEL selectors[] = {
             @selector(tintColorDidChange),
+            @selector(hitTest:withEvent:),
+            @selector(addSubview:),
+            @selector(becomeFirstResponder),
+            
             // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
             @selector(convertPoint:toView:),
             @selector(convertPoint:fromView:),
             @selector(convertRect:toView:),
-            @selector(convertRect:fromView:),
-            @selector(hitTest:withEvent:)
+            @selector(convertRect:fromView:)
         };
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            SEL swizzledSelector = NSSelectorFromString([@"qmuiview_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
             ExchangeImplementations([self class], originalSelector, swizzledSelector);
         }
     });
@@ -78,8 +83,8 @@
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
 
-- (void)qmui_tintColorDidChange {
-    [self qmui_tintColorDidChange];
+- (void)qmuiview_tintColorDidChange {
+    [self qmuiview_tintColorDidChange];
     if (self.qmui_tintColorDidChangeBlock) {
         self.qmui_tintColorDidChangeBlock(self);
     }
@@ -94,8 +99,8 @@ static char kAssociatedObjectKey_tintColorDidChagneBlock;
     return (void (^)(__kindof UIView *))objc_getAssociatedObject(self, &kAssociatedObjectKey_tintColorDidChagneBlock);
 }
 
-- (nullable UIView *)qmui_hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
-    UIView *originalView = [self qmui_hitTest:point withEvent:event];
+- (nullable UIView *)qmuiview_hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
+    UIView *originalView = [self qmuiview_hitTest:point withEvent:event];
     if (self.qmui_hitTestBlock) {
         UIView *view = self.qmui_hitTestBlock(point, event, originalView);
         return view;
@@ -161,6 +166,24 @@ static char kAssociatedObjectKey_hitTestBlock;
     }
 }
 
+- (void)qmuiview_addSubview:(UIView *)view {
+    if (view == self) {
+        NSAssert(NO, @"把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]);
+    }
+    [self qmuiview_addSubview:view];
+}
+
+- (BOOL)qmuiview_becomeFirstResponder {
+    if (IS_SIMULATOR && ![self isKindOfClass:[UIWindow class]] && (self.window ? !self.window.keyWindow : YES) && !self.qmui_visible) {
+        [self QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
+    }
+    return [self qmuiview_becomeFirstResponder];
+}
+
+- (void)QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow {
+    QMUILogWarn(@"UIView (QMUI)", @"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，可能导致界面显示异常，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
+}
+
 - (BOOL)hasSharedAncestorViewWithView:(UIView *)view {
     UIView *sharedAncestorView = self;
     if (!view) {
@@ -193,24 +216,81 @@ static char kAssociatedObjectKey_hitTestBlock;
     }
 }
 
-- (CGPoint)qmui_convertPoint:(CGPoint)point toView:(nullable UIView *)view {
+- (CGPoint)qmuiview_convertPoint:(CGPoint)point toView:(nullable UIView *)view {
     [self alertConvertValueWithView:view];
-    return [self qmui_convertPoint:point toView:view];
+    return [self qmuiview_convertPoint:point toView:view];
 }
 
-- (CGPoint)qmui_convertPoint:(CGPoint)point fromView:(nullable UIView *)view {
+- (CGPoint)qmuiview_convertPoint:(CGPoint)point fromView:(nullable UIView *)view {
     [self alertConvertValueWithView:view];
-    return [self qmui_convertPoint:point fromView:view];
+    return [self qmuiview_convertPoint:point fromView:view];
 }
 
-- (CGRect)qmui_convertRect:(CGRect)rect toView:(nullable UIView *)view {
+- (CGRect)qmuiview_convertRect:(CGRect)rect toView:(nullable UIView *)view {
     [self alertConvertValueWithView:view];
-    return [self qmui_convertRect:rect toView:view];
+    return [self qmuiview_convertRect:rect toView:view];
 }
 
-- (CGRect)qmui_convertRect:(CGRect)rect fromView:(nullable UIView *)view {
+- (CGRect)qmuiview_convertRect:(CGRect)rect fromView:(nullable UIView *)view {
     [self alertConvertValueWithView:view];
-    return [self qmui_convertRect:rect fromView:view];
+    return [self qmuiview_convertRect:rect fromView:view];
+}
+
+@end
+
+@implementation UIView (QMUI_ViewController)
+
+- (BOOL)qmui_visible {
+    if (self.hidden || self.alpha <= 0.01) {
+        return NO;
+    }
+    if (self.window) {
+        return YES;
+    }
+    UIViewController *viewController = self.qmui_viewController;
+    return viewController.qmui_visibleState >= QMUIViewControllerWillAppear && viewController.qmui_visibleState < QMUIViewControllerWillDisappear;
+}
+
+static char kAssociatedObjectKey_isControllerRootView;
+- (void)setQmui_isControllerRootView:(BOOL)qmui_isControllerRootView {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_isControllerRootView, @(qmui_isControllerRootView), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)qmui_isControllerRootView {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_isControllerRootView)) boolValue];
+}
+
+static char kAssociatedObjectKey_viewController;
+- (void)setQmui_viewController:(__kindof UIViewController * _Nullable)qmui_viewController {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_viewController, qmui_viewController, OBJC_ASSOCIATION_ASSIGN);
+    self.qmui_isControllerRootView = !!qmui_viewController;
+}
+
+- (__kindof UIViewController *)qmui_viewController {
+    if (self.qmui_isControllerRootView) {
+        return (__kindof UIViewController *)objc_getAssociatedObject(self, &kAssociatedObjectKey_viewController);
+    }
+    return self.superview.qmui_viewController;
+}
+
+@end
+
+@interface UIViewController (QMUI_View)
+
+@end
+
+@implementation UIViewController (QMUI_View)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ExchangeImplementations([self class], @selector(viewDidLoad), @selector(qmuiview_viewDidLoad));
+    });
+}
+
+- (void)qmuiview_viewDidLoad {
+    [self qmuiview_viewDidLoad];
+    self.view.qmui_viewController = self;
 }
 
 @end
@@ -263,100 +343,6 @@ static char kAssociatedObjectKey_hitTestBlock;
         }
     }
     return NO;
-}
-
-@end
-
-
-@implementation UIView (QMUI_Debug)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(layoutSubviews), @selector(qmui_debug_layoutSubviews));
-        ExchangeImplementations([self class], @selector(addSubview:), @selector(qmui_debug_addSubview:));
-        ExchangeImplementations([self class], @selector(becomeFirstResponder), @selector(qmui_debug_becomeFirstResponder));
-    });
-}
-
-static char kAssociatedObjectKey_needsDifferentDebugColor;
-- (void)setQmui_needsDifferentDebugColor:(BOOL)qmui_needsDifferentDebugColor {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsDifferentDebugColor, @(qmui_needsDifferentDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-- (BOOL)qmui_needsDifferentDebugColor {
-    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_needsDifferentDebugColor) boolValue];
-    return flag;
-}
-
-static char kAssociatedObjectKey_shouldShowDebugColor;
-- (void)setQmui_shouldShowDebugColor:(BOOL)qmui_shouldShowDebugColor {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor, @(qmui_shouldShowDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (qmui_shouldShowDebugColor) {
-        [self setNeedsLayout];
-    }
-}
-- (BOOL)qmui_shouldShowDebugColor {
-    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor) boolValue];
-    return flag;
-}
-
-static char kAssociatedObjectKey_hasDebugColor;
-- (void)setQmui_hasDebugColor:(BOOL)qmui_hasDebugColor {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_hasDebugColor, @(qmui_hasDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-- (BOOL)qmui_hasDebugColor {
-    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_hasDebugColor) boolValue];
-    return flag;
-}
-
-- (void)qmui_debug_layoutSubviews {
-    [self qmui_debug_layoutSubviews];
-    if (self.qmui_shouldShowDebugColor) {
-        self.qmui_hasDebugColor = YES;
-        self.backgroundColor = [self debugColor];
-        [self renderColorWithSubviews:self.subviews];
-    }
-}
-
-- (void)renderColorWithSubviews:(NSArray *)subviews {
-    for (UIView *view in subviews) {
-        if (@available(iOS 9.0, *)) {
-            if ([view isKindOfClass:[UIStackView class]]) {
-                UIStackView *stackView = (UIStackView *)view;
-                [self renderColorWithSubviews:stackView.arrangedSubviews];
-            }
-        }
-        view.qmui_hasDebugColor = YES;
-        view.qmui_shouldShowDebugColor = self.qmui_shouldShowDebugColor;
-        view.qmui_needsDifferentDebugColor = self.qmui_needsDifferentDebugColor;
-        view.backgroundColor = [self debugColor];
-    }
-}
-
-- (UIColor *)debugColor {
-    if (!self.qmui_needsDifferentDebugColor) {
-        return UIColorTestRed;
-    } else {
-        return [[UIColor qmui_randomColor] colorWithAlphaComponent:.8];
-    }
-}
-
-- (void)qmui_debug_addSubview:(UIView *)view {
-    if (view == self) {
-        NSAssert(NO, @"把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]);
-    }
-    [self qmui_debug_addSubview:view];
-}
-
-- (BOOL)qmui_debug_becomeFirstResponder {
-    if (IS_SIMULATOR && ![self isKindOfClass:[UIWindow class]] && self.window && !self.window.keyWindow) {
-        [self QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
-    }
-    return [self qmui_debug_becomeFirstResponder];
-}
-
-- (void)QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow {
-    QMUILogWarn(@"UIView (QMUI)", @"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，可能导致界面显示异常，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
 }
 
 @end
@@ -765,6 +751,80 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
 
 - (UIImage *)qmui_snapshotImageAfterScreenUpdates:(BOOL)afterScreenUpdates {
     return [UIImage qmui_imageWithView:self afterScreenUpdates:afterScreenUpdates];
+}
+
+@end
+
+
+@implementation UIView (QMUI_Debug)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        ExchangeImplementations([self class], @selector(layoutSubviews), @selector(qmui_debug_layoutSubviews));
+    });
+}
+
+static char kAssociatedObjectKey_needsDifferentDebugColor;
+- (void)setQmui_needsDifferentDebugColor:(BOOL)qmui_needsDifferentDebugColor {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsDifferentDebugColor, @(qmui_needsDifferentDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+- (BOOL)qmui_needsDifferentDebugColor {
+    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_needsDifferentDebugColor) boolValue];
+    return flag;
+}
+
+static char kAssociatedObjectKey_shouldShowDebugColor;
+- (void)setQmui_shouldShowDebugColor:(BOOL)qmui_shouldShowDebugColor {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor, @(qmui_shouldShowDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (qmui_shouldShowDebugColor) {
+        [self setNeedsLayout];
+    }
+}
+- (BOOL)qmui_shouldShowDebugColor {
+    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor) boolValue];
+    return flag;
+}
+
+static char kAssociatedObjectKey_hasDebugColor;
+- (void)setQmui_hasDebugColor:(BOOL)qmui_hasDebugColor {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_hasDebugColor, @(qmui_hasDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+- (BOOL)qmui_hasDebugColor {
+    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_hasDebugColor) boolValue];
+    return flag;
+}
+
+- (void)qmui_debug_layoutSubviews {
+    [self qmui_debug_layoutSubviews];
+    if (self.qmui_shouldShowDebugColor) {
+        self.qmui_hasDebugColor = YES;
+        self.backgroundColor = [self debugColor];
+        [self renderColorWithSubviews:self.subviews];
+    }
+}
+
+- (void)renderColorWithSubviews:(NSArray *)subviews {
+    for (UIView *view in subviews) {
+        if (@available(iOS 9.0, *)) {
+            if ([view isKindOfClass:[UIStackView class]]) {
+                UIStackView *stackView = (UIStackView *)view;
+                [self renderColorWithSubviews:stackView.arrangedSubviews];
+            }
+        }
+        view.qmui_hasDebugColor = YES;
+        view.qmui_shouldShowDebugColor = self.qmui_shouldShowDebugColor;
+        view.qmui_needsDifferentDebugColor = self.qmui_needsDifferentDebugColor;
+        view.backgroundColor = [self debugColor];
+    }
+}
+
+- (UIColor *)debugColor {
+    if (!self.qmui_needsDifferentDebugColor) {
+        return UIColorTestRed;
+    } else {
+        return [[UIColor qmui_randomColor] colorWithAlphaComponent:.3];
+    }
 }
 
 @end

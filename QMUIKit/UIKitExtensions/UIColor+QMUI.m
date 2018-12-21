@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIColor+QMUI.m
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import "UIColor+QMUI.h"
@@ -22,16 +23,16 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 使用 [UIColor colorWithRed:green:blue:alpha:] 或 [UIColor colorWithHue:saturation:brightness:alpha:] 方法创建的颜色是 UIDeviceRGBColor 类型的而不是 UIColor 类型的
-        ExchangeImplementations([UIColor colorWithRed:1 green:1 blue:1 alpha:1].class, @selector(description), @selector(qmui_description));
+        ExchangeImplementations([UIColor colorWithRed:1 green:1 blue:1 alpha:1].class, @selector(description), @selector(qmuicolor_description));
     });
 }
 
-- (NSString *)qmui_description {
+- (NSString *)qmuicolor_description {
     NSInteger red = self.qmui_red * 255;
     NSInteger green = self.qmui_green * 255;
     NSInteger blue = self.qmui_blue * 255;
     CGFloat alpha = self.qmui_alpha;
-    NSString *description = [NSString stringWithFormat:@"%@, RGBA(%@, %@, %@, %.2f), %@", [self qmui_description], @(red), @(green), @(blue), alpha, [self qmui_hexString]];
+    NSString *description = [NSString stringWithFormat:@"%@, RGBA(%@, %@, %@, %.2f), %@", [self qmuicolor_description], @(red), @(green), @(blue), alpha, [self qmui_hexString]];
     return description;
 }
 
@@ -65,8 +66,10 @@
             green = [self colorComponentFrom: colorString start: 4 length: 2];
             blue  = [self colorComponentFrom: colorString start: 6 length: 2];
             break;
-        default:
-            [NSException raise:@"Invalid color value" format: @"Color value %@ is invalid.  It should be a hex value of the form #RBG, #ARGB, #RRGGBB, or #AARRGGBB", hexString];
+        default: {
+            NSAssert(NO, @"Color value %@ is invalid. It should be a hex value of the form #RBG, #ARGB, #RRGGBB, or #AARRGGBB", hexString);
+            return nil;
+        }
             break;
     }
     return [UIColor colorWithRed: red green: green blue: blue alpha: alpha];

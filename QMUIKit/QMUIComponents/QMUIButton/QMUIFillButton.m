@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIFillButton.m
 //  QMUIKit
 //
-//  Created by MoLice on 2018/4/9.
+//  Created by QMUI Team on 2018/4/9.
 //
 
 #import "QMUIFillButton.h"
@@ -129,7 +130,7 @@ const CGFloat QMUIFillButtonCornerRadiusAdjustsBounds = -1;
     if (self.cornerRadius != QMUIFillButtonCornerRadiusAdjustsBounds) {
         self.layer.cornerRadius = self.cornerRadius;
     } else {
-        self.layer.cornerRadius = flat(CGRectGetHeight(self.bounds) / 2);
+        self.layer.cornerRadius = CGRectGetHeight(self.bounds) / 2;
     }
 }
 
