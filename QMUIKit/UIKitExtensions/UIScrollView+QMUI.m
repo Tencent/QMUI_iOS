@@ -5,27 +5,34 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIScrollView+QMUI.m
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import "UIScrollView+QMUI.h"
 #import "QMUICore.h"
+#import "NSNumber+QMUI.h"
+
+@interface UIScrollView ()
+
+@property(nonatomic, assign) CGFloat qmuiscroll_lastInsetTopWhenScrollToTop;
+@end
 
 @implementation UIScrollView (QMUI)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(description), @selector(qmui_description));
+        ExchangeImplementations([self class], @selector(description), @selector(qmuiscroll_description));
     });
 }
 
-- (NSString *)qmui_description {
-    return [NSString stringWithFormat:@"%@, contentInset = %@", [self qmui_description], NSStringFromUIEdgeInsets(self.contentInset)];
+- (NSString *)qmuiscroll_description {
+    return [NSString stringWithFormat:@"%@, contentInset = %@", [self qmuiscroll_description], NSStringFromUIEdgeInsets(self.contentInset)];
 }
 
 - (BOOL)qmui_alreadyAtTop {
@@ -80,6 +87,13 @@
     [self qmui_scrollToTopAnimated:NO];
 }
 
+- (void)qmui_scrollToTopUponContentInsetTopChange {
+    if (self.qmuiscroll_lastInsetTopWhenScrollToTop != self.contentInset.top) {
+        [self qmui_scrollToTop];
+        self.qmuiscroll_lastInsetTopWhenScrollToTop = self.contentInset.top;
+    }
+}
+
 - (void)qmui_scrollToBottomAnimated:(BOOL)animated {
     if ([self qmui_canScroll]) {
         [self setContentOffset:CGPointMake(self.contentOffset.x, self.contentSize.height + self.qmui_contentInset.bottom - CGRectGetHeight(self.bounds)) animated:animated];
@@ -94,6 +108,15 @@
     if (self.decelerating) {
         [self setContentOffset:self.contentOffset animated:NO];
     }
+}
+
+static char kAssociatedObjectKey_lastInsetTopWhenScrollToTop;
+- (void)setQmuiscroll_lastInsetTopWhenScrollToTop:(CGFloat)qmuiscroll_lastInsetTopWhenScrollToTop {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_lastInsetTopWhenScrollToTop, @(qmuiscroll_lastInsetTopWhenScrollToTop), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (CGFloat)qmuiscroll_lastInsetTopWhenScrollToTop {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_lastInsetTopWhenScrollToTop)) qmui_CGFloatValue];
 }
 
 @end

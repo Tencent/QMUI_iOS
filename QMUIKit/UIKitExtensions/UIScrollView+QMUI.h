@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  UIScrollView+QMUI.h
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import <UIKit/UIKit.h>
@@ -45,6 +46,11 @@
 
 /// 等同于[self qmui_scrollToTopAnimated:NO]
 - (void)qmui_scrollToTop;
+
+/**
+ 滚到列表顶部，但如果 contentInset.top 与上一次相同则不会执行滚动操作，通常用于 UIScrollViewContentInsetAdjustmentNever 的 scrollView 设置完业务的 contentInset 后将列表滚到顶部。特别地，对于 UITableView，建议使用 qmui_initialContentInset。
+ */
+- (void)qmui_scrollToTopUponContentInsetTopChange;
 
 /**
  * 如果当前的scrollView可滚动，则将其滚动到最底部

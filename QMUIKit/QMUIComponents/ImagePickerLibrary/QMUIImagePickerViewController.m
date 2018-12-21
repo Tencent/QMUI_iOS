@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIImagePickerViewController.m
 //  qmui
 //
-//  Created by Kayo Lee on 15/5/2.
+//  Created by QMUI Team on 15/5/2.
 //
 
 #import "QMUIImagePickerViewController.h"
@@ -29,15 +30,6 @@
 #import "QMUIEmptyView.h"
 #import "UIControl+QMUI.h"
 #import "QMUILog.h"
-
-// 底部工具栏
-#define OperationToolBarViewPaddingHorizontal 12
-#define ImageCountLabelSize CGSizeMake(18, 18)
-
-// CollectionView
-#define CollectionViewInsetHorizontal PreferredValueForiPhone((PixelOne * 2), 1, 2, 2)
-#define CollectionViewInset UIEdgeInsetsMake(CollectionViewInsetHorizontal, CollectionViewInsetHorizontal, CollectionViewInsetHorizontal, CollectionViewInsetHorizontal)
-#define CollectionViewCellMargin CollectionViewInsetHorizontal
 
 static NSString * const kVideoCellIdentifier = @"video";
 static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
@@ -105,9 +97,10 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     [super initSubviews];
     
     _collectionViewLayout = [[UICollectionViewFlowLayout alloc] init];
-    self.collectionViewLayout.sectionInset = CollectionViewInset;
-    self.collectionViewLayout.minimumLineSpacing = CollectionViewCellMargin;
-    self.collectionViewLayout.minimumInteritemSpacing = CollectionViewCellMargin;
+    CGFloat inset = PixelOne * 2;// no why, just beautiful
+    self.collectionViewLayout.sectionInset = UIEdgeInsetsMake(inset, inset, inset, inset);
+    self.collectionViewLayout.minimumLineSpacing = self.collectionViewLayout.sectionInset.bottom;
+    self.collectionViewLayout.minimumInteritemSpacing = self.collectionViewLayout.sectionInset.left;
     
     _collectionView = [[UICollectionView alloc] initWithFrame:self.view.bounds collectionViewLayout:self.collectionViewLayout];
     self.collectionView.delegate = self;
@@ -158,7 +151,6 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         self.imageCountLabel.textAlignment = NSTextAlignmentCenter;
         self.imageCountLabel.lineBreakMode = NSLineBreakByCharWrapping;
         self.imageCountLabel.layer.masksToBounds = YES;
-        self.imageCountLabel.layer.cornerRadius = ImageCountLabelSize.width / 2;
         self.imageCountLabel.hidden = YES;
         [self.operationToolBarView addSubview:self.imageCountLabel];
     }
@@ -210,10 +202,13 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     CGFloat operationToolBarViewHeight = 0;
     if (self.allowsMultipleSelection) {
         operationToolBarViewHeight = ToolBarHeight;
+        CGFloat toolbarPaddingHorizontal = 12;
         self.operationToolBarView.frame = CGRectMake(0, CGRectGetHeight(self.view.bounds) - operationToolBarViewHeight, CGRectGetWidth(self.view.bounds), operationToolBarViewHeight);
-        self.previewButton.frame = CGRectSetXY(self.previewButton.frame, OperationToolBarViewPaddingHorizontal, CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame) - SafeAreaInsetsConstantForDeviceWithNotch.bottom, CGRectGetHeight(self.previewButton.frame)));
-        self.sendButton.frame = CGRectMake(CGRectGetWidth(self.operationToolBarView.frame) - OperationToolBarViewPaddingHorizontal - CGRectGetWidth(self.sendButton.frame), CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame) - SafeAreaInsetsConstantForDeviceWithNotch.bottom, CGRectGetHeight(self.sendButton.frame)), CGRectGetWidth(self.sendButton.frame), CGRectGetHeight(self.sendButton.frame));
-        self.imageCountLabel.frame = CGRectMake(CGRectGetMinX(self.sendButton.frame) - ImageCountLabelSize.width - 5, CGRectGetMinY(self.sendButton.frame) + CGFloatGetCenter(CGRectGetHeight(self.sendButton.frame), ImageCountLabelSize.height), ImageCountLabelSize.width, ImageCountLabelSize.height);
+        self.previewButton.frame = CGRectSetXY(self.previewButton.frame, toolbarPaddingHorizontal, CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.bounds) - SafeAreaInsetsConstantForDeviceWithNotch.bottom, CGRectGetHeight(self.previewButton.frame)));
+        self.sendButton.frame = CGRectMake(CGRectGetWidth(self.operationToolBarView.bounds) - toolbarPaddingHorizontal - CGRectGetWidth(self.sendButton.frame), CGFloatGetCenter(CGRectGetHeight(self.operationToolBarView.frame) - SafeAreaInsetsConstantForDeviceWithNotch.bottom, CGRectGetHeight(self.sendButton.frame)), CGRectGetWidth(self.sendButton.frame), CGRectGetHeight(self.sendButton.frame));
+        CGSize imageCountLabelSize = CGSizeMake(18, 18);
+        self.imageCountLabel.frame = CGRectMake(CGRectGetMinX(self.sendButton.frame) - imageCountLabelSize.width - 5, CGRectGetMinY(self.sendButton.frame) + CGFloatGetCenter(CGRectGetHeight(self.sendButton.frame), imageCountLabelSize.height), imageCountLabelSize.width, imageCountLabelSize.height);
+        self.imageCountLabel.layer.cornerRadius = CGRectGetHeight(self.imageCountLabel.bounds) / 2;
         operationToolBarViewHeight = CGRectGetHeight(self.operationToolBarView.frame);
     }
     
@@ -304,7 +299,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 }
 
 - (void)scrollToInitialPositionIfNeeded {
-    if (self.collectionView.window && self.isImagesAssetLoaded && !self.hasScrollToInitialPosition) {
+    if (self.collectionView.qmui_visible && self.isImagesAssetLoaded && !self.hasScrollToInitialPosition) {
         if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(albumSortTypeForImagePickerViewController:)] && [self.imagePickerViewControllerDelegate albumSortTypeForImagePickerViewController:self] == QMUIAlbumSortTypeReverse) {
             [self.collectionView qmui_scrollToTop];
         } else {

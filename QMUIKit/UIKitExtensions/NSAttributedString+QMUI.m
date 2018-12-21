@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  NSAttributedString+QMUI.m
 //  qmui
 //
-//  Created by MoLice on 16/9/23.
+//  Created by QMUI Team on 16/9/23.
 //
 
 #import "NSAttributedString+QMUI.h"
@@ -22,19 +23,19 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 类簇对不同的init方法对应不同的私有class，所以要用实例来得到真正的class
-        ExchangeImplementations([[[NSAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmui_initWithString:));
-        ExchangeImplementations([[[NSAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmui_initWithString:attributes:));
+        ExchangeImplementations([[[NSAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmuiattr_initWithString:));
+        ExchangeImplementations([[[NSAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmuiattr_initWithString:attributes:));
     });
 }
 
-- (instancetype)qmui_initWithString:(NSString *)str {
+- (instancetype)qmuiattr_initWithString:(NSString *)str {
     str = str ?: @"";
-    return [self qmui_initWithString:str];
+    return [self qmuiattr_initWithString:str];
 }
 
-- (instancetype)qmui_initWithString:(NSString *)str attributes:(NSDictionary<NSString *,id> *)attrs {
+- (instancetype)qmuiattr_initWithString:(NSString *)str attributes:(NSDictionary<NSString *,id> *)attrs {
     str = str ?: @"";
-    return [self qmui_initWithString:str attributes:attrs];
+    return [self qmuiattr_initWithString:str attributes:attrs];
 }
 
 - (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
@@ -78,19 +79,19 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 类簇对不同的init方法对应不同的私有class，所以要用实例来得到真正的class
-        ExchangeImplementations([[[NSMutableAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmui_initWithString:));
-        ExchangeImplementations([[[NSMutableAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmui_initWithString:attributes:));
+        ExchangeImplementations([[[NSMutableAttributedString alloc] initWithString:@""] class], @selector(initWithString:), @selector(qmuimutableattr_initWithString:));
+        ExchangeImplementations([[[NSMutableAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), @selector(qmuimutableattr_initWithString:attributes:));
     });
 }
 
-- (instancetype)qmui_initWithString:(NSString *)str {
+- (instancetype)qmuimutableattr_initWithString:(NSString *)str {
     str = str ?: @"";
-    return [self qmui_initWithString:str];
+    return [self qmuimutableattr_initWithString:str];
 }
 
-- (instancetype)qmui_initWithString:(NSString *)str attributes:(NSDictionary<NSString *,id> *)attrs {
+- (instancetype)qmuimutableattr_initWithString:(NSString *)str attributes:(NSDictionary<NSString *,id> *)attrs {
     str = str ?: @"";
-    return [self qmui_initWithString:str attributes:attrs];
+    return [self qmuimutableattr_initWithString:str attributes:attrs];
 }
 
 @end

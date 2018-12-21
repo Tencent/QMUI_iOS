@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIImagePreviewView.m
 //  qmui
 //
-//  Created by MoLice on 2016/11/30.
+//  Created by QMUI Team on 2016/11/30.
 //
 
 #import "QMUIImagePreviewView.h"
@@ -125,6 +126,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     [self.collectionView reloadData];
     if (currentImageIndex < [self.collectionView numberOfItemsInSection:0]) {
         [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:currentImageIndex inSection:0] atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally animated:animated];
+        [self.collectionView layoutIfNeeded];// scroll immediately
     } else {
         QMUILog(@"QMUIImagePreviewView", @"dataSource 里的图片数量和当前显示出来的图片数量不匹配, collectionView.numberOfItems = %@, collectionViewDataSource.numberOfItems = %@, currentImageIndex = %@", @([self.collectionView numberOfItemsInSection:0]), @([self.collectionView.dataSource collectionView:self.collectionView numberOfItemsInSection:1]), @(_currentImageIndex));
     }

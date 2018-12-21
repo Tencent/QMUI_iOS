@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIModalPresentationViewController.h
 //  qmui
 //
-//  Created by MoLice on 16/7/6.
+//  Created by QMUI Team on 16/7/6.
 //
 
 #import <UIKit/UIKit.h>
@@ -28,7 +29,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @optional
 
 /**
- *  当浮层以 UIViewController 的形式展示（而非 UIView），并且使用 modalController 提供的默认布局时，则可通过这个方法告诉 modalController 当前浮层期望的大小
+ *  当浮层以 UIViewController 的形式展示（而非 UIView），并且使用 modalController 提供的默认布局时，则可通过这个方法告诉 modalController 当前浮层期望的大小。如果 modalController 实现了自己的 layoutBlock，则可不实现这个方法，实现了也不一定按照这个方法的返回值来布局，完全取决于 layoutBlock。
  *  @param  controller  当前的modalController
  *  @param  keyboardHeight 当前的键盘高度，如果键盘降下，则为0
  *  @param  limitSize   浮层最大的宽高，由当前 modalController 的大小及 `contentViewMargins`、`maximumContentViewWidth` 和键盘高度决定

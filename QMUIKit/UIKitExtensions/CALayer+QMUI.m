@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  CALayer+QMUI.m
 //  qmui
 //
-//  Created by MoLice on 16/8/12.
+//  Created by QMUI Team on 16/8/12.
 //
 
 #import "CALayer+QMUI.h"
@@ -36,7 +37,7 @@
         };
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            SEL swizzledSelector = NSSelectorFromString([@"qmuilayer_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
             ExchangeImplementations([self class], originalSelector, swizzledSelector);
         }
     });
@@ -93,7 +94,7 @@ static char kAssociatedObjectKey_maskedCorners;
         self.maskedCorners = (CACornerMask)qmui_maskedCorners;
     } else {
         if (qmui_maskedCorners && ![self hasFourCornerRadius]) {
-            [self qmui_setCornerRadius:0];
+            [self qmuilayer_setCornerRadius:0];
         }
         if (maskedCornersChanged) {
             // 需要刷新mask
@@ -121,14 +122,14 @@ static char kAssociatedObjectKey_maskedCorners;
     return [objc_getAssociatedObject(self, &kAssociatedObjectKey_maskedCorners) unsignedIntegerValue];
 } 
 
-- (instancetype)qmui_init {
-    [self qmui_init];
+- (instancetype)qmuilayer_init {
+    [self qmuilayer_init];
     self.qmui_speedBeforePause = self.speed;
     self.qmui_maskedCorners = QMUILayerMinXMinYCorner|QMUILayerMaxXMinYCorner|QMUILayerMinXMaxYCorner|QMUILayerMaxXMaxYCorner;
     return self;
 }
 
-- (void)qmui_setBounds:(CGRect)bounds {
+- (void)qmuilayer_setBounds:(CGRect)bounds {
     // 对非法的 bounds，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
     if (CGRectIsNaN(bounds)) {
         QMUILogWarn(@"CALayer (QMUI)", @"%@ setBounds:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGRect(bounds), [NSThread callStackSymbols]);
@@ -137,10 +138,10 @@ static char kAssociatedObjectKey_maskedCorners;
             bounds = CGRectSafeValue(bounds);
         }
     }
-    [self qmui_setBounds:bounds];
+    [self qmuilayer_setBounds:bounds];
 }
 
-- (void)qmui_setPosition:(CGPoint)position {
+- (void)qmuilayer_setPosition:(CGPoint)position {
     // 对非法的 position，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
     if (isnan(position.x) || isnan(position.y)) {
         QMUILogWarn(@"CALayer (QMUI)", @"%@ setPosition:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGPoint(position), [NSThread callStackSymbols]);
@@ -149,19 +150,19 @@ static char kAssociatedObjectKey_maskedCorners;
             position = CGPointMake(CGFloatSafeValue(position.x), CGFloatSafeValue(position.y));
         }
     }
-    [self qmui_setPosition:position];
+    [self qmuilayer_setPosition:position];
 }
 
-- (void)qmui_setCornerRadius:(CGFloat)cornerRadius {
-    BOOL cornerRadiusChanged = flat(self.qmui_originCornerRadius) != flat(cornerRadius);
+- (void)qmuilayer_setCornerRadius:(CGFloat)cornerRadius {
+    BOOL cornerRadiusChanged = flat(self.qmui_originCornerRadius) != flat(cornerRadius);// flat 处理，避免浮点精度问题
     self.qmui_originCornerRadius = cornerRadius;
     if (@available(iOS 11, *)) {
-        [self qmui_setCornerRadius:cornerRadius];
+        [self qmuilayer_setCornerRadius:cornerRadius];
     } else {
         if (self.qmui_maskedCorners && ![self hasFourCornerRadius]) {
-            [self qmui_setCornerRadius:0];
+            [self qmuilayer_setCornerRadius:0];
         } else {
-            [self qmui_setCornerRadius:cornerRadius];
+            [self qmuilayer_setCornerRadius:cornerRadius];
         }
         if (cornerRadiusChanged) {
             // 需要刷新mask

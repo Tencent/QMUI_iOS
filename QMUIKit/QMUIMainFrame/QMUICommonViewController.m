@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUICommonViewController.m
 //  qmui
@@ -233,9 +234,11 @@
 @implementation QMUICommonViewController (QMUINavigationController)
 
 - (void)updateNavigationBarAppearance {
+    
     UINavigationBar *navigationBar = self.navigationController.navigationBar;
     if (!navigationBar) return;
     
+    BeginIgnoreDeprecatedWarning
     if ([self respondsToSelector:@selector(shouldSetStatusBarStyleLight)]) {
         if ([self shouldSetStatusBarStyleLight]) {
             if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
@@ -247,6 +250,7 @@
             }
         }
     }
+    EndIgnoreDeprecatedWarning
     
     if ([self respondsToSelector:@selector(navigationBarBackgroundImage)]) {
         [navigationBar setBackgroundImage:[self navigationBarBackgroundImage] forBarMetrics:UIBarMetricsDefault];
@@ -267,9 +271,11 @@
 
 #pragma mark - <QMUINavigationControllerDelegate>
 
+BeginIgnoreClangWarning(-Wdeprecated-implementations)
 - (BOOL)shouldSetStatusBarStyleLight {
     return StatusbarStyleLightInitially;
 }
+EndIgnoreClangWarning
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;

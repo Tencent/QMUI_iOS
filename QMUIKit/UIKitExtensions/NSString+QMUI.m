@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  NSString+QMUI.m
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import "NSString+QMUI.h"
@@ -251,6 +252,14 @@
 
 - (NSString *)qmui_stringByRemoveLastCharacter {
     return [self qmui_stringByRemoveCharacterAtIndex:self.length - 1];
+}
+
+- (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern {
+    NSRange range = [self rangeOfString:pattern options:NSRegularExpressionSearch|NSCaseInsensitiveSearch];
+    if (range.location != NSNotFound) {
+        return [self substringWithRange:range];
+    }
+    return nil;
 }
 
 - (NSString *)qmui_stringByReplacingPattern:(NSString *)pattern withString:(NSString *)replacement {

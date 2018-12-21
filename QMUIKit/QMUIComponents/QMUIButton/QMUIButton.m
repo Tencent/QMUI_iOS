@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIButton.m
 //  qmui
 //
-//  Created by MoLice on 14-7-7.
+//  Created by QMUI Team on 14-7-7.
 //
 
 #import "QMUIButton.h"
@@ -83,7 +84,7 @@
             // 图片和文字上下排版时，宽度以文字或图片的最大宽度为最终宽度
             if (isImageViewShowing) {
                 CGFloat imageLimitWidth = contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
-                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMax];
+                CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)] : self.currentImage.size;
                 imageSize.width = fmin(imageSize.width, imageLimitWidth);
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
@@ -108,7 +109,7 @@
             
             if (isImageViewShowing) {
                 CGFloat imageLimitHeight = contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
-                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMax];
+                CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)] : self.currentImage.size;
                 imageSize.height = fmin(imageSize.height, imageLimitHeight);
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
@@ -155,7 +156,7 @@
     // 图片的布局原则都是尽量完整展示，所以不管 imagePosition 的值是什么，这个计算过程都是相同的
     if (isImageViewShowing) {
         imageLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
-        CGSize imageSize = [self.imageView sizeThatFits:imageLimitSize];
+        CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:imageLimitSize] : self.currentImage.size;
         imageSize.width = fmin(imageLimitSize.width, imageSize.width);
         imageSize.height = fmin(imageLimitSize.height, imageSize.height);
         imageFrame = CGRectMakeWithSize(imageSize);
@@ -544,7 +545,11 @@
     if (self.adjustsImageTintColorAutomatically) {
         image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     }
+    
     [super setImage:image forState:state];
+    
+    // 注意，这句必须。因 UIButton 系统特性问题，如果在设置图片前就访问过 imageView，那么之后设置图片时 imageView.image 在布局的时候还会是 nil（self.currentImage 有值），这样会导致一些布局问题。解决方法是再触发一下 self.imageView。详情请看 https://github.com/QMUI/QMUI_iOS/issues/439
+    [self imageView];
 }
 
 - (void)tintColorDidChange {

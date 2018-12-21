@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUICommonViewController.h
 //  qmui
@@ -154,7 +155,7 @@
 
 @end
 
-@interface QMUICommonViewController (QMUINavigationController)<QMUINavigationControllerDelegate>
+@interface QMUICommonViewController (QMUINavigationController) <QMUINavigationControllerDelegate>
 
 /**
  从 QMUINavigationControllerAppearanceDelegate 系列接口获取当前界面希望的导航栏样式并设置到导航栏上

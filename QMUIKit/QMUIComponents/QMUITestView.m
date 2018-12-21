@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUITestView.m
 //  qmui
 //
-//  Created by MoLice on 16/1/28.
+//  Created by QMUI Team on 16/1/28.
 //
 
 #import "QMUITestView.h"
@@ -49,9 +50,19 @@
     QMUILog(NSStringFromClass(self.class), @"%s, frame = %@", __func__, NSStringFromCGRect(self.frame));
 }
 
+- (void)willMoveToSuperview:(UIView *)newSuperview {
+    [super willMoveToSuperview:newSuperview];
+    QMUILog(NSStringFromClass(self.class), @"%s, superview is %@, newSuperview is %@, window is %@", __func__, self.superview, newSuperview, self.window);
+}
+
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
-    QMUILog(NSStringFromClass(self.class), @"%s, superview is %@", __func__, self.superview);
+    QMUILog(NSStringFromClass(self.class), @"%s, superview is %@, window is %@", __func__, self.superview, self.window);
+}
+
+- (void)willMoveToWindow:(UIWindow *)newWindow {
+    [super willMoveToWindow:newWindow];
+    QMUILog(NSStringFromClass(self.class), @"%s, self.window is %@, newWindow is %@", __func__, self.window, newWindow);
 }
 
 - (void)didMoveToWindow {

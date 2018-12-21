@@ -5,11 +5,12 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIMarqueeLabel.m
 //  qmui
 //
-//  Created by MoLice on 2017/5/31.
+//  Created by QMUI Team on 2017/5/31.
 //
 
 #import "QMUIMarqueeLabel.h"
@@ -21,7 +22,7 @@
 
 @property(nonatomic, strong) CADisplayLink *displayLink;
 @property(nonatomic, assign) CGFloat offsetX;
-@property(nonatomic, assign) CGFloat textWidth;
+@property(nonatomic, assign) CGSize textSize;
 @property(nonatomic, assign) CGFloat fadeStartPercent; // 渐变开始的百分比，默认为0，不建议改
 @property(nonatomic, assign) CGFloat fadeEndPercent; // 渐变结束的百分比，例如0.2，则表示 0~20% 是渐变区间
 
@@ -31,6 +32,9 @@
 
 /// 绘制文本时重复绘制的次数，用于实现首尾连接的滚动效果，1 表示不首尾连接，大于 1 表示首尾连接。
 @property(nonatomic, assign) NSInteger textRepeatCount;
+
+/// 记录上一次布局时的 bounds，如果有改变，则需要重置动画
+@property(nonatomic, assign) CGRect prevBounds;
 
 @end
 
@@ -85,6 +89,7 @@
     self.offsetX = 0;
     self.displayLink.paused = ![self shouldPlayDisplayLink];
     [self checkIfShouldShowGradientLayer];
+    [self setNeedsLayout];
 }
 
 - (void)setFadeWidthPercent:(CGFloat)fadeWidthPercent {
@@ -99,27 +104,19 @@
 - (void)setText:(NSString *)text {
     [super setText:text];
     self.offsetX = 0;
-    self.textWidth = [self sizeThatFits:CGSizeMax].width;
+    self.textSize = [self sizeThatFits:CGSizeMax];
     self.displayLink.paused = ![self shouldPlayDisplayLink];
     [self checkIfShouldShowGradientLayer];
+    [self setNeedsLayout];
 }
 
 - (void)setAttributedText:(NSAttributedString *)attributedText {
     [super setAttributedText:attributedText];
     self.offsetX = 0;
-    self.textWidth = [self sizeThatFits:CGSizeMax].width;
+    self.textSize = [self sizeThatFits:CGSizeMax];
     self.displayLink.paused = ![self shouldPlayDisplayLink];
     [self checkIfShouldShowGradientLayer];
-}
-
-- (void)setFrame:(CGRect)frame {
-    BOOL isSizeChanged = !CGSizeEqualToSize(frame.size, self.frame.size);
-    [super setFrame:frame];
-    if (isSizeChanged) {
-        self.offsetX = 0;
-        self.displayLink.paused = ![self shouldPlayDisplayLink];
-        [self checkIfShouldShowGradientLayer];
-    }
+    [self setNeedsLayout];
 }
 
 - (void)drawTextInRect:(CGRect)rect {
@@ -127,14 +124,14 @@
     if (self.textAlignment == NSTextAlignmentLeft) {
         textInitialX = 0;
     } else if (self.textAlignment == NSTextAlignmentCenter) {
-        textInitialX = fmax(0, CGFloatGetCenter(CGRectGetWidth(self.bounds), self.textWidth));
+        textInitialX = MAX(0, CGFloatGetCenter(CGRectGetWidth(self.bounds), self.textSize.width));
     } else if (self.textAlignment == NSTextAlignmentRight) {
-        textInitialX = fmax(0, CGRectGetWidth(self.bounds) - self.textWidth);
+        textInitialX = MAX(0, CGRectGetWidth(self.bounds) - self.textSize.width);
     }
     
     // 考虑渐变遮罩的偏移
     CGFloat textOffsetXByFade = 0;
-    BOOL shouldTextStartAfterFade = self.shouldFadeAtEdge && self.textStartAfterFade && self.textWidth > CGRectGetWidth(self.bounds);
+    BOOL shouldTextStartAfterFade = self.shouldFadeAtEdge && self.textStartAfterFade && self.textSize.width > CGRectGetWidth(self.bounds);
     CGFloat fadeWidth = CGRectGetWidth(self.bounds) * .5 * MAX(0, self.fadeEndPercent - self.fadeStartPercent);
     if (shouldTextStartAfterFade && textInitialX < fadeWidth) {
         textOffsetXByFade = fadeWidth;
@@ -142,7 +139,7 @@
     textInitialX += textOffsetXByFade;
     
     for (NSInteger i = 0; i < self.textRepeatCountConsiderTextWidth; i++) {
-        [self.attributedText drawInRect:CGRectMake(self.offsetX + (self.textWidth + self.spacingBetweenHeadToTail) * i + textInitialX, 0, self.textWidth, CGRectGetHeight(rect))];
+        [self.attributedText drawInRect:CGRectMake(self.offsetX + (self.textSize.width + self.spacingBetweenHeadToTail) * i + textInitialX, CGRectGetMinY(rect) + CGFloatGetCenter(CGRectGetHeight(rect), self.textSize.height), self.textSize.width, self.textSize.height)];
     }
     
     // 自定义绘制就不需要调用 super
@@ -155,10 +152,18 @@
     if (self.fadeLayer) {
         self.fadeLayer.frame = self.bounds;
     }
+    
+    if (!CGSizeEqualToSize(self.prevBounds.size, self.bounds.size)) {
+        self.offsetX = 0;
+        self.displayLink.paused = ![self shouldPlayDisplayLink];
+        self.prevBounds = self.bounds;
+        
+        [self checkIfShouldShowGradientLayer];
+    }
 }
 
 - (NSInteger)textRepeatCountConsiderTextWidth {
-    if (self.textWidth < CGRectGetWidth(self.bounds)) {
+    if (self.textSize.width < CGRectGetWidth(self.bounds)) {
         return 1;
     }
     return self.textRepeatCount;
@@ -187,7 +192,7 @@
     self.offsetX -= self.speed;
     [self setNeedsDisplay];
     
-    if (-self.offsetX >= self.textWidth + (self.textRepeatCountConsiderTextWidth > 1 ? self.spacingBetweenHeadToTail : 0)) {
+    if (-self.offsetX >= self.textSize.width + (self.textRepeatCountConsiderTextWidth > 1 ? self.spacingBetweenHeadToTail : 0)) {
         displayLink.paused = YES;
         int64_t delay = self.textRepeatCount > 1 ? self.pauseDurationWhenMoveToEdge : 0;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -198,7 +203,7 @@
 }
 
 - (BOOL)shouldPlayDisplayLink {
-    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textWidth > CGRectGetWidth(self.bounds);
+    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textSize.width > CGRectGetWidth(self.bounds);
     
     // 如果 label.frame 在 window 可视区域之外，也视为不可见，暂停掉 displayLink
     if (result && self.automaticallyValidateVisibleFrame) {
@@ -215,10 +220,11 @@
     _shouldFadeAtEdge = shouldFadeAtEdge;
     
     [self checkIfShouldShowGradientLayer];
+    [self setNeedsLayout];
 }
 
 - (void)checkIfShouldShowGradientLayer {
-    BOOL shouldShowFadeLayer = self.window && self.shouldFadeAtEdge && CGRectGetWidth(self.bounds) > 0 && self.textWidth > CGRectGetWidth(self.bounds);
+    BOOL shouldShowFadeLayer = self.window && self.shouldFadeAtEdge && CGRectGetWidth(self.bounds) > 0 && self.textSize.width > CGRectGetWidth(self.bounds);
     
     if (shouldShowFadeLayer) {
         _fadeLayer = [CAGradientLayer layer];
@@ -232,8 +238,6 @@
             self.layer.mask = nil;
         }
     }
-    
-    [self setNeedsLayout];
 }
 
 #pragma mark - Superclass

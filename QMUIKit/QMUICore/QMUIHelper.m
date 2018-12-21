@@ -5,6 +5,7 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
+
 //
 //  QMUIHelper.m
 //  qmui
@@ -15,6 +16,9 @@
 #import "QMUIHelper.h"
 #import "QMUICore.h"
 #import "NSNumber+QMUI.h"
+#import "UIViewController+QMUI.h"
+#import "NSString+QMUI.h"
+#import "UIInterface+QMUI.h"
 #import <AVFoundation/AVFoundation.h>
 #import <math.h>
 #import <sys/utsname.h>
@@ -304,14 +308,6 @@ static NSInteger isIPad = -1;
     return isIPad > 0;
 }
 
-static NSInteger isIPadPro = -1;
-+ (BOOL)isIPadPro {
-    if (isIPadPro < 0) {
-        isIPadPro = [QMUIHelper isIPad] ? (DEVICE_WIDTH == 1024 && DEVICE_HEIGHT == 1366 ? 1 : 0) : 0;
-    }
-    return isIPadPro > 0;
-}
-
 static NSInteger isIPod = -1;
 + (BOOL)isIPod {
     if (isIPod < 0) {
@@ -342,8 +338,24 @@ static NSInteger isSimulator = -1;
     return isSimulator > 0;
 }
 
+static NSInteger isNotchedScreen = -1;
 + (BOOL)isNotchedScreen {
-    return [self is65InchScreen] || [self is61InchScreen] || [self is58InchScreen];
+    if (@available(iOS 11, *)) {
+        if (isNotchedScreen < 0) {
+            // iOS 12，只要 init 完 window，window 的尺寸就已经被设定为当前 App 的大小了，所以可以通过是否有 safeAreaInsets 来动态判断。
+            // 但 iOS 11 及以前无法通过这个方式动态判断，所以只能依靠物理设备的判断方式
+            if (@available(iOS 12, *)) {
+                UIWindow *window = [[UIWindow alloc] init];
+                isNotchedScreen = UIEdgeInsetsGetHorizontalValue(window.safeAreaInsets) + UIEdgeInsetsGetVerticalValue(window.safeAreaInsets) > 0 ? 1 : 0;
+            } else {
+                isNotchedScreen = [QMUIHelper is58InchScreen] ? 1 : 0;
+            }
+        }
+    } else {
+        isNotchedScreen = 0;
+    }
+
+    return isNotchedScreen > 0;
 }
 
 + (BOOL)isRegularScreen {
@@ -438,9 +450,32 @@ static NSInteger is35InchScreen = -1;
     return CGSizeMake(320, 480);
 }
 
+static CGFloat preferredLayoutWidth = -1;
++ (CGFloat)preferredLayoutAsSimilarScreenWidthForIPad {
+    if (preferredLayoutWidth < 0) {
+        NSArray<NSNumber *> *widths = @[@([self screenSizeFor65Inch].width),
+                                        @([self screenSizeFor58Inch].width),
+                                        @([self screenSizeFor40Inch].width)];
+        preferredLayoutWidth = SCREEN_WIDTH;
+        UIWindow *window = [UIApplication sharedApplication].delegate.window ?: [[UIWindow alloc] init];// iOS 9 及以上的系统，新 init 出来的 window 自动被设置为当前 App 的宽度，iOS 8 及以下的系统宽度为 0，但因为 UIWindow (QMUI) 里的保护，所以 iOS 8 下这个 window 的宽度将会是屏幕宽
+        CGFloat windowWidth = CGRectGetWidth(window.bounds);
+        for (NSInteger i = 0; i < widths.count; i++) {
+            if (windowWidth <= widths[i].qmui_CGFloatValue) {
+                preferredLayoutWidth = widths[i].qmui_CGFloatValue;
+                continue;
+            }
+        }
+    }
+    return preferredLayoutWidth;
+}
+
 + (UIEdgeInsets)safeAreaInsetsForDeviceWithNotch {
     if (![self isNotchedScreen]) {
         return UIEdgeInsetsZero;
+    }
+    
+    if ([self isIPad]) {
+        return UIEdgeInsetsMake(20, 0, 20, 0);
     }
     
     UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
@@ -465,66 +500,20 @@ static NSInteger is35InchScreen = -1;
 static NSInteger isHighPerformanceDevice = -1;
 + (BOOL)isHighPerformanceDevice {
     if (isHighPerformanceDevice < 0) {
-        isHighPerformanceDevice = PreferredValueForDeviceIncludingiPad(1, 1, 1, 0, 0);
+        NSString *model = [QMUIHelper deviceModel];
+        NSString *identifier = [model qmui_stringMatchedByPattern:@"\\d+"];
+        NSInteger version = identifier.integerValue;
+        if (IS_IPAD) {
+            isHighPerformanceDevice = version >= 5 ? 1 : 0;// iPad Air 2
+        } else {
+            isHighPerformanceDevice = version >= 10 ? 1 : 0;// iPhone 8
+        }
     }
     return isHighPerformanceDevice > 0;
 }
 
-@end
-
-@implementation QMUIHelper (Orientation)
-
-- (void)handleDeviceOrientationNotification:(NSNotification *)notification {
-    // 如果是由 setValue:forKey: 方式修改方向而走到这个 notification 的话，理论上是不需要重置为 Unknown 的，但因为在 UIViewController (QMUI) 那边会再次记录旋转前的值，所以这里就算重置也无所谓
-    [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = UIDeviceOrientationUnknown;
-}
-
-+ (BOOL)rotateToDeviceOrientation:(UIDeviceOrientation)orientation {
-    if ([UIDevice currentDevice].orientation == orientation) {
-        [UIViewController attemptRotationToDeviceOrientation];
-        return NO;
-    }
-    
-    [[UIDevice currentDevice] setValue:@(orientation) forKey:@"orientation"];
-    return YES;
-}
-
-static char kAssociatedObjectKey_orientationBeforeChangedByHelper;
-- (void)setOrientationBeforeChangingByHelper:(UIDeviceOrientation)orientationBeforeChangedByHelper {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_orientationBeforeChangedByHelper, @(orientationBeforeChangedByHelper), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (UIDeviceOrientation)orientationBeforeChangingByHelper {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_orientationBeforeChangedByHelper)) integerValue];
-}
-
-+ (CGFloat)angleForTransformWithInterfaceOrientation:(UIInterfaceOrientation)orientation {
-    CGFloat angle;
-    switch (orientation)
-    {
-        case UIInterfaceOrientationPortraitUpsideDown:
-            angle = M_PI;
-            break;
-        case UIInterfaceOrientationLandscapeLeft:
-            angle = -M_PI_2;
-            break;
-        case UIInterfaceOrientationLandscapeRight:
-            angle = M_PI_2;
-            break;
-        default:
-            angle = 0.0;
-            break;
-    }
-    return angle;
-}
-
-+ (CGAffineTransform)transformForCurrentInterfaceOrientation {
-    return [QMUIHelper transformWithInterfaceOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
-}
-
-+ (CGAffineTransform)transformWithInterfaceOrientation:(UIInterfaceOrientation)orientation {
-    CGFloat angle = [QMUIHelper angleForTransformWithInterfaceOrientation:orientation];
-    return CGAffineTransformMakeRotation(angle);
+- (void)handleAppSizeWillChange:(NSNotification *)notification {
+    preferredLayoutWidth = -1;
 }
 
 @end
@@ -627,6 +616,7 @@ static char kAssociatedObjectKey_orientationBeforeChangedByHelper;
         
         [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleKeyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleKeyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleAppSizeWillChange:) name:QMUIAppSizeWillChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleDeviceOrientationNotification:) name:UIDeviceOrientationDidChangeNotification object:nil];
     });
     return instance;
