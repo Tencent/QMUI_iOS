@@ -146,6 +146,11 @@
  */
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL selector))block;
 
+@end
+
+
+@interface NSObject (QMUI_DataBind)
+
 /**
  给对象绑定上另一个对象以供后续取出使用，如果 object 传入 nil 则会清除该 key 之前绑定的对象
  

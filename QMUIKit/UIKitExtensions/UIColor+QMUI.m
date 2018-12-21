@@ -67,8 +67,7 @@
             blue  = [self colorComponentFrom: colorString start: 6 length: 2];
             break;
         default: {
-            NSString *errorMsg = [NSString stringWithFormat:@"Color value %@ is invalid.  It should be a hex value of the form #RBG, #ARGB, #RRGGBB, or #AARRGGBB", hexString];
-            NSAssert(NO, errorMsg);
+            NSAssert(NO, @"Color value %@ is invalid. It should be a hex value of the form #RBG, #ARGB, #RRGGBB, or #AARRGGBB", hexString);
             return nil;
         }
             break;

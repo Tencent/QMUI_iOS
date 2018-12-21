@@ -176,6 +176,11 @@
     free(methods);
 }
 
+@end
+
+
+@implementation NSObject (QMUI_DataBind)
+
 static char kAssociatedObjectKey_QMUIAllBindObjects;
 - (NSMutableDictionary<id, id> *)qmui_allBindObjects {
     NSMutableDictionary<id, id> *dict = objc_getAssociatedObject(self, &kAssociatedObjectKey_QMUIAllBindObjects);

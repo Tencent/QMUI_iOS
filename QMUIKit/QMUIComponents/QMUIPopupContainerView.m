@@ -471,7 +471,9 @@
 - (void)initPopupContainerViewWindowIfNeeded {
     if (!self.popupWindow) {
         self.popupWindow = [[QMUIPopupContainerViewWindow alloc] init];
-        self.popupWindow.qmui_capturesStatusBarAppearance = NO;
+        if (@available(iOS 10, *)) {
+            self.popupWindow.qmui_capturesStatusBarAppearance = NO;
+        }
         self.popupWindow.backgroundColor = UIColorClear;
         self.popupWindow.windowLevel = UIWindowLevelQMUIAlertView;
         QMUIPopContainerViewController *viewController = [[QMUIPopContainerViewController alloc] init];
