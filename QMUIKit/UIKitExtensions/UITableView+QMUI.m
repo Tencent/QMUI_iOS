@@ -286,9 +286,9 @@ static char kAssociatedObjectKey_initialContentInset;
     NSInteger numberOfSections = [self numberOfSections];
     if (indexPath.section >= numberOfSections) {
         isIndexPathLegal = NO;
-    } else {
+    } else if (indexPath.row != NSNotFound) {
         NSInteger rows = [self numberOfRowsInSection:indexPath.section];
-        isIndexPathLegal = rows > 0 ? indexPath.row < rows : indexPath.row == NSNotFound;
+        isIndexPathLegal = indexPath.row < rows;
     }
     if (!isIndexPathLegal) {
         QMUILogWarn(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", self, indexPath, [NSThread callStackSymbols]);
