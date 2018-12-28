@@ -29,7 +29,6 @@ const CGPoint kUnCapturesStatusBarAppearanceWindowOrigin = {-1, -1};
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SEL selectors[] = {
-            @selector(init),
             @selector(initWithFrame:),
             @selector(setFrame:),
         };
@@ -39,25 +38,6 @@ const CGPoint kUnCapturesStatusBarAppearanceWindowOrigin = {-1, -1};
             ExchangeImplementations([self class], originalSelector, swizzledSelector);
         }
     });
-}
-
-- (CGRect)fullSizeWindowReferenceRect {
-    if (UIApplication.sharedApplication.delegate.window) {
-        return UIApplication.sharedApplication.delegate.window.frame;
-    }
-    return UIScreen.mainScreen.bounds;
-}
-
-- (instancetype)qmuiWindow_init {
-    if (@available(iOS 9.0, *)) {
-        [self qmuiWindow_init];
-        return self;
-    } else {
-        // iOS 9 以前的版本，UIWindow init时如果不给一个frame，默认是CGRectZero，而iOS 9以后的版本，由于增加了分屏（Split View）功能，你的App可能运行在一个非全屏大小的区域内，所以UIWindow如果调用init方法（而不是initWithFrame:）来初始化，系统会自动为你的window设置一个合适的大小。所以这里对iOS 9以前的版本做适配，默认与 UIApplication.delegate.window 一样大
-        UIWindow *window = [self qmuiWindow_init];
-        window.frame = [self fullSizeWindowReferenceRect];
-        return window;
-    }
 }
 
 - (instancetype)qmuiWindow_initWithFrame:(CGRect)frame {

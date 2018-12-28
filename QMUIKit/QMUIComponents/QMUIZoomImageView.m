@@ -424,6 +424,11 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         }
     }
     
+    if (self.videoPlayer) {
+        // 移除旧的 videoPlayer 时，同时移除相应的 timeObserver
+        [self removePlayerTimeObserver];
+    }
+    
     self.videoPlayer = [AVPlayer playerWithPlayerItem:videoPlayerItem];
     [self initVideoRelatedViewsIfNeeded];
     _videoPlayerLayer.player = self.videoPlayer;

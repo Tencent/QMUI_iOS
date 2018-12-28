@@ -83,9 +83,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     _minimumSelectImageCount = 0;
     _shouldShowDefaultLoadingView = YES;
     // 为了让使用者可以在 init 完就可以直接改 UI 相关的 property，这里提前触发 loadView
-    BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
 }
 
 - (void)dealloc {

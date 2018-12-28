@@ -147,9 +147,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         self.mutableItems = [[NSMutableArray alloc] init];
     }
     
-    BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
 }
 
 - (void)viewDidLoad {

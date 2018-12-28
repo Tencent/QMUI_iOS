@@ -15,6 +15,8 @@
 
 #import "QMUICollectionViewPagingLayout.h"
 #import "QMUICore.h"
+#import "UIScrollView+QMUI.h"
+#import "CALayer+QMUI.h"
 
 @interface QMUICollectionViewPagingLayout () {
     CGFloat _maximumScale;
@@ -22,6 +24,48 @@
     CGFloat _rotationRatio;
     CGFloat _rotationRadius;
     CGSize _finalItemSize;
+    CGFloat _pagingThreshold;
+    BOOL _debug;
+}
+
+@property(nonatomic, strong) CALayer *debugLayer;
+
+@end
+
+@implementation QMUICollectionViewPagingLayout (DefaultStyle)
+
+- (CGFloat)pagingThreshold {
+    return _pagingThreshold;
+}
+
+- (void)setPagingThreshold:(CGFloat)pagingThreshold {
+    _pagingThreshold = pagingThreshold;
+}
+
+- (BOOL)debug {
+    return _debug;
+}
+
+- (void)setDebug:(BOOL)debug {
+    _debug = debug;
+    if (self.style == QMUICollectionViewPagingLayoutStyleDefault && debug && !self.debugLayer) {
+        self.debugLayer = [CALayer layer];
+        [self.debugLayer qmui_removeDefaultAnimations];
+        self.debugLayer.backgroundColor = UIColorTestRed.CGColor;
+        UIView *backgroundView = self.collectionView.backgroundView;
+        if (!backgroundView) {
+            backgroundView = [[UIView alloc] init];
+            backgroundView.tag = 1024;
+            self.collectionView.backgroundView = backgroundView;
+        }
+        [backgroundView.layer addSublayer:self.debugLayer];
+    } else if (!debug) {
+        [self.debugLayer removeFromSuperlayer];
+        self.debugLayer = nil;
+        if (self.collectionView.backgroundView.tag == 1024) {
+            self.collectionView.backgroundView = nil;
+        }
+    }
 }
 
 @end
@@ -67,7 +111,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
 }
 
 - (CGFloat)validatedRotationRatio:(CGFloat)rotationRatio {
-    return fmax(0.0, fmin(1.0, rotationRatio));
+    return MAX(0.0, MIN(1.0, rotationRatio));
 }
 
 @end
@@ -79,7 +123,8 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         _style = style;
         self.velocityForEnsurePageDown = 0.4;
         self.allowsMultipleItemScroll = YES;
-        self.multipleItemScrollVelocityLimit = 0.7;
+        self.multipleItemScrollVelocityLimit = 2.5;
+        self.pagingThreshold = 2.0 / 3.0;
         self.maximumScale = 1.0;
         self.minimumScale = 0.94;
         self.rotationRatio = .5;
@@ -107,6 +152,14 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         itemSize = [layoutDelegate collectionView:self.collectionView layout:self sizeForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
     }
     _finalItemSize = itemSize;
+    
+    if (self.debugLayer) {
+        if (self.scrollDirection == UICollectionViewScrollDirectionVertical) {
+            self.debugLayer.frame = CGRectFlatMake(0, self.collectionView.qmui_contentInset.top + self.sectionInset.top + _finalItemSize.height / 2, CGRectGetWidth(self.collectionView.bounds), PixelOne);
+        } else {
+            self.debugLayer.frame = CGRectFlatMake(self.collectionView.qmui_contentInset.left + self.sectionInset.left + _finalItemSize.width / 2, 0, PixelOne, CGRectGetHeight(self.collectionView.bounds));
+        }
+    }
 }
 
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
@@ -132,7 +185,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         
         for (UICollectionViewLayoutAttributes *attributes in resultAttributes) {
             CGFloat scale = 0;
-            CGFloat distance = fabs(offset - attributes.center.x);
+            CGFloat distance = ABS(offset - attributes.center.x);
             if (distance >= distanceForMinimumScale) {
                 scale = self.minimumScale;
             } else if (distance == distanceForMaximumScale) {
@@ -155,14 +208,14 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         for (UICollectionViewLayoutAttributes *attributes in resultAttributes) {
             CGFloat distance = self.collectionView.contentOffset.x + CGRectGetWidth(self.collectionView.bounds) / 2.0 - attributes.center.x;
             CGFloat degress = - 90 * self.rotationRatio * (distance / CGRectGetWidth(self.collectionView.bounds));
-            CGFloat cosValue = fabs(cosf(AngleWithDegrees(degress)));
+            CGFloat cosValue = ABS(cosf(AngleWithDegrees(degress)));
             CGFloat translateY = self.rotationRadius - self.rotationRadius * cosValue;
             CGAffineTransform transform = CGAffineTransformMakeTranslation(0, translateY);
             transform = CGAffineTransformRotate(transform, AngleWithDegrees(degress));
             attributes.transform = transform;
             attributes.zIndex = 1;
-            if (fabs(distance) < centerMin) {
-                centerMin = fabs(distance);
+            if (ABS(distance) < centerMin) {
+                centerMin = ABS(distance);
                 centerAttribute = attributes;
             }
         }
@@ -174,21 +227,59 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
 }
 
 - (CGPoint)targetContentOffsetForProposedContentOffset:(CGPoint)proposedContentOffset withScrollingVelocity:(CGPoint)velocity {
-    CGFloat itemSpacing = _finalItemSize.width + self.minimumLineSpacing;
     
-    if (!self.allowsMultipleItemScroll || fabs(velocity.x) <= fabs(self.multipleItemScrollVelocityLimit)) {
-        // 只滚动一页
-        
-        if (fabs(velocity.x) > self.velocityForEnsurePageDown) {
-            // 为了更容易触发翻页，这里主动增加滚动位置
-            BOOL scrollingToRight = proposedContentOffset.x < self.collectionView.contentOffset.x;
-            proposedContentOffset = CGPointMake(self.collectionView.contentOffset.x + (itemSpacing / 2) * (scrollingToRight ? -1 : 1), self.collectionView.contentOffset.y);
-        } else {
-            proposedContentOffset = self.collectionView.contentOffset;
+    CGFloat itemSpacing = (self.scrollDirection == UICollectionViewScrollDirectionHorizontal ? _finalItemSize.width : _finalItemSize.height) + self.minimumLineSpacing;
+    
+    CGSize contentSize = self.collectionViewContentSize;
+    CGSize frameSize = self.collectionView.bounds.size;
+    UIEdgeInsets contentInset = self.collectionView.qmui_contentInset;
+    
+    BOOL scrollingToRight = proposedContentOffset.x < self.collectionView.contentOffset.x;// 代表 collectionView 期望的实际滚动方向是向右，但不代表手指拖拽的方向是向右，因为有可能此时已经在左边的尽头，继续往右拖拽，松手的瞬间由于回弹，这里会判断为是想向左滚动，但其实你的手指是向右拖拽
+    BOOL scrollingToBottom = proposedContentOffset.y < self.collectionView.contentOffset.y;
+    BOOL forcePaging = NO;
+    
+    if (self.scrollDirection == UICollectionViewScrollDirectionVertical) {
+        if (!self.allowsMultipleItemScroll || ABS(velocity.y) <= ABS(self.multipleItemScrollVelocityLimit)) {
+            proposedContentOffset = self.collectionView.contentOffset;// 一次性滚多次的本质是系统根据速度算出来的 proposedContentOffset 可能比当前 contentOffset 大很多，所以这里既然限制了一次只能滚一页，那就直接取瞬时 contentOffset 即可。
+            
+            // 只支持滚动一页 或者 支持滚动多页但是速度不够滚动多页，时，允许强制滚动
+            if (ABS(velocity.y) > self.velocityForEnsurePageDown) {
+                forcePaging = YES;
+            }
         }
+        if (proposedContentOffset.y < -contentInset.top || proposedContentOffset.y > contentSize.height - frameSize.height - contentInset.bottom) {
+            return proposedContentOffset;
+        }
+        CGFloat progress = ((contentInset.top + proposedContentOffset.y) + _finalItemSize.height / 2/*因为第一个 item 初始状态中心点离 contentOffset.y 有半个 item 的距离*/) / itemSpacing;
+        NSInteger currentIndex = (NSInteger)progress;
+        CGFloat remainder = progress - currentIndex;
+        CGFloat offset = remainder * itemSpacing;
+        BOOL shouldNext = (forcePaging && !scrollingToBottom) ? YES : (offset / _finalItemSize.height >= self.pagingThreshold);
+        BOOL shouldPrev = (forcePaging && scrollingToBottom) ? YES : (offset / _finalItemSize.height <= 1 - self.pagingThreshold);
+        NSInteger targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
+        proposedContentOffset.y = -contentInset.top + targetIndex * itemSpacing;
     }
-    
-    proposedContentOffset.x = round(proposedContentOffset.x / itemSpacing) * itemSpacing;
+    else if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
+        if (!self.allowsMultipleItemScroll || ABS(velocity.x) <= ABS(self.multipleItemScrollVelocityLimit)) {
+            proposedContentOffset = self.collectionView.contentOffset;// 一次性滚多次的本质是系统根据速度算出来的 proposedContentOffset 可能比当前 contentOffset 大很多，所以这里既然限制了一次只能滚一页，那就直接取瞬时 contentOffset 即可。
+            
+            // 只支持滚动一页 或者 支持滚动多页但是速度不够滚动多页，时，允许强制滚动
+            if (ABS(velocity.x) > self.velocityForEnsurePageDown) {
+                forcePaging = YES;
+            }
+        }
+        if (proposedContentOffset.x < -contentInset.left || proposedContentOffset.x > contentSize.width - frameSize.width - contentInset.right) {
+            return proposedContentOffset;
+        }
+        CGFloat progress = ((contentInset.left + proposedContentOffset.x) + _finalItemSize.width / 2/*因为第一个 item 初始状态中心点离 contentOffset.x 有半个 item 的距离*/) / itemSpacing;
+        NSInteger currentIndex = (NSInteger)progress;
+        CGFloat remainder = progress - currentIndex;
+        CGFloat offset = remainder * itemSpacing;
+        BOOL shouldNext = (forcePaging && !scrollingToRight) ? YES : (offset / _finalItemSize.width >= self.pagingThreshold);
+        BOOL shouldPrev = (forcePaging && scrollingToRight) ? YES : (offset / _finalItemSize.width <= 1 - self.pagingThreshold);
+        NSInteger targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
+        proposedContentOffset.x = -contentInset.left + targetIndex * itemSpacing;
+    }
     
     return proposedContentOffset;
 }

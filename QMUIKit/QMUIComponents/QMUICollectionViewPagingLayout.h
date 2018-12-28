@@ -41,11 +41,22 @@ typedef NS_ENUM(NSInteger, QMUICollectionViewPagingLayoutStyle) {
 @property(nonatomic, assign) BOOL allowsMultipleItemScroll;
 
 /**
- *  规定了当支持一次滑动允许滚动多个 item 的时候，滑动速度要达到多少才会滚动多个 item，默认为 0.7
+ *  规定了当支持一次滑动允许滚动多个 item 的时候，滑动速度要达到多少才会滚动多个 item，默认为 2.5
  *
  *  仅当 allowsMultipleItemScroll 为 YES 时生效
  */
 @property(nonatomic, assign) CGFloat multipleItemScrollVelocityLimit;
+
+@end
+
+@interface QMUICollectionViewPagingLayout (DefaultStyle)
+
+/// 当前 cell 的百分之多少滚过临界点时就会触发滚到下一张的动作，默认为 .666，也即超过 2/3 即会滚到下一张。
+/// 对应地，触发滚到上一张的临界点将会被设置为 (1 - pagingThreshold)
+@property(nonatomic, assign) CGFloat pagingThreshold;
+
+/// 打开时，会在 collectionView.backgroundView 上添加一条红线，用来标志分页的参考点位置。仅对 Default style 有效。
+@property(nonatomic, assign) BOOL debug;
 
 @end
 

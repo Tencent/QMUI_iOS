@@ -79,9 +79,7 @@ static QMUIImagePreviewViewController *imagePreviewViewControllerAppearance;
 }
 
 - (QMUIImagePreviewView *)imagePreviewView {
-    BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
     return _imagePreviewView;
 }
 

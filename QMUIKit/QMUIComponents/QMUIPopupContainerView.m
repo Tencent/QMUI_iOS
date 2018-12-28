@@ -18,6 +18,7 @@
 #import "QMUICommonViewController.h"
 #import "UIViewController+QMUI.h"
 #import "QMUILog.h"
+#import "UIView+QMUI.h"
 #import "UIWindow+QMUI.h"
 
 @interface QMUIPopupContainerViewWindow : UIWindow
@@ -43,6 +44,8 @@
     UILabel                         *_textLabel;
 }
 
+@property(nonatomic, weak) UIView *targetView;
+@property(nonatomic, weak) UIView *navigationItemSuperview;
 @property(nonatomic, strong) QMUIPopupContainerViewWindow *popupWindow;
 @property(nonatomic, weak) UIWindow *previousKeyWindow;
 @property(nonatomic, assign) BOOL hidesByUserTap;
@@ -62,6 +65,13 @@
         [self didInitialize];
     }
     return self;
+}
+
+- (void)dealloc {
+    self.navigationItemSuperview.qmui_frameDidChangeBlock = nil;
+    self.navigationItemSuperview = nil;
+    self.targetView.qmui_frameDidChangeBlock = nil;
+    self.targetView = nil;
 }
 
 - (UIView *)superviewIfExist {
@@ -220,6 +230,37 @@
 }
 
 - (void)layoutWithTargetView:(UIView *)targetView {
+    // 特别地，iOS 11 及以后 UIBarButtonItem 被放在一个 UIStackView 内，在横竖屏旋转等情况下，变化的是 UIBarButtonItem.superview 的 frame，所以这里要把 targetView 改成 superview
+    // TODO: molice iOS 10 及以前，UIBarButtonItem 是直接放到 UINavigationBar 上的，但横竖屏旋转时 UIBarButtonItem 会被重新创建，丢失了旧的引用，这个待补充。
+    if (@available(iOS 11.0, *)) {
+        if ([targetView isKindOfClass:NSClassFromString([NSString stringWithFormat:@"_%@%@%@", @"UIButton", @"Bar", @"Button"])]) {
+            if (targetView.superview != self.navigationItemSuperview) {
+                if (self.navigationItemSuperview.qmui_frameDidChangeBlock) {
+                    self.navigationItemSuperview.qmui_frameDidChangeBlock = nil;
+                }
+                self.navigationItemSuperview = targetView.superview;
+                __weak __typeof(self)weakSelf = self;
+                self.navigationItemSuperview.qmui_frameDidChangeBlock = ^(__kindof UIView * _Nonnull view, CGRect precedingFrame) {
+                    [weakSelf layoutWithTargetView:weakSelf.targetView];
+                };
+            }
+        } else {
+            self.navigationItemSuperview.qmui_frameDidChangeBlock = nil;
+            self.navigationItemSuperview = nil;
+        }
+    }
+    if (targetView != self.targetView) {
+        if (self.targetView.qmui_frameDidChangeBlock) {
+            self.targetView.qmui_frameDidChangeBlock = nil;
+        }
+        self.targetView = targetView;
+        if (!self.navigationItemSuperview) {
+            __weak __typeof(self)weakSelf = self;
+            self.targetView.qmui_frameDidChangeBlock = ^(__kindof UIView * _Nonnull view, CGRect precedingFrame) {
+                [weakSelf layoutWithTargetView:view];
+            };
+        }
+    }
     CGRect targetViewFrameInMainWindow = CGRectZero;
     UIWindow *mainWindow = [[[UIApplication sharedApplication] delegate] window];
     if (targetView.window == mainWindow) {

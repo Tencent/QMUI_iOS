@@ -19,13 +19,13 @@
 
 @class QMUIImagePreviewViewTransitionAnimator;
 
-typedef enum : NSUInteger {
+typedef NS_ENUM(NSUInteger, QMUIImagePreviewViewControllerTransitioningStyle) {
     /// present 时整个界面渐现，dismiss 时整个界面渐隐，默认。
     QMUIImagePreviewViewControllerTransitioningStyleFade,
     
     /// present 时从某个指定的位置缩放到屏幕中央，dismiss 时缩放到指定位置，必须实现 sourceImageView 并返回一个非空的值
     QMUIImagePreviewViewControllerTransitioningStyleZoom
-} QMUIImagePreviewViewControllerTransitioningStyle;
+};
 
 extern const CGFloat QMUIImagePreviewViewControllerCornerRadiusAutomaticDimension;
 

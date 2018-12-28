@@ -36,9 +36,6 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
     QMUIViewControllerVisible       = QMUIViewControllerWillAppear | QMUIViewControllerDidAppear,// 表示是否处于可视范围，判断时请用 & 运算，例如 qmui_visibleState & QMUIViewControllerVisible
 };
 
-/**
- *  @warning 这个 Category 里兼容了 iOS 8 下对 loadViewIfNeeded 方法的使用，所以 iOS 8 下也可以安全调用，建议搭配 BeginIgnoreAvailabilityWarning/EndIgnoreAvailabilityWarning 屏蔽 Xcode 的 warning。
- */
 @interface UIViewController (QMUI)
 
 /** 获取和自身处于同一个UINavigationController里的上一个UIViewController */

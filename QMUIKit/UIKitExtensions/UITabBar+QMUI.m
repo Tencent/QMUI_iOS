@@ -57,18 +57,22 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
         
         // 以下代码修复两个仅存在于 12.1.0 版本的系统 bug，实测 12.1.1 苹果已经修复
         if (@available(iOS 12.1, *)) {
-            if (@available(iOS 12.1.1, *)) {
-            } else {
-                OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
-                    return ^(UIView *selfObject, CGRect firstArgv) {
+            
+            OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+                return ^(UIView *selfObject, CGRect firstArgv) {
+                    
+                    if ([selfObject isKindOfClass:originClass]) {
+                        // Fixed: UITabBar layout is broken on iOS 12.1
+                        // https://github.com/QMUI/QMUI_iOS/issues/410
                         
-                        if ([selfObject isKindOfClass:originClass]) {
-                            
-                            // https://github.com/QMUI/QMUI_iOS/issues/410
+                        if (IOS_VERSION_NUMBER < 120101 || (QMUICMIActivated && ShouldFixTabBarButtonBugForAll)) {
                             if (!CGRectIsEmpty(selfObject.frame) && CGRectIsEmpty(firstArgv)) {
                                 return;
                             }
-                            
+                        }
+                        
+                        if (IOS_VERSION_NUMBER < 120101) {
+                            // Fixed: iOS 12.1 UITabBarItem positioning issue during swipe back gesture (when UINavigationBar is hidden)
                             // https://github.com/QMUI/QMUI_iOS/issues/422
                             if (IS_NOTCHED_SCREEN) {
                                 if ((CGRectGetHeight(selfObject.frame) == 48 && CGRectGetHeight(firstArgv) == 33) || (CGRectGetHeight(selfObject.frame) == 31 && CGRectGetHeight(firstArgv) == 20)) {
@@ -76,14 +80,14 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
                                 }
                             }
                         }
-                        
-                        // call super
-                        void (*originSelectorIMP)(id, SEL, CGRect);
-                        originSelectorIMP = (void (*)(id, SEL, CGRect))originIMP;
-                        originSelectorIMP(selfObject, originCMD, firstArgv);
-                    };
-                });
-            }
+                    }
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, CGRect);
+                    originSelectorIMP = (void (*)(id, SEL, CGRect))originIMP;
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                };
+            });
         }
     });
 }

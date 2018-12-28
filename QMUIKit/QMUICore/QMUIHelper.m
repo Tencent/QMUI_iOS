@@ -346,7 +346,7 @@ static NSInteger isNotchedScreen = -1;
             // 但 iOS 11 及以前无法通过这个方式动态判断，所以只能依靠物理设备的判断方式
             if (@available(iOS 12, *)) {
                 UIWindow *window = [[UIWindow alloc] init];
-                isNotchedScreen = UIEdgeInsetsGetHorizontalValue(window.safeAreaInsets) + UIEdgeInsetsGetVerticalValue(window.safeAreaInsets) > 0 ? 1 : 0;
+                isNotchedScreen = window.safeAreaInsets.bottom > 0 ? 1 : 0;
             } else {
                 isNotchedScreen = [QMUIHelper is58InchScreen] ? 1 : 0;
             }
@@ -457,7 +457,7 @@ static CGFloat preferredLayoutWidth = -1;
                                         @([self screenSizeFor58Inch].width),
                                         @([self screenSizeFor40Inch].width)];
         preferredLayoutWidth = SCREEN_WIDTH;
-        UIWindow *window = [UIApplication sharedApplication].delegate.window ?: [[UIWindow alloc] init];// iOS 9 及以上的系统，新 init 出来的 window 自动被设置为当前 App 的宽度，iOS 8 及以下的系统宽度为 0，但因为 UIWindow (QMUI) 里的保护，所以 iOS 8 下这个 window 的宽度将会是屏幕宽
+        UIWindow *window = [UIApplication sharedApplication].delegate.window ?: [[UIWindow alloc] init];// iOS 9 及以上的系统，新 init 出来的 window 自动被设置为当前 App 的宽度
         CGFloat windowWidth = CGRectGetWidth(window.bounds);
         for (NSInteger i = 0; i < widths.count; i++) {
             if (windowWidth <= widths[i].qmui_CGFloatValue) {
@@ -475,7 +475,7 @@ static CGFloat preferredLayoutWidth = -1;
     }
     
     if ([self isIPad]) {
-        return UIEdgeInsetsMake(20, 0, 20, 0);
+        return UIEdgeInsetsMake(0, 0, 20, 0);
     }
     
     UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];

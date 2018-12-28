@@ -15,11 +15,11 @@
 
 #import <UIKit/UIKit.h>
 
-typedef enum : NSUInteger {
+typedef NS_ENUM(NSUInteger, QMUITableViewHeaderFooterViewType) {
     QMUITableViewHeaderFooterViewTypeUnknow,
     QMUITableViewHeaderFooterViewTypeHeader,
     QMUITableViewHeaderFooterViewTypeFooter
-} QMUITableViewHeaderFooterViewType;
+};
 
 /**
  *  适用于 UITableView 的 sectionHeaderFooterView，提供的特性包括：

@@ -393,7 +393,7 @@
     appearance.sendButtonMargins = UIEdgeInsetsMake(0, 0, 16, 16);
     appearance.pageControlMarginBottom = 22;
     
-    UIPageControl *pageControlAppearance = [UIPageControl appearanceWhenContainedIn:[QMUIEmotionView class], nil];
+    UIPageControl *pageControlAppearance = [UIPageControl appearanceWhenContainedInInstancesOfClasses:@[[QMUIEmotionView class]]];
     pageControlAppearance.pageIndicatorTintColor = UIColorMake(210, 210, 210);
     pageControlAppearance.currentPageIndicatorTintColor = UIColorMake(162, 162, 162);
 }
