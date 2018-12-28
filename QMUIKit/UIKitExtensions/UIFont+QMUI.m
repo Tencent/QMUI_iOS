@@ -19,7 +19,7 @@
 @implementation UIFont (QMUI)
 
 + (UIFont *)qmui_lightSystemFontOfSize:(CGFloat)fontSize {
-    return [UIFont fontWithName:IOS_VERSION >= 9.0 ? @".SFUIText-Light" : @"HelveticaNeue-Light" size:fontSize];
+    return [UIFont fontWithName:@".SFUIText-Light" size:fontSize];
 }
 
 + (UIFont *)qmui_systemFontOfSize:(CGFloat)size weight:(QMUIFontWeight)weight italic:(BOOL)italic {
@@ -28,7 +28,7 @@
     
     BOOL shouldUsingHardCode = IOS_VERSION < 10.0;// 这 UIFontDescriptor 也是醉人，相同代码只有 iOS 10 能得出正确结果，7-9都无法获取到 Light + Italic 的字体，只能写死。
     if (shouldUsingHardCode) {
-        NSString *name = IOS_VERSION < 9.0 ? @"HelveticaNeue" : @".SFUIText";
+        NSString *name = @".SFUIText";
         NSString *fontSuffix = [NSString stringWithFormat:@"%@%@", isLight ? @"Light" : (isBold ? @"Bold" : @""), italic ? @"Italic" : @""];
         NSString *fontName = [NSString stringWithFormat:@"%@%@%@", name, fontSuffix.length > 0 ? @"-" : @"", fontSuffix];
         UIFont *font = [UIFont fontWithName:fontName size:size];

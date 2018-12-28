@@ -119,7 +119,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// alert destructive 按钮样式，默认@{NSForegroundColorAttributeName:UIColorRed,NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)}
 @property(nonatomic, strong) NSDictionary<NSString *, id> *alertDestructiveButtonAttributes UI_APPEARANCE_SELECTOR;
 
-/// alert圆角大小，默认值是：IOS_VERSION >= 9.0 ? 13 : 6，以保持与系统默认样式一致
+/// alert圆角大小，默认值是 13，以保持与系统默认样式一致
 @property(nonatomic, assign) CGFloat alertContentCornerRadius UI_APPEARANCE_SELECTOR;
 
 /// alert按钮高度，默认44pt
@@ -180,10 +180,10 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// sheet cancel 按钮距离其上面元素（按钮或者header）的间距，默认8pt
 @property(nonatomic, assign) CGFloat sheetCancelButtonMarginTop UI_APPEARANCE_SELECTOR;
 
-/// sheet内容的圆角，默认值是：(IOS_VERSION >= 9.0 ? 13 : 6)，以保持与系统默认样式一致
+/// sheet内容的圆角，默认值是 13，以保持与系统默认样式一致
 @property(nonatomic, assign) CGFloat sheetContentCornerRadius UI_APPEARANCE_SELECTOR;
 
-/// sheet按钮高度，默认值是：(IOS_VERSION >= 9.0 ? 57 : 44)，以保持与系统默认样式一致
+/// sheet按钮高度，默认值是 57，以保持与系统默认样式一致
 @property(nonatomic, assign) CGFloat sheetButtonHeight UI_APPEARANCE_SELECTOR;
 
 /// sheet头部（非按钮部分）背景色，默认值是：UIColorMakeWithRGBA(247, 247, 247, 1)

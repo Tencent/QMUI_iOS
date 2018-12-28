@@ -53,17 +53,8 @@ static char kAssociatedObjectKey_qmuiCacheCellHeightByKeyAutomatically;
         
         [self replaceMethodForDelegateIfNeeded:(id<QMUITableViewDelegate>)self.delegate];
         
-        // 在上面那一句 replaceMethodForDelegateIfNeeded 里可能修改了 delegate 里的一些方法，所以需要通过重新设置 delegate 来触发 tableView 读取新的方法。iOS 8 要先置空再设置才能生效。
-        if (@available(iOS 9.0, *)) {
-            self.delegate = self.delegate;
-        } else {
-            id <QMUITableViewDelegate> tempDelegate = (id<QMUITableViewDelegate>)self.delegate;
-            // 如果正在使用 QMUIMultipleDelegate，那么它内部会自己先设置为 nil，因此这里不需要额外再弄一次。而且如果这里设置为 nil，反而会使 QMUIMultipleDelegate 内的所有 delegate 都被清空
-            if (![tempDelegate isKindOfClass:[QMUIMultipleDelegates class]]) {
-                self.delegate = nil;
-            }
-            self.delegate = tempDelegate;
-        }
+        // 在上面那一句 replaceMethodForDelegateIfNeeded 里可能修改了 delegate 里的一些方法，所以需要通过重新设置 delegate 来触发 tableView 读取新的方法。
+        self.delegate = self.delegate;
     }
 }
 

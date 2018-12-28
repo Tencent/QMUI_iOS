@@ -281,6 +281,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.preventConcurrentNavigationControllerTransitions = YES;
     self.navigationBarHiddenInitially = NO;
     self.shouldFixTabBarTransitionBugInIPhoneX = NO;
+    self.shouldFixTabBarButtonBugForAll = NO;
     self.shouldAssertResizableImageCapInsetsError = NO;
     self.sendAnalyticsToQMUITeam = YES;
 }
@@ -290,7 +291,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     // by molice 2017-08-04 只要用 appearence 的方式修改 UIBarButtonItem 的 font，就会导致界面切换时 UIBarButtonItem 抖动，系统的问题，所以暂时不修改 appearance。
     // by molice 2018-06-14 iOS 11 观察貌似又没抖动了，先试试看
     if (navBarButtonFont) {
-        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedIn:[UINavigationBar class], nil];
+        UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]];
         NSDictionary<NSAttributedStringKey,id> *attributes = @{NSFontAttributeName: navBarButtonFont};
         [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateNormal];
         [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateHighlighted];

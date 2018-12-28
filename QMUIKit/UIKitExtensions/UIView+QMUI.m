@@ -83,6 +83,24 @@
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
 
+static char kAssociatedObjectKey_frameWillChangeBlock;
+- (void)setQmui_frameWillChangeBlock:(CGRect (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameWillChangeBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_frameWillChangeBlock, qmui_frameWillChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (CGRect (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameWillChangeBlock {
+    return (CGRect (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))objc_getAssociatedObject(self, &kAssociatedObjectKey_frameWillChangeBlock);
+}
+
+static char kAssociatedObjectKey_frameDidChangeBlock;
+- (void)setQmui_frameDidChangeBlock:(void (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameDidChangeBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_frameDidChangeBlock, qmui_frameDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (void (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameDidChangeBlock {
+    return (void (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))objc_getAssociatedObject(self, &kAssociatedObjectKey_frameDidChangeBlock);
+}
+
 - (void)qmuiview_tintColorDidChange {
     [self qmuiview_tintColorDidChange];
     if (self.qmui_tintColorDidChangeBlock) {
@@ -301,6 +319,7 @@ static char kAssociatedObjectKey_viewController;
 - (BOOL)qmui_hasOverrideUIKitMethod:(SEL)selector {
     // 排序依照 Xcode Interface Builder 里的控件排序，但保证子类在父类前面
     NSMutableArray<Class> *viewSuperclasses = [[NSMutableArray alloc] initWithObjects:
+                                               [UIStackView class],
                                                [UILabel class],
                                                [UIButton class],
                                                [UISegmentedControl class],
@@ -331,10 +350,6 @@ static char kAssociatedObjectKey_viewController;
                                                [UIControl class],
                                                [UIView class],
                                                nil];
-    
-    if (@available(iOS 9.0, *)) {
-        [viewSuperclasses insertObject:[UIStackView class] atIndex:0];
-    }
     
     for (NSInteger i = 0, l = viewSuperclasses.count; i < l; i++) {
         Class superclass = viewSuperclasses[i];
@@ -603,11 +618,21 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([UIView class], @selector(setFrame:), @selector(qmui_setFrame:));
+        SEL selectors[] = {
+            @selector(setFrame:),
+            @selector(setBounds:),
+            @selector(setCenter:),
+            @selector(setTransform:)
+        };
+        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
+            SEL originalSelector = selectors[index];
+            SEL swizzledSelector = NSSelectorFromString([@"qmuiview_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+        }
     });
 }
 
-- (void)qmui_setFrame:(CGRect)frame {
+- (void)qmuiview_setFrame:(CGRect)frame {
     
     // QMUIViewSelfSizingHeight 的功能
     if (CGRectGetWidth(frame) > 0 && isinf(CGRectGetHeight(frame))) {
@@ -624,7 +649,67 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
         }
     }
     
-    [self qmui_setFrame:frame];
+    CGRect precedingFrame = self.frame;
+    BOOL valueChange = !CGRectEqualToRect(frame, precedingFrame);
+    if (self.qmui_frameWillChangeBlock && valueChange) {
+        frame = self.qmui_frameWillChangeBlock(self, frame);
+    }
+    
+    [self qmuiview_setFrame:frame];
+    
+    if (self.qmui_frameDidChangeBlock && valueChange) {
+        self.qmui_frameDidChangeBlock(self, precedingFrame);
+    }
+}
+
+- (void)qmuiview_setCenter:(CGPoint)center {
+    CGRect precedingFrame = self.frame;
+    CGPoint precedingCenter = self.center;
+    BOOL valueChange = !CGPointEqualToPoint(center, precedingCenter);
+    if (self.qmui_frameWillChangeBlock && valueChange) {
+        CGRect followingFrame = CGRectSetXY(precedingFrame, center.x - CGRectGetWidth(self.frame) / 2, center.y - CGRectGetHeight(self.frame) / 2);
+        followingFrame = self.qmui_frameWillChangeBlock(self, followingFrame);
+        center = CGPointMake(CGRectGetMidX(followingFrame), CGRectGetMidY(followingFrame));
+    }
+    
+    [self qmuiview_setCenter:center];
+    
+    if (self.qmui_frameDidChangeBlock && valueChange) {
+        self.qmui_frameDidChangeBlock(self, precedingFrame);
+    }
+}
+
+- (void)qmuiview_setBounds:(CGRect)bounds {
+    CGRect precedingFrame = self.frame;
+    CGRect precedingBounds = self.bounds;
+    BOOL valueChange = !CGSizeEqualToSize(bounds.size, precedingBounds.size);// bounds 只有 size 发生变化才会影响 frame
+    if (self.qmui_frameWillChangeBlock && valueChange) {
+        CGRect followingFrame = CGRectMake(CGRectGetMinX(precedingFrame) + CGFloatGetCenter(CGRectGetWidth(bounds), CGRectGetWidth(precedingFrame)), CGRectGetMinY(precedingFrame) + CGFloatGetCenter(CGRectGetHeight(bounds), CGRectGetHeight(precedingFrame)), bounds.size.width, bounds.size.height);
+        followingFrame = self.qmui_frameWillChangeBlock(self, followingFrame);
+        bounds = CGRectSetSize(bounds, followingFrame.size);
+    }
+    
+    [self qmuiview_setBounds:bounds];
+    
+    if (self.qmui_frameDidChangeBlock && valueChange) {
+        self.qmui_frameDidChangeBlock(self, precedingFrame);
+    }
+}
+
+- (void)qmuiview_setTransform:(CGAffineTransform)transform {
+    CGRect precedingFrame = self.frame;
+    CGAffineTransform precedingTransform = self.transform;
+    BOOL valueChange = !CGAffineTransformEqualToTransform(transform, precedingTransform);
+    if (self.qmui_frameWillChangeBlock && valueChange) {
+        CGRect followingFrame = CGRectApplyAffineTransformWithAnchorPoint(precedingFrame, transform, self.layer.anchorPoint);
+        self.qmui_frameWillChangeBlock(self, followingFrame);// 对于 CGAffineTransform，无法根据修改后的 rect 来算出新的 transform，所以就不修改 transform 的值了
+    }
+    
+    [self qmuiview_setTransform:transform];
+    
+    if (self.qmui_frameDidChangeBlock && valueChange) {
+        self.qmui_frameDidChangeBlock(self, precedingFrame);
+    }
 }
 
 - (CGFloat)qmui_top {
@@ -806,11 +891,9 @@ static char kAssociatedObjectKey_hasDebugColor;
 
 - (void)renderColorWithSubviews:(NSArray *)subviews {
     for (UIView *view in subviews) {
-        if (@available(iOS 9.0, *)) {
-            if ([view isKindOfClass:[UIStackView class]]) {
-                UIStackView *stackView = (UIStackView *)view;
-                [self renderColorWithSubviews:stackView.arrangedSubviews];
-            }
+        if ([view isKindOfClass:[UIStackView class]]) {
+            UIStackView *stackView = (UIStackView *)view;
+            [self renderColorWithSubviews:stackView.arrangedSubviews];
         }
         view.qmui_hasDebugColor = YES;
         view.qmui_shouldShowDebugColor = self.qmui_shouldShowDebugColor;

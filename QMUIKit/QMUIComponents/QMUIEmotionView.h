@@ -54,7 +54,7 @@
  *  - 通过`didSelectEmotionBlock`设置选中表情时的回调，通过`didSelectDeleteButtonBlock`来响应面板内的删除按钮
  *  - 为`sendButton`添加`addTarget:action:forState:`事件，从而触发发送逻辑
  *
- *  本控件支持通过`UIAppearance`设置全局的默认样式。若要修改控件内的`UIPageControl`的样式，可通过`[UIPageControl appearanceWhenContainedIn:[QMUIEmotionView class], nil]`的方式来修改。
+ *  本控件支持通过`UIAppearance`设置全局的默认样式。若要修改控件内的`UIPageControl`的样式，可通过`[UIPageControl appearanceWhenContainedInInstancesOfClasses:@[[QMUIEmotionView class]]]`的方式来修改。
  */
 @interface QMUIEmotionView : UIView<UICollectionViewDataSource, UICollectionViewDelegateFlowLayout>
 

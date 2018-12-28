@@ -48,23 +48,9 @@
 // 在 UITableView (QMUI_StaticCell) 那边会把 tableView 的 property 改为 readwrite，所以这里补上 setter
 - (void)setTableView:(UITableView *)tableView {
     _tableView = tableView;
-    // 触发 UITableView (QMUI_StaticCell) 里重写的 setter 里的逻辑，iOS 8 要先置为 nil 再设置才能生效
-    if (@available(iOS 9.0, *)) {
-        tableView.delegate = tableView.delegate;
-        tableView.dataSource = tableView.dataSource;
-    } else {
-        id<UITableViewDelegate> tempDelegate = tableView.delegate;
-        id<UITableViewDataSource> tempDataSource = tableView.dataSource;
-        // 如果正在使用 QMUIMultipleDelegate，那么它内部会自己先设置为 nil，因此这里不需要额外再弄一次。而且如果这里设置为 nil，反而会使 QMUIMultipleDelegate 内的所有 delegate 都被清空
-        if (![tempDelegate isKindOfClass:[QMUIMultipleDelegates class]]) {
-            tableView.delegate = nil;
-        }
-        if (![tempDataSource isKindOfClass:[QMUIMultipleDelegates class]]) {
-            tableView.dataSource = nil;
-        }
-        tableView.delegate = tempDelegate;
-        tableView.dataSource = tempDataSource;
-    }
+    // 触发 UITableView (QMUI_StaticCell) 里重写的 setter 里的逻辑
+    tableView.delegate = tableView.delegate;
+    tableView.dataSource = tableView.dataSource;
 }
 
 @end

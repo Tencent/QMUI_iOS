@@ -236,6 +236,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               preventConcurrentNavigationControllerTransitions;
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
 @property(nonatomic, assign) BOOL               shouldFixTabBarTransitionBugInIPhoneX;
+@property(nonatomic, assign) BOOL               shouldFixTabBarButtonBugForAll;
 @property(nonatomic, assign) BOOL               shouldAssertResizableImageCapInsetsError;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
 

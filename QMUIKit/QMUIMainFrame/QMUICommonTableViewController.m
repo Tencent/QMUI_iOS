@@ -142,9 +142,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 - (QMUITableView *)tableView {
     if (!_tableView) {
-        BeginIgnoreAvailabilityWarning
         [self loadViewIfNeeded];
-        EndIgnoreAvailabilityWarning
     }
     return _tableView;
 }

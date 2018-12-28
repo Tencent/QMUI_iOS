@@ -34,11 +34,6 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 
 @implementation UIViewController (QMUI)
 
-void qmuivc_loadViewIfNeeded (id current_self, SEL current_cmd) {
-    // 主动调用 self.view，从而触发 loadView，以模拟 iOS 9.0 以下的系统 loadViewIfNeeded 行为
-    [((UIViewController *)current_self) view];
-}
-
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -57,12 +52,6 @@ void qmuivc_loadViewIfNeeded (id current_self, SEL current_cmd) {
             SEL originalSelector = selectors[index];
             SEL swizzledSelector = NSSelectorFromString([@"qmuivc_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
             ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
-        
-        // 兼容 iOS 9.0 以下的版本对 loadViewIfNeeded 方法的调用
-        if (![[UIViewController class] instancesRespondToSelector:@selector(loadViewIfNeeded)]) {
-            Class metaclass = [UIViewController class];
-            class_addMethod(metaclass, @selector(loadViewIfNeeded), (IMP)qmuivc_loadViewIfNeeded, "v@:");
         }
         
         // 修复 iOS 11 scrollView 无法自动适配不透明的 tabBar，导致底部 inset 错误的问题

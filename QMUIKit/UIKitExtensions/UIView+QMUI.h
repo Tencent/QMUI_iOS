@@ -29,9 +29,25 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)qmui_initWithSize:(CGSize)size;
 
 /**
- 将要设置的 frame 自定用 CGRectApplyAffineTransformWithAnchorPoint 处理后再设置
+ 将要设置的 frame 用 CGRectApplyAffineTransformWithAnchorPoint 处理后再设置
  */
 @property(nonatomic, assign) CGRect qmui_frameApplyTransform;
+
+/**
+ 在 UIView 的 frame 变化前会调用这个 block，变化途径包括 setFrame:、setBounds:、setCenter:、setTransform:，你可以通过返回一个 rect 来达到修改 frame 的目的，最终执行 [super setFrame:] 时会使用这个 block 的返回值（除了 setTransform: 导致的 frame 变化）。
+ @param view 当前的 view 本身，方便使用，省去 weak 操作
+ @param followingFrame setFrame: 的参数 frame，也即即将被修改为的 rect 值
+ @return 将会真正被使用的 frame 值
+ @note 仅当 followingFrame 和 self.frame 值不相等时才会被调用
+ */
+@property(nullable, nonatomic, copy) CGRect (^qmui_frameWillChangeBlock)(__kindof UIView *view, CGRect followingFrame);
+
+/**
+ 在 UIView 的 frame 变化后会调用这个 block，变化途径包括 setFrame:、setBounds:、setCenter:、setTransform:，可用于监听布局的变化，或者在不方便重写 layoutSubviews 时使用这个 block 代替。
+ @param view 当前的 view 本身，方便使用，省去 weak 操作
+ @param precedingFrame 修改前的 frame 值
+ */
+@property(nullable, nonatomic, copy) void (^qmui_frameDidChangeBlock)(__kindof UIView *view, CGRect precedingFrame);
 
 /**
  在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
@@ -102,11 +118,11 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewBorderPosition) {
     QMUIViewBorderPositionRight     = 1 << 3
 };
 
-typedef enum : NSUInteger {
+typedef NS_ENUM(NSUInteger, QMUIViewBorderLocation) {
     QMUIViewBorderLocationInside,
     QMUIViewBorderLocationCenter,
     QMUIViewBorderLocationOutside
-} QMUIViewBorderLocation;
+};
 
 /**
  *  UIView (QMUI_Border) 为 UIView 方便地显示某几个方向上的边框。
