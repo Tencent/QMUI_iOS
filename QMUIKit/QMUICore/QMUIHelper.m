@@ -475,7 +475,7 @@ static CGFloat preferredLayoutWidth = -1;
     }
     
     if ([self isIPad]) {
-        return UIEdgeInsetsMake(0, 0, 20, 0);
+        return UIEdgeInsetsMake(20, 0, 20, 0);
     }
     
     UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
