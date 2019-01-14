@@ -238,7 +238,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// 当前所有通过`addTextFieldWithConfigurationHandler:`接口添加的输入框
 @property(nonatomic, copy, readonly) NSArray <QMUITextField *> *textFields;
 
-/// 设置自定义view。通过`addCustomView:`方法添加一个自定义的view，`QMUIAlertController`会在布局的时候去掉用这个view的`sizeThatFits:`方法来获取size，至于x和y坐标则由控件自己控制。
+/// 设置自定义view。通过`addCustomView:`方法添加一个自定义的view，`QMUIAlertController`会在布局的时候去调用这个view的`sizeThatFits:`方法来获取size，至于x和y坐标则由控件自己控制。
 @property(nonatomic, strong, readonly) UIView *customView;
 
 /// 当前标题title
