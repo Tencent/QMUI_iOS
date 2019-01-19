@@ -371,14 +371,18 @@
     if (gesture.state == UIGestureRecognizerStateBegan) {
         CFTimeInterval duration = 0.5;
         CAKeyframeAnimation *scale = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
-        scale.values = @[@1.0, @1.2, @0.0];
+        scale.values = @[@1.0, @1.2, @0.2];
         scale.keyTimes = @[@0.0, @(.2 / duration), @1];
         scale.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
         scale.duration = duration;
+        scale.fillMode = kCAFillModeForwards;
+        scale.removedOnCompletion = NO;
+        __weak __typeof(self)weakSelf = self;
         scale.qmui_animationDidStopBlock = ^(__kindof CAAnimation *aAnimation, BOOL finished) {
             [QMUIConsole hide];
+            [weakSelf.popoverButton.layer removeAnimationForKey:@"scale"];
         };
-        [self.popoverButton.layer addAnimation:scale forKey:nil];
+        [self.popoverButton.layer addAnimation:scale forKey:@"scale"];
     }
 }
 
