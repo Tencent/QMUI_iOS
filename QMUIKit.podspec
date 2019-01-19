@@ -149,6 +149,7 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUITextField'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIPopupMenuView'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUICAAnimationExtension'
     end
 
     ss.subspec 'QMUICollectionViewPagingLayout' do |sss|
