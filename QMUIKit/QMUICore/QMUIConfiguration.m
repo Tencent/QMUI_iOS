@@ -282,7 +282,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.navigationBarHiddenInitially = NO;
     self.shouldFixTabBarTransitionBugInIPhoneX = NO;
     self.shouldFixTabBarButtonBugForAll = NO;
-    self.shouldPrintQMUIWarnLogToConsole = NO;
+    self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG;
     self.sendAnalyticsToQMUITeam = YES;
 }
 

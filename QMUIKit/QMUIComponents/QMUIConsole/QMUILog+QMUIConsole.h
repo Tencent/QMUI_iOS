@@ -16,8 +16,6 @@
 
 #import "QMUILog.h"
 
-#ifdef DEBUG
-
 NS_ASSUME_NONNULL_BEGIN
 
 @interface QMUILogger (QMUIConsole)
@@ -25,5 +23,3 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 NS_ASSUME_NONNULL_END
-
-#endif

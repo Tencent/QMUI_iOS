@@ -18,8 +18,6 @@
 #import "QMUIConsole.h"
 #import "QMUICore.h"
 
-#ifdef DEBUG
-
 @implementation QMUILogger (QMUIConsole)
 
 + (void)load {
@@ -42,5 +40,3 @@
 }
 
 @end
-
-#endif
