@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -33,6 +33,8 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 @end
 
 @implementation UIViewController (QMUI)
+
+QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleStateDidChangeBlock)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -102,15 +104,6 @@ static char kAssociatedObjectKey_visibleState;
 
 - (QMUIViewControllerVisibleState)qmui_visibleState {
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_visibleState)) unsignedIntegerValue];
-}
-
-static char kAssociatedObjectKey_visibleStateDidChangeBlock;
-- (void)setQmui_visibleStateDidChangeBlock:(void (^)(__kindof UIViewController *, QMUIViewControllerVisibleState))qmui_visibleStateDidChangeBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_visibleStateDidChangeBlock, qmui_visibleStateDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^)(__kindof UIViewController *, QMUIViewControllerVisibleState))qmui_visibleStateDidChangeBlock {
-    return (void (^)(__kindof UIViewController *, QMUIViewControllerVisibleState))objc_getAssociatedObject(self, &kAssociatedObjectKey_visibleStateDidChangeBlock);
 }
 
 - (void)qmuivc_viewDidLoad {
@@ -315,6 +308,8 @@ static char kAssociatedObjectKey_visibleStateDidChangeBlock;
 
 @implementation UIViewController (Data)
 
+QMUISynthesizeIdCopyProperty(qmui_didAppearAndLoadDataBlock, setQmui_didAppearAndLoadDataBlock)
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -328,15 +323,6 @@ static char kAssociatedObjectKey_visibleStateDidChangeBlock;
         self.qmui_didAppearAndLoadDataBlock();
         self.qmui_didAppearAndLoadDataBlock = nil;
     }
-}
-
-static char kAssociatedObjectKey_didAppearAndLoadDataBlock;
-- (void)setQmui_didAppearAndLoadDataBlock:(void (^)(void))qmui_didAppearAndLoadDataBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock, qmui_didAppearAndLoadDataBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^)(void))qmui_didAppearAndLoadDataBlock {
-    return (void (^)(void))objc_getAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock);
 }
 
 static char kAssociatedObjectKey_dataLoaded;

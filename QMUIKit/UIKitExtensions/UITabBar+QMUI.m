@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -28,6 +28,10 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 @end
 
 @implementation UITabBar (QMUI)
+
+QMUISynthesizeBOOLProperty(canItemRespondDoubleTouch, setCanItemRespondDoubleTouch)
+QMUISynthesizeNSIntegerProperty(lastTouchedTabBarItemViewIndex, setLastTouchedTabBarItemViewIndex)
+QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouchCount)
 
 - (UIView *)qmui_backgroundView {
     return [self valueForKey:@"_backgroundView"];
@@ -174,35 +178,6 @@ NSInteger const kLastTouchedTabBarItemIndexNone = -1;
     }
     
     [self qmuiTabBar_setFrame:frame];
-}
-
-#pragma mark - Swizzle Property Getter/Setter
-
-static char kAssociatedObjectKey_canItemRespondDoubleTouch;
-- (void)setCanItemRespondDoubleTouch:(BOOL)canItemRespondDoubleTouch {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_canItemRespondDoubleTouch, @(canItemRespondDoubleTouch), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)canItemRespondDoubleTouch {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_canItemRespondDoubleTouch)) boolValue];
-}
-
-static char kAssociatedObjectKey_lastTouchedTabBarItemViewIndex;
-- (void)setLastTouchedTabBarItemViewIndex:(NSInteger)lastTouchedTabBarItemViewIndex {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_lastTouchedTabBarItemViewIndex, @(lastTouchedTabBarItemViewIndex), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSInteger)lastTouchedTabBarItemViewIndex {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_lastTouchedTabBarItemViewIndex)) integerValue];
-}
-
-static char kAssociatedObjectKey_tabBarItemViewTouchCount;
-- (void)setTabBarItemViewTouchCount:(NSInteger)tabBarItemViewTouchCount {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_tabBarItemViewTouchCount, @(tabBarItemViewTouchCount), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSInteger)tabBarItemViewTouchCount {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_tabBarItemViewTouchCount)) integerValue];
 }
 
 @end

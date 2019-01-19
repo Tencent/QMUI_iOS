@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -29,6 +29,7 @@
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "QMUIEmptyView.h"
 #import "UIControl+QMUI.h"
+#import "UIViewController+QMUI.h"
 #import "QMUILog.h"
 
 static NSString * const kVideoCellIdentifier = @"video";
@@ -108,6 +109,11 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     self.collectionView.backgroundColor = UIColorClear;
     [self.collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
     [self.collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
+    if (@available(iOS 11, *)) {
+        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    } else {
+        self.automaticallyAdjustsScrollViewInsets = NO;
+    }
     [self.view addSubview:self.collectionView];
     
     // 只有允许多选时，才显示底部工具
@@ -194,9 +200,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
-    if (!CGSizeEqualToSize(self.collectionView.frame.size, self.view.bounds.size)) {
-        self.collectionView.frame = self.view.bounds;
-    }
+    
     CGFloat operationToolBarViewHeight = 0;
     if (self.allowsMultipleSelection) {
         operationToolBarViewHeight = ToolBarHeight;
@@ -210,10 +214,13 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         operationToolBarViewHeight = CGRectGetHeight(self.operationToolBarView.frame);
     }
     
-    CGFloat contentInsetBottom = operationToolBarViewHeight - self.collectionView.qmui_safeAreaInsets.bottom;// 由于 behavior 的特性，底部会自动加上 safeAreaInsets.bottom，所以这里去掉它，因为 toolbarViewHeight 里已经包含了
-    if (self.collectionView.contentInset.bottom != contentInsetBottom) {
-        self.collectionView.contentInset = UIEdgeInsetsSetBottom(self.collectionView.contentInset, contentInsetBottom);
-        self.collectionView.scrollIndicatorInsets = self.collectionView.contentInset;
+    if (!CGSizeEqualToSize(self.collectionView.frame.size, self.view.bounds.size)) {
+        self.collectionView.frame = self.view.bounds;
+    }
+    UIEdgeInsets contentInset = UIEdgeInsetsMake(self.qmui_navigationBarMaxYInViewCoordinator, self.collectionView.qmui_safeAreaInsets.left, MAX(operationToolBarViewHeight, self.collectionView.qmui_safeAreaInsets.bottom), self.collectionView.qmui_safeAreaInsets.right);
+    if (!UIEdgeInsetsEqualToEdgeInsets(self.collectionView.contentInset, contentInset)) {
+        self.collectionView.contentInset = contentInset;
+        self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(contentInset.top, 0, contentInset.bottom, 0);
         // 放在这里是因为有时候会先走完 refreshWithAssetsGroup 里的 completion 再走到这里，此时前者不会导致 scollToInitialPosition 的滚动，所以在这里再调用一次保证一定会滚
         [self scrollToInitialPositionIfNeeded];
     }

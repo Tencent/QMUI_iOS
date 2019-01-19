@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -177,7 +177,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
     NSArray<UICollectionViewLayoutAttributes *> *resultAttributes = [[NSArray alloc] initWithArray:[super layoutAttributesForElementsInRect:rect] copyItems:YES];
     CGFloat offset = CGRectGetMidX(self.collectionView.bounds);// 当前滚动位置的可视区域的中心点
     CGSize itemSize = _finalItemSize;
-
+    
     if (self.style == QMUICollectionViewPagingLayoutStyleScale) {
         
         CGFloat distanceForMinimumScale = itemSize.width + self.minimumLineSpacing;
@@ -238,6 +238,8 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
     BOOL scrollingToBottom = proposedContentOffset.y < self.collectionView.contentOffset.y;
     BOOL forcePaging = NO;
     
+    CGPoint translation = [self.collectionView.panGestureRecognizer translationInView:self.collectionView];
+    
     if (self.scrollDirection == UICollectionViewScrollDirectionVertical) {
         if (!self.allowsMultipleItemScroll || ABS(velocity.y) <= ABS(self.multipleItemScrollVelocityLimit)) {
             proposedContentOffset = self.collectionView.contentOffset;// 一次性滚多次的本质是系统根据速度算出来的 proposedContentOffset 可能比当前 contentOffset 大很多，所以这里既然限制了一次只能滚一页，那就直接取瞬时 contentOffset 即可。
@@ -247,16 +249,25 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
                 forcePaging = YES;
             }
         }
-        if (proposedContentOffset.y < -contentInset.top || proposedContentOffset.y > contentSize.height - frameSize.height - contentInset.bottom) {
+        
+        // 最顶/最底
+        if (proposedContentOffset.y < -contentInset.top || proposedContentOffset.y >= contentSize.height + contentInset.bottom - frameSize.height) {
             return proposedContentOffset;
         }
+        
         CGFloat progress = ((contentInset.top + proposedContentOffset.y) + _finalItemSize.height / 2/*因为第一个 item 初始状态中心点离 contentOffset.y 有半个 item 的距离*/) / itemSpacing;
         NSInteger currentIndex = (NSInteger)progress;
-        CGFloat remainder = progress - currentIndex;
-        CGFloat offset = remainder * itemSpacing;
-        BOOL shouldNext = (forcePaging && !scrollingToBottom) ? YES : (offset / _finalItemSize.height >= self.pagingThreshold);
-        BOOL shouldPrev = (forcePaging && scrollingToBottom) ? YES : (offset / _finalItemSize.height <= 1 - self.pagingThreshold);
-        NSInteger targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
+        NSInteger targetIndex = currentIndex;
+        // 加上下面这两个额外的 if 判断是为了避免那种“从0滚到1的左边 1/3，松手后反而会滚回0”的 bug
+        if (translation.y < 0 && (ABS(translation.y) > _finalItemSize.height / 2 + self.minimumLineSpacing)) {
+        } else if (translation.y > 0 && ABS(translation.y > _finalItemSize.height / 2)) {
+        } else {
+            CGFloat remainder = progress - currentIndex;
+            CGFloat offset = remainder * itemSpacing;
+            BOOL shouldNext = (forcePaging && !scrollingToBottom) ? YES : (offset / _finalItemSize.height >= self.pagingThreshold);
+            BOOL shouldPrev = (forcePaging && scrollingToBottom) ? YES : (offset / _finalItemSize.height <= 1 - self.pagingThreshold);
+            targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
+        }
         proposedContentOffset.y = -contentInset.top + targetIndex * itemSpacing;
     }
     else if (self.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
@@ -268,16 +279,25 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
                 forcePaging = YES;
             }
         }
-        if (proposedContentOffset.x < -contentInset.left || proposedContentOffset.x > contentSize.width - frameSize.width - contentInset.right) {
+        
+        // 最左/最右
+        if (proposedContentOffset.x < -contentInset.left || proposedContentOffset.x >= contentSize.width + contentInset.right - frameSize.width) {
             return proposedContentOffset;
         }
+        
         CGFloat progress = ((contentInset.left + proposedContentOffset.x) + _finalItemSize.width / 2/*因为第一个 item 初始状态中心点离 contentOffset.x 有半个 item 的距离*/) / itemSpacing;
         NSInteger currentIndex = (NSInteger)progress;
-        CGFloat remainder = progress - currentIndex;
-        CGFloat offset = remainder * itemSpacing;
-        BOOL shouldNext = (forcePaging && !scrollingToRight) ? YES : (offset / _finalItemSize.width >= self.pagingThreshold);
-        BOOL shouldPrev = (forcePaging && scrollingToRight) ? YES : (offset / _finalItemSize.width <= 1 - self.pagingThreshold);
-        NSInteger targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
+        NSInteger targetIndex = currentIndex;
+        // 加上下面这两个额外的 if 判断是为了避免那种“从0滚到1的左边 1/3，松手后反而会滚回0”的 bug
+        if (translation.x < 0 && (ABS(translation.x) > _finalItemSize.width / 2 + self.minimumLineSpacing)) {
+        } else if (translation.x > 0 && ABS(translation.x > _finalItemSize.width / 2)) {
+        } else {
+            CGFloat remainder = progress - currentIndex;
+            CGFloat offset = remainder * itemSpacing;
+            BOOL shouldNext = (forcePaging && !scrollingToRight) ? YES : (offset / _finalItemSize.width >= self.pagingThreshold);
+            BOOL shouldPrev = (forcePaging && scrollingToRight) ? YES : (offset / _finalItemSize.width <= 1 - self.pagingThreshold);
+            targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
+        }
         proposedContentOffset.x = -contentInset.left + targetIndex * itemSpacing;
     }
     

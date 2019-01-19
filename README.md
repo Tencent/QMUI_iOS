@@ -9,8 +9,6 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 
 官网：[http://qmuiteam.com/ios](http://qmuiteam.com/ios)
 
-[加入我们（长期有效）](https://qmuiteam.com/join-us/)
-
 [![QMUI Team Name](https://img.shields.io/badge/Team-QMUI-brightgreen.svg?style=flat)](https://github.com/QMUI "QMUI Team")
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://opensource.org/licenses/MIT "Feel free to contribute.")
 

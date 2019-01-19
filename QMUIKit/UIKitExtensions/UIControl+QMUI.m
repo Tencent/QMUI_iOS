@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -17,11 +17,6 @@
 #import <objc/runtime.h>
 #import "QMUICore.h"
 
-static char kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView;
-static char kAssociatedObjectKey_canSetHighlighted;
-static char kAssociatedObjectKey_touchEndCount;
-static char kAssociatedObjectKey_outsideEdge;
-
 @interface UIControl ()
 
 @property(nonatomic,assign) BOOL canSetHighlighted;
@@ -31,37 +26,11 @@ static char kAssociatedObjectKey_outsideEdge;
 
 @implementation UIControl (QMUI)
 
-- (void)setQmui_automaticallyAdjustTouchHighlightedInScrollView:(BOOL)qmui_automaticallyAdjustTouchHighlightedInScrollView {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView, [NSNumber numberWithBool:qmui_automaticallyAdjustTouchHighlightedInScrollView], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)qmui_automaticallyAdjustTouchHighlightedInScrollView {
-    return (BOOL)[objc_getAssociatedObject(self, &kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView) boolValue];
-}
-
-- (void)setCanSetHighlighted:(BOOL)canSetHighlighted {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_canSetHighlighted, [NSNumber numberWithBool:canSetHighlighted], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)canSetHighlighted {
-    return (BOOL)[objc_getAssociatedObject(self, &kAssociatedObjectKey_canSetHighlighted) boolValue];
-}
-
-- (void)setTouchEndCount:(NSInteger)touchEndCount {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_touchEndCount, @(touchEndCount), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (NSInteger)touchEndCount {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_touchEndCount) integerValue];
-}
-
-- (void)setQmui_outsideEdge:(UIEdgeInsets)qmui_outsideEdge {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_outsideEdge, [NSValue valueWithUIEdgeInsets:qmui_outsideEdge], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (UIEdgeInsets)qmui_outsideEdge {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_outsideEdge) UIEdgeInsetsValue];
-}
+QMUISynthesizeUIEdgeInsetsProperty(qmui_outsideEdge, setQmui_outsideEdge)
+QMUISynthesizeBOOLProperty(qmui_automaticallyAdjustTouchHighlightedInScrollView, setQmui_automaticallyAdjustTouchHighlightedInScrollView)
+QMUISynthesizeBOOLProperty(canSetHighlighted, setCanSetHighlighted)
+QMUISynthesizeNSIntegerProperty(touchEndCount, setTouchEndCount)
+QMUISynthesizeIdCopyProperty(qmui_setHighlightedBlock, setQmui_setHighlightedBlock)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -166,16 +135,6 @@ EndIgnoreDeprecatedWarning
     if (self.touchEndCount == 1) {
         [self sendActionsForControlEvents:UIControlEventAllTouchEvents];
     }
-}
-
-#pragma mark - Highlighted Block
-
-- (void)setQmui_setHighlightedBlock:(void (^)(BOOL))qmui_setHighlightedBlock {
-    objc_setAssociatedObject(self, @selector(qmui_setHighlightedBlock), qmui_setHighlightedBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^)(BOOL))qmui_setHighlightedBlock {
-    return objc_getAssociatedObject(self, _cmd);
 }
 
 #pragma mark - Tap Block
