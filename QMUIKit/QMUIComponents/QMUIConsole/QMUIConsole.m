@@ -35,6 +35,7 @@
     static QMUIConsole *instance = nil;
     dispatch_once(&onceToken,^{
         instance = [[super allocWithZone:NULL] init];
+        instance.canShow = IS_DEBUG;
         instance.showConsoleAutomatically = YES;
         instance.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:.8];
         instance.textAttributes = @{NSFontAttributeName: [UIFont fontWithName:@"Menlo" size:12],
@@ -81,8 +82,11 @@
 }
 
 + (void)show {
-    [[QMUIConsole sharedInstance] initConsoleWindowIfNeeded];
-    [QMUIConsole sharedInstance].consoleWindow.hidden = NO;
+    QMUIConsole *console = [QMUIConsole sharedInstance];
+    if (console.canShow) {
+        [[QMUIConsole sharedInstance] initConsoleWindowIfNeeded];
+        [QMUIConsole sharedInstance].consoleWindow.hidden = NO;
+    }
 }
 
 + (void)hide {

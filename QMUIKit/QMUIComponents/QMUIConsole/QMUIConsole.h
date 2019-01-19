@@ -23,7 +23,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- 在设备屏幕上显示一个控制台，输出代码里的日志。支持搜索、按 Level/Name 过滤。
+ 在设备屏幕上显示一个控制台，输出代码里的日志。支持搜索、按 Level/Name 过滤。用法：
+ 
+ 1. 调用 [QMUIConsole log:...] 直接打印 level 为 "Normal"、name 为 "Default" 的日志。
+ 2. 调用 [QMUIConsole logWithLevel:name:logString:] 打印详细日志，则在控制台里可以按照 level 和 name 分类筛选显示。
+ 3. 当屏幕上出现小圆钮时，点击可以打开控制台，小圆钮会移动到控制台右上角，再次点击小圆钮即可收起控制台。
+ 4. 如果要隐藏小圆钮，长按即可。
+ 
+ @note 默认只在 DEBUG 下才会显示窗口，其他环境下只会打印日志但不会出现控制台界面。可通过 canShow 属性修改这个策略。
  */
 @interface QMUIConsole : NSObject
 
@@ -60,7 +67,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)hide;
 
-/// 当打印 log 的时候自动让控制台显示出来，默认为 YES
+/// 决定控制台是否能显示出来，当值为 NO 时，即便 +show 方法被调用也不会显示控制台，默认在 DEBUG 下为 YES，其他环境下为 NO。业务项目可自行修改。
+/// 这个值为 NO 也不影响日志的打印，只是不会显示出来而已。
+@property(nonatomic, assign) BOOL canShow;
+
+/// 当打印 log 的时候自动让控制台显示出来，默认为 YES，为 NO 时则只记录 log，当手动调用 +show 方法时才会出现控制台。
 @property(nonatomic, assign) BOOL showConsoleAutomatically;
 
 /// 控制台的背景色
