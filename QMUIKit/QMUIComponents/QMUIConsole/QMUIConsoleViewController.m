@@ -433,6 +433,7 @@
             }
             [weakSelf printLog];
         }];
+        item.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentFill;
         item.button.selected = [selectedArray containsObject:title];
         [items addObject:item];
     }];
