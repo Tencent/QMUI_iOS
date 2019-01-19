@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -24,16 +24,12 @@
 
 @property(nonatomic, assign) CGPoint centerOffset;
 @property(nonatomic, assign) CGPoint centerOffsetLandscape;
-
-- (void)updateLayout;
 @end
 
 @interface _QMUIUpdatesIndicatorView : UIView
 
 @property(nonatomic, assign) CGPoint centerOffset;
 @property(nonatomic, assign) CGPoint centerOffsetLandscape;
-
-- (void)updateLayout;
 @end
 
 @interface UIBarItem ()
@@ -51,44 +47,20 @@
         ExchangeImplementations([UIBarItem class], @selector(init), @selector(qmuibaritem_init));
         ExchangeImplementations([UIBarItem class], @selector(initWithCoder:), @selector(qmuibaritem_initWithCoder:));
         
-        // 针对非 customView 的 UIBarButtonItem，负责将红点添加上去
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIBarButtonItem class], @selector(setView:), UIView *, ^(UIBarButtonItem *selfObject, UIView *firstArgv) {
-            if (selfObject.qmui_badgeString.length && selfObject.qmui_badgeLabel) {
-                [firstArgv addSubview:selfObject.qmui_badgeLabel];
-            }
-            if (selfObject.qmui_shouldShowUpdatesIndicator && selfObject.qmui_updatesIndicatorView) {
-                [firstArgv addSubview:selfObject.qmui_updatesIndicatorView];
-            }
-        });
-        
-        // 针对 UITabBarItem，负责将红点添加上去
-        ExtendImplementationOfVoidMethodWithSingleArgument([UITabBarItem class], @selector(setView:), UIView *, ^(UITabBarItem *selfObject, UIView *firstArgv) {
-            if (selfObject.qmui_badgeString.length && selfObject.qmui_badgeLabel) {
-                [firstArgv addSubview:selfObject.qmui_badgeLabel];
-            }
-            if (selfObject.qmui_shouldShowUpdatesIndicator && selfObject.qmui_updatesIndicatorView) {
-                [firstArgv addSubview:selfObject.qmui_updatesIndicatorView];
-            }
-        });
-        
-        // 针对 UITabBarItem 和非 customView 的 UIBarButtonItem，在 item 布局时更新红点的布局
-        void (^layoutSubviewsBlock)(UIView *selfObject) = ^(UIView *selfObject){
-            for (UIView *subview in selfObject.subviews) {
-                if ([subview isKindOfClass:[_QMUIBadgeLabel class]]) {
-                    [(_QMUIBadgeLabel *)subview updateLayout];
-                } else if ([subview isKindOfClass:[_QMUIUpdatesIndicatorView class]]) {
-                    [(_QMUIUpdatesIndicatorView *)subview updateLayout];
+        // UITabBarButton 在 layoutSubviews 时每次都重新让 imageView 和 label addSubview:，这会导致我们用 qmui_layoutSubviewsBlock 时产生持续的重复调用（但又不死循环，因为每次都在下一次 runloop 执行，而且奇怪的是如果不放到下一次 runloop，反而不会重复调用），所以这里 hack 地屏蔽 addSubview: 操作
+        OverrideImplementation(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"]), @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+            return ^(UIView *selfObject, UIView *firstArgv) {
+                
+                if ([selfObject isKindOfClass:originClass] && firstArgv.superview == selfObject) {
+                    return;
                 }
-            }
-        };
-        Class navigationButtonClass = nil;
-        if (@available(iOS 11, *)) {
-            navigationButtonClass = NSClassFromString([NSString stringWithFormat:@"_%@%@", @"UIButton", @"BarButton"]);
-        } else {
-            navigationButtonClass = NSClassFromString([NSString stringWithFormat:@"%@%@", @"UINavigation", @"Button"]);
-        }
-        ExtendImplementationOfVoidMethodWithoutArguments(navigationButtonClass, @selector(layoutSubviews), layoutSubviewsBlock);
-        ExtendImplementationOfVoidMethodWithoutArguments(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"]), @selector(layoutSubviews), layoutSubviewsBlock);
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originIMP;
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
     });
 }
 
@@ -144,7 +116,23 @@ static char kAssociatedObjectKey_badgeString;
             self.qmui_badgeLabel.contentEdgeInsets = self.qmui_badgeContentEdgeInsets;
             self.qmui_badgeLabel.centerOffset = self.qmui_badgeCenterOffset;
             self.qmui_badgeLabel.centerOffsetLandscape = self.qmui_badgeCenterOffsetLandscape;
-            [self.qmui_view addSubview:self.qmui_badgeLabel];
+            if (!self.qmui_viewDidSetBlock) {
+                self.qmui_viewDidSetBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
+                    [view addSubview:item.qmui_updatesIndicatorView];
+                    [view addSubview:item.qmui_badgeLabel];
+                    [view setNeedsLayout];
+                    [view layoutIfNeeded];
+                };
+            }
+            // 之前 item 已经 set 完 view，则手动触发一次
+            if (self.qmui_view) {
+                self.qmui_viewDidSetBlock(self, self.qmui_view);
+            }
+            if (!self.qmui_viewDidLayoutSubviewsBlock) {
+                self.qmui_viewDidLayoutSubviewsBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
+                    [item layoutSubviews];
+                };
+            }
         }
         self.qmui_badgeLabel.text = qmui_badgeString;
         self.qmui_badgeLabel.hidden = NO;
@@ -243,12 +231,7 @@ static char kAssociatedObjectKey_badgeLabel;
 
 - (void)setNeedsUpdateBadgeLabelLayout {
     if (self.qmui_badgeString.length) {
-        if ([self isKindOfClass:[UIBarButtonItem class]] && ((UIBarButtonItem *)self).customView) {
-            // 如果是 customView，由于无法重写它的 layoutSubviews，所以认为它目前的 frame 已经是最终的 frame，直接按照当前 frame 来布局即可
-            [self.qmui_badgeLabel updateLayout];
-        } else {
-            [self.qmui_view setNeedsLayout];
-        }
+        [self.qmui_view setNeedsLayout];
     }
 }
 
@@ -264,7 +247,26 @@ static char kAssociatedObjectKey_shouldShowUpdatesIndicator;
             self.qmui_updatesIndicatorView.backgroundColor = self.qmui_updatesIndicatorColor;
             self.qmui_updatesIndicatorView.centerOffset = self.qmui_updatesIndicatorCenterOffset;
             self.qmui_updatesIndicatorView.centerOffsetLandscape = self.qmui_updatesIndicatorCenterOffsetLandscape;
-            [self.qmui_view addSubview:self.qmui_updatesIndicatorView];
+            self.qmui_updatesIndicatorView.qmui_frameWillChangeBlock = ^CGRect(__kindof UIView * _Nonnull view, CGRect followingFrame) {
+                return followingFrame;
+            };
+            if (!self.qmui_viewDidSetBlock) {
+                self.qmui_viewDidSetBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
+                    [view addSubview:item.qmui_updatesIndicatorView];
+                    [view addSubview:item.qmui_badgeLabel];
+                    [view setNeedsLayout];
+                    [view layoutIfNeeded];
+                };
+            }
+            // 之前 item 已经 set 完 view，则手动触发一次
+            if (self.qmui_view) {
+                self.qmui_viewDidSetBlock(self, self.qmui_view);
+            }
+            if (!self.qmui_viewDidLayoutSubviewsBlock) {
+                self.qmui_viewDidLayoutSubviewsBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
+                    [item layoutSubviews];
+                };
+            }
         }
         [self setNeedsUpdateIndicatorLayout];
         self.qmui_updatesIndicatorView.hidden = NO;
@@ -340,12 +342,48 @@ static char kAssociatedObjectKey_updatesIndicatorView;
 
 - (void)setNeedsUpdateIndicatorLayout {
     if (self.qmui_shouldShowUpdatesIndicator) {
-        if ([self isKindOfClass:[UIBarButtonItem class]] && ((UIBarButtonItem *)self).customView) {
-            // 如果是 customView，由于无法重写它的 layoutSubviews，所以认为它目前的 frame 已经是最终的 frame，直接按照当前 frame 来布局即可
-            [self.qmui_updatesIndicatorView updateLayout];
+        [self.qmui_view setNeedsLayout];
+    }
+}
+
+#pragma mark - Common
+
+- (void)layoutSubviews {
+    if (self.qmui_badgeLabel && !self.qmui_badgeLabel.hidden) {
+        [self.qmui_badgeLabel sizeToFit];
+        self.qmui_badgeLabel.layer.cornerRadius = MIN(self.qmui_badgeLabel.qmui_height / 2, self.qmui_badgeLabel.qmui_width / 2);
+        
+        CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_badgeLabel.centerOffsetLandscape : self.qmui_badgeLabel.centerOffset;
+        
+        UIView *superview = self.qmui_badgeLabel.superview;
+        if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
+            // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
+            UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
+            if (!imageView) return;
+            
+            self.qmui_badgeLabel.frame = CGRectSetXY(self.qmui_badgeLabel.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_badgeLabel.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_badgeLabel.frame) + centerOffset.y);
         } else {
-            [self.qmui_view setNeedsLayout];
+            self.qmui_badgeLabel.frame = CGRectSetXY(self.qmui_badgeLabel.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_badgeLabel.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_badgeLabel.qmui_height) + centerOffset.y);
         }
+        
+        [superview bringSubviewToFront:self.qmui_badgeLabel];
+    }
+    
+    if (self.qmui_updatesIndicatorView && !self.qmui_updatesIndicatorView.hidden) {
+        CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_updatesIndicatorView.centerOffsetLandscape : self.qmui_updatesIndicatorView.centerOffset;
+
+        UIView *superview = self.qmui_updatesIndicatorView.superview;
+        if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
+            // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
+            UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
+            if (!imageView) return;
+
+            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.y);
+        } else {
+            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_updatesIndicatorView.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_updatesIndicatorView.qmui_height) + centerOffset.y);
+        }
+
+        [superview bringSubviewToFront:self.qmui_updatesIndicatorView];
     }
 }
 
@@ -356,34 +394,15 @@ static char kAssociatedObjectKey_updatesIndicatorView;
 - (void)setCenterOffset:(CGPoint)centerOffset {
     _centerOffset = centerOffset;
     if (!IS_LANDSCAPE) {
-        [self updateLayout];
+        [self.superview setNeedsLayout];
     }
 }
 
 - (void)setCenterOffsetLandscape:(CGPoint)centerOffsetLandscape {
     _centerOffsetLandscape = centerOffsetLandscape;
     if (IS_LANDSCAPE) {
-        [self updateLayout];
+        [self.superview setNeedsLayout];
     }
-}
-
-- (void)updateLayout {
-    UIView *superview = self.superview;
-    if (!superview) return;
-    
-    CGPoint centerOffset = IS_LANDSCAPE ? self.centerOffsetLandscape : self.centerOffset;
-    
-    if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
-        // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
-        UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
-        if (!imageView) return;
-        
-        self.frame = CGRectSetXY(self.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.frame) + centerOffset.y);
-    } else {
-        self.frame = CGRectSetXY(self.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_height) + centerOffset.y);
-    }
-    
-    [self.superview bringSubviewToFront:self];
 }
 
 @end
@@ -393,14 +412,14 @@ static char kAssociatedObjectKey_updatesIndicatorView;
 - (void)setCenterOffset:(CGPoint)centerOffset {
     _centerOffset = centerOffset;
     if (!IS_LANDSCAPE) {
-        [self updateLayout];
+        [self.superview setNeedsLayout];
     }
 }
 
 - (void)setCenterOffsetLandscape:(CGPoint)centerOffsetLandscape {
     _centerOffsetLandscape = centerOffsetLandscape;
     if (IS_LANDSCAPE) {
-        [self updateLayout];
+        [self.superview setNeedsLayout];
     }
 }
 
@@ -414,28 +433,6 @@ static char kAssociatedObjectKey_updatesIndicatorView;
     }
     
     return result;
-}
-
-- (void)updateLayout {
-    UIView *superview = self.superview;
-    if (!superview) return;
-    
-    [self sizeToFit];
-    self.layer.cornerRadius = MIN(self.qmui_height / 2, self.qmui_width / 2);
-    
-    CGPoint centerOffset = IS_LANDSCAPE ? self.centerOffsetLandscape : self.centerOffset;
-    
-    if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
-        // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
-        UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
-        if (!imageView) return;
-        
-        self.frame = CGRectSetXY(self.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.frame) + centerOffset.y);
-    } else {
-        self.frame = CGRectSetXY(self.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_height) + centerOffset.y);
-    }
-    
-    [self.superview bringSubviewToFront:self];
 }
 
 @end

@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -34,6 +34,37 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) CGRect qmui_frameApplyTransform;
 
 /**
+ 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
+ */
+@property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
+
+/**
+ 移除当前所有 subviews
+ */
+- (void)qmui_removeAllSubviews;
+
+/// 同 [UIView convertPoint:toView:]，但支持在分属两个不同 window 的 view 之间进行坐标转换，也支持参数 view 直接传一个 window。
+- (CGPoint)qmui_convertPoint:(CGPoint)point toView:(nullable UIView *)view;
+
+/// 同 [UIView convertPoint:fromView:]，但支持在分属两个不同 window 的 view 之间进行坐标转换，也支持参数 view 直接传一个 window。
+- (CGPoint)qmui_convertPoint:(CGPoint)point fromView:(nullable UIView *)view;
+
+/// 同 [UIView convertRect:toView:]，但支持在分属两个不同 window 的 view 之间进行坐标转换，也支持参数 view 直接传一个 window。
+- (CGRect)qmui_convertRect:(CGRect)rect toView:(nullable UIView *)view;
+
+/// 同 [UIView convertRect:fromView:]，但支持在分属两个不同 window 的 view 之间进行坐标转换，也支持参数 view 直接传一个 window。
+- (CGRect)qmui_convertRect:(CGRect)rect fromView:(nullable UIView *)view;
+
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion;
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations completion:(void (^ __nullable)(BOOL finished))completion;
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations;
++ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay usingSpringWithDamping:(CGFloat)dampingRatio initialSpringVelocity:(CGFloat)velocity options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion;
+@end
+
+
+@interface UIView (QMUI_Block)
+
+/**
  在 UIView 的 frame 变化前会调用这个 block，变化途径包括 setFrame:、setBounds:、setCenter:、setTransform:，你可以通过返回一个 rect 来达到修改 frame 的目的，最终执行 [super setFrame:] 时会使用这个 block 的返回值（除了 setTransform: 导致的 frame 变化）。
  @param view 当前的 view 本身，方便使用，省去 weak 操作
  @param followingFrame setFrame: 的参数 frame，也即即将被修改为的 rect 值
@@ -50,14 +81,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, copy) void (^qmui_frameDidChangeBlock)(__kindof UIView *view, CGRect precedingFrame);
 
 /**
- 在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
+ 在 UIView 的 layoutSubviews 调用后的下一个 runloop 调用。如果不放到下一个 runloop，直接就调用，会导致先于子类重写的 layoutSubviews 就调用，这样就无法获取到正确的 subviews 的布局。
+ @param view 当前的 view 本身，方便使用，省去 weak 操作
+ @note 如果某些 view 重写了 layoutSubviews 但没有调用 super，则这个 block 也不会被调用
  */
-@property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
-
-/**
- 移除当前所有 subviews
- */
-- (void)qmui_removeAllSubviews;
+@property(nonatomic, copy) void (^qmui_layoutSubviewsBlock)(__kindof UIView *view);
 
 /**
  当 tintColorDidChange 被调用的时候会调用这个 block，就不用重写方法了
@@ -73,10 +101,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property(nonatomic, copy) __kindof UIView * (^qmui_hitTestBlock)(CGPoint point, UIEvent *event, __kindof UIView *originalView);
 
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion;
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations completion:(void (^ __nullable)(BOOL finished))completion;
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration animations:(void (^ __nullable)(void))animations;
-+ (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay usingSpringWithDamping:(CGFloat)dampingRatio initialSpringVelocity:(CGFloat)velocity options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^)(BOOL finished))completion;
 @end
 
 @interface UIView (QMUI_ViewController)

@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -179,7 +179,7 @@
 /**
  取出之前使用 bind 方法绑定的对象
  */
-- (id)qmui_getBindObjectForKey:(NSString *)key;
+- (id)qmui_getBoundObjectForKey:(NSString *)key;
 
 /**
  给对象绑定上一个 double 值以供后续取出使用
@@ -189,7 +189,7 @@
 /**
  取出之前用 bindDouble:forKey: 绑定的值
  */
-- (double)qmui_getBindDoubleForKey:(NSString *)key;
+- (double)qmui_getBoundDoubleForKey:(NSString *)key;
 
 /**
  给对象绑定上一个 BOOL 值以供后续取出使用
@@ -199,7 +199,7 @@
 /**
  取出之前用 bindBOOL:forKey: 绑定的值
  */
-- (BOOL)qmui_getBindBOOLForKey:(NSString *)key;
+- (BOOL)qmui_getBoundBOOLForKey:(NSString *)key;
 
 /**
  给对象绑定上一个 long 值以供后续取出使用
@@ -209,22 +209,27 @@
 /**
  取出之前用 bindLong:forKey: 绑定的值
  */
-- (long)qmui_getBindLongForKey:(NSString *)key;
+- (long)qmui_getBoundLongForKey:(NSString *)key;
 
 /**
  移除之前使用 bind 方法绑定的对象
  */
-- (void)qmui_clearBindForKey:(NSString *)key;
+- (void)qmui_clearBindingForKey:(NSString *)key;
 
 /**
  移除之前使用 bind 方法绑定的所有对象
  */
-- (void)qmui_clearAllBind;
+- (void)qmui_clearAllBinding;
 
 /**
  返回当前有绑定对象存在的所有的 key 的数组，如果不存在任何 key，则返回一个空数组
  @note 数组中元素的顺序是随机的
  */
-- (NSArray<NSString *> *)qmui_allBindKeys;
+- (NSArray<NSString *> *)qmui_allBindingKeys;
+
+/**
+ 返回是否设置了某个 key
+ */
+- (BOOL)qmui_hasBindingKey:(NSString *)key;
 
 @end
