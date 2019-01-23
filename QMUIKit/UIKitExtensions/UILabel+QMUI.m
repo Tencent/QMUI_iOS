@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -58,7 +58,7 @@
 
 static char kAssociatedObjectKey_textAttributes;
 // 在现有样式基础上增加 qmui_textAttributes 样式。换句话说，如果这个方法里有样式冲突，则以 qmui_textAttributes 为准
-- (void)setQmui_textAttributes:(NSDictionary<NSString *, id> *)qmui_textAttributes {
+- (void)setQmui_textAttributes:(NSDictionary<NSAttributedStringKey, id> *)qmui_textAttributes {
     NSDictionary *prevTextAttributes = self.qmui_textAttributes;
     if ([prevTextAttributes isEqualToDictionary:qmui_textAttributes]) {
         return;
@@ -76,7 +76,7 @@ static char kAssociatedObjectKey_textAttributes;
     if (prevTextAttributes) {
         // 找出现在 attributedText 中哪些 attrs 是通过上次的 qmui_textAttributes 设置的
         NSMutableArray *willRemovedAttributes = [NSMutableArray array];
-        [string enumerateAttributesInRange:NSMakeRange(0, string.length) options:0 usingBlock:^(NSDictionary<NSString *,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
+        [string enumerateAttributesInRange:NSMakeRange(0, string.length) options:0 usingBlock:^(NSDictionary<NSAttributedStringKey,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
             // 如果存在 kern 属性，则只有 range 是第一个字至倒数第二个字，才有可能是通过 qmui_textAttribtus 设置的
             if (NSEqualRanges(range, NSMakeRange(0, string.length - 1)) && [attrs[NSKernAttributeName] isEqualToNumber:prevTextAttributes[NSKernAttributeName]]) {
                 [string removeAttribute:NSKernAttributeName range:NSMakeRange(0, string.length - 1)];
@@ -85,7 +85,7 @@ static char kAssociatedObjectKey_textAttributes;
             if (!NSEqualRanges(range, fullRange)) {
                 return;
             }
-            [attrs enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull attr, id  _Nonnull value, BOOL * _Nonnull stop) {
+            [attrs enumerateKeysAndObjectsUsingBlock:^(NSAttributedStringKey _Nonnull attr, id  _Nonnull value, BOOL * _Nonnull stop) {
                 if (prevTextAttributes[attr] == value) {
                     [willRemovedAttributes addObject:attr];
                 }

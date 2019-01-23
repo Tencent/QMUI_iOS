@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -37,12 +37,19 @@
 
 @implementation UIView (QMUI)
 
+QMUISynthesizeIdCopyProperty(qmui_frameWillChangeBlock, setQmui_frameWillChangeBlock)
+QMUISynthesizeIdCopyProperty(qmui_frameDidChangeBlock, setQmui_frameDidChangeBlock)
+QMUISynthesizeIdCopyProperty(qmui_layoutSubviewsBlock, setQmui_layoutSubviewsBlock)
+QMUISynthesizeIdCopyProperty(qmui_tintColorDidChangeBlock, setQmui_tintColorDidChangeBlock)
+QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SEL selectors[] = {
             @selector(tintColorDidChange),
             @selector(hitTest:withEvent:),
+            @selector(layoutSubviews),
             @selector(addSubview:),
             @selector(becomeFirstResponder),
             
@@ -83,38 +90,11 @@
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
 }
 
-static char kAssociatedObjectKey_frameWillChangeBlock;
-- (void)setQmui_frameWillChangeBlock:(CGRect (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameWillChangeBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_frameWillChangeBlock, qmui_frameWillChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (CGRect (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameWillChangeBlock {
-    return (CGRect (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))objc_getAssociatedObject(self, &kAssociatedObjectKey_frameWillChangeBlock);
-}
-
-static char kAssociatedObjectKey_frameDidChangeBlock;
-- (void)setQmui_frameDidChangeBlock:(void (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameDidChangeBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_frameDidChangeBlock, qmui_frameDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))qmui_frameDidChangeBlock {
-    return (void (^ _Nullable)(__kindof UIView * _Nonnull, CGRect))objc_getAssociatedObject(self, &kAssociatedObjectKey_frameDidChangeBlock);
-}
-
 - (void)qmuiview_tintColorDidChange {
     [self qmuiview_tintColorDidChange];
     if (self.qmui_tintColorDidChangeBlock) {
         self.qmui_tintColorDidChangeBlock(self);
     }
-}
-
-static char kAssociatedObjectKey_tintColorDidChagneBlock;
-- (void)setQmui_tintColorDidChangeBlock:(void (^)(__kindof UIView * _Nonnull))qmui_tintColorDidChangeBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_tintColorDidChagneBlock, qmui_tintColorDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^)(__kindof UIView *))qmui_tintColorDidChangeBlock {
-    return (void (^)(__kindof UIView *))objc_getAssociatedObject(self, &kAssociatedObjectKey_tintColorDidChagneBlock);
 }
 
 - (nullable UIView *)qmuiview_hitTest:(CGPoint)point withEvent:(nullable UIEvent *)event {
@@ -126,13 +106,53 @@ static char kAssociatedObjectKey_tintColorDidChagneBlock;
     return originalView;
 }
 
-static char kAssociatedObjectKey_hitTestBlock;
-- (void)setQmui_hitTestBlock:(__kindof UIView * (^)(CGPoint, UIEvent *, __kindof UIView *))qmui_hitTestBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_hitTestBlock, qmui_hitTestBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+- (void)qmuiview_layoutSubviews {
+    [self qmuiview_layoutSubviews];
+    if (self.qmui_layoutSubviewsBlock) {
+        
+        // 放到下一个 runloop 是为了保证比子类的 layoutSubviews 逻辑要更晚调用
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.qmui_layoutSubviewsBlock(self);
+        });
+    }
 }
 
-- (__kindof UIView * (^)(CGPoint, UIEvent *, __kindof UIView *))qmui_hitTestBlock {
-    return (__kindof UIView * (^)(CGPoint, UIEvent *, __kindof UIView *))objc_getAssociatedObject(self, &kAssociatedObjectKey_hitTestBlock);
+- (CGPoint)qmui_convertPoint:(CGPoint)point toView:(nullable UIView *)view {
+    if (view) {
+        return [view qmui_convertPoint:point fromView:view];
+    }
+    return [self convertPoint:point toView:view];
+}
+
+- (CGPoint)qmui_convertPoint:(CGPoint)point fromView:(nullable UIView *)view {
+    UIWindow *selfWindow = [self isKindOfClass:[UIWindow class]] ? (UIWindow *)self : self.window;
+    UIWindow *fromWindow = [view isKindOfClass:[UIWindow class]] ? (UIWindow *)view : view.window;
+    if (selfWindow && fromWindow && selfWindow != fromWindow) {
+        CGPoint pointInFromWindow = fromWindow == view ? point : [view convertPoint:point toView:nil];
+        CGPoint pointInSelfWindow = [selfWindow convertPoint:pointInFromWindow fromWindow:fromWindow];
+        CGPoint pointInSelf = selfWindow == self ? pointInSelfWindow : [self convertPoint:pointInSelfWindow fromView:nil];
+        return pointInSelf;
+    }
+    return [self convertPoint:point fromView:view];
+}
+
+- (CGRect)qmui_convertRect:(CGRect)rect toView:(nullable UIView *)view {
+    if (view) {
+        return [view qmui_convertRect:rect fromView:self];
+    }
+    return [self convertRect:rect toView:view];
+}
+
+- (CGRect)qmui_convertRect:(CGRect)rect fromView:(nullable UIView *)view {
+    UIWindow *selfWindow = [self isKindOfClass:[UIWindow class]] ? (UIWindow *)self : self.window;
+    UIWindow *fromWindow = [view isKindOfClass:[UIWindow class]] ? (UIWindow *)view : view.window;
+    if (selfWindow && fromWindow && selfWindow != fromWindow) {
+        CGRect rectInFromWindow = fromWindow == view ? rect : [view convertRect:rect toView:nil];
+        CGRect rectInSelfWindow = [selfWindow convertRect:rectInFromWindow fromWindow:fromWindow];
+        CGRect rectInSelf = selfWindow == self ? rectInSelfWindow : [self convertRect:rectInSelfWindow fromView:nil];
+        return rectInSelf;
+    }
+    return [self convertRect:rect fromView:view];
 }
 
 + (void)qmui_animateWithAnimated:(BOOL)animated duration:(NSTimeInterval)duration delay:(NSTimeInterval)delay options:(UIViewAnimationOptions)options animations:(void (^)(void))animations completion:(void (^ __nullable)(BOOL finished))completion {
@@ -230,7 +250,7 @@ static char kAssociatedObjectKey_hitTestBlock;
 
 - (void)alertConvertValueWithView:(UIView *)view {
     if (IS_DEBUG && ![self isUIKitPrivateView] && ![self hasSharedAncestorViewWithView:view]) {
-        QMUILog(@"UIView (QMUI)", @"进行坐标系转换运算的 %@ 和 %@ 不存在共同的父 view，可能导致运算结果不准确（特别是在横屏状态下）", self, view);
+        QMUILog(@"UIView (QMUI)", @"进行坐标系转换运算的 %@ 和 %@ 不存在共同的父 view，可能导致运算结果不准确（特别是在横竖屏旋转时，如果两个 view 处于不同的 window，由于 window 旋转有先后顺序，可能转换时两个 window 的方向不一致，坐标就会错乱）", self, view);
     }
 }
 
@@ -258,6 +278,8 @@ static char kAssociatedObjectKey_hitTestBlock;
 
 @implementation UIView (QMUI_ViewController)
 
+QMUISynthesizeBOOLProperty(qmui_isControllerRootView, setQmui_isControllerRootView)
+
 - (BOOL)qmui_visible {
     if (self.hidden || self.alpha <= 0.01) {
         return NO;
@@ -267,15 +289,6 @@ static char kAssociatedObjectKey_hitTestBlock;
     }
     UIViewController *viewController = self.qmui_viewController;
     return viewController.qmui_visibleState >= QMUIViewControllerWillAppear && viewController.qmui_visibleState < QMUIViewControllerWillDisappear;
-}
-
-static char kAssociatedObjectKey_isControllerRootView;
-- (void)setQmui_isControllerRootView:(BOOL)qmui_isControllerRootView {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_isControllerRootView, @(qmui_isControllerRootView), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)qmui_isControllerRootView {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_isControllerRootView)) boolValue];
 }
 
 static char kAssociatedObjectKey_viewController;
@@ -308,7 +321,13 @@ static char kAssociatedObjectKey_viewController;
 
 - (void)qmuiview_viewDidLoad {
     [self qmuiview_viewDidLoad];
-    self.view.qmui_viewController = self;
+    if (@available(iOS 11.0, *)) {
+        self.view.qmui_viewController = self;
+    } else {
+        // 临时修复 iOS 10.0.2 上在输入框内切换输入法可能引发死循环的 bug，待查
+        // https://github.com/Tencent/QMUI_iOS/issues/471
+        ((UIView *)[self valueForKey:@"_view"]).qmui_viewController = self;
+    }
 }
 
 @end
@@ -364,6 +383,8 @@ static char kAssociatedObjectKey_viewController;
 
 
 @implementation UIView (QMUI_Border)
+
+QMUISynthesizeIdStrongProperty(qmui_borderLayer, setQmui_borderLayer)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -466,7 +487,7 @@ static char kAssociatedObjectKey_viewController;
                 [bottomPath addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) - cornerRadius, y)];
             }
             if ((self.layer.qmui_maskedCorners & QMUILayerMaxXMaxYCorner) == QMUILayerMaxXMaxYCorner) {
-                [bottomPath addArcWithCenter:CGPointMake(CGRectGetHeight(self.bounds) - cornerRadius, CGRectGetHeight(self.bounds) - cornerRadius) radius:cornerRadius - lineOffset startAngle:-1.5 * M_PI endAngle:-1.75 * M_PI clockwise:NO];
+                [bottomPath addArcWithCenter:CGPointMake(CGRectGetWidth(self.bounds) - cornerRadius, CGRectGetHeight(self.bounds) - cornerRadius) radius:cornerRadius - lineOffset startAngle:-1.5 * M_PI endAngle:-1.75 * M_PI clockwise:NO];
                 [rightPath addArcWithCenter:CGPointMake(CGRectGetWidth(self.bounds) - cornerRadius, CGRectGetHeight(self.bounds) - cornerRadius) radius:cornerRadius - lineOffset startAngle:-1.75 * M_PI endAngle:-2 * M_PI clockwise:NO];
                 [rightPath addLineToPoint:CGPointMake(CGRectGetWidth(self.bounds) - lineOffset, cornerRadius)];
             } else {
@@ -599,15 +620,6 @@ static char kAssociatedObjectKey_dashPattern;
     return (NSArray<NSNumber *> *)objc_getAssociatedObject(self, &kAssociatedObjectKey_dashPattern);
 }
 
-static char kAssociatedObjectKey_borderLayer;
-- (void)setQmui_borderLayer:(CAShapeLayer *)qmui_borderLayer {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_borderLayer, qmui_borderLayer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (CAShapeLayer *)qmui_borderLayer {
-    return (CAShapeLayer *)objc_getAssociatedObject(self, &kAssociatedObjectKey_borderLayer);
-}
-
 @end
 
 
@@ -643,7 +655,9 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
     // 对非法的 frame，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
     if (CGRectIsNaN(frame)) {
         QMUILogWarn(@"UIView (QMUI)", @"%@ setFrame:%@，参数包含 NaN，已被拦截并处理为 0。%@", self, NSStringFromCGRect(frame), [NSThread callStackSymbols]);
-        NSAssert(NO, @"UIView setFrame: 出现 NaN");
+        if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
+            NSAssert(NO, @"UIView setFrame: 出现 NaN");
+        }
         if (!IS_DEBUG) {
             frame = CGRectSafeValue(frame);
         }
@@ -843,20 +857,14 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
 
 @implementation UIView (QMUI_Debug)
 
+QMUISynthesizeBOOLProperty(qmui_needsDifferentDebugColor, setQmui_needsDifferentDebugColor)
+QMUISynthesizeBOOLProperty(qmui_hasDebugColor, setQmui_hasDebugColor)
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         ExchangeImplementations([self class], @selector(layoutSubviews), @selector(qmui_debug_layoutSubviews));
     });
-}
-
-static char kAssociatedObjectKey_needsDifferentDebugColor;
-- (void)setQmui_needsDifferentDebugColor:(BOOL)qmui_needsDifferentDebugColor {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_needsDifferentDebugColor, @(qmui_needsDifferentDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-- (BOOL)qmui_needsDifferentDebugColor {
-    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_needsDifferentDebugColor) boolValue];
-    return flag;
 }
 
 static char kAssociatedObjectKey_shouldShowDebugColor;
@@ -868,15 +876,6 @@ static char kAssociatedObjectKey_shouldShowDebugColor;
 }
 - (BOOL)qmui_shouldShowDebugColor {
     BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor) boolValue];
-    return flag;
-}
-
-static char kAssociatedObjectKey_hasDebugColor;
-- (void)setQmui_hasDebugColor:(BOOL)qmui_hasDebugColor {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_hasDebugColor, @(qmui_hasDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-- (BOOL)qmui_hasDebugColor {
-    BOOL flag = [objc_getAssociatedObject(self, &kAssociatedObjectKey_hasDebugColor) boolValue];
     return flag;
 }
 

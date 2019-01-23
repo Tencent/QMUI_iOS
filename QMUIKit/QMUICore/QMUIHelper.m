@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -120,6 +120,9 @@ NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
 
 @implementation QMUIHelper (Keyboard)
 
+QMUISynthesizeBOOLProperty(keyboardVisible, setKeyboardVisible)
+QMUISynthesizeCGFloatProperty(lastKeyboardHeight, setLastKeyboardHeight)
+
 - (void)handleKeyboardWillShow:(NSNotification *)notification {
     self.keyboardVisible = YES;
     self.lastKeyboardHeight = [QMUIHelper keyboardHeightWithNotification:notification];
@@ -129,31 +132,13 @@ NSString *const QMUIResourcesMainBundleName = @"QMUIResources.bundle";
     self.keyboardVisible = NO;
 }
 
-static char kAssociatedObjectKey_KeyboardVisible;
-- (void)setKeyboardVisible:(BOOL)argv {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_KeyboardVisible, @(argv), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)isKeyboardVisible {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_KeyboardVisible)) boolValue];
-}
-
 + (BOOL)isKeyboardVisible {
-    BOOL visible = [[QMUIHelper sharedInstance] isKeyboardVisible];
+    BOOL visible = [QMUIHelper sharedInstance].keyboardVisible;
     return visible;
 }
 
-static char kAssociatedObjectKey_LastKeyboardHeight;
-- (void)setLastKeyboardHeight:(CGFloat)argv {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_LastKeyboardHeight, @(argv), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (CGFloat)lastKeyboardHeight {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_LastKeyboardHeight)) qmui_CGFloatValue];
-}
-
 + (CGFloat)lastKeyboardHeightInApplicationWindowWhenVisible {
-    return [[QMUIHelper sharedInstance] lastKeyboardHeight];
+    return [QMUIHelper sharedInstance].lastKeyboardHeight;
 }
 
 + (CGRect)keyboardRectWithNotification:(NSNotification *)notification {
@@ -475,7 +460,7 @@ static CGFloat preferredLayoutWidth = -1;
     }
     
     if ([self isIPad]) {
-        return UIEdgeInsetsMake(20, 0, 20, 0);
+        return UIEdgeInsetsMake(0, 0, 20, 0);
     }
     
     UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
