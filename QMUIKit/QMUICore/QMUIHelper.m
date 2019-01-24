@@ -19,6 +19,7 @@
 #import "UIViewController+QMUI.h"
 #import "NSString+QMUI.h"
 #import "UIInterface+QMUI.h"
+#import "NSObject+QMUI.h"
 #import <AVFoundation/AVFoundation.h>
 #import <math.h>
 #import <sys/utsname.h>
@@ -327,11 +328,31 @@ static NSInteger isNotchedScreen = -1;
 + (BOOL)isNotchedScreen {
     if (@available(iOS 11, *)) {
         if (isNotchedScreen < 0) {
-            // iOS 12，只要 init 完 window，window 的尺寸就已经被设定为当前 App 的大小了，所以可以通过是否有 safeAreaInsets 来动态判断。
-            // 但 iOS 11 及以前无法通过这个方式动态判断，所以只能依靠物理设备的判断方式
-            if (@available(iOS 12, *)) {
-                UIWindow *window = [[UIWindow alloc] init];
-                isNotchedScreen = window.safeAreaInsets.bottom > 0 ? 1 : 0;
+            if (@available(iOS 12.0, *)) {
+                /*
+                 检测方式解释/测试要点：
+                 1. iOS 11 与 iOS 12 可能行为不同，所以要分别测试。
+                 2. 与触发 [QMUIHelper isNotchedScreen] 方法时的进程有关，例如 https://github.com/Tencent/QMUI_iOS/issues/482#issuecomment-456051738 里提到的 [NSObject performSelectorOnMainThread:withObject:waitUntilDone:NO] 就会导致较多的异常。
+                 3. iOS 12 下，在非第2点里提到的情况下，iPhone、iPad 均可通过 UIScreen -_peripheryInsets 方法的返回值区分，但如果满足了第2点，则 iPad 无法使用这个方法，这种情况下要依赖第4点。
+                 4. iOS 12 下，不管是否满足第2点，不管是什么设备类型，均可以通过一个满屏的 UIWindow 的 rootViewController.view.frame.origin.y 的值来区分，如果是非全面屏，这个值必定为20，如果是全面屏，则可能是24或44等不同的值。但由于创建 UIWindow、UIViewController 等均属于较大消耗，所以只在前面的步骤无法区分的情况下才会使用第4点。
+                 5. 对于第4点，经测试与当前设备的方向、是否有勾选 project 里的 General - Hide status bar、当前是否处于来电模式的状态栏这些都没关系。
+                 */
+                SEL peripheryInsetsSelector = NSSelectorFromString([NSString stringWithFormat:@"_%@%@", @"periphery", @"Insets"]);
+                UIEdgeInsets peripheryInsets = UIEdgeInsetsZero;
+                [[UIScreen mainScreen] qmui_performSelector:peripheryInsetsSelector withReturnValue:&peripheryInsets];
+                if (peripheryInsets.bottom <= 0) {
+                    UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+                    peripheryInsets = window.safeAreaInsets;
+                    if (peripheryInsets.bottom <= 0) {
+                        UIViewController *viewController = [UIViewController new];
+                        [viewController loadViewIfNeeded];
+                        window.rootViewController = viewController;
+                        if (CGRectGetMinY(viewController.view.frame) > 20) {
+                            peripheryInsets.bottom = 1;
+                        }
+                    }
+                }
+                isNotchedScreen = peripheryInsets.bottom > 0 ? 1 : 0;
             } else {
                 isNotchedScreen = [QMUIHelper is58InchScreen] ? 1 : 0;
             }
@@ -339,7 +360,7 @@ static NSInteger isNotchedScreen = -1;
     } else {
         isNotchedScreen = 0;
     }
-
+    
     return isNotchedScreen > 0;
 }
 
@@ -468,7 +489,7 @@ static CGFloat preferredLayoutWidth = -1;
     switch (orientation) {
         case UIInterfaceOrientationPortrait:
             return UIEdgeInsetsMake(44, 0, 34, 0);
-        
+            
         case UIInterfaceOrientationPortraitUpsideDown:
             return UIEdgeInsetsMake(34, 0, 44, 0);
             

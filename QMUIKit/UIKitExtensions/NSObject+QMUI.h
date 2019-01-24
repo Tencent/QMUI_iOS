@@ -160,12 +160,12 @@
  @code
  - (UITableViewCell *)cellForIndexPath:(NSIndexPath *)indexPath {
  // 1）在这里给 button 绑定上 indexPath 对象
- [cell strongBind:indexPath forKey:@"indexPath"];
+ [cell qmui_bindObject:indexPath forKey:@"indexPath"];
  }
  
  - (void)didTapButton:(UIButton *)button {
  // 2）在这里取出被点击的 button 的 indexPath 对象
- NSIndexPath *indexPathTapped = [button getBindForKey:@"indexPath"];
+ NSIndexPath *indexPathTapped = [button qmui_getBoundObjectForKey:@"indexPath"];
  }
  @endcode
  */

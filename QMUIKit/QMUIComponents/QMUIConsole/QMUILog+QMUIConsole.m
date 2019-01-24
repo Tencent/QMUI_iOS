@@ -28,6 +28,8 @@
 }
 
 - (void)qmuiconsole_printLogWithFile:(const char *)file line:(int)line func:(const char *)func logItem:(QMUILogItem *)logItem {
+    [self qmuiconsole_printLogWithFile:file line:line func:func logItem:logItem];
+    
     if (!QMUICMIActivated || !ShouldPrintQMUIWarnLogToConsole) return;
     if (!logItem.enabled) return;
     if (logItem.level != QMUILogLevelWarn) return;
@@ -35,8 +37,6 @@
     NSString *funcString = [NSString stringWithFormat:@"%s", func];
     NSString *defaultString = [NSString stringWithFormat:@"%@:%@ | %@", funcString, @(line), logItem];
     [QMUIConsole logWithLevel:logItem.levelDisplayString name:logItem.name logString:defaultString];
-    
-    [self qmuiconsole_printLogWithFile:file line:line func:func logItem:logItem];
 }
 
 @end

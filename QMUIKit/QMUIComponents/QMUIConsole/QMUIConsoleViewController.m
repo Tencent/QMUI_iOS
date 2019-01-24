@@ -283,6 +283,9 @@
 #pragma mark - Popover Button
 
 - (void)handlePopoverTouchEvent:(QMUIButton *)button {
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
+    
     self.popoverAnimating = YES;
     CGAffineTransform scale = CGAffineTransformMakeScale(CGRectGetWidth(self.popoverButton.frame) / CGRectGetWidth(self.containerView.frame), CGRectGetHeight(self.popoverButton.frame) / CGRectGetHeight(self.containerView.frame));
     CGAffineTransform translation = CGAffineTransformMakeTranslation(self.popoverButton.center.x - self.containerView.center.x, self.popoverButton.center.y - self.containerView.center.y);
@@ -322,6 +325,7 @@
             self.containerView.alpha = 0;
             self.containerView.transform = transform;
             self.containerView.layer.cornerRadius = cornerRadius / 2;
+            [self.view endEditing:YES];
         } completion:^(BOOL finished) {
             self.containerView.hidden = YES;
             self.containerView.transform = CGAffineTransformIdentity;
@@ -381,6 +385,9 @@
         scale.qmui_animationDidStopBlock = ^(__kindof CAAnimation *aAnimation, BOOL finished) {
             [QMUIConsole hide];
             [weakSelf.popoverButton.layer removeAnimationForKey:@"scale"];
+            if (@available(iOS 10.0, *)) {
+                [[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight] impactOccurred];
+            }
         };
         [self.popoverButton.layer addAnimation:scale forKey:@"scale"];
     }

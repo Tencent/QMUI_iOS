@@ -893,7 +893,7 @@ static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearanc
 }
 
 - (NSArray<QMUILabel *> *)textFieldTitleLabels {
-    return self.mutableTextFields.copy;
+    return self.mutableTitleLabels.copy;
 }
 
 - (NSArray<QMUITextField *> *)textFields {

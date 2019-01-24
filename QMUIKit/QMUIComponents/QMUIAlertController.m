@@ -973,9 +973,7 @@ static QMUIAlertController *alertControllerAppearance;
         if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
             [weakSelf.delegate didHideAlertController:weakSelf];
         }
-        if (completion) {
-            completion();
-        }
+        if (completion) completion();
     }];
     
     // 减少alertController计数
