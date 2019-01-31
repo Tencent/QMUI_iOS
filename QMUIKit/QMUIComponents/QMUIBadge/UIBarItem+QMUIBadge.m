@@ -247,9 +247,11 @@ static char kAssociatedObjectKey_shouldShowUpdatesIndicator;
             self.qmui_updatesIndicatorView.backgroundColor = self.qmui_updatesIndicatorColor;
             self.qmui_updatesIndicatorView.centerOffset = self.qmui_updatesIndicatorCenterOffset;
             self.qmui_updatesIndicatorView.centerOffsetLandscape = self.qmui_updatesIndicatorCenterOffsetLandscape;
-            self.qmui_updatesIndicatorView.qmui_frameWillChangeBlock = ^CGRect(__kindof UIView * _Nonnull view, CGRect followingFrame) {
-                return followingFrame;
-            };
+            if (!self.qmui_viewDidLayoutSubviewsBlock) {
+                self.qmui_viewDidLayoutSubviewsBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
+                    [item layoutSubviews];
+                };
+            }
             if (!self.qmui_viewDidSetBlock) {
                 self.qmui_viewDidSetBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
                     [view addSubview:item.qmui_updatesIndicatorView];
@@ -261,11 +263,6 @@ static char kAssociatedObjectKey_shouldShowUpdatesIndicator;
             // 之前 item 已经 set 完 view，则手动触发一次
             if (self.qmui_view) {
                 self.qmui_viewDidSetBlock(self, self.qmui_view);
-            }
-            if (!self.qmui_viewDidLayoutSubviewsBlock) {
-                self.qmui_viewDidLayoutSubviewsBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
-                    [item layoutSubviews];
-                };
             }
         }
         [self setNeedsUpdateIndicatorLayout];

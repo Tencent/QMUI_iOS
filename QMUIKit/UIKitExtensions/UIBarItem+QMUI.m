@@ -16,6 +16,7 @@
 #import "UIBarItem+QMUI.h"
 #import "QMUICore.h"
 #import "UIView+QMUI.h"
+#import "QMUIWeakObjectContainer.h"
 
 @interface UIBarItem ()
 
@@ -64,7 +65,7 @@ static char kAssociatedObjectKey_referenceItem;
         });
         
         void (^layoutSubviewsBlock)(UIView *selfObject) = ^void(UIView *selfObject) {
-            UIBarItem *item = (UIBarItem *)objc_getAssociatedObject(selfObject, &kAssociatedObjectKey_referenceItem);
+            UIBarItem *item = (UIBarItem *)((QMUIWeakObjectContainer *)objc_getAssociatedObject(self, &kAssociatedObjectKey_referenceItem)).object;
             if (item.qmui_viewDidLayoutSubviewsBlock) {
                 item.qmui_viewDidLayoutSubviewsBlock(item, selfObject);
             }
@@ -138,13 +139,23 @@ static char kAssociatedObjectKey_viewLayoutDidChangeBlock;
 + (void)setView:(UIView *)view inBarItem:(__kindof UIBarItem *)item {
     if (IOS_VERSION_NUMBER < 110000) {
         if ([NSStringFromClass(view.class) hasPrefix:@"UINavigation"] || [NSStringFromClass(view.class) hasPrefix:@"UIToolbar"]) {
-            objc_setAssociatedObject(view, &kAssociatedObjectKey_referenceItem, item, OBJC_ASSOCIATION_ASSIGN);
+            QMUIWeakObjectContainer *weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_referenceItem);
+            if (!weakContainer) {
+                weakContainer = [QMUIWeakObjectContainer new];
+            }
+            weakContainer.object = item;
+            objc_setAssociatedObject(view, &kAssociatedObjectKey_referenceItem, weakContainer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         }
     }
     
     if (IOS_VERSION_NUMBER < 100000) {
         if ([NSStringFromClass(view.class) hasPrefix:@"UITabBar"]) {
-            objc_setAssociatedObject(view, &kAssociatedObjectKey_referenceItem, item, OBJC_ASSOCIATION_ASSIGN);
+            QMUIWeakObjectContainer *weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_referenceItem);
+            if (!weakContainer) {
+                weakContainer = [QMUIWeakObjectContainer new];
+            }
+            weakContainer.object = item;
+            objc_setAssociatedObject(view, &kAssociatedObjectKey_referenceItem, weakContainer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
         }
     }
     

@@ -22,6 +22,7 @@
 #import "NSNumber+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "QMUILog.h"
+#import "QMUIWeakObjectContainer.h"
 #import <objc/runtime.h>
 
 @interface UIView ()
@@ -49,7 +50,6 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         SEL selectors[] = {
             @selector(tintColorDidChange),
             @selector(hitTest:withEvent:),
-            @selector(layoutSubviews),
             @selector(addSubview:),
             @selector(becomeFirstResponder),
             
@@ -64,6 +64,22 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
             SEL swizzledSelector = NSSelectorFromString([@"qmuiview_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
             ExchangeImplementations([self class], originalSelector, swizzledSelector);
         }
+        
+        // 目前发现 UIButton、UITabBarButton 等系统的 class 的 layoutSubviews 内没有调用 super，导致 UIView (QMUI) 里的重写不生效，所以要专门为这些 class 每个都重写一次
+        NSMutableArray<Class> *classes = @[UIView.class, UIButton.class].mutableCopy;
+        if (IOS_VERSION_NUMBER < 93000) {
+            [classes addObject:NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"])];
+        }
+        [classes enumerateObjectsUsingBlock:^(Class obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            ExtendImplementationOfVoidMethodWithoutArguments(obj, @selector(layoutSubviews), ^(__kindof UIView *selfObject) {
+                if (selfObject.qmui_layoutSubviewsBlock) {
+                    // 放到下一个 runloop 是为了保证比子类的 layoutSubviews 逻辑要更晚调用
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        selfObject.qmui_layoutSubviewsBlock(selfObject);
+                    });
+                }
+            });
+        }];
     });
 }
 
@@ -104,17 +120,6 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         return view;
     }
     return originalView;
-}
-
-- (void)qmuiview_layoutSubviews {
-    [self qmuiview_layoutSubviews];
-    if (self.qmui_layoutSubviewsBlock) {
-        
-        // 放到下一个 runloop 是为了保证比子类的 layoutSubviews 逻辑要更晚调用
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.qmui_layoutSubviewsBlock(self);
-        });
-    }
 }
 
 - (CGPoint)qmui_convertPoint:(CGPoint)point toView:(nullable UIView *)view {
@@ -293,13 +298,19 @@ QMUISynthesizeBOOLProperty(qmui_isControllerRootView, setQmui_isControllerRootVi
 
 static char kAssociatedObjectKey_viewController;
 - (void)setQmui_viewController:(__kindof UIViewController * _Nullable)qmui_viewController {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_viewController, qmui_viewController, OBJC_ASSOCIATION_ASSIGN);
+    QMUIWeakObjectContainer *weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_viewController);
+    if (!weakContainer) {
+        weakContainer = [QMUIWeakObjectContainer new];
+    }
+    weakContainer.object = qmui_viewController;
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_viewController, weakContainer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
     self.qmui_isControllerRootView = !!qmui_viewController;
 }
 
 - (__kindof UIViewController *)qmui_viewController {
     if (self.qmui_isControllerRootView) {
-        return (__kindof UIViewController *)objc_getAssociatedObject(self, &kAssociatedObjectKey_viewController);
+        return (__kindof UIViewController *)((QMUIWeakObjectContainer *)objc_getAssociatedObject(self, &kAssociatedObjectKey_viewController)).object;
     }
     return self.superview.qmui_viewController;
 }

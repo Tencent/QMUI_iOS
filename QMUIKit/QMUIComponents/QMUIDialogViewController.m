@@ -519,13 +519,13 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 }
 
 - (void)setSelectedItemIndex:(NSInteger)selectedItemIndex {
-    _selectedItemIndex = selectedItemIndex;
     [self.selectedItemIndexes removeAllObjects];
+    _selectedItemIndex = selectedItemIndex;
 }
 
 - (void)setSelectedItemIndexes:(NSMutableSet<NSNumber *> *)selectedItemIndexes {
-    _selectedItemIndexes = selectedItemIndexes;
     self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
+    _selectedItemIndexes = selectedItemIndexes;
 }
 
 - (void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection {
