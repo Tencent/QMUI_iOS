@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -73,10 +73,10 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic, assign, getter=isEnabled) BOOL enabled;
 
 /// `QMUIAlertAction`按钮样式，默认nil。当此值为nil的时候，则使用`QMUIAlertController`的`alertButtonAttributes`或者`sheetButtonAttributes`的值。
-@property(nonatomic, strong) NSDictionary<NSString *, id> *buttonAttributes;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *buttonAttributes;
 
 /// 原理同上`buttonAttributes`
-@property(nonatomic, strong) NSDictionary<NSString *, id> *buttonDisabledAttributes;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *buttonDisabledAttributes;
 
 @end
 
@@ -102,24 +102,24 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic, strong) UIColor *alertSeparatorColor UI_APPEARANCE_SELECTOR;
 
 /// alert标题样式，默认@{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontBoldMake(17),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *alertTitleAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *alertTitleAttributes UI_APPEARANCE_SELECTOR;
 
 /// alert信息样式，默认@{NSForegroundColorAttributeName:UIColorBlack,NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *alertMessageAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *alertMessageAttributes UI_APPEARANCE_SELECTOR;
 
 /// alert按钮样式，默认@{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *alertButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *alertButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// alert按钮disabled时的样式，默认@{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *alertButtonDisabledAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *alertButtonDisabledAttributes UI_APPEARANCE_SELECTOR;
 
 /// alert cancel 按钮样式，默认@{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(17),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *alertCancelButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *alertCancelButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// alert destructive 按钮样式，默认@{NSForegroundColorAttributeName:UIColorRed,NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)}
-@property(nonatomic, strong) NSDictionary<NSString *, id> *alertDestructiveButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *alertDestructiveButtonAttributes UI_APPEARANCE_SELECTOR;
 
-/// alert圆角大小，默认值是：IOS_VERSION >= 9.0 ? 13 : 6，以保持与系统默认样式一致
+/// alert圆角大小，默认值是 13，以保持与系统默认样式一致
 @property(nonatomic, assign) CGFloat alertContentCornerRadius UI_APPEARANCE_SELECTOR;
 
 /// alert按钮高度，默认44pt
@@ -160,30 +160,30 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic, strong) UIColor *sheetSeparatorColor UI_APPEARANCE_SELECTOR;
 
 /// sheet标题样式，默认@{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontBoldMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
-@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetTitleAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *sheetTitleAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet信息样式，默认@{NSForegroundColorAttributeName:UIColorMake(143, 143, 143),NSFontAttributeName:UIFontMake(13),NSParagraphStyleAttributeName:[NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:0 lineBreakMode:NSLineBreakByTruncatingTail]}
-@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetMessageAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *sheetMessageAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet按钮样式，默认@{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *sheetButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet按钮disabled时的样式，默认@{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetButtonDisabledAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *sheetButtonDisabledAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet cancel 按钮样式，默认@{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetCancelButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *sheetCancelButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet destructive 按钮样式，默认@{NSForegroundColorAttributeName:UIColorRed,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)}
-@property(nonatomic, copy) NSDictionary<NSString *, id> *sheetDestructiveButtonAttributes UI_APPEARANCE_SELECTOR;
+@property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *sheetDestructiveButtonAttributes UI_APPEARANCE_SELECTOR;
 
 /// sheet cancel 按钮距离其上面元素（按钮或者header）的间距，默认8pt
 @property(nonatomic, assign) CGFloat sheetCancelButtonMarginTop UI_APPEARANCE_SELECTOR;
 
-/// sheet内容的圆角，默认值是：(IOS_VERSION >= 9.0 ? 13 : 6)，以保持与系统默认样式一致
+/// sheet内容的圆角，默认值是 13，以保持与系统默认样式一致
 @property(nonatomic, assign) CGFloat sheetContentCornerRadius UI_APPEARANCE_SELECTOR;
 
-/// sheet按钮高度，默认值是：(IOS_VERSION >= 9.0 ? 57 : 44)，以保持与系统默认样式一致
+/// sheet按钮高度，默认值是 57，以保持与系统默认样式一致
 @property(nonatomic, assign) CGFloat sheetButtonHeight UI_APPEARANCE_SELECTOR;
 
 /// sheet头部（非按钮部分）背景色，默认值是：UIColorMakeWithRGBA(247, 247, 247, 1)
@@ -238,7 +238,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// 当前所有通过`addTextFieldWithConfigurationHandler:`接口添加的输入框
 @property(nonatomic, copy, readonly) NSArray <QMUITextField *> *textFields;
 
-/// 设置自定义view。通过`addCustomView:`方法添加一个自定义的view，`QMUIAlertController`会在布局的时候去掉用这个view的`sizeThatFits:`方法来获取size，至于x和y坐标则由控件自己控制。
+/// 设置自定义view。通过`addCustomView:`方法添加一个自定义的view，`QMUIAlertController`会在布局的时候去调用这个view的`sizeThatFits:`方法来获取size，至于x和y坐标则由控件自己控制。
 @property(nonatomic, strong, readonly) UIView *customView;
 
 /// 当前标题title

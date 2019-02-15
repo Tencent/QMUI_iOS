@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -36,6 +36,9 @@
 /// 获取当前的缓存容器。tableView 的宽度和 contentInset 发生变化时，这个数组也会跟着变，但当 tableView 宽度小于 0 时会返回 nil。
 @property(nonatomic, weak, readonly, nullable) QMUICellHeightKeyCache *qmui_currentCellHeightKeyCache;
 
-/// 清除所有状态下的缓存
+/// 搭配 QMUICellHeightKeyCache，清除某个指定 key 的缓存，注意不要直接调用 self.qmui_currentCellHeightKeyCache.invalidateHeightForKey，因为一个 UITableView 里会包含多个 QMUICellHeightKeyCache，那样写只能刷新当前的 QMUICellHeightKeyCache，其他宽度下的 QMUICellHeightKeyCache 无法刷新。
+- (void)qmui_invalidateCellHeightCachedForKey:(id<NSCopying>)key;
+
+/// 搭配 QMUICellHeightKeyCache，清除所有状态下的缓存
 - (void)qmui_invalidateAllCellHeightKeyCache;
 @end

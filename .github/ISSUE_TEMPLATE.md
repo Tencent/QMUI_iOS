@@ -3,7 +3,7 @@
 - [x] 设备：`All` / `iPhone` / `iPad` / `模拟器`
 - [x] 系统：`iOS 12.x`
 - [x] Xcode 版本：`10.x`
-- [x] QMUI iOS 版本：`2.x.x`
+- [x] QMUI iOS 版本：`3.x.x`
 
 ### 请描述具体问题
 

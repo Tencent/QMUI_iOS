@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -28,32 +28,24 @@
 #define IS_DEBUG NO
 #endif
 
-
-/// 判断当前编译使用的 Base SDK 版本是否为 iOS 8.0 及以上
-
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 80000
-#define IOS8_SDK_ALLOWED YES
-#endif
-
-
-/// 判断当前编译使用的 Base SDK 版本是否为 iOS 9.0 及以上
-
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 90000
+/// 当前编译使用的 Base SDK 版本为 iOS 9.0 及以上
 #define IOS9_SDK_ALLOWED YES
 #endif
 
-
-/// 判断当前编译使用的 Base SDK 版本是否为 iOS 10.0 及以上
-
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
+/// 当前编译使用的 Base SDK 版本为 iOS 10.0 及以上
 #define IOS10_SDK_ALLOWED YES
 #endif
 
-
-/// 判断当前编译使用的 Base SDK 版本是否为 iOS 11.0 及以上
-
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 110000
+/// 当前编译使用的 Base SDK 版本为 iOS 11.0 及以上
 #define IOS11_SDK_ALLOWED YES
+#endif
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 120000
+/// 当前编译使用的 Base SDK 版本为 iOS 12.0 及以上
+#define IOS12_SDK_ALLOWED YES
 #endif
 
 #pragma mark - Clang
@@ -73,7 +65,6 @@
 
 #define BeginIgnoreDeprecatedWarning BeginIgnoreClangWarning(-Wdeprecated-declarations)
 #define EndIgnoreDeprecatedWarning EndIgnoreClangWarning
-
 
 #pragma mark - 变量-设备相关
 
@@ -188,9 +179,7 @@
 
 #define CGSizeMax CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)
 
-/// 使用文件名(不带后缀名)创建一个UIImage对象，会被系统缓存，适用于大量复用的小资源图
-/// 使用这个 API 而不是 imageNamed: 是因为后者在 iOS 8 下反而存在性能问题（by molice 不确定 iOS 9 及以后的版本是否还有这个问题）
-#define UIImageMake(img) [UIImage imageNamed:img inBundle:nil compatibleWithTraitCollection:nil]
+#define UIImageMake(img) [UIImage imageNamed:img]
 
 /// 使用文件名(不带后缀名，仅限png)创建一个UIImage对象，不会被系统缓存，用于不被复用的图片，特别是大图
 #define UIImageMakeWithFile(name) UIImageMakeWithFileAndSuffix(name, @"png")

@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -34,10 +34,7 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 
 @implementation UIViewController (QMUI)
 
-void qmuivc_loadViewIfNeeded (id current_self, SEL current_cmd) {
-    // 主动调用 self.view，从而触发 loadView，以模拟 iOS 9.0 以下的系统 loadViewIfNeeded 行为
-    [((UIViewController *)current_self) view];
-}
+QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleStateDidChangeBlock)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -57,12 +54,6 @@ void qmuivc_loadViewIfNeeded (id current_self, SEL current_cmd) {
             SEL originalSelector = selectors[index];
             SEL swizzledSelector = NSSelectorFromString([@"qmuivc_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
             ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
-        
-        // 兼容 iOS 9.0 以下的版本对 loadViewIfNeeded 方法的调用
-        if (![[UIViewController class] instancesRespondToSelector:@selector(loadViewIfNeeded)]) {
-            Class metaclass = [UIViewController class];
-            class_addMethod(metaclass, @selector(loadViewIfNeeded), (IMP)qmuivc_loadViewIfNeeded, "v@:");
         }
         
         // 修复 iOS 11 scrollView 无法自动适配不透明的 tabBar，导致底部 inset 错误的问题
@@ -113,15 +104,6 @@ static char kAssociatedObjectKey_visibleState;
 
 - (QMUIViewControllerVisibleState)qmui_visibleState {
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_visibleState)) unsignedIntegerValue];
-}
-
-static char kAssociatedObjectKey_visibleStateDidChangeBlock;
-- (void)setQmui_visibleStateDidChangeBlock:(void (^)(__kindof UIViewController *, QMUIViewControllerVisibleState))qmui_visibleStateDidChangeBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_visibleStateDidChangeBlock, qmui_visibleStateDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^)(__kindof UIViewController *, QMUIViewControllerVisibleState))qmui_visibleStateDidChangeBlock {
-    return (void (^)(__kindof UIViewController *, QMUIViewControllerVisibleState))objc_getAssociatedObject(self, &kAssociatedObjectKey_visibleStateDidChangeBlock);
 }
 
 - (void)qmuivc_viewDidLoad {
@@ -326,6 +308,8 @@ static char kAssociatedObjectKey_visibleStateDidChangeBlock;
 
 @implementation UIViewController (Data)
 
+QMUISynthesizeIdCopyProperty(qmui_didAppearAndLoadDataBlock, setQmui_didAppearAndLoadDataBlock)
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -339,15 +323,6 @@ static char kAssociatedObjectKey_visibleStateDidChangeBlock;
         self.qmui_didAppearAndLoadDataBlock();
         self.qmui_didAppearAndLoadDataBlock = nil;
     }
-}
-
-static char kAssociatedObjectKey_didAppearAndLoadDataBlock;
-- (void)setQmui_didAppearAndLoadDataBlock:(void (^)(void))qmui_didAppearAndLoadDataBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock, qmui_didAppearAndLoadDataBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (void (^)(void))qmui_didAppearAndLoadDataBlock {
-    return (void (^)(void))objc_getAssociatedObject(self, &kAssociatedObjectKey_didAppearAndLoadDataBlock);
 }
 
 static char kAssociatedObjectKey_dataLoaded;

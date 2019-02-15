@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -36,9 +36,6 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
     QMUIViewControllerVisible       = QMUIViewControllerWillAppear | QMUIViewControllerDidAppear,// 表示是否处于可视范围，判断时请用 & 运算，例如 qmui_visibleState & QMUIViewControllerVisible
 };
 
-/**
- *  @warning 这个 Category 里兼容了 iOS 8 下对 loadViewIfNeeded 方法的使用，所以 iOS 8 下也可以安全调用，建议搭配 BeginIgnoreAvailabilityWarning/EndIgnoreAvailabilityWarning 屏蔽 Xcode 的 warning。
- */
 @interface UIViewController (QMUI)
 
 /** 获取和自身处于同一个UINavigationController里的上一个UIViewController */

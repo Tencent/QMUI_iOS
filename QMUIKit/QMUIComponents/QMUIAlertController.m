@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2018 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -141,7 +141,7 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.alertButtonDisabledAttributes = @{NSForegroundColorAttributeName:UIColorMake(129, 129, 129),NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
         alertControllerAppearance.alertCancelButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(17),NSKernAttributeName:@(0)};
         alertControllerAppearance.alertDestructiveButtonAttributes = @{NSForegroundColorAttributeName:UIColorRed,NSFontAttributeName:UIFontMake(17),NSKernAttributeName:@(0)};
-        alertControllerAppearance.alertContentCornerRadius = (IOS_VERSION >= 9.0 ? 13 : 6);
+        alertControllerAppearance.alertContentCornerRadius = 13;
         alertControllerAppearance.alertButtonHeight = 44;
         alertControllerAppearance.alertHeaderBackgroundColor = UIColorMakeWithRGBA(247, 247, 247, 1);
         alertControllerAppearance.alertButtonBackgroundColor = alertControllerAppearance.alertHeaderBackgroundColor;
@@ -162,8 +162,8 @@ static QMUIAlertController *alertControllerAppearance;
         alertControllerAppearance.sheetCancelButtonAttributes = @{NSForegroundColorAttributeName:UIColorBlue,NSFontAttributeName:UIFontBoldMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetDestructiveButtonAttributes = @{NSForegroundColorAttributeName:UIColorRed,NSFontAttributeName:UIFontMake(20),NSKernAttributeName:@(0)};
         alertControllerAppearance.sheetCancelButtonMarginTop = 8;
-        alertControllerAppearance.sheetContentCornerRadius = (IOS_VERSION >= 9.0 ? 13 : 6);
-        alertControllerAppearance.sheetButtonHeight = (IOS_VERSION >= 9.0 ? 57 : 44);
+        alertControllerAppearance.sheetContentCornerRadius = 13;
+        alertControllerAppearance.sheetButtonHeight = 57;
         alertControllerAppearance.sheetHeaderBackgroundColor = UIColorMakeWithRGBA(247, 247, 247, 1);
         alertControllerAppearance.sheetButtonBackgroundColor = alertControllerAppearance.sheetHeaderBackgroundColor;
         alertControllerAppearance.sheetButtonHighlightBackgroundColor = UIColorMake(232, 232, 232);
@@ -973,9 +973,7 @@ static QMUIAlertController *alertControllerAppearance;
         if ([weakSelf.delegate respondsToSelector:@selector(didHideAlertController:)]) {
             [weakSelf.delegate didHideAlertController:weakSelf];
         }
-        if (completion) {
-            completion();
-        }
+        if (completion) completion();
     }];
     
     // 减少alertController计数
