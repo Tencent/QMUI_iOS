@@ -1237,3 +1237,10 @@ static QMUIAlertController *alertControllerAppearance;
 
 @end
 
+@implementation UIAlertController (supportedInterfaceOrientations)
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskAll;
+}
+
+@end
