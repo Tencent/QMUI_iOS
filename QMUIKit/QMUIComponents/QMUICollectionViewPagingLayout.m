@@ -252,7 +252,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         
         // 最顶/最底
         if (proposedContentOffset.y < -contentInset.top || proposedContentOffset.y >= contentSize.height + contentInset.bottom - frameSize.height) {
-            return proposedContentOffset;
+            return CGPointMake(MIN(MAX(proposedContentOffset.x, contentInset.left), contentSize.width + contentInset.right - frameSize.width), proposedContentOffset.y);
         }
         
         CGFloat progress = ((contentInset.top + proposedContentOffset.y) + _finalItemSize.height / 2/*因为第一个 item 初始状态中心点离 contentOffset.y 有半个 item 的距离*/) / itemSpacing;
