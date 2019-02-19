@@ -311,7 +311,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         return;
     }
     
-    // 增加一个 presentedViewController 作为判断条件是因为这个 issue：https://github.com/QMUI/QMUI_iOS/issues/261
+    // 增加一个 presentedViewController 作为判断条件是因为这个 issue：https://github.com/Tencent/QMUI_iOS/issues/261
     if (!self.presentedViewController && animated) {
         self.isViewControllerTransiting = YES;
     }
@@ -337,7 +337,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     [super pushViewController:viewController animated:animated];
     
     // 某些情况下 push 操作可能会被系统拦截，实际上该 push 并不生效，这种情况下应当恢复相关标志位，否则会影响后续的 push 操作
-    // https://github.com/QMUI/QMUI_iOS/issues/426
+    // https://github.com/Tencent/QMUI_iOS/issues/426
     if (![self.viewControllers containsObject:viewController]) {
         self.isViewControllerTransiting = NO;
     }
@@ -421,6 +421,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    // fix iOS 9 UIAlertController bug: UIAlertController:supportedInterfaceOrientations was invoked recursively!
+    // https://github.com/Tencent/QMUI_iOS/issues/502
+    if (IOS_VERSION_NUMBER < 100000 && [self.visibleViewController isKindOfClass:UIAlertController.class]) {
+        return SupportedOrientationMask;
+    }
     return [self.visibleViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.visibleViewController supportedInterfaceOrientations] : SupportedOrientationMask;
 }
 

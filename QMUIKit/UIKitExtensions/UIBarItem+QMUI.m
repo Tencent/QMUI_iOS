@@ -101,7 +101,9 @@ static char kAssociatedObjectKey_viewDidLayoutSubviewsBlock;
     if (self.qmui_view) {
         __weak __typeof(self)weakSelf = self;
         self.qmui_view.qmui_layoutSubviewsBlock = ^(__kindof UIView * _Nonnull view) {
-            weakSelf.qmui_viewDidLayoutSubviewsBlock(weakSelf, view);
+            if (weakSelf.qmui_viewDidLayoutSubviewsBlock) {
+                weakSelf.qmui_viewDidLayoutSubviewsBlock(weakSelf, view);
+            }
         };
     }
 }

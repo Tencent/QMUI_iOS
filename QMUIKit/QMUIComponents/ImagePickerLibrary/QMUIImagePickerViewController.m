@@ -66,7 +66,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 @interface QMUIImagePickerViewController ()
 
 @property(nonatomic, strong) QMUIImagePickerPreviewViewController *imagePickerPreviewViewController;
-@property(nonatomic, assign) BOOL isImagesAssetLoaded;// 这个属性的作用描述：https://github.com/QMUI/QMUI_iOS/issues/219
+@property(nonatomic, assign) BOOL isImagesAssetLoaded;// 这个属性的作用描述：https://github.com/Tencent/QMUI_iOS/issues/219
 @property(nonatomic, assign) BOOL hasScrollToInitialPosition;
 @property(nonatomic, assign) BOOL canScrollToInitialPosition;// 要等数据加载完才允许滚动
 @end
@@ -258,7 +258,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
                     [self.imagesAssetArray addObject:resultAsset];
                 } else {
                     // result 为 nil，即遍历相片或视频完毕
-                    self.isImagesAssetLoaded = YES;// 这个属性的作用描述： https://github.com/QMUI/QMUI_iOS/issues/219
+                    self.isImagesAssetLoaded = YES;// 这个属性的作用描述： https://github.com/Tencent/QMUI_iOS/issues/219
                     [self.collectionView reloadData];
                     [self.collectionView performBatchUpdates:NULL completion:^(BOOL finished) {
                         [self scrollToInitialPositionIfNeeded];

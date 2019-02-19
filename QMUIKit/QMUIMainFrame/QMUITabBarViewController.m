@@ -57,7 +57,15 @@
 }
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return self.presentedViewController ? [self.presentedViewController supportedInterfaceOrientations] : ([self.selectedViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.selectedViewController supportedInterfaceOrientations] : SupportedOrientationMask);
+    
+    // fix iOS 9 UIAlertController bug: UIAlertController:supportedInterfaceOrientations was invoked recursively!
+    // https://github.com/Tencent/QMUI_iOS/issues/502
+    UIViewController *presentedViewController = self.presentedViewController;
+    if (IOS_VERSION_NUMBER < 100000 && presentedViewController && [presentedViewController isKindOfClass:UIAlertController.class]) {
+        presentedViewController = nil;
+    }
+    
+    return presentedViewController ? [presentedViewController supportedInterfaceOrientations] : ([self.selectedViewController qmui_hasOverrideUIKitMethod:_cmd] ? [self.selectedViewController supportedInterfaceOrientations] : SupportedOrientationMask);
 }
 
 #pragma mark - HomeIndicator

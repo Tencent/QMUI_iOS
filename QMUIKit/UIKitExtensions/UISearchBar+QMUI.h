@@ -22,7 +22,7 @@
 @interface UISearchBar (QMUI)
 
 /**
- 当以 tableHeaderView 的方式使用 UISearchBar 时，建议将这个属性置为 YES，从而可以帮你处理 https://github.com/QMUI/QMUI_iOS/issues/233 里列出的问题（抖动、iPhone X 适配等），默认为 NO
+ 当以 tableHeaderView 的方式使用 UISearchBar 时，建议将这个属性置为 YES，从而可以帮你处理 https://github.com/Tencent/QMUI_iOS/issues/233 里列出的问题（抖动、iPhone X 适配等），默认为 NO
  */
 @property(nonatomic, assign) BOOL qmui_usedAsTableHeaderView;
 

@@ -67,7 +67,7 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
                     
                     if ([selfObject isKindOfClass:originClass]) {
                         // Fixed: UITabBar layout is broken on iOS 12.1
-                        // https://github.com/QMUI/QMUI_iOS/issues/410
+                        // https://github.com/Tencent/QMUI_iOS/issues/410
                         
                         if (IOS_VERSION_NUMBER < 120101 || (QMUICMIActivated && ShouldFixTabBarButtonBugForAll)) {
                             if (!CGRectIsEmpty(selfObject.frame) && CGRectIsEmpty(firstArgv)) {
@@ -77,7 +77,7 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
                         
                         if (IOS_VERSION_NUMBER < 120101) {
                             // Fixed: iOS 12.1 UITabBarItem positioning issue during swipe back gesture (when UINavigationBar is hidden)
-                            // https://github.com/QMUI/QMUI_iOS/issues/422
+                            // https://github.com/Tencent/QMUI_iOS/issues/422
                             if (IS_NOTCHED_SCREEN) {
                                 if ((CGRectGetHeight(selfObject.frame) == 48 && CGRectGetHeight(firstArgv) == 33) || (CGRectGetHeight(selfObject.frame) == 31 && CGRectGetHeight(firstArgv) == 20)) {
                                     return;
@@ -160,17 +160,17 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
     if (IOS_VERSION < 11.2 && IS_58INCH_SCREEN && ShouldFixTabBarTransitionBugInIPhoneX) {
         if (CGRectGetHeight(frame) == TabBarHeight && CGRectGetMaxY(frame) < CGRectGetHeight(self.superview.bounds)) {
             // iOS 11 在界面 push 的过程中 tabBar 会瞬间往上跳，所以做这个修复。这个 bug 在 iOS 11.2 里已被系统修复。
-            // https://github.com/QMUI/QMUI_iOS/issues/217
+            // https://github.com/Tencent/QMUI_iOS/issues/217
             frame = CGRectSetY(frame, CGRectGetHeight(self.superview.bounds) - CGRectGetHeight(frame));
         }
     }
     
-    // 修复这个 bug：https://github.com/QMUI/QMUI_iOS/issues/309
+    // 修复这个 bug：https://github.com/Tencent/QMUI_iOS/issues/309
     if (@available(iOS 11, *)) {
         if (IS_NOTCHED_SCREEN && ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32))) {// 只关注全面屏设备下的这两种非正常的 tabBar 高度即可
             CGFloat bottomSafeAreaInsets = self.safeAreaInsets.bottom > 0 ? self.safeAreaInsets.bottom : self.superview.safeAreaInsets.bottom;// 注意，如果只是拿 self.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
             if (bottomSafeAreaInsets == CGRectGetHeight(self.frame)) {
-                return;// 由于这个系统 bug https://github.com/QMUI/QMUI_iOS/issues/446，这里先暂时屏蔽本次 frame 变化
+                return;// 由于这个系统 bug https://github.com/Tencent/QMUI_iOS/issues/446，这里先暂时屏蔽本次 frame 变化
             }
             frame.size.height += bottomSafeAreaInsets;
             frame.origin.y -= bottomSafeAreaInsets;

@@ -348,7 +348,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
             @selector(setRightBarButtonItem:animated:),
             @selector(setRightBarButtonItems:animated:),
             
-            // 如果被拦截，则 getter 也要返回被缓存的 item，否则会出现这个 bug：https://github.com/QMUI/QMUI_iOS/issues/362
+            // 如果被拦截，则 getter 也要返回被缓存的 item，否则会出现这个 bug：https://github.com/Tencent/QMUI_iOS/issues/362
             @selector(leftBarButtonItem),
             @selector(leftBarButtonItems),
             @selector(rightBarButtonItem),
@@ -362,7 +362,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
     });
 }
 
-// 监控是否在 iOS 10 及以下，手势返回的过程中，手势返回背后的那个界面修改了 navigationItem，这可能导致 bug：https://github.com/QMUI/QMUI_iOS/issues/302
+// 监控是否在 iOS 10 及以下，手势返回的过程中，手势返回背后的那个界面修改了 navigationItem，这可能导致 bug：https://github.com/Tencent/QMUI_iOS/issues/302
 - (BOOL)detectSetItemsWhenPopping {
     if (@available(iOS 11, *)) {
     } else {
@@ -392,12 +392,12 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
     // 自动给 position 赋值
     item.qmui_navigationButton.buttonPosition = QMUINavigationButtonPositionLeft;
     
-    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+    // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
     if (@available(iOS 11, *)) {
         UINavigationBar *navigationBar = self.qmui_navigationBar;
         if (!navigationBar) return;
         
-        // 这个保护对应这个 issue：https://github.com/QMUI/QMUI_iOS/issues/335
+        // 这个保护对应这个 issue：https://github.com/Tencent/QMUI_iOS/issues/335
         if ([navigationBar.items containsObject:self] && navigationBar.topItem != self) return;
         
         navigationBar.qmui_customizingBackBarButtonItem = item.qmui_isCustomizedBackBarButtonItem;
@@ -421,13 +421,13 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         }
     }
     
-    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+    // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
     if (@available(iOS 11, *)) {
         
         UINavigationBar *navigationBar = self.qmui_navigationBar;
         if (!navigationBar) return;
         
-        // 这个保护对应这个 issue：https://github.com/QMUI/QMUI_iOS/issues/335
+        // 这个保护对应这个 issue：https://github.com/Tencent/QMUI_iOS/issues/335
         if ([navigationBar.items containsObject:self] && navigationBar.topItem != self) return;
         
         BOOL customizingBackBarButtonItem = NO;
@@ -543,7 +543,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         OverrideImplementation([UINavigationBar class], @selector(pushNavigationItem:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
             return ^(UINavigationBar *selfObject, UINavigationItem *item, BOOL animated) {
                 
-                // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+                // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
                 BOOL shouldSetTagBeforeCallingSuper = NO;// 如果要 push 进的新 item 本身就是自定义返回按钮，那么要先打好标记再调用 super，否则先调用 super 再打标记，实测只有这样才不会导致跳动
                 if (@available(iOS 11, *)) {
                     shouldSetTagBeforeCallingSuper = [selfObject isKindOfClass:originClass] && item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
@@ -569,7 +569,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
             return ^(UINavigationBar *selfObject, NSArray<UINavigationItem *> *items, BOOL animated) {
                 
                 if ([selfObject isKindOfClass:originClass]) {
-                    // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+                    // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
                     if (@available(iOS 11, *)) {
                         selfObject.qmui_customizingBackBarButtonItem = items.lastObject.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
                     }
@@ -632,7 +632,7 @@ static char kAssociatedObjectKey_customizingBackBarButtonItem;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        // iOS 11，调整自定义返回按钮的位置 https://github.com/QMUI/QMUI_iOS/issues/279
+        // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
         if (@available(iOS 11, *)) {
             ExchangeImplementations([UINavigationController class], @selector(navigationBar:shouldPopItem:), @selector(navigationButton_navigationBar:shouldPopItem:));
         }

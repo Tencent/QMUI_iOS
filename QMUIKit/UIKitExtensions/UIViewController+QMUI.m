@@ -29,7 +29,7 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 
 @interface UIViewController ()
 
-@property(nonatomic, strong) UINavigationBar *transitionNavigationBar;// by molice 对应 UIViewController (NavigationBarTransition) 里的 transitionNavigationBar，为了让这个属性在这里可以被访问到，有点 hack，具体请查看 https://github.com/QMUI/QMUI_iOS/issues/268
+@property(nonatomic, strong) UINavigationBar *transitionNavigationBar;// by molice 对应 UIViewController (NavigationBarTransition) 里的 transitionNavigationBar，为了让这个属性在这里可以被访问到，有点 hack，具体请查看 https://github.com/Tencent/QMUI_iOS/issues/268
 @end
 
 @implementation UIViewController (QMUI)
@@ -57,7 +57,7 @@ QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleSta
         }
         
         // 修复 iOS 11 scrollView 无法自动适配不透明的 tabBar，导致底部 inset 错误的问题
-        // https://github.com/QMUI/QMUI_iOS/issues/218
+        // https://github.com/Tencent/QMUI_iOS/issues/218
         if (@available(iOS 11, *)) {
             ExchangeImplementations([UIViewController class], @selector(initWithNibName:bundle:), @selector(qmuivc_initWithNibName:bundle:));
         }
@@ -161,7 +161,7 @@ static char kAssociatedObjectKey_visibleState;
         
         UITabBar *tabBar = self.tabBarController.tabBar;
         
-        // 这串判断条件来源于这个 issue：https://github.com/QMUI/QMUI_iOS/issues/218
+        // 这串判断条件来源于这个 issue：https://github.com/Tencent/QMUI_iOS/issues/218
         BOOL isOpaqueBarAndCanExtendedLayout = !tabBar.translucent && self.extendedLayoutIncludesOpaqueBars;
         if (!isOpaqueBarAndCanExtendedLayout) {
             return;
@@ -169,7 +169,7 @@ static char kAssociatedObjectKey_visibleState;
         
         BOOL tabBarHidden = tabBar.hidden;
         
-        // 这里直接用 CGRectGetHeight(tabBar.frame) 来计算理论上不准确，但因为系统有这个 bug（https://github.com/QMUI/QMUI_iOS/issues/217），所以暂时用 CGRectGetHeight(tabBar.frame) 来代替
+        // 这里直接用 CGRectGetHeight(tabBar.frame) 来计算理论上不准确，但因为系统有这个 bug（https://github.com/Tencent/QMUI_iOS/issues/217），所以暂时用 CGRectGetHeight(tabBar.frame) 来代替
         CGFloat correctSafeAreaInsetsBottom = tabBarHidden ? tabBar.safeAreaInsets.bottom : CGRectGetHeight(tabBar.frame);
         CGFloat additionalSafeAreaInsetsBottom = correctSafeAreaInsetsBottom - tabBar.safeAreaInsets.bottom;
         self.additionalSafeAreaInsets = UIEdgeInsetsSetBottom(self.additionalSafeAreaInsets, additionalSafeAreaInsetsBottom);
@@ -235,7 +235,7 @@ static char kAssociatedObjectKey_visibleState;
         return 0;
     }
     
-    // 这里为什么要把 transitionNavigationBar 考虑进去，请参考 https://github.com/QMUI/QMUI_iOS/issues/268
+    // 这里为什么要把 transitionNavigationBar 考虑进去，请参考 https://github.com/Tencent/QMUI_iOS/issues/268
     UINavigationBar *navigationBar = !self.navigationController.navigationBarHidden && self.navigationController.navigationBar ? self.navigationController.navigationBar : ([self respondsToSelector:@selector(transitionNavigationBar)] && self.transitionNavigationBar ? self.transitionNavigationBar : nil);
     
     if (!navigationBar) {
@@ -388,7 +388,7 @@ static char kAssociatedObjectKey_dataLoaded;
         return;
     }
     
-    // 某些情况下的 UIViewController 不具备决定设备方向的权利，具体请看 https://github.com/QMUI/QMUI_iOS/issues/291
+    // 某些情况下的 UIViewController 不具备决定设备方向的权利，具体请看 https://github.com/Tencent/QMUI_iOS/issues/291
     if (![self qmui_shouldForceRotateDeviceOrientation]) {
         BOOL isRootViewController = [self isViewLoaded] && self.view.window.rootViewController == self;
         BOOL isChildViewController = [self.tabBarController.viewControllers containsObject:self] || [self.navigationController.viewControllers containsObject:self] || [self.splitViewController.viewControllers containsObject:self];
@@ -442,7 +442,7 @@ static char kAssociatedObjectKey_dataLoaded;
 @end
 
 // 为了 UIViewController 适配 iOS 11 下出现不透明的 tabBar 时底部 inset 错误的问题而创建的 Category
-// https://github.com/QMUI/QMUI_iOS/issues/218
+// https://github.com/Tencent/QMUI_iOS/issues/218
 @interface UITabBar (NavigationController)
 
 @end

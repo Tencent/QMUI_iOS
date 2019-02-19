@@ -104,6 +104,17 @@
     [self initSubviews];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    // fix iOS 11 and later, shouldHideKeyboardWhenTouchInView: will not work when calling becomeFirstResponder in UINavigationController.rootViewController.viewDidLoad
+    // https://github.com/Tencent/QMUI_iOS/issues/495
+    if (@available(iOS 11.0, *)) {
+        if (self.hideKeyboardManager && [QMUIKeyboardManager isKeyboardVisible]) {
+            self.hideKeyboardTapGestureRecognizer.enabled = YES;
+        }
+    }
+}
+
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     [self layoutEmptyView];

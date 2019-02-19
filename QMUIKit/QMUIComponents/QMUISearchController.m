@@ -294,7 +294,7 @@ QMUISynthesizeIdStrongProperty(searchBar, setSearchBar)
     if (self.shouldShowSearchBar && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
         [self initSearchController];
         // 隐藏 emptyView 后重新设置 tableHeaderView，会导致原先 shouldHideTableHeaderViewInitial 隐藏头部的操作被重置，所以下面的 force 参数要传 YES
-        // https://github.com/QMUI/QMUI_iOS/issues/128
+        // https://github.com/Tencent/QMUI_iOS/issues/128
         self.tableView.tableHeaderView = self.searchBar;
         [self hideTableHeaderViewInitialIfCanWithAnimated:NO force:YES];
     }

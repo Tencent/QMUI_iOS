@@ -303,7 +303,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     self.scrollView.pinchGestureRecognizer.enabled = enabledZoomImageView;
     self.scrollView.minimumZoomScale = minimumZoomScale;
     self.scrollView.maximumZoomScale = maximumZoomScale;
-    self.contentView.frame = CGRectSetXY(self.contentView.frame, 0, 0);// 重置 origin 的目的是：https://github.com/QMUI/QMUI_iOS/issues/400
+    self.contentView.frame = CGRectSetXY(self.contentView.frame, 0, 0);// 重置 origin 的目的是：https://github.com/Tencent/QMUI_iOS/issues/400
     [self setZoomScale:zoomScale animated:NO];
     
     // 只有前后的 zoomScale 不相等，才会触发 UIScrollViewDelegate scrollViewDidZoom:，因此对于相等的情况要自己手动触发

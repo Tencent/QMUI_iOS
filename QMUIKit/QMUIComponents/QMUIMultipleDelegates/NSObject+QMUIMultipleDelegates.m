@@ -93,7 +93,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
         
         BOOL isAddedMethod = class_addMethod(targetClass, newDelegateSetter, imp_implementationWithBlock(^(NSObject *selfObject, id aDelegate){
             
-            // 这一段保护的原因请查看 https://github.com/QMUI/QMUI_iOS/issues/292
+            // 这一段保护的原因请查看 https://github.com/Tencent/QMUI_iOS/issues/292
             if (!selfObject.qmui_multipleDelegatesEnabled || selfObject.class != targetClass) {
                 originSelectorIMP(selfObject, originDelegateSetter, aDelegate);
                 return;
@@ -114,10 +114,10 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
                 [delegates addDelegate:aDelegate];
             }
             
-            // 将类似 textView.delegate = textView 的情况标志起来，避免产生循环调用 https://github.com/QMUI/QMUI_iOS/issues/346
+            // 将类似 textView.delegate = textView 的情况标志起来，避免产生循环调用 https://github.com/Tencent/QMUI_iOS/issues/346
             selfObject.qmui_delegatesSelf = [delegates.delegates qmui_containsPointer:(__bridge void * _Nullable)(selfObject)];
             
-            originSelectorIMP(selfObject, originDelegateSetter, nil);// 先置为 nil 再设置 delegates，从而避免这个问题 https://github.com/QMUI/QMUI_iOS/issues/305
+            originSelectorIMP(selfObject, originDelegateSetter, nil);// 先置为 nil 再设置 delegates，从而避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/305
             originSelectorIMP(selfObject, originDelegateSetter, delegates);// 不管外面将什么 object 传给 setDelegate:，最终实际上传进去的都是 QMUIMultipleDelegates 容器
             
         }), method_getTypeEncoding(originMethod));
@@ -128,7 +128,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
     }
     
     // 如果原来已经有 delegate，则将其加到新建的容器里
-    // @see https://github.com/QMUI/QMUI_iOS/issues/378
+    // @see https://github.com/Tencent/QMUI_iOS/issues/378
     BeginIgnorePerformSelectorLeaksWarning
     id originDelegate = [self performSelector:getter];
     if (originDelegate && originDelegate != self.qmuimd_delegates[delegateGetterKey]) {
@@ -159,7 +159,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
     SEL originSetterSEL = [self newSetterWithGetter:getter];
     BeginIgnorePerformSelectorLeaksWarning
     id originDelegate = [self performSelector:getter];
-    [self performSelector:originSetterSEL withObject:nil];// 先置为 nil 再设置 delegates，从而避免这个问题 https://github.com/QMUI/QMUI_iOS/issues/305
+    [self performSelector:originSetterSEL withObject:nil];// 先置为 nil 再设置 delegates，从而避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/305
     [self performSelector:originSetterSEL withObject:originDelegate];
     EndIgnorePerformSelectorLeaksWarning
 }

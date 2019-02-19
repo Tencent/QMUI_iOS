@@ -106,10 +106,10 @@
             return YES;
         }
         
-        // 对 QMUIMultipleDelegates 额外处理的解释在这里：https://github.com/QMUI/QMUI_iOS/issues/357
+        // 对 QMUIMultipleDelegates 额外处理的解释在这里：https://github.com/Tencent/QMUI_iOS/issues/357
         BOOL delegateCanRespondToSelector = [delegate isKindOfClass:self.class] ? [delegate respondsToSelector:aSelector] : class_respondsToSelector(((NSObject *)delegate).class, aSelector);
         
-        // 判断 qmui_delegatesSelf 是为了解决这个 issue：https://github.com/QMUI/QMUI_iOS/issues/346
+        // 判断 qmui_delegatesSelf 是为了解决这个 issue：https://github.com/Tencent/QMUI_iOS/issues/346
         BOOL isDelegateSelf = ((NSObject *)delegate).qmui_delegatesSelf;
         if (delegateCanRespondToSelector && !isDelegateSelf) {
             return YES;

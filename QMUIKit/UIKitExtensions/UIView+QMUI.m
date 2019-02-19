@@ -72,10 +72,12 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         }
         [classes enumerateObjectsUsingBlock:^(Class obj, NSUInteger idx, BOOL * _Nonnull stop) {
             ExtendImplementationOfVoidMethodWithoutArguments(obj, @selector(layoutSubviews), ^(__kindof UIView *selfObject) {
+                // 放到下一个 runloop 是为了保证比子类的 layoutSubviews 逻辑要更晚调用
                 if (selfObject.qmui_layoutSubviewsBlock) {
-                    // 放到下一个 runloop 是为了保证比子类的 layoutSubviews 逻辑要更晚调用
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        selfObject.qmui_layoutSubviewsBlock(selfObject);
+                        if (selfObject.qmui_layoutSubviewsBlock) {
+                            selfObject.qmui_layoutSubviewsBlock(selfObject);
+                        }
                     });
                 }
             });
@@ -211,7 +213,9 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
 
 - (void)qmuiview_addSubview:(UIView *)view {
     if (view == self) {
-        NSAssert(NO, @"把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]);
+        NSString *log = [NSString stringWithFormat:@"把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]];
+        NSAssert(NO, log);
+        QMUILogWarn(@"UIView (QMUI)", @"%@", log);
     }
     [self qmuiview_addSubview:view];
 }

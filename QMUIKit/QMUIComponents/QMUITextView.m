@@ -396,7 +396,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         BOOL isDeleting = range.length > 0 && text.length <= 0;
         if (isDeleting) {
             if (NSMaxRange(range) > textView.text.length) {
-                // https://github.com/QMUI/QMUI_iOS/issues/377
+                // https://github.com/Tencent/QMUI_iOS/issues/377
                 return NO;
             } else {
                 return YES;

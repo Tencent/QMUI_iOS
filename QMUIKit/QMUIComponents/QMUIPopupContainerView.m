@@ -457,13 +457,13 @@
 
 - (void)hideCompletionWithWindowMode:(BOOL)windowMode completion:(void (^)(BOOL))completion {
     if (windowMode) {
-        // 恢复 keyWindow 之前做一下检查，避免类似问题 https://github.com/QMUI/QMUI_iOS/issues/90
+        // 恢复 keyWindow 之前做一下检查，避免类似问题 https://github.com/Tencent/QMUI_iOS/issues/90
         if ([[UIApplication sharedApplication] keyWindow] == self.popupWindow) {
             [self.previousKeyWindow makeKeyWindow];
         }
         
         // iOS 9 下（iOS 8 和 10 都没问题）需要主动移除，才能令 rootViewController 和 popupWindow 立即释放，不影响后续的 layout 判断，如果不加这两句，虽然 popupWindow 指针被置为 nil，但其实对象还存在，View 层级关系也还在
-        // https://github.com/QMUI/QMUI_iOS/issues/75
+        // https://github.com/Tencent/QMUI_iOS/issues/75
         [self removeFromSuperview];
         self.popupWindow.rootViewController = nil;
         

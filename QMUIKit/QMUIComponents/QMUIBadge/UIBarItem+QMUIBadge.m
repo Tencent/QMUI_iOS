@@ -15,6 +15,7 @@
 
 #import "UIBarItem+QMUIBadge.h"
 #import "QMUICore.h"
+#import "QMUILog.h"
 #import "QMUILabel.h"
 #import "UIView+QMUI.h"
 #import "UIBarItem+QMUI.h"
@@ -53,6 +54,12 @@
                 
                 if ([selfObject isKindOfClass:originClass] && firstArgv.superview == selfObject) {
                     return;
+                }
+                
+                if (selfObject == firstArgv) {
+                    NSString *log = [NSString stringWithFormat:@"UITabBarButton addSubview:, 把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]];
+                    NSAssert(NO, log);
+                    QMUILogWarn(@"UIBarItem (QMUIBadge)", @"%@", log);
                 }
                 
                 // call super

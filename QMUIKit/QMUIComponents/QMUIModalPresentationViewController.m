@@ -271,10 +271,10 @@ static QMUIModalPresentationViewController *appearance;
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
         
         if (self.shownInWindowMode) {
-            // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/QMUI/QMUI_iOS/issues/90
+            // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/90
             if ([[UIApplication sharedApplication] keyWindow] == self.containerWindow) {
                 if (self.previousKeyWindow.hidden) {
-                    // 保护了这个 issue 记录的情况，避免主 window 丢失 keyWindow https://github.com/QMUI/QMUI_iOS/issues/315
+                    // 保护了这个 issue 记录的情况，避免主 window 丢失 keyWindow https://github.com/Tencent/QMUI_iOS/issues/315
                     [[UIApplication sharedApplication].delegate.window makeKeyWindow];
                 } else {
                     [self.previousKeyWindow makeKeyWindow];
@@ -694,7 +694,7 @@ static QMUIModalPresentationViewController *appearance;
 - (void)layoutSubviews {
     [super layoutSubviews];
     if (self.rootViewController) {
-        // https://github.com/QMUI/QMUI_iOS/issues/375
+        // https://github.com/Tencent/QMUI_iOS/issues/375
         UIView *rootView = self.rootViewController.view;
         if (CGRectGetMinY(rootView.frame) > 0 && ![UIApplication sharedApplication].statusBarHidden && StatusBarHeight > CGRectGetMinY(rootView.frame)) {
             rootView.frame = self.bounds;

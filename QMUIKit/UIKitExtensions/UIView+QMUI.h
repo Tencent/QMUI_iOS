@@ -85,13 +85,13 @@ NS_ASSUME_NONNULL_BEGIN
  @param view 当前的 view 本身，方便使用，省去 weak 操作
  @note 如果某些 view 重写了 layoutSubviews 但没有调用 super，则这个 block 也不会被调用
  */
-@property(nonatomic, copy) void (^qmui_layoutSubviewsBlock)(__kindof UIView *view);
+@property(nullable, nonatomic, copy) void (^qmui_layoutSubviewsBlock)(__kindof UIView *view);
 
 /**
  当 tintColorDidChange 被调用的时候会调用这个 block，就不用重写方法了
  @param view 当前的 view 本身，方便使用，省去 weak 操作
  */
-@property(nonatomic, copy) void (^qmui_tintColorDidChangeBlock)(__kindof UIView *view);
+@property(nullable, nonatomic, copy) void (^qmui_tintColorDidChangeBlock)(__kindof UIView *view);
 
 /**
  当 hitTest:withEvent: 被调用时会调用这个 block，就不用重写方法了
@@ -99,7 +99,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param event 事件
  @param super 的返回结果
  */
-@property(nonatomic, copy) __kindof UIView * (^qmui_hitTestBlock)(CGPoint point, UIEvent *event, __kindof UIView *originalView);
+@property(nullable, nonatomic, copy) __kindof UIView * (^qmui_hitTestBlock)(CGPoint point, UIEvent *event, __kindof UIView *originalView);
 
 @end
 

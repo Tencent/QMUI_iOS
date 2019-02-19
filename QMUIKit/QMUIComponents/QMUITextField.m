@@ -91,7 +91,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/QMUI/QMUI_iOS/issues/64
+    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/Tencent/QMUI_iOS/issues/64
     if (@available(iOS 10.0, *)) {
         UIScrollView *scrollView = self.subviews.firstObject;
         if (![scrollView isKindOfClass:[UIScrollView class]]) {
@@ -169,7 +169,7 @@
         BOOL isDeleting = range.length > 0 && string.length <= 0;
         if (isDeleting) {
             if (NSMaxRange(range) > textField.text.length) {
-                // https://github.com/QMUI/QMUI_iOS/issues/377
+                // https://github.com/Tencent/QMUI_iOS/issues/377
                 return NO;
             } else {
                 return YES;
@@ -220,7 +220,7 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     
-    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/QMUI/QMUI_iOS/issues/64
+    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/Tencent/QMUI_iOS/issues/64
     
     if (scrollView != self.textField.subviews.firstObject) {
         return;

@@ -178,7 +178,7 @@ static char kAssociatedObjectKey_cancelButtonFont;
         return;
     }
     
-    // 重写 setFrame: 是为了这个 issue：https://github.com/QMUI/QMUI_iOS/issues/233
+    // 重写 setFrame: 是为了这个 issue：https://github.com/Tencent/QMUI_iOS/issues/233
     
     if (@available(iOS 11, *)) {
         // iOS 11 下用 tableHeaderView 的方式使用 searchBar 的话，进入搜索状态时 y 偏上了，导致间距错乱

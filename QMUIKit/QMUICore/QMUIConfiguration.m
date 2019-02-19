@@ -52,7 +52,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     
     // 自动寻找并应用模板
     // Automatically look for templates and apply them
-    // @see https://github.com/QMUI/QMUI_iOS/issues/264
+    // @see https://github.com/Tencent/QMUI_iOS/issues/264
     Protocol *protocol = @protocol(QMUIConfigurationTemplateProtocol);
     int numberOfClasses = objc_getClassList(NULL, 0);
     if (numberOfClasses > 0) {
