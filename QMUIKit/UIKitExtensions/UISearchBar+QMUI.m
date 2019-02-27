@@ -18,6 +18,10 @@
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
 
+#define SearchBarActiveHeightIOS11Later (IS_NOTCHED_SCREEN ? 55.0f : 50.0f)
+#define SearchBarNormalHeightIOS11Later 56.0f
+
+
 @implementation UISearchBar (QMUI)
 
 QMUISynthesizeBOOLProperty(qmui_usedAsTableHeaderView, setQmui_usedAsTableHeaderView)
@@ -127,16 +131,19 @@ static char kAssociatedObjectKey_cancelButtonFont;
 }
 
 - (BOOL)qmui_isActive {
-    // 某些情况下 scopeBar 是显示在搜索框右边的，所以要区分判断
-    CGFloat scopeBarHeight = self.qmui_segmentedControl && self.qmui_segmentedControl.superview.qmui_top < self.qmui_textField.qmui_bottom ? 0 : self.qmui_segmentedControl.superview.qmui_height;
-    BOOL result = self.qmui_height - scopeBarHeight == 50;
-    return result;
+    return (self.qmui_searchController.isBeingPresented || self.qmui_searchController.isActive);
+}
+
+- (UISearchController *)qmui_searchController {
+    return [self valueForKey:@"_searchController"];
 }
 
 - (void)qmuisb_layoutSubviews {
     [self qmuisb_layoutSubviews];
     
     [self fixLandscapeStyle];
+    
+    [self fixDismissingAnimation];
     
     if (!UIEdgeInsetsEqualToEdgeInsets(self.qmui_textFieldMargins, UIEdgeInsetsZero)) {
         self.qmui_textField.frame = CGRectInsetEdges(self.qmui_textField.frame, self.qmui_textFieldMargins);
@@ -155,11 +162,50 @@ static char kAssociatedObjectKey_cancelButtonFont;
         if (@available(iOS 11, *)) {
             if ([self qmui_isActive] && IS_LANDSCAPE) {
                 // 11.0 及以上的版本，横屏时，searchBar 内部的内容布局会偏上，所以这里强制居中一下
-                self.qmui_textField.frame = CGRectSetY(self.qmui_textField.frame, self.qmui_textField.qmui_topWhenCenterInSuperview);
-                self.qmui_cancelButton.frame = CGRectSetY(self.qmui_cancelButton.frame, self.qmui_cancelButton.qmui_topWhenCenterInSuperview);
+                CGFloat fixedOffset = (SearchBarActiveHeightIOS11Later - SearchBarNormalHeightIOS11Later) / 2.0;
+                self.qmui_textField.frame = CGRectSetY(self.qmui_textField.frame, self.qmui_textField.qmui_topWhenCenterInSuperview + fixedOffset);
+                self.qmui_cancelButton.frame = CGRectSetY(self.qmui_cancelButton.frame, self.qmui_cancelButton.qmui_topWhenCenterInSuperview + fixedOffset);
                 if (self.qmui_segmentedControl.superview.qmui_top < self.qmui_textField.qmui_bottom) {
                     // scopeBar 显示在搜索框右边
-                    self.qmui_segmentedControl.superview.qmui_top = self.qmui_segmentedControl.superview.qmui_topWhenCenterInSuperview;
+                    self.qmui_segmentedControl.superview.qmui_top = self.qmui_segmentedControl.superview.qmui_topWhenCenterInSuperview + fixedOffset;
+                }
+            }
+        }
+    }
+}
+
+- (void)fixDismissingAnimation {
+    if (self.qmui_usedAsTableHeaderView) {
+        if (@available(iOS 11, *)) {
+            if (self.qmui_searchController.isBeingDismissed) {
+                self.qmui_textField.superview.qmui_height = SearchBarNormalHeightIOS11Later;
+                self.qmui_textField.frame = CGRectSetY(self.qmui_textField.frame, self.qmui_textField.qmui_topWhenCenterInSuperview);
+                self.qmui_backgroundView.frame = self.qmui_textField.superview.bounds;
+                if (IS_NOTCHED_SCREEN && self.frame.origin.y == 43) { // 修复刘海屏下，系统计算少了一个 px
+                    self.frame = CGRectSetY(self.frame, StatusBarHeightConstant);
+                }
+                
+                UIView *searchBarContainerView = self.superview;
+                if (searchBarContainerView.layer.masksToBounds) {
+                    searchBarContainerView.layer.masksToBounds = NO;
+                    if (self.showsScopeBar && !IS_LANDSCAPE) {
+                        //竖屏并且显示了 ScopeBar 系统可以自然过渡，无需添加 mask 动画
+                        return;
+                    }
+                    // 之所以给 searchBarContainerView 设置mask 动画, 而非 backgroundView 是因为 searchBarContainerView 在每次激活都会重新创建一个，修改 masksToBounds 和设置动画不会去影响其他东西
+                    CAShapeLayer *maskLayer = [CAShapeLayer layer];
+                    CGMutablePathRef path = CGPathCreateMutable();
+                    CGPathAddRect(path, NULL, CGRectMake(0, 0, searchBarContainerView.qmui_width, StatusBarHeight + SearchBarActiveHeightIOS11Later));
+                    maskLayer.path = path;
+                    searchBarContainerView.layer.mask = maskLayer;
+                    
+                    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"path"];
+                    CGMutablePathRef animationPath = CGPathCreateMutable();
+                    CGPathAddRect(animationPath, NULL, CGRectMake(0, 0, searchBarContainerView.qmui_width, StatusBarHeight + SearchBarNormalHeightIOS11Later));
+                    animation.toValue   = (__bridge id)animationPath;
+                    animation.removedOnCompletion = NO;
+                    animation.fillMode = kCAFillModeForwards;
+                    [searchBarContainerView.layer.mask addAnimation:animation forKey:nil];
                 }
             }
         }
@@ -211,12 +257,9 @@ static char kAssociatedObjectKey_cancelButtonFont;
                 frame = CGRectSetY(frame, 0);
             }
         }
-        
-        if (self.layer.animationKeys) {
-            // 这一段是为了修复进入/退出搜索状态时的抖动
-            if (CGRectGetHeight(self.superview.frame) == (CGRectGetHeight(frame) + StatusBarHeight) && !self.showsScopeBar) {
-                frame = CGRectSetHeight(frame, 56);
-            }
+        // 强制在激活状态下 高度也为 56，方便后续做平滑过渡动画 (iOS 11 默认下，非刘海屏的机器激活后为 50，刘海屏激活后为 55)
+        if (frame.size.height == SearchBarActiveHeightIOS11Later) {
+            frame.size.height = 56;
         }
     }
     

@@ -286,11 +286,19 @@
         }
         
         // 导航栏上控件的主题色
-        if ([vc respondsToSelector:@selector(navigationBarTintColor)]) {
-            UIColor *tintColor = [vc navigationBarTintColor];
-            viewController.navigationController.navigationBar.tintColor = tintColor;
-        } else if (QMUICMIActivated) {
-            viewController.navigationController.navigationBar.tintColor = NavBarTintColor;
+        UIColor *tintColor =
+        [vc respondsToSelector:@selector(navigationBarTintColor)] ? [vc navigationBarTintColor] :
+                                                 QMUICMIActivated ? NavBarTintColor : nil;
+        if (tintColor) {
+            // 手势从 B 返回 A 过程中，取消手势，会调用 B 的 viewWillAppear，animateAlongsideTransition 在这种情况下不会生效，所以要用 qmui_poppingByInteractivePopGestureRecognizer 针对这种情况判断。
+            BOOL shouldApplyTintColorTransition = (animated && ![vc qmui_poppingByInteractivePopGestureRecognizer]);
+            if (shouldApplyTintColorTransition) {
+                [viewController.transitionCoordinator animateAlongsideTransition:^ (id <UIViewControllerTransitionCoordinatorContext> context) {
+                    viewController.navigationController.navigationBar.tintColor = tintColor;
+                } completion:nil];
+            } else {
+                viewController.navigationController.navigationBar.tintColor = tintColor;
+            }
         }
         
         // 导航栏title的颜色
