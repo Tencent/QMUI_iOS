@@ -399,7 +399,11 @@ static NSInteger is58InchScreen = -1;
 static NSInteger is55InchScreen = -1;
 + (BOOL)is55InchScreen {
     if (is55InchScreen < 0) {
-        is55InchScreen = (DEVICE_WIDTH == self.screenSizeFor55Inch.width && DEVICE_HEIGHT == self.screenSizeFor55Inch.height) ? 1 : 0;
+        if (IS_ZOOMEDMODE) {
+            is55InchScreen = (DEVICE_WIDTH == self.screenSizeFor47Inch.width && DEVICE_HEIGHT == self.screenSizeFor47Inch.height) ? 1 : 0;
+        }else {
+            is55InchScreen = (DEVICE_WIDTH == self.screenSizeFor55Inch.width && DEVICE_HEIGHT == self.screenSizeFor55Inch.height) ? 1 : 0;
+        }
     }
     return is55InchScreen > 0;
 }
@@ -407,7 +411,11 @@ static NSInteger is55InchScreen = -1;
 static NSInteger is47InchScreen = -1;
 + (BOOL)is47InchScreen {
     if (is47InchScreen < 0) {
-        is47InchScreen = (DEVICE_WIDTH == self.screenSizeFor47Inch.width && DEVICE_HEIGHT == self.screenSizeFor47Inch.height) ? 1 : 0;
+        if (IS_ZOOMEDMODE) {
+            is47InchScreen = (DEVICE_WIDTH == self.screenSizeFor40Inch.width && DEVICE_HEIGHT == self.screenSizeFor40Inch.height) ? 1 : 0;
+        }else {
+            is47InchScreen = (DEVICE_WIDTH == self.screenSizeFor47Inch.width && DEVICE_HEIGHT == self.screenSizeFor47Inch.height) ? 1 : 0;
+        }
     }
     return is47InchScreen > 0;
 }
