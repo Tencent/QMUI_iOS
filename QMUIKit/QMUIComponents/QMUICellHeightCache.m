@@ -323,7 +323,7 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
                 [mutableIndexSet addIndex:indexPath.row];
             }];
             [mutableIndexSetsToRemove enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey, NSIndexSet *indexSet, BOOL *stop) {
-                NSMutableArray<NSNumber *> *heightsInSection = obj.cachedHeights[akey.integerValue];
+                NSMutableArray<NSNumber *> *heightsInSection = obj.cachedHeights[aKey.integerValue];
                 [heightsInSection removeObjectsAtIndexes:indexSet];
             }];
         }];
