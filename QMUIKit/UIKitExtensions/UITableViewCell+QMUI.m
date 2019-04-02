@@ -14,8 +14,42 @@
 //
 
 #import "UITableViewCell+QMUI.h"
+#import <objc/runtime.h>
+#import "QMUICore.h"
 
 @implementation UITableViewCell (QMUI)
+
+QMUISynthesizeIdCopyProperty(qmui_setHighlightedBlock, setQmui_setHighlightedBlock)
+QMUISynthesizeIdCopyProperty(qmui_setSelectedBlock, setQmui_setSelectedBlock)
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        SEL selectors[] = {
+            @selector(setHighlighted:animated:),
+            @selector(setSelected:animated:)
+        };
+        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
+            SEL originalSelector = selectors[index];
+            SEL swizzledSelector = NSSelectorFromString([@"qmuicell_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+        }
+    });
+}
+
+- (void)qmuicell_setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
+    [self qmuicell_setHighlighted:highlighted animated:animated];
+    if (self.qmui_setHighlightedBlock) {
+        self.qmui_setHighlightedBlock(highlighted, animated);
+    }
+}
+
+- (void)qmuicell_setSelected:(BOOL)selected animated:(BOOL)animated {
+    [self qmuicell_setSelected:selected animated:animated];
+    if (self.qmui_setSelectedBlock) {
+        self.qmui_setSelectedBlock(selected, animated);
+    }
+}
 
 - (UIView *)qmui_accessoryView {
     if (self.editing) {

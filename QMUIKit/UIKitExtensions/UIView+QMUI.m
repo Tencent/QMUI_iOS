@@ -51,6 +51,9 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
             @selector(tintColorDidChange),
             @selector(hitTest:withEvent:),
             @selector(addSubview:),
+            @selector(insertSubview:atIndex:),
+            @selector(insertSubview:aboveSubview:),
+            @selector(insertSubview:belowSubview:),
             @selector(becomeFirstResponder),
             
             // 检查调用这系列方法的两个 view 是否存在共同的父 view，不存在则可能导致转换结果错误
@@ -213,11 +216,41 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
 
 - (void)qmuiview_addSubview:(UIView *)view {
     if (view == self) {
-        NSString *log = [NSString stringWithFormat:@"UIView (QMUI) addSubview:, 把自己作为 subview 添加到自己身上，self = %@, viewController = %@, navigationController = %@\n%@", self, self.qmui_viewController, self.qmui_viewController.navigationController, [NSThread callStackSymbols]];
-        NSAssert(NO, log);
-        QMUILogWarn(@"UIView (QMUI)", @"%@", log);
+        [self printLogForAddSubviewToSelf];
+        return;
     }
     [self qmuiview_addSubview:view];
+}
+
+- (void)qmuiview_insertSubview:(UIView *)view atIndex:(NSInteger)index {
+    if (view == self) {
+        [self printLogForAddSubviewToSelf];
+        return;
+    }
+    [self qmuiview_insertSubview:view atIndex:index];
+}
+
+- (void)qmuiview_insertSubview:(UIView *)view aboveSubview:(UIView *)siblingSubview {
+    if (view == self) {
+        [self printLogForAddSubviewToSelf];
+        return;
+    }
+    [self qmuiview_insertSubview:view aboveSubview:siblingSubview];
+}
+
+- (void)qmuiview_insertSubview:(UIView *)view belowSubview:(UIView *)siblingSubview {
+    if (view == self) {
+        [self printLogForAddSubviewToSelf];
+        return;
+    }
+    [self qmuiview_insertSubview:view belowSubview:siblingSubview];
+}
+
+- (void)printLogForAddSubviewToSelf {
+    UIViewController *visibleViewController = [QMUIHelper visibleViewController];
+    NSString *log = [NSString stringWithFormat:@"UIView (QMUI) addSubview:, 把自己作为 subview 添加到自己身上，self = %@, visibleViewController = %@, visibleState = %@, viewControllers = %@\n%@", self, visibleViewController, @(visibleViewController.qmui_visibleState), visibleViewController.navigationController.viewControllers, [NSThread callStackSymbols]];
+    NSAssert(NO, log);
+    QMUILogWarn(@"UIView (QMUI)", @"%@", log);
 }
 
 - (BOOL)qmuiview_becomeFirstResponder {

@@ -379,7 +379,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     
     if (state == UIGestureRecognizerStateEnded) {
         if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
-            // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-124，所以用这个<0的条件来判断
+            // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-112，所以用这个<0的条件来判断
             QMUILog(NSStringFromClass(self.class), @"手势返回放弃了");
             viewControllerWillDisappear = self.topViewController;
             viewControllerWillAppear = self.viewControllerPopping;

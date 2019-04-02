@@ -20,6 +20,7 @@
 #import "UIView+QMUI.h"
 #import "UIBarItem+QMUI.h"
 #import "UITabBarItem+QMUI.h"
+#import "UIViewController+QMUI.h"
 
 @interface _QMUIBadgeLabel : QMUILabel
 
@@ -57,7 +58,8 @@
                 }
                 
                 if (selfObject == firstArgv) {
-                    NSString *log = [NSString stringWithFormat:@"UITabBarButton addSubview:, 把自己作为 subview 添加到自己身上，self = %@, viewController = %@, navigationController = %@\n%@", selfObject, selfObject.qmui_viewController, selfObject.qmui_viewController.navigationController, [NSThread callStackSymbols]];
+                    UIViewController *visibleViewController = [QMUIHelper visibleViewController];
+                    NSString *log = [NSString stringWithFormat:@"UIBarItem (QMUIBadge) addSubview:, 把自己作为 subview 添加到自己身上，self = %@, visibleViewController = %@, visibleState = %@, viewControllers = %@\n%@", selfObject, visibleViewController, @(visibleViewController.qmui_visibleState), visibleViewController.navigationController.viewControllers, [NSThread callStackSymbols]];
                     NSAssert(NO, log);
                     QMUILogWarn(@"UIBarItem (QMUIBadge)", @"%@", log);
                 }
@@ -353,6 +355,24 @@ static char kAssociatedObjectKey_updatesIndicatorView;
 #pragma mark - Common
 
 - (void)layoutSubviews {
+    
+    if (self.qmui_updatesIndicatorView && !self.qmui_updatesIndicatorView.hidden) {
+        CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_updatesIndicatorView.centerOffsetLandscape : self.qmui_updatesIndicatorView.centerOffset;
+
+        UIView *superview = self.qmui_updatesIndicatorView.superview;
+        if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
+            // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
+            UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
+            if (!imageView) return;
+
+            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.y);
+        } else {
+            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_updatesIndicatorView.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_updatesIndicatorView.qmui_height) + centerOffset.y);
+        }
+
+        [superview bringSubviewToFront:self.qmui_updatesIndicatorView];
+    }
+    
     if (self.qmui_badgeLabel && !self.qmui_badgeLabel.hidden) {
         [self.qmui_badgeLabel sizeToFit];
         self.qmui_badgeLabel.layer.cornerRadius = MIN(self.qmui_badgeLabel.qmui_height / 2, self.qmui_badgeLabel.qmui_width / 2);
@@ -371,23 +391,6 @@ static char kAssociatedObjectKey_updatesIndicatorView;
         }
         
         [superview bringSubviewToFront:self.qmui_badgeLabel];
-    }
-    
-    if (self.qmui_updatesIndicatorView && !self.qmui_updatesIndicatorView.hidden) {
-        CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_updatesIndicatorView.centerOffsetLandscape : self.qmui_updatesIndicatorView.centerOffset;
-
-        UIView *superview = self.qmui_updatesIndicatorView.superview;
-        if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
-            // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
-            UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
-            if (!imageView) return;
-
-            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.y);
-        } else {
-            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_updatesIndicatorView.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_updatesIndicatorView.qmui_height) + centerOffset.y);
-        }
-
-        [superview bringSubviewToFront:self.qmui_updatesIndicatorView];
     }
 }
 
