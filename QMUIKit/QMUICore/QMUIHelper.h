@@ -131,7 +131,7 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 @interface QMUIHelper (Device)
 
-+ (NSString *)deviceModel;
++ (nonnull NSString *)deviceModel;
 
 + (BOOL)isIPad;
 + (BOOL)isIPod;
@@ -180,6 +180,9 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 /// 判断当前设备是否高性能设备，只会判断一次，以后都直接读取结果，所以没有性能问题
 + (BOOL)isHighPerformanceDevice;
+
+/// 系统设置里是否开启了“放大显示-试图-放大”，支持放大模式的 iPhone 设备可在官方文档中查询 https://support.apple.com/zh-cn/guide/iphone/iphd6804774e/ios
++ (BOOL)isZoomedMode;
 
 @end
 

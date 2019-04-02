@@ -65,4 +65,12 @@
 // 立即停止滚动，用于那种手指已经离开屏幕但列表还在滚动的情况。
 - (void)qmui_stopDeceleratingIfNeeded;
 
+/**
+ 以动画的形式修改 contentInset
+
+ @param contentInset 要修改为的 contentInset
+ @param animated 是否要使用动画修改
+ */
+- (void)qmui_setContentInset:(UIEdgeInsets)contentInset animated:(BOOL)animated;
+
 @end

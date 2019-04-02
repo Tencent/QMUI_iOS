@@ -57,7 +57,7 @@
                 }
                 
                 if (selfObject == firstArgv) {
-                    NSString *log = [NSString stringWithFormat:@"UITabBarButton addSubview:, 把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]];
+                    NSString *log = [NSString stringWithFormat:@"UITabBarButton addSubview:, 把自己作为 subview 添加到自己身上，self = %@, viewController = %@, navigationController = %@\n%@", selfObject, selfObject.qmui_viewController, selfObject.qmui_viewController.navigationController, [NSThread callStackSymbols]];
                     NSAssert(NO, log);
                     QMUILogWarn(@"UIBarItem (QMUIBadge)", @"%@", log);
                 }

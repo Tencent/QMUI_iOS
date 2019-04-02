@@ -16,6 +16,7 @@
 #import "UIScrollView+QMUI.h"
 #import "QMUICore.h"
 #import "NSNumber+QMUI.h"
+#import "UIView+QMUI.h"
 
 @interface UIScrollView ()
 
@@ -110,6 +111,12 @@ QMUISynthesizeCGFloatProperty(qmuiscroll_lastInsetTopWhenScrollToTop, setQmuiscr
     if (self.decelerating) {
         [self setContentOffset:self.contentOffset animated:NO];
     }
+}
+
+- (void)qmui_setContentInset:(UIEdgeInsets)contentInset animated:(BOOL)animated {
+    [UIView qmui_animateWithAnimated:animated duration:.25 delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        self.contentInset = contentInset;
+    } completion:nil];
 }
 
 @end

@@ -518,6 +518,24 @@ static NSInteger isHighPerformanceDevice = -1;
     return isHighPerformanceDevice > 0;
 }
 
++ (BOOL)isZoomedMode {
+    if (!IS_IPHONE) {
+        return NO;
+    }
+    
+    CGFloat nativeScale = UIScreen.mainScreen.nativeScale;
+    CGFloat scale = UIScreen.mainScreen.scale;
+    
+    // 对于所有的 Plus 系列 iPhone，屏幕物理像素低于软件层面的渲染像素，不管标准模式还是放大模式，nativeScale 均小于 scale，所以需要特殊处理才能准确区分放大模式
+    // https://www.paintcodeapp.com/news/ultimate-guide-to-iphone-resolutions
+    BOOL shouldBeDownsampledDevice = CGSizeEqualToSize(UIScreen.mainScreen.nativeBounds.size, CGSizeMake(1080, 1920));
+    if (shouldBeDownsampledDevice) {
+        scale /= 1.15;
+    }
+    
+    return nativeScale > scale;
+}
+
 - (void)handleAppSizeWillChange:(NSNotification *)notification {
     preferredLayoutWidth = -1;
 }

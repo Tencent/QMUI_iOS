@@ -95,7 +95,10 @@
 
 @property(nonatomic, weak) id<QMUIImagePickerViewControllerDelegate> imagePickerViewControllerDelegate;
 
-/// 图片的最小尺寸，布局时如果有剩余空间，会将空间分配给图片大小，所以最终显示出来的大小不一定等于minimumImageWidth。默认是75。
+/*
+ * 图片的最小尺寸，布局时如果有剩余空间，会将空间分配给图片大小，所以最终显示出来的大小不一定等于minimumImageWidth。默认是75。
+ * @warning collectionViewLayout 和 collectionView 可能有设置 sectionInsets 和 contentInsets，所以设置几行不可以简单的通过 screenWdith / columnCount 来获得
+ */
 @property(nonatomic, assign) CGFloat minimumImageWidth UI_APPEARANCE_SELECTOR;
 
 @property(nonatomic, strong, readonly) UICollectionViewFlowLayout *collectionViewLayout;

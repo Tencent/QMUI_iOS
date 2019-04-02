@@ -224,7 +224,7 @@
             weakSelf.sourceRect = rect;
         };
     }
-    if (sourceBarItem.qmui_view) {
+    if (sourceBarItem.qmui_view && sourceBarItem.qmui_viewLayoutDidChangeBlock) {
         sourceBarItem.qmui_viewLayoutDidChangeBlock(sourceBarItem, sourceBarItem.qmui_view);// update layout immediately
     }
 }

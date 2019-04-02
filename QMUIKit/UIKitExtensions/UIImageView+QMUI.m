@@ -45,7 +45,8 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
             @selector(didMoveToWindow),
             @selector(setHidden:),
             @selector(setAlpha:),
-            @selector(setFrame:)
+            @selector(setFrame:),
+            @selector(sizeThatFits:)
         };
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
@@ -163,6 +164,13 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
 - (void)qimgv_setFrame:(CGRect)frame {
     [self qimgv_setFrame:frame];
     [self qimgv_updateAnimationStateAutomatically];
+}
+
+- (CGSize)qimgv_sizeThatFits:(CGSize)size {
+    if (self.qimgv_animatedImage) {
+        return self.qimgv_animatedImage.size;
+    }
+    return [self qimgv_sizeThatFits:size];
 }
 
 

@@ -213,7 +213,7 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
 
 - (void)qmuiview_addSubview:(UIView *)view {
     if (view == self) {
-        NSString *log = [NSString stringWithFormat:@"把自己作为 subview 添加到自己身上！\n%@", [NSThread callStackSymbols]];
+        NSString *log = [NSString stringWithFormat:@"UIView (QMUI) addSubview:, 把自己作为 subview 添加到自己身上，self = %@, viewController = %@, navigationController = %@\n%@", self, self.qmui_viewController, self.qmui_viewController.navigationController, [NSThread callStackSymbols]];
         NSAssert(NO, log);
         QMUILogWarn(@"UIView (QMUI)", @"%@", log);
     }

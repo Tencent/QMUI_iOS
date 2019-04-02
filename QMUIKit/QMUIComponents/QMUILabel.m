@@ -50,7 +50,15 @@
 }
 
 - (void)drawTextInRect:(CGRect)rect {
-    return [super drawTextInRect:UIEdgeInsetsInsetRect(rect, self.contentEdgeInsets)];
+    rect = UIEdgeInsetsInsetRect(rect, self.contentEdgeInsets);
+    
+    // 在某些情况下文字位置错误，因此做了如下保护
+    // https://github.com/Tencent/QMUI_iOS/issues/529
+    if (self.numberOfLines == 1 && (self.lineBreakMode == NSLineBreakByWordWrapping || self.lineBreakMode == NSLineBreakByCharWrapping)) {
+        rect = CGRectSetHeight(rect, CGRectGetHeight(rect) + self.contentEdgeInsets.top * 2);
+    }
+    
+    [super drawTextInRect:rect];
 }
 
 - (void)setHighlightedBackgroundColor:(UIColor *)highlightedBackgroundColor {

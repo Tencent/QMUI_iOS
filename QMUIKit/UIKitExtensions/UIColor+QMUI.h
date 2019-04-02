@@ -85,24 +85,24 @@
  *
  *  @return alpha通道为1.0，其他rgb通道与原UIColor对象一致的新UIColor对象
  */
-- (UIColor *)qmui_colorWithoutAlpha;
+- (nullable UIColor *)qmui_colorWithoutAlpha;
 
 /**
  *  计算当前color叠加了alpha之后放在指定颜色的背景上的色值
  */
-- (UIColor *)qmui_colorWithAlpha:(CGFloat)alpha backgroundColor:(UIColor *)backgroundColor;
+- (nullable UIColor *)qmui_colorWithAlpha:(CGFloat)alpha backgroundColor:(UIColor *)backgroundColor;
 
 /**
  *  计算当前color叠加了alpha之后放在白色背景上的色值
  */
-- (UIColor *)qmui_colorWithAlphaAddedToWhite:(CGFloat)alpha;
+- (nonnull UIColor *)qmui_colorWithAlphaAddedToWhite:(CGFloat)alpha;
 
 /**
  *  将自身变化到某个目标颜色，可通过参数progress控制变化的程度，最终得到一个纯色
  *  @param toColor 目标颜色
  *  @param progress 变化程度，取值范围0.0f~1.0f
  */
-- (UIColor *)qmui_transitionToColor:(UIColor *)toColor progress:(CGFloat)progress;
+- (nonnull UIColor *)qmui_transitionToColor:(UIColor *)toColor progress:(CGFloat)progress;
 
 /**
  *  判断当前颜色是否为深色，可用于根据不同色调动态设置不同文字颜色的场景。
@@ -118,7 +118,7 @@
  *
  *  @link http://stackoverflow.com/questions/5893261/how-to-get-inverse-color-from-uicolor @/link
  */
-- (UIColor *)qmui_inverseColor;
+- (nonnull UIColor *)qmui_inverseColor;
 
 /**
  *  判断当前颜色是否等于系统默认的 tintColor 颜色。
@@ -129,13 +129,13 @@
 /**
  *  获取当前系统的默认 tintColor 色值
  */
-+ (UIColor *)qmui_systemTintColor;
++ (nullable UIColor *)qmui_systemTintColor;
 
 /**
  *  计算两个颜色叠加之后的最终色（注意区分前景色后景色的顺序）<br/>
  *  @link http://stackoverflow.com/questions/10781953/determine-rgba-colour-received-by-combining-two-colours @/link
  */
-+ (UIColor *)qmui_colorWithBackendColor:(UIColor *)backendColor frontColor:(UIColor *)frontColor;
++ (nullable UIColor *)qmui_colorWithBackendColor:(nonnull UIColor *)backendColor frontColor:(nonnull UIColor *)frontColor;
 
 /**
  *  将颜色A变化到颜色B，可通过progress控制变化的程度
@@ -143,11 +143,11 @@
  *  @param toColor 目标颜色
  *  @param progress 变化程度，取值范围0.0f~1.0f
  */
-+ (UIColor *)qmui_colorFromColor:(UIColor *)fromColor toColor:(UIColor *)toColor progress:(CGFloat)progress;
++ (nonnull UIColor *)qmui_colorFromColor:(nonnull UIColor *)fromColor toColor:(nonnull UIColor *)toColor progress:(CGFloat)progress;
 
 /**
  *  产生一个随机色，大部分情况下用于测试
  */
-+ (UIColor *)qmui_randomColor;
++ (nonnull UIColor *)qmui_randomColor;
 
 @end

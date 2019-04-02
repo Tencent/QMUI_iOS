@@ -123,7 +123,9 @@ static char kAssociatedObjectKey_viewLayoutDidChangeBlock;
     if (view) {
         __weak __typeof(self)weakSelf = self;
         view.qmui_frameDidChangeBlock = ^(__kindof UIView * _Nonnull view, CGRect precedingFrame) {
-            weakSelf.qmui_viewLayoutDidChangeBlock(weakSelf, weakSelf.qmui_view);
+            if (weakSelf.qmui_viewLayoutDidChangeBlock){
+                weakSelf.qmui_viewLayoutDidChangeBlock(weakSelf, weakSelf.qmui_view);
+            }
         };
     }
 }

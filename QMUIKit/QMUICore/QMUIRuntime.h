@@ -109,7 +109,7 @@ OverrideImplementation(Class targetClass, SEL targetSelector, id (^implementatio
 CG_INLINE BOOL
 ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSelector, void (^implementationBlock)(__kindof NSObject *selfObject)) {
     return OverrideImplementation(targetClass, targetSelector, ^id(Class originClass, SEL originCMD, IMP originIMP) {
-        return ^(__kindof NSObject *selfObject) {
+        void (^block)(__kindof NSObject *selfObject) = ^(__kindof NSObject *selfObject) {
             
             void (*originSelectorIMP)(id, SEL);
             originSelectorIMP = (void (*)(id, SEL))originIMP;
@@ -119,6 +119,11 @@ ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSe
             
             implementationBlock(selfObject);
         };
+        #if __has_feature(objc_arc)
+        return block;
+        #else
+        return [block copy];
+        #endif
     });
 }
 

@@ -120,8 +120,8 @@
 /// 是否Retina
 #define IS_RETINASCREEN ([[UIScreen mainScreen] scale] >= 2.0)
 
-/// 是否放大模式（iPhone 6及以上的设备支持放大模式）
-#define IS_ZOOMEDMODE ([[UIScreen mainScreen] respondsToSelector:@selector(nativeScale)] ? (ScreenNativeScale > ScreenScale) : NO)
+/// 是否放大模式（iPhone 6及以上的设备支持放大模式，iPhone X 除外）
+#define IS_ZOOMEDMODE [QMUIHelper isZoomedMode]
 
 #pragma mark - 变量-布局相关
 
