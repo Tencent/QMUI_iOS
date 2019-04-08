@@ -25,6 +25,7 @@ extern const NSInteger QMUITipsAutomaticallyHideToastSeconds;
 /**
  * 简单封装了 QMUIToastView，支持弹出纯文本、loading、succeed、error、info 等五种 tips。如果这些接口还满足不了业务的需求，可以通过 QMUITips 的分类自行添加接口。
  * 注意用类方法显示 tips 的话，会导致父类的 willShowBlock 无法正常工作，具体请查看 willShowBlock 的注释。
+ * @warning 使用类方法，除了 showLoading 系列方法不会自动隐藏外，其他方法如果没有 delay 参数，则会自动隐藏
  * @see [QMUIToastView willShowBlock]
  */
 @interface QMUITips : QMUIToastView

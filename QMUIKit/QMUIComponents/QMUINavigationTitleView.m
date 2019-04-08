@@ -253,7 +253,6 @@
 }
 
 - (void)layoutSubviews {
-    
     if (CGSizeIsEmpty(self.bounds.size)) {
         return;
     }

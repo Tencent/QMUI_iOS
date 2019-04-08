@@ -15,6 +15,8 @@
 
 #import "QMUIPopupMenuBaseItem.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QMUIButton;
 
 /**
@@ -47,3 +49,5 @@
 + (instancetype)itemWithImage:(nullable UIImage *)image title:(nullable NSString *)title handler:(nullable void (^)(QMUIPopupMenuButtonItem *aItem))handler;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -16,6 +16,8 @@
 #import "QMUICommonViewController.h"
 #import "QMUITableView.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 extern NSString *const QMUICommonTableViewControllerSectionHeaderIdentifier;
 extern NSString *const QMUICommonTableViewControllerSectionFooterIdentifier;
 
@@ -48,7 +50,7 @@ extern NSString *const QMUICommonTableViewControllerSectionFooterIdentifier;
 @property(nonatomic, assign, readonly) UITableViewStyle style;
 
 /// 获取当前的 tableView
-@property(nonatomic, strong, readonly) IBOutlet QMUITableView *tableView;
+@property(nonatomic, strong, readonly, null_resettable) IBOutlet QMUITableView *tableView;
 
 - (void)hideTableHeaderViewInitialIfCanWithAnimated:(BOOL)animated force:(BOOL)force;
 
@@ -80,3 +82,5 @@ extern NSString *const QMUICommonTableViewControllerSectionFooterIdentifier;
 - (BOOL)shouldHideTableHeaderViewInitial;
 
 @end
+
+NS_ASSUME_NONNULL_END

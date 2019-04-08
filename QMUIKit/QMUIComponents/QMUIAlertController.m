@@ -1038,11 +1038,16 @@ static QMUIAlertController *alertControllerAppearance;
 }
 
 - (void)addCustomView:(UIView *)view {
-    if (self.alertTextFields.count > 0) {
-        [NSException raise:@"QMUIAlertController使用错误" format:@"UITextField和CustomView不能共存"];
+    if (view && self.alertTextFields.count > 0) {
+        [NSException raise:@"QMUIAlertController使用错误" format:@"UITextField 和 customView 不能共存"];
+    }
+    if (_customView && _customView != view) {
+        [_customView removeFromSuperview];
     }
     _customView = view;
-    [self.headerScrollView addSubview:_customView];
+    if (_customView) {
+        [self.headerScrollView addSubview:_customView];
+    }
 }
 
 - (void)setTitle:(NSString *)title {

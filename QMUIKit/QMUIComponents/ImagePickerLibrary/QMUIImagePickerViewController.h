@@ -19,6 +19,8 @@
 #import "QMUIAsset.h"
 #import "QMUIAssetsGroup.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QMUIImagePickerViewController;
 @class QMUIButton;
 
@@ -93,7 +95,7 @@
 
 @interface QMUIImagePickerViewController : QMUICommonViewController <UICollectionViewDataSource, UICollectionViewDelegate, QMUIImagePickerPreviewViewControllerDelegate>
 
-@property(nonatomic, weak) id<QMUIImagePickerViewControllerDelegate> imagePickerViewControllerDelegate;
+@property(nullable, nonatomic, weak) id<QMUIImagePickerViewControllerDelegate> imagePickerViewControllerDelegate;
 
 /*
  * 图片的最小尺寸，布局时如果有剩余空间，会将空间分配给图片大小，所以最终显示出来的大小不一定等于minimumImageWidth。默认是75。
@@ -101,22 +103,22 @@
  */
 @property(nonatomic, assign) CGFloat minimumImageWidth UI_APPEARANCE_SELECTOR;
 
-@property(nonatomic, strong, readonly) UICollectionViewFlowLayout *collectionViewLayout;
-@property(nonatomic, strong, readonly) UICollectionView *collectionView;
+@property(nullable, nonatomic, strong, readonly) UICollectionViewFlowLayout *collectionViewLayout;
+@property(nullable, nonatomic, strong, readonly) UICollectionView *collectionView;
 
-@property(nonatomic, strong, readonly) UIView *operationToolBarView;
-@property(nonatomic, strong, readonly) QMUIButton *previewButton;
-@property(nonatomic, strong, readonly) QMUIButton *sendButton;
-@property(nonatomic, strong, readonly) UILabel *imageCountLabel;
+@property(nullable, nonatomic, strong, readonly) UIView *operationToolBarView;
+@property(nullable, nonatomic, strong, readonly) QMUIButton *previewButton;
+@property(nullable, nonatomic, strong, readonly) QMUIButton *sendButton;
+@property(nullable, nonatomic, strong, readonly) UILabel *imageCountLabel;
 
 /// 也可以直接传入 QMUIAssetsGroup，然后读取其中的 QMUIAsset 并储存到 imagesAssetArray 中，传入后会赋值到 QMUIAssetsGroup，并自动刷新 UI 展示
-- (void)refreshWithAssetsGroup:(QMUIAssetsGroup *)assetsGroup;
+- (void)refreshWithAssetsGroup:(QMUIAssetsGroup * _Nullable)assetsGroup;
 
-@property(nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *imagesAssetArray;
-@property(nonatomic, strong, readonly) QMUIAssetsGroup *assetsGroup;
+@property(nullable, nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *imagesAssetArray;
+@property(nullable, nonatomic, strong, readonly) QMUIAssetsGroup *assetsGroup;
 
 /// 当前被选择的图片对应的 QMUIAsset 对象数组
-@property(nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *selectedImageAssetArray;
+@property(nullable, nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *selectedImageAssetArray;
 
 /// 是否允许图片多选，默认为 YES。如果为 NO，则不显示 checkbox 和底部工具栏。
 @property(nonatomic, assign) BOOL allowsMultipleSelection;
@@ -128,10 +130,10 @@
 @property(nonatomic, assign) NSUInteger minimumSelectImageCount;
 
 /// 选择图片超出最大图片限制时 alertView 的标题
-@property(nonatomic, copy) NSString *alertTitleWhenExceedMaxSelectImageCount;
+@property(nullable, nonatomic, copy) NSString *alertTitleWhenExceedMaxSelectImageCount;
 
 /// 选择图片超出最大图片限制时 alertView 底部按钮的标题
-@property(nonatomic, copy) NSString *alertButtonTitleWhenExceedMaxSelectImageCount;
+@property(nullable, nonatomic, copy) NSString *alertButtonTitleWhenExceedMaxSelectImageCount;
 
 /**
  *  加载相册列表时会出现 loading，若需要自定义 loading 的形式，可将该属性置为 NO，默认为 YES。
@@ -144,6 +146,8 @@
 
 @interface QMUIImagePickerViewController (UIAppearance)
 
-+ (nonnull instancetype)appearance;
++ (instancetype)appearance;
 
 @end
+
+NS_ASSUME_NONNULL_END

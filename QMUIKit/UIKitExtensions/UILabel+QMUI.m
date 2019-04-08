@@ -34,7 +34,7 @@
         [self qmui_setText:text];
         return;
     }
-    if (!self.qmui_textAttributes.count && self.qmui_lineHeight <= 0) {
+    if (!self.qmui_textAttributes.count && ![self _hasSetQmuiLineHeight]) {
         [self qmui_setText:text];
         return;
     }
@@ -127,10 +127,7 @@ static char kAssociatedObjectKey_textAttributes;
     }
     
     // 判断是否应该应用上通过 qmui_setLineHeight: 设置的行高
-    __block BOOL shouldAdjustLineHeight = YES;
-    if (self.qmui_lineHeight <= 0) {
-        shouldAdjustLineHeight = NO;
-    }
+    __block BOOL shouldAdjustLineHeight = [self _hasSetQmuiLineHeight];
     [attributedString enumerateAttribute:NSParagraphStyleAttributeName inRange:NSMakeRange(0, attributedString.length) options:0 usingBlock:^(NSParagraphStyle *style, NSRange range, BOOL * _Nonnull stop) {
         // 如果用户已经通过传入 NSParagraphStyle 对文字整个 range 设置了行高，则这里不应该再次调整行高
         if (NSEqualRanges(range, NSMakeRange(0, attributedString.length))) {
@@ -156,7 +153,31 @@ static char kAssociatedObjectKey_lineHeight;
 }
 
 - (CGFloat)qmui_lineHeight {
-    return [(NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight) qmui_CGFloatValue];
+    if ([self _hasSetQmuiLineHeight]) {
+        return [(NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight) qmui_CGFloatValue];
+    } else if (self.attributedText.length) {
+        __block NSMutableAttributedString *string = [self.attributedText mutableCopy];
+        __block CGFloat result = 0;
+        [string enumerateAttribute:NSParagraphStyleAttributeName inRange:NSMakeRange(0, string.length) options:0 usingBlock:^(NSParagraphStyle *style, NSRange range, BOOL * _Nonnull stop) {
+            // 如果用户已经通过传入 NSParagraphStyle 对文字整个 range 设置了行高，则这里不应该再次调整行高
+            if (NSEqualRanges(range, NSMakeRange(0, string.length))) {
+                if (style && (style.maximumLineHeight || style.minimumLineHeight)) {
+                    result = style.maximumLineHeight;
+                    *stop = YES;
+                }
+            }
+        }];
+        
+        return result == 0 ? self.font.lineHeight : result;
+    } else if (self.text.length) {
+        return self.font.lineHeight;
+    }
+    
+    return 0;
+}
+
+- (BOOL)_hasSetQmuiLineHeight {
+    return objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight);
 }
 
 - (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor {

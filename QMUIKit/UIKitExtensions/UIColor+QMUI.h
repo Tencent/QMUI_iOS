@@ -90,7 +90,7 @@
 /**
  *  计算当前color叠加了alpha之后放在指定颜色的背景上的色值
  */
-- (nullable UIColor *)qmui_colorWithAlpha:(CGFloat)alpha backgroundColor:(UIColor *)backgroundColor;
+- (nullable UIColor *)qmui_colorWithAlpha:(CGFloat)alpha backgroundColor:(nullable UIColor *)backgroundColor;
 
 /**
  *  计算当前color叠加了alpha之后放在白色背景上的色值
@@ -102,7 +102,7 @@
  *  @param toColor 目标颜色
  *  @param progress 变化程度，取值范围0.0f~1.0f
  */
-- (nonnull UIColor *)qmui_transitionToColor:(UIColor *)toColor progress:(CGFloat)progress;
+- (nonnull UIColor *)qmui_transitionToColor:(nullable UIColor *)toColor progress:(CGFloat)progress;
 
 /**
  *  判断当前颜色是否为深色，可用于根据不同色调动态设置不同文字颜色的场景。
