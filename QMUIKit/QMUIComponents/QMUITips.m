@@ -48,6 +48,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 - (void)showLoading:(NSString *)text detailText:(NSString *)detailText {
     [self showLoading:text detailText:detailText hideAfterDelay:0];
 }
+
 - (void)showLoading:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
     UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
     [indicator startAnimating];
@@ -188,7 +189,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showWithText:(NSString *)text inView:(UIView *)view {
-    return [self showWithText:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showWithText:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showWithText:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -196,7 +197,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showWithText:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showWithText:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showWithText:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showWithText:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -214,7 +215,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showSucceed:(NSString *)text inView:(UIView *)view {
-    return [self showSucceed:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showSucceed:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showSucceed:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -222,7 +223,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showSucceed:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showSucceed:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showSucceed:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showSucceed:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -240,7 +241,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showError:(NSString *)text inView:(UIView *)view {
-    return [self showError:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showError:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showError:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -248,7 +249,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showError:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showError:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showError:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showError:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -266,7 +267,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showInfo:(NSString *)text inView:(UIView *)view {
-    return [self showInfo:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showInfo:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showInfo:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -274,7 +275,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showInfo:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showInfo:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showInfo:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showInfo:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {

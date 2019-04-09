@@ -18,6 +18,8 @@
 #import "QMUIModalPresentationViewController.h"
 #import "QMUIButton.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QMUIMoreOperationController;
 @class QMUIMoreOperationItemView;
 
@@ -50,42 +52,42 @@
  */
 @interface QMUIMoreOperationController : UIViewController <QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate, QMUIModalPresentationComponentProtocol>
 
-@property(nonatomic, strong) UIColor *contentBackgroundColor UI_APPEARANCE_SELECTOR;// 面板上半部分（不包含取消按钮）背景色
+@property(nullable, nonatomic, strong) UIColor *contentBackgroundColor UI_APPEARANCE_SELECTOR;// 面板上半部分（不包含取消按钮）背景色
 @property(nonatomic, assign) CGFloat contentEdgeMargin UI_APPEARANCE_SELECTOR;// 面板距离屏幕的上下左右间距
 @property(nonatomic, assign) CGFloat contentMaximumWidth UI_APPEARANCE_SELECTOR;// 面板的最大宽度
 @property(nonatomic, assign) CGFloat contentCornerRadius UI_APPEARANCE_SELECTOR;// 面板的圆角大小，当值大于 0 时会设置 self.view.clipsToBounds = YES
 @property(nonatomic, assign) UIEdgeInsets contentPaddings UI_APPEARANCE_SELECTOR;// 面板内部的 padding，UIScrollView 会布局在除去 padding 之后的区域
 
-@property(nonatomic, strong) UIColor *scrollViewSeparatorColor UI_APPEARANCE_SELECTOR;// 每一行之间的顶部分隔线，对第一行无效
+@property(nullable, nonatomic, strong) UIColor *scrollViewSeparatorColor UI_APPEARANCE_SELECTOR;// 每一行之间的顶部分隔线，对第一行无效
 @property(nonatomic, assign) UIEdgeInsets scrollViewContentInsets UI_APPEARANCE_SELECTOR;// 每一行内部的 padding
 
-@property(nonatomic, strong) UIColor *itemBackgroundColor UI_APPEARANCE_SELECTOR;// 按钮的背景色
-@property(nonatomic, strong) UIColor *itemTitleColor UI_APPEARANCE_SELECTOR;// 按钮的标题颜色
-@property(nonatomic, strong) UIFont  *itemTitleFont UI_APPEARANCE_SELECTOR;// 按钮的标题字体
+@property(nullable, nonatomic, strong) UIColor *itemBackgroundColor UI_APPEARANCE_SELECTOR;// 按钮的背景色
+@property(nullable, nonatomic, strong) UIColor *itemTitleColor UI_APPEARANCE_SELECTOR;// 按钮的标题颜色
+@property(nullable, nonatomic, strong) UIFont  *itemTitleFont UI_APPEARANCE_SELECTOR;// 按钮的标题字体
 @property(nonatomic, assign) CGFloat itemPaddingHorizontal UI_APPEARANCE_SELECTOR;// 按钮内 imageView 的左右间距（按钮宽度 = 图片宽度 + 左右间距 * 2），通常用来调整文字的宽度
 @property(nonatomic, assign) CGFloat itemTitleMarginTop UI_APPEARANCE_SELECTOR;// 按钮标题距离文字之间的间距
 @property(nonatomic, assign) CGFloat itemMinimumMarginHorizontal UI_APPEARANCE_SELECTOR;// 按钮与按钮之间的最小间距
 @property(nonatomic, assign) BOOL automaticallyAdjustItemMargins UI_APPEARANCE_SELECTOR;// 是否要自动计算默认一行展示多少个 item，YES 表示尽量让每一行末尾露出半个 item 暗示后面还有内容，NO 表示直接根据 itemMinimumMarginHorizontal 来计算布局。默认为 YES。
 
-@property(nonatomic, strong) UIColor *cancelButtonBackgroundColor UI_APPEARANCE_SELECTOR;// 取消按钮的背景色
-@property(nonatomic, strong) UIColor *cancelButtonTitleColor UI_APPEARANCE_SELECTOR;// 取消按钮的标题颜色
-@property(nonatomic, strong) UIColor *cancelButtonSeparatorColor UI_APPEARANCE_SELECTOR;// 取消按钮的顶部分隔线颜色
-@property(nonatomic, strong) UIFont  *cancelButtonFont UI_APPEARANCE_SELECTOR;// 取消按钮的字体
+@property(nullable, nonatomic, strong) UIColor *cancelButtonBackgroundColor UI_APPEARANCE_SELECTOR;// 取消按钮的背景色
+@property(nullable, nonatomic, strong) UIColor *cancelButtonTitleColor UI_APPEARANCE_SELECTOR;// 取消按钮的标题颜色
+@property(nullable, nonatomic, strong) UIColor *cancelButtonSeparatorColor UI_APPEARANCE_SELECTOR;// 取消按钮的顶部分隔线颜色
+@property(nullable, nonatomic, strong) UIFont  *cancelButtonFont UI_APPEARANCE_SELECTOR;// 取消按钮的字体
 @property(nonatomic, assign) CGFloat cancelButtonHeight UI_APPEARANCE_SELECTOR;// 取消按钮的高度
 @property(nonatomic, assign) CGFloat cancelButtonMarginTop UI_APPEARANCE_SELECTOR;// 取消按钮距离内容面板的间距
 
-@property(nonatomic, weak) id<QMUIMoreOperationControllerDelegate> delegate;
+@property(nullable, nonatomic, weak) id<QMUIMoreOperationControllerDelegate> delegate;
 
-@property(nonatomic, strong, readonly) UIView *contentView;// 放 UIScrollView 的容器，与 cancelButton 区分开
-@property(nonatomic, strong, readonly) NSArray<UIScrollView *> *scrollViews;// 获取当前的所有 UIScrollView
+@property(nullable, nonatomic, strong, readonly) UIView *contentView;// 放 UIScrollView 的容器，与 cancelButton 区分开
+@property(nullable, nonatomic, strong, readonly) NSArray<UIScrollView *> *scrollViews;// 获取当前的所有 UIScrollView
 
 /// 取消按钮，如果不需要，则自行设置其 hidden 为 YES
-@property(nonatomic, strong, readonly) QMUIButton *cancelButton;
+@property(nullable, nonatomic, strong, readonly) QMUIButton *cancelButton;
 
 /// 在 iPhoneX 机器上是否延伸底部背景色。因为在 iPhoneX 上我们会把整个面板往上移动 safeArea 的距离，如果你的面板本来就配置成撑满全屏的样式，那么就会露出底部的空隙，isExtendBottomLayout 可以帮助你把空暇填补上。默认为NO。
 @property(nonatomic, assign) BOOL isExtendBottomLayout UI_APPEARANCE_SELECTOR;
 
-@property(nonatomic, copy) NSArray<NSArray<QMUIMoreOperationItemView *> *> *items;
+@property(nullable, nonatomic, copy) NSArray<NSArray<QMUIMoreOperationItemView *> *> *items;
 
 /// 添加一个 itemView 到指定 section 的末尾
 - (void)addItemView:(QMUIMoreOperationItemView *)itemView inSection:(NSInteger)section;
@@ -97,10 +99,10 @@
 - (void)removeItemViewAtIndexPath:(NSIndexPath *)indexPath;
 
 /// 获取指定 tag 的 itemView，如果不存在则返回 nil
-- (QMUIMoreOperationItemView *)itemViewWithTag:(NSInteger)tag;
+- (QMUIMoreOperationItemView * _Nullable)itemViewWithTag:(NSInteger)tag;
 
 /// 获取指定 itemView 在当前控件里的 indexPath，如果不存在则返回 nil
-- (NSIndexPath *)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView;
+- (NSIndexPath * _Nullable)indexPathWithItemView:(QMUIMoreOperationItemView *)itemView;
 
 /// 弹出面板，一般在 init 完并且设置好 items 之后就调用这个接口来显示面板
 - (void)showFromBottom;
@@ -117,36 +119,38 @@
 
 @interface QMUIMoreOperationController (UIAppearance)
 
-+ (nonnull instancetype)appearance;
++ (instancetype)appearance;
 
 @end
 
 
 @interface QMUIMoreOperationItemView : QMUIButton
 
-@property(nonatomic, strong, readonly) NSIndexPath *indexPath;
+@property(nullable, nonatomic, strong, readonly) NSIndexPath *indexPath;
 @property(nonatomic, assign) NSInteger tag;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                            title:(NSString *)title
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
++ (instancetype)itemViewWithImage:(UIImage * _Nullable)image
+                            title:(NSString * _Nullable)title
+                          handler:(void (^ _Nullable)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                    selectedImage:(UIImage *)selectedImage
-                            title:(NSString *)title
-                    selectedTitle:(NSString *)selectedTitle
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
++ (instancetype)itemViewWithImage:(UIImage * _Nullable)image
+                    selectedImage:(UIImage * _Nullable)selectedImage
+                            title:(NSString * _Nullable)title
+                    selectedTitle:(NSString * _Nullable)selectedTitle
+                          handler:(void (^ _Nullable)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                            title:(NSString *)title
++ (instancetype)itemViewWithImage:(UIImage * _Nullable)image
+                            title:(NSString * _Nullable)title
                               tag:(NSInteger)tag
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
+                          handler:(void (^ _Nullable)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
 
-+ (instancetype)itemViewWithImage:(UIImage *)image
-                    selectedImage:(UIImage *)selectedImage
-                            title:(NSString *)title
-                    selectedTitle:(NSString *)selectedTitle
++ (instancetype)itemViewWithImage:(UIImage * _Nullable)image
+                    selectedImage:(UIImage * _Nullable)selectedImage
+                            title:(NSString * _Nullable)title
+                    selectedTitle:(NSString * _Nullable)selectedTitle
                               tag:(NSInteger)tag
-                          handler:(void (^)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
+                          handler:(void (^ _Nullable)(QMUIMoreOperationController *moreOperationController, QMUIMoreOperationItemView *itemView))handler;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -235,8 +235,16 @@ static char kAssociatedObjectKey_visibleState;
         return 0;
     }
     
-    // 这里为什么要把 transitionNavigationBar 考虑进去，请参考 https://github.com/Tencent/QMUI_iOS/issues/268
-    UINavigationBar *navigationBar = !self.navigationController.navigationBarHidden && self.navigationController.navigationBar ? self.navigationController.navigationBar : ([self respondsToSelector:@selector(transitionNavigationBar)] && self.transitionNavigationBar ? self.transitionNavigationBar : nil);
+    // 手势返回过程中 self.navigationController 已经不存在了，所以暂时通过遍历 view 层级的方式去获取到 navigationController 的引用
+    UINavigationController *navigationController = self.navigationController;
+    if (!navigationController) {
+        navigationController = self.view.superview.superview.qmui_viewController;
+        if (![navigationController isKindOfClass:[UINavigationController class]]) {
+            navigationController = nil;
+        }
+    }
+    
+    UINavigationBar *navigationBar = (!navigationController.navigationBarHidden && navigationController.navigationBar) ? navigationController.navigationBar : nil;
     
     if (!navigationBar) {
         return 0;

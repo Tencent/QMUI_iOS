@@ -16,6 +16,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QMUICellHeightKeyCache;
 
 /**
@@ -43,3 +45,5 @@
 /// 搭配 QMUICellHeightKeyCache，清除所有状态下的缓存
 - (void)qmui_invalidateAllCellHeightKeyCache;
 @end
+
+NS_ASSUME_NONNULL_END

@@ -32,7 +32,7 @@
 @property(nonatomic, assign) NSUInteger qmui_badgeInteger;
 
 /// 用字符串设置未读数，nil 表示不显示未读数
-@property(nonatomic, copy) NSString *qmui_badgeString;
+@property(nonatomic, copy, nullable) NSString *qmui_badgeString;
 
 @property(nonatomic, strong, nullable) UIColor *qmui_badgeBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor *qmui_badgeTextColor;

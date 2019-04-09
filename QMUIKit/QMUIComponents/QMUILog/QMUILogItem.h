@@ -15,6 +15,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(NSUInteger, QMUILogLevel) {
     QMUILogLevelDefault,    // 当使用 QMUILog() 时使用的等级
     QMUILogLevelInfo,       // 当使用 QMUILogInfo() 时使用的等级，比 QMUILogLevelDefault 要轻量，适用于一些无关紧要的信息
@@ -32,10 +34,12 @@ typedef NS_ENUM(NSUInteger, QMUILogLevel) {
 @property(nullable, nonatomic, copy) NSString *name;
 
 /// 日志的内容
-@property(nonnull, nonatomic, copy) NSString *logString;
+@property(nonatomic, copy) NSString *logString;
 
 /// 当前 logItem 对应的 name 是否可用，可通过 QMUILogNameManager 控制，默认为 YES
 @property(nonatomic, assign) BOOL enabled;
 
 + (nonnull instancetype)logItemWithLevel:(QMUILogLevel)level name:(nullable NSString *)name logString:(nonnull NSString *)logString, ... NS_FORMAT_FUNCTION(3, 4);
 @end
+
+NS_ASSUME_NONNULL_END

@@ -38,16 +38,24 @@
 @property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *qmui_textAttributes;
 
 /** 
- *  设置当前整段文字的行高
+ *  Setter 设置当前整段文字的行高
  *  @note 如果同时通过 qmui_textAttributes 或 attributedText 给整段文字设置了行高，则此方法将不再生效。换句话说，此方法设置的行高将永远不会覆盖 qmui_textAttributes 或 attributedText 设置的行高。
  *  @note 比如对于字符串"abc"，你通过 attributedText 设置 {0, 1} 这个 range 范围内的行高为 10，又通过 setQmui_lineHeight: 设置了整体行高为 20，则最终 {0, 1} 内的行高将为 10，而 {1, 2} 内的行高将为全局行高 20
  *  @note 比如对于字符串"abc"，你先通过 setQmui_lineHeight: 设置整体行高为 10，又通过 attributedText/qmui_textAttributes 设置整体行高为 20，无论这两个设置的代码的先后顺序如何，最终行高都将为 20
  *
  *  @note 当你设置了此属性后，每次你调用 setText: 时，其实都会被自动转而调用 setAttributedText:
  *
+ *  -----------------------------------
+ *
+ *  Getter 获取整段文字的行高
+ *  @note 如果通过 setQmui_lineHeight 设置行高，会优先返回该值。
+ *  @note 如果通过 NSParagraphStyleAttributeName 设置了行高，同时 range 是整段文字，则会返回 paraStyle.maximumLineHeight。
+ *  @note 如果通过 setText 设置文本，会返回 font.lineHeight。
+ *  @warning 除上述情况外，计算的数值都可能不准确，会返回 0。
+ *
  */
 
-- (void)setQmui_lineHeight:(CGFloat)qmui_lineHeight;
+@property(nonatomic, assign) CGFloat qmui_lineHeight;
 
 /**
  * 将目标UILabel的样式属性设置到当前UILabel上

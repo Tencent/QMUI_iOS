@@ -15,6 +15,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QMUIPopupMenuView;
 
 @protocol QMUIPopupMenuItemProtocol <NSObject>
@@ -35,3 +37,5 @@
 - (void)updateAppearance;
 
 @end
+
+NS_ASSUME_NONNULL_END

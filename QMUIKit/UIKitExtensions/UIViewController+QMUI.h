@@ -16,6 +16,8 @@
 #import <UIKit/UIKit.h>
 #import "QMUICore.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /// 在 App 的 rootViewController.view.frame.size 发生变化（例如横竖屏旋转，或者 iPad Split View 模式下调整大小）前发出通知，你可以通过 QMUIPrecedingAppSizeUserInfoKey 获取变化前的值（也即当前值），用 QMUIFollowingAppSizeUserInfoKey 获取变化后的值。
 extern NSNotificationName const QMUIAppSizeWillChangeNotification;
 
@@ -72,7 +74,7 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
 /**
  在当前 viewController 生命周期发生变化的时候调用
  */
-@property(nonatomic, copy) void (^qmui_visibleStateDidChangeBlock)(__kindof UIViewController *viewController, QMUIViewControllerVisibleState visibleState);
+@property(nullable, nonatomic, copy) void (^qmui_visibleStateDidChangeBlock)(__kindof UIViewController *viewController, QMUIViewControllerVisibleState visibleState);
 
 /**
  *  UINavigationBar 在 self.view 坐标系里的 maxY，一般用于 self.view.subviews 布局时参考用
@@ -147,3 +149,5 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
 + (nullable UIViewController *)visibleViewController;
 
 @end
+
+NS_ASSUME_NONNULL_END

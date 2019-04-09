@@ -19,6 +19,8 @@
 #import "QMUIPopupMenuBaseItem.h"
 #import "QMUIPopupMenuButtonItem.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  *  用于弹出浮层里显示一行一行的菜单的控件。
  *  使用方式：
@@ -72,3 +74,5 @@
 @property(nonatomic, copy, nullable) NSArray<NSArray<__kindof QMUIPopupMenuBaseItem *> *> *itemSections;
 
 @end
+
+NS_ASSUME_NONNULL_END

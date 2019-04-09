@@ -15,6 +15,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QMUIModalPresentationViewController;
 @class QMUIModalPresentationWindow;
 
@@ -108,20 +110,20 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  */
 @interface QMUIModalPresentationViewController : UIViewController
 
-@property(nonatomic, weak) IBOutlet id<QMUIModalPresentationViewControllerDelegate> delegate;
+@property(nullable, nonatomic, weak) IBOutlet id<QMUIModalPresentationViewControllerDelegate> delegate;
 
 /**
  *  要被弹出的浮层
  *  @warning 当设置了`contentView`时，不要再设置`contentViewController`
  */
-@property(nonatomic, strong) IBOutlet UIView *contentView;
+@property(nullable, nonatomic, strong) IBOutlet UIView *contentView;
 
 /**
  *  要被弹出的浮层，适用于浮层以UIViewController的形式来管理的情况。
  *  @warning 当设置了`contentViewController`时，`contentViewController.view`会被当成`contentView`使用，因此不要再自行设置`contentView`
  *  @warning 注意`contentViewController`是强引用，容易导致循环引用，使用时请注意
  */
-@property(nonatomic, strong) IBOutlet UIViewController<QMUIModalPresentationContentViewControllerProtocol> *contentViewController;
+@property(nullable, nonatomic, strong) IBOutlet UIViewController<QMUIModalPresentationContentViewControllerProtocol> *contentViewController;
 
 /**
  *  设置`contentView`布局时与外容器的间距，默认为(20, 20, 20, 20)
@@ -140,12 +142,12 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *
  *  `QMUIModalPresentationViewController`会自动给自定义的`dimmingView`添加手势以实现点击遮罩隐藏浮层。
  */
-@property(nonatomic, strong) IBOutlet UIView *dimmingView;
+@property(nullable, nonatomic, strong) IBOutlet UIView *dimmingView;
 
 /**
  *  由于点击遮罩导致浮层被隐藏时的回调（区分于`hideWithAnimated:completion:`里的completion，这里是特地用于点击遮罩的情况）
  */
-@property(nonatomic, copy) void (^didHideByDimmingViewTappedBlock)(void);
+@property(nullable, nonatomic, copy) void (^didHideByDimmingViewTappedBlock)(void);
 
 /**
  *  控制当前是否以模态的形式存在。如果以模态的形式存在，则点击空白区域不会隐藏浮层。
@@ -192,7 +194,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @see contentViewMargins
  *  @see maximumContentViewWidth
  */
-@property(nonatomic, copy) void (^layoutBlock)(CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewDefaultFrame);
+@property(nullable, nonatomic, copy) void (^layoutBlock)(CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewDefaultFrame);
 
 /**
  *  管理自定义的显示动画，需要管理的对象包括`contentView`和`dimmingView`，在`showingAnimation`被调用前，`contentView`已被添加到界面上。若使用了`layoutBlock`，则会先调用`layoutBlock`，再调用`showingAnimation`。在动画结束后，必须调用参数里的`completion` block。
@@ -202,7 +204,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @arg  contentViewFrame    动画执行完后`contentView`的最终frame，若使用了`layoutBlock`，则也即`layoutBlock`计算完后的frame
  *  @arg  completion          动画结束后给到modalController的回调，modalController会在这个回调里做一些状态设置，务必调用。
  */
-@property(nonatomic, copy) void (^showingAnimation)(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewFrame, void(^completion)(BOOL finished));
+@property(nullable, nonatomic, copy) void (^showingAnimation)(UIView * _Nullable dimmingView, CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewFrame, void(^completion)(BOOL finished));
 
 /**
  *  管理自定义的隐藏动画，需要管理的对象包括`contentView`和`dimmingView`，在动画结束后，必须调用参数里的`completion` block。
@@ -211,7 +213,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @arg  keyboardHeight      键盘在当前界面里的高度，若无键盘，则为0
  *  @arg  completion          动画结束后给到modalController的回调，modalController会在这个回调里做一些清理工作，务必调用
  */
-@property(nonatomic, copy) void (^hidingAnimation)(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished));
+@property(nullable, nonatomic, copy) void (^hidingAnimation)(UIView * _Nullable dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished));
 
 /**
  *  请求重新计算浮层的布局
@@ -223,7 +225,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @param animated    是否以动画的形式显示
  *  @param completion  显示动画结束后的回调
  */
-- (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+- (void)showWithAnimated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
 
 /**
  *  将浮层隐藏掉
@@ -231,7 +233,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @param completion  隐藏动画结束后的回调
  *  @warning 这里的`completion`只会在你显式调用`hideWithAnimated:completion:`方法来隐藏浮层时会被调用，如果你通过点击`dimmingView`来触发`hideWithAnimated:completion:`，则completion是不会被调用的，那种情况下如果你要在浮层隐藏后做一些事情，请使用`delegate`提供的`didHideModalPresentationViewController:`方法。
  */
-- (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+- (void)hideWithAnimated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
 
 /**
  *  将浮层以 addSubview 的方式显示出来
@@ -240,7 +242,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @param animated     是否以动画的形式显示
  *  @param completion   显示动画结束后的回调
  */
-- (void)showInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+- (void)showInView:(UIView *)view animated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
 
 /**
  *  将某个 view 上显示的浮层隐藏掉
@@ -249,7 +251,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
  *  @param completion   隐藏动画结束后的回调
  *  @warning 这里的`completion`只会在你显式调用`hideInView:animated:completion:`方法来隐藏浮层时会被调用，如果你通过点击`dimmingView`来触发`hideInView:animated:completion:`，则completion是不会被调用的，那种情况下如果你要在浮层隐藏后做一些事情，请使用`delegate`提供的`didHideModalPresentationViewController:`方法。
  */
-- (void)hideInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+- (void)hideInView:(UIView *)view animated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
 
 @end
 
@@ -285,7 +287,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 
 @interface QMUIModalPresentationViewController (UIAppearance)
 
-+ (nonnull instancetype)appearance;
++ (instancetype)appearance;
 
 @end
 
@@ -300,5 +302,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 /**
  *  获取弹出当前 vieController 的 QMUIModalPresentationViewController，注意需要 modalPresentationViewController show 之后这个属性才会被赋值。
  */
-@property(nonatomic, weak, readonly) QMUIModalPresentationViewController *qmui_modalPresentationViewController;
+@property(nullable, nonatomic, weak, readonly) QMUIModalPresentationViewController *qmui_modalPresentationViewController;
 @end
+
+NS_ASSUME_NONNULL_END
