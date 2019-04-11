@@ -35,7 +35,7 @@
 /**
  *  将当前色值转换为hex字符串，通道排序是AARRGGBB（与Android保持一致）
  */
-- (nullable NSString *)qmui_hexString;
+- (nonnull NSString *)qmui_hexString;
 
 /**
  *  获取当前UIColor对象里的红色色值
@@ -90,7 +90,7 @@
 /**
  *  计算当前color叠加了alpha之后放在指定颜色的背景上的色值
  */
-- (nullable UIColor *)qmui_colorWithAlpha:(CGFloat)alpha backgroundColor:(nullable UIColor *)backgroundColor;
+- (nonnull UIColor *)qmui_colorWithAlpha:(CGFloat)alpha backgroundColor:(nullable UIColor *)backgroundColor;
 
 /**
  *  计算当前color叠加了alpha之后放在白色背景上的色值
@@ -129,13 +129,13 @@
 /**
  *  获取当前系统的默认 tintColor 色值
  */
-+ (nullable UIColor *)qmui_systemTintColor;
++ (nonnull UIColor *)qmui_systemTintColor;
 
 /**
  *  计算两个颜色叠加之后的最终色（注意区分前景色后景色的顺序）<br/>
  *  @link http://stackoverflow.com/questions/10781953/determine-rgba-colour-received-by-combining-two-colours @/link
  */
-+ (nullable UIColor *)qmui_colorWithBackendColor:(nonnull UIColor *)backendColor frontColor:(nonnull UIColor *)frontColor;
++ (nonnull UIColor *)qmui_colorWithBackendColor:(nonnull UIColor *)backendColor frontColor:(nonnull UIColor *)frontColor;
 
 /**
  *  将颜色A变化到颜色B，可通过progress控制变化的程度
