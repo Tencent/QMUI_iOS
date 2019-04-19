@@ -15,7 +15,6 @@
 
 #import "UIViewController+QMUI.h"
 #import "UINavigationController+QMUI.h"
-#import "QMUINavigationController.h"
 #import "QMUICore.h"
 #import "UIInterface+QMUI.h"
 #import "NSObject+QMUI.h"
@@ -489,6 +488,18 @@ static char kAssociatedObjectKey_dataLoaded;
 
 - (BOOL)qmui_shouldForceRotateDeviceOrientation {
     return NO;
+}
+
+@end
+
+@implementation UIViewController (QMUINavigationController)
+
+QMUISynthesizeBOOLProperty(qmui_navigationControllerPopGestureRecognizerChanging, setQmui_navigationControllerPopGestureRecognizerChanging)
+QMUISynthesizeBOOLProperty(qmui_poppingByInteractivePopGestureRecognizer, setQmui_poppingByInteractivePopGestureRecognizer)
+QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, setQmui_willAppearByInteractivePopGestureRecognizer)
+
+- (BOOL)qmui_navigationControllerPoppingInteracted {
+    return self.qmui_poppingByInteractivePopGestureRecognizer || self.qmui_willAppearByInteractivePopGestureRecognizer;
 }
 
 @end

@@ -40,23 +40,6 @@
 @end
 
 
-@interface UIViewController (QMUINavigationController)
-
-/// 判断当前 viewController 是否处于手势返回中，仅对当前手势返回涉及到的前后两个 viewController 有效
-@property(nonatomic, assign, readonly) BOOL qmui_navigationControllerPoppingInteracted;
-
-/// 基本与上一个属性 qmui_navigationControllerPoppingInteracted 相同，只不过 qmui_navigationControllerPoppingInteracted 是在 began 时就为 YES，而这个属性仅在 changed 时才为 YES。
-/// @note viewController 会在走完 viewWillAppear: 之后才将这个值置为 YES。
-@property(nonatomic, assign, readonly) BOOL qmui_navigationControllerPopGestureRecognizerChanging;
-
-/// 当前 viewController 是否正在被手势返回 pop
-@property(nonatomic, assign, readonly) BOOL qmui_poppingByInteractivePopGestureRecognizer;
-
-/// 当前 viewController 是否是手势返回中，背后的那个界面
-@property(nonatomic, assign, readonly) BOOL qmui_willAppearByInteractivePopGestureRecognizer;
-@end
-
-
 /// 与 QMUINavigationController push/pop 相关的一些方法
 @protocol QMUINavigationControllerTransitionDelegate <NSObject>
 

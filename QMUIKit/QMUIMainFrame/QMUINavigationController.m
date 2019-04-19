@@ -23,18 +23,6 @@
 #import "QMUIMultipleDelegates.h"
 #import "QMUIWeakObjectContainer.h"
 
-@implementation UIViewController (QMUINavigationController)
-
-QMUISynthesizeBOOLProperty(qmui_navigationControllerPopGestureRecognizerChanging, setQmui_navigationControllerPopGestureRecognizerChanging)
-QMUISynthesizeBOOLProperty(qmui_poppingByInteractivePopGestureRecognizer, setQmui_poppingByInteractivePopGestureRecognizer)
-QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, setQmui_willAppearByInteractivePopGestureRecognizer)
-
-- (BOOL)qmui_navigationControllerPoppingInteracted {
-    return self.qmui_poppingByInteractivePopGestureRecognizer || self.qmui_willAppearByInteractivePopGestureRecognizer;
-}
-
-@end
-
 @protocol QMUI_viewWillAppearNotifyDelegate <NSObject>
 
 - (void)qmui_viewControllerDidInvokeViewWillAppear:(UIViewController *)viewController;
