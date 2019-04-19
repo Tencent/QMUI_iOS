@@ -119,7 +119,9 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.tableView qmui_clearsSelection];
+    if (!self.tableView.allowsMultipleSelection) {
+        [self.tableView qmui_clearsSelection];
+    }
 }
 
 - (void)viewDidLayoutSubviews {

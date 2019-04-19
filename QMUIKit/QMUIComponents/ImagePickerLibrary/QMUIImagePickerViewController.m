@@ -362,7 +362,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
         [self initPreviewViewControllerIfNeeded];
         if (!self.allowsMultipleSelection) {
             // 单选的情况下
-            [self.imagePickerPreviewViewController updateImagePickerPreviewViewWithImagesAssetArray:@[imageAsset]
+            [self.imagePickerPreviewViewController updateImagePickerPreviewViewWithImagesAssetArray:@[imageAsset].mutableCopy
                                                                         selectedImageAssetArray:nil
                                                                               currentImageIndex:0
                                                                                 singleCheckMode:YES];

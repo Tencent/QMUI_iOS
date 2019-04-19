@@ -298,7 +298,19 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         // 如果没走完 didInitialize，说明 self.maximumHeight 尚未被赋初始值 CGFLOAT_MAX，此时的值为 0，就会导致调用 initWithFrame: 时高度无效，必定被指定为 0
         frame = CGRectSetHeight(frame, MIN(CGRectGetHeight(frame), self.maximumHeight));
     }
+    
+    // 重写了 UITextView 的 drawRect: 后，对于带小数点的 frame 会导致文本框右边多出一条黑线，原因未明，暂时这样处理
+    // https://github.com/Tencent/QMUI_iOS/issues/557
+    frame = CGRectFlatted(frame);
+    
     [super setFrame:frame];
+}
+
+- (void)setBounds:(CGRect)bounds {
+    // 重写了 UITextView 的 drawRect: 后，对于带小数点的 frame 会导致文本框右边多出一条黑线，原因未明，暂时这样处理
+    // https://github.com/Tencent/QMUI_iOS/issues/557
+    bounds = CGRectFlatted(bounds);
+    [super setBounds:bounds];
 }
 
 - (void)layoutSubviews {

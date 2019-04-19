@@ -75,8 +75,8 @@ NS_ASSUME_NONNULL_BEGIN
  *  @param currentImageIndex       当前展示的图片在 imageAssetArray 的索引
  *  @param singleCheckMode         是否为单选模式，如果是单选模式，则不显示 checkbox
  */
-- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSArray<QMUIAsset *> * _Nullable)imageAssetArray
-                                 selectedImageAssetArray:(NSArray<QMUIAsset *> * _Nullable)selectedImageAssetArray
+- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSMutableArray<QMUIAsset *> * _Nullable)imageAssetArray
+                                 selectedImageAssetArray:(NSMutableArray<QMUIAsset *> * _Nullable)selectedImageAssetArray
                                        currentImageIndex:(NSInteger)currentImageIndex
                                          singleCheckMode:(BOOL)singleCheckMode;
 

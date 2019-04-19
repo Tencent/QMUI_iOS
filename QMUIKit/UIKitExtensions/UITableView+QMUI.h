@@ -16,6 +16,8 @@
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /// cell 在当前 section 里的位置，注意判断时要用 (var & xxx) == xxx 的方式
 typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
     QMUITableViewCellPositionNone               = 0, // 默认
@@ -114,4 +116,14 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
  */
 - (BOOL)qmui_canScroll;
 
+/**
+ 等同于 UITableView 自 iOS 11 开始新增的同名方法，但兼容 iOS 11 以下的系统使用。
+
+ @param updates insert/delete/reload/move calls
+ @param completion completion callback
+ */
+- (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion;
+
 @end
+
+NS_ASSUME_NONNULL_END

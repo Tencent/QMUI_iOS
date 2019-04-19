@@ -44,7 +44,7 @@
 
 // 在 qmui_textAttributes 样式基础上添加用户传入的 attributedString 中包含的新样式。换句话说，如果这个方法里有样式冲突，则以 attributedText 为准
 - (void)qmui_setAttributedText:(NSAttributedString *)text {
-    if (!text) {
+    if (!text || (!self.qmui_textAttributes.count && ![self _hasSetQmuiLineHeight])) {
         [self qmui_setAttributedText:text];
         return;
     }
@@ -110,7 +110,7 @@ static char kAssociatedObjectKey_textAttributes;
 
 // 去除最后一个字的 kern 效果，并且在有必要的情况下应用 qmui_setLineHeight: 设置的行高
 - (NSAttributedString *)attributedStringWithKernAndLineHeightAdjusted:(NSAttributedString *)string {
-    if (!string || !string.length) {
+    if (!string.length) {
         return string;
     }
     NSMutableAttributedString *attributedString = nil;

@@ -20,6 +20,12 @@
 
 const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 
+@interface UITableView ()
+
+// iOS 9、10 的 UITableView 都有这个私有方法，因此把它显示声明一次以便调用
+- (void)_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion;
+@end
+
 @implementation UITableView (QMUI)
 
 + (void)load {
@@ -312,6 +318,14 @@ static char kAssociatedObjectKey_initialContentInset;
 
 - (void)QMUISymbolicUsingTableViewEstimatedHeightMakeWarning {
     QMUILog(@"UITableView 的 estimatedRow(SectionHeader / SectionFooter)Height 属性会影响 contentSize、sizeThatFits:、rectForXxx 等方法的计算，导致计算结果不准确，建议重新考虑是否要使用 estimated。可添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
+}
+
+- (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion {
+    if (@available(iOS 11.0, *)) {
+        [self performBatchUpdates:updates completion:completion];
+    } else {
+        [self _performBatchUpdates:updates completion:completion];
+    }
 }
 
 @end

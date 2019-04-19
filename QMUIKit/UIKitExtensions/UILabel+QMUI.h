@@ -15,9 +15,11 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface UILabel (QMUI)
 
-- (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor;
+- (instancetype)qmui_initWithFont:(nullable UIFont *)font textColor:(nullable UIColor *)textColor;
 
 /**
  * @brief 在需要特殊样式时，可通过此属性直接给整个 label 添加 NSAttributeName 系列样式，然后 setText 即可，无需使用繁琐的 attributedText
@@ -35,7 +37,7 @@
  * 唯一例外的极端情况是：先用方法2将文字设成红色，再用方法1将文字设成蓝色，最后再 setText，这时虽然代码执行顺序靠后的是方法1，但最终生效的会是方法2，为了避免这种极端情况的困扰，建议不要同时使用方法1和方法2去设置同一种样式。
  *
  */
-@property(nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *qmui_textAttributes;
+@property(nullable, nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *qmui_textAttributes;
 
 /** 
  *  Setter 设置当前整段文字的行高
@@ -78,3 +80,5 @@
 - (void)qmui_avoidBlendedLayersIfShowingChineseWithBackgroundColor:(UIColor *)color;
 
 @end
+
+NS_ASSUME_NONNULL_END
