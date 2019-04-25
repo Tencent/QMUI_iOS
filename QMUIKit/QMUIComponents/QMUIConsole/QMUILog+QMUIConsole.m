@@ -23,20 +23,27 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([QMUILogger class], @selector(printLogWithFile:line:func:logItem:), @selector(qmuiconsole_printLogWithFile:line:func:logItem:));
+        OverrideImplementation([QMUILogger class], @selector(printLogWithFile:line:func:logItem:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(QMUILogger *selfObject, const char *file, int line, const char *func, QMUILogItem *logItem) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, const char *, int, const char *, QMUILogItem *);
+                originSelectorIMP = (void (*)(id, SEL, const char *, int, const char *, QMUILogItem *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, file, line, func, logItem);
+                
+                // avoid superclass
+                if (![selfObject isKindOfClass:originClass]) return;
+                
+                if (!QMUICMIActivated || !ShouldPrintQMUIWarnLogToConsole) return;
+                if (!logItem.enabled) return;
+                if (logItem.level != QMUILogLevelWarn) return;
+                
+                NSString *funcString = [NSString stringWithFormat:@"%s", func];
+                NSString *defaultString = [NSString stringWithFormat:@"%@:%@ | %@", funcString, @(line), logItem];
+                [QMUIConsole logWithLevel:logItem.levelDisplayString name:logItem.name logString:defaultString];
+            };
+        });
     });
-}
-
-- (void)qmuiconsole_printLogWithFile:(const char *)file line:(int)line func:(const char *)func logItem:(QMUILogItem *)logItem {
-    [self qmuiconsole_printLogWithFile:file line:line func:func logItem:logItem];
-    
-    if (!QMUICMIActivated || !ShouldPrintQMUIWarnLogToConsole) return;
-    if (!logItem.enabled) return;
-    if (logItem.level != QMUILogLevelWarn) return;
-    
-    NSString *funcString = [NSString stringWithFormat:@"%s", func];
-    NSString *defaultString = [NSString stringWithFormat:@"%@:%@ | %@", funcString, @(line), logItem];
-    [QMUIConsole logWithLevel:logItem.levelDisplayString name:logItem.name logString:defaultString];
 }
 
 @end

@@ -31,19 +31,58 @@ QMUISynthesizeIdStrongProperty(qbt_customizeButtonPropDict, setQbt_customizeButt
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        SEL selectors[] = {
-            @selector(setTitle:forState:),
-            @selector(setTitleColor:forState:),
-            @selector(setTitleShadowColor:forState:),
-            @selector(setImage:forState:),
-            @selector(setBackgroundImage:forState:),
-            @selector(setAttributedTitle:forState:)
-        };
-        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
-            SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qbt_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UIButton class], @selector(setTitle:forState:), NSString *, UIControlState, ^(UIButton *selfObject, NSString *title, UIControlState state) {
+            [selfObject _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitle forState:state value:title];
+            
+            if (!title || !selfObject.qbt_titleAttributes.count) {
+                return;
+            }
+            
+            if (state == UIControlStateNormal) {
+                [selfObject.qbt_titleAttributes enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
+                    UIControlState state = [key unsignedIntegerValue];
+                    NSString *titleForState = [selfObject titleForState:state];
+                    NSAttributedString *string = [[NSAttributedString alloc] initWithString:titleForState attributes:obj];
+                    [selfObject setAttributedTitle:[selfObject attributedStringWithEndKernRemoved:string] forState:state];
+                }];
+                return;
+            }
+            
+            if ([selfObject.qbt_titleAttributes objectForKey:@(state)]) {
+                NSAttributedString *string = [[NSAttributedString alloc] initWithString:title attributes:selfObject.qbt_titleAttributes[@(state)]];
+                [selfObject setAttributedTitle:[selfObject attributedStringWithEndKernRemoved:string] forState:state];
+                return;
+            }
+        });
+        
+        // 如果之前已经设置了此 state 下的文字颜色，则覆盖掉之前的颜色
+        ExtendImplementationOfVoidMethodWithTwoArguments([UIButton class], @selector(setTitleColor:forState:), UIColor *, UIControlState, ^(UIButton *selfObject, UIColor *color, UIControlState state) {
+            [selfObject _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitleColor forState:state value:color];
+            
+            NSDictionary *attributes = selfObject.qbt_titleAttributes[@(state)];
+            if (attributes) {
+                NSMutableDictionary *newAttributes = [NSMutableDictionary dictionaryWithDictionary:attributes];
+                newAttributes[NSForegroundColorAttributeName] = color;
+                [selfObject qmui_setTitleAttributes:[NSDictionary dictionaryWithDictionary:newAttributes] forState:state];
+            }
+        });
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UIButton class], @selector(setTitleShadowColor:forState:), UIColor *, UIControlState, ^(UIButton *selfObject, UIColor *color, UIControlState state) {
+            [selfObject _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitleShadowColor forState:state value:color];
+        });
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UIButton class], @selector(setImage:forState:), UIImage *, UIControlState, ^(UIButton *selfObject, UIImage *image, UIControlState state) {
+            [selfObject _markQMUICustomizeType:QMUICustomizeButtonPropTypeImage forState:state value:image];
+        });
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UIButton class], @selector(setBackgroundImage:forState:), UIImage *, UIControlState, ^(UIButton *selfObject, UIImage *image, UIControlState state) {
+            [selfObject _markQMUICustomizeType:QMUICustomizeButtonPropTypeBackgroundImage forState:state value:image];
+        });
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UIButton class], @selector(setAttributedTitle:forState:), NSAttributedString *, UIControlState, ^(UIButton *selfObject, NSAttributedString *title, UIControlState state) {
+            [selfObject _markQMUICustomizeType:QMUICustomizeButtonPropTypeAttributedTitle forState:state value:title];
+        });
     });
 }
 
@@ -76,68 +115,6 @@ QMUISynthesizeIdStrongProperty(qbt_customizeButtonPropDict, setQbt_customizeButt
     }
     
     return NO;
-}
-
-#pragma mark - Hook methods
-
-- (void)qbt_setTitle:(NSString *)title forState:(UIControlState)state {
-    [self qbt_setTitle:title forState:state];
-    
-    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitle forState:state value:title];
-    
-    if (!title || !self.qbt_titleAttributes.count) {
-        return;
-    }
-    
-    if (state == UIControlStateNormal) {
-        [self.qbt_titleAttributes enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSDictionary * _Nonnull obj, BOOL * _Nonnull stop) {
-            UIControlState state = [key unsignedIntegerValue];
-            NSString *titleForState = [self titleForState:state];
-            NSAttributedString *string = [[NSAttributedString alloc] initWithString:titleForState attributes:obj];
-            [self setAttributedTitle:[self attributedStringWithEndKernRemoved:string] forState:state];
-        }];
-        return;
-    }
-    
-    if ([self.qbt_titleAttributes objectForKey:@(state)]) {
-        NSAttributedString *string = [[NSAttributedString alloc] initWithString:title attributes:self.qbt_titleAttributes[@(state)]];
-        [self setAttributedTitle:[self attributedStringWithEndKernRemoved:string] forState:state];
-        return;
-    }
-}
-
-// 如果之前已经设置了此 state 下的文字颜色，则覆盖掉之前的颜色
-- (void)qbt_setTitleColor:(UIColor *)color forState:(UIControlState)state {
-    [self qbt_setTitleColor:color forState:state];
-    
-    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitleColor forState:state value:color];
-    
-    NSDictionary *attributes = self.qbt_titleAttributes[@(state)];
-    if (attributes) {
-        NSMutableDictionary *newAttributes = [NSMutableDictionary dictionaryWithDictionary:attributes];
-        newAttributes[NSForegroundColorAttributeName] = color;
-        [self qmui_setTitleAttributes:[NSDictionary dictionaryWithDictionary:newAttributes] forState:state];
-    }
-}
-
-- (void)qbt_setTitleShadowColor:(nullable UIColor *)color forState:(UIControlState)state {
-    [self qbt_setTitleShadowColor:color forState:state];
-    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeTitleShadowColor forState:state value:color];
-}
-
-- (void)qbt_setImage:(nullable UIImage *)image forState:(UIControlState)state {
-    [self qbt_setImage:image forState:state];
-    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeImage forState:state value:image];
-}
-
-- (void)qbt_setBackgroundImage:(nullable UIImage *)image forState:(UIControlState)state {
-    [self qbt_setBackgroundImage:image forState:state];
-    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeBackgroundImage forState:state value:image];
-}
-
-- (void)qbt_setAttributedTitle:(nullable NSAttributedString *)title forState:(UIControlState)state {
-    [self qbt_setAttributedTitle:title forState:state];
-    [self _markQMUICustomizeType:QMUICustomizeButtonPropTypeAttributedTitle forState:state value:title];
 }
 
 #pragma mark - Title Attributes

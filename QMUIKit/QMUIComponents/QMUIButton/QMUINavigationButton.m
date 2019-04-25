@@ -514,22 +514,17 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(viewDidAppear:), @selector(navigationButton_viewDidAppear:));
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewDidAppear:), BOOL, ^(UIViewController *selfObject, BOOL firstArgv) {
+            if (selfObject.navigationItem.tempLeftBarButtonItems) {
+                selfObject.navigationItem.leftBarButtonItems = selfObject.navigationItem.tempLeftBarButtonItems;
+                selfObject.navigationItem.tempLeftBarButtonItems = nil;
+            }
+            if (selfObject.navigationItem.tempRightBarButtonItems) {
+                selfObject.navigationItem.rightBarButtonItems = selfObject.navigationItem.tempRightBarButtonItems;
+                selfObject.navigationItem.tempRightBarButtonItems = nil;
+            }
+        });
     });
-}
-
-- (void)navigationButton_viewDidAppear:(BOOL)animated {
-    [self navigationButton_viewDidAppear:animated];
-    if (self.navigationItem.tempLeftBarButtonItems) {
-//        QMUILog(@"UIViewController (QMUINavigationButton)", @"%@ 在 viewDidAppear: 重新设置了 leftBarButtonItems: %@", NSStringFromClass(self.class), self.navigationItem.tempLeftBarButtonItems);
-        self.navigationItem.leftBarButtonItems = self.navigationItem.tempLeftBarButtonItems;
-        self.navigationItem.tempLeftBarButtonItems = nil;
-    }
-    if (self.navigationItem.tempRightBarButtonItems) {
-//        QMUILog(@"UIViewController (QMUINavigationButton)", @"%@ 在 viewDidAppear: 重新设置了 rightBarButtonItems: %@", NSStringFromClass(self.class), self.navigationItem.tempRightBarButtonItems);
-        self.navigationItem.rightBarButtonItems = self.navigationItem.tempRightBarButtonItems;
-        self.navigationItem.tempRightBarButtonItems = nil;
-    }
 }
 
 @end
@@ -540,7 +535,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        OverrideImplementation([UINavigationBar class], @selector(pushNavigationItem:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+        OverrideImplementation([UINavigationBar class], @selector(pushNavigationItem:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UINavigationBar *selfObject, UINavigationItem *item, BOOL animated) {
                 
                 // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
@@ -555,7 +550,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, UINavigationItem *, BOOL);
-                originSelectorIMP = (void (*)(id, SEL, UINavigationItem *, BOOL))originIMP;
+                originSelectorIMP = (void (*)(id, SEL, UINavigationItem *, BOOL))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, item, animated);
                 
                 if (!shouldSetTagBeforeCallingSuper) {
@@ -565,7 +560,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         });
         
         // 对应 UINavigationController setViewControllers:animated:
-        OverrideImplementation([UINavigationBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+        OverrideImplementation([UINavigationBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UINavigationBar *selfObject, NSArray<UINavigationItem *> *items, BOOL animated) {
                 
                 if ([selfObject isKindOfClass:originClass]) {
@@ -577,7 +572,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, NSArray<UINavigationItem *> *, BOOL);
-                originSelectorIMP = (void (*)(id, SEL, NSArray<UINavigationItem *> *, BOOL))originIMP;
+                originSelectorIMP = (void (*)(id, SEL, NSArray<UINavigationItem *> *, BOOL))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, items, animated);
             };
         });
@@ -634,26 +629,22 @@ static char kAssociatedObjectKey_customizingBackBarButtonItem;
         
         // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
         if (@available(iOS 11, *)) {
-            ExchangeImplementations([UINavigationController class], @selector(navigationBar:shouldPopItem:), @selector(navigationButton_navigationBar:shouldPopItem:));
+            
+            ExtendImplementationOfNonVoidMethodWithTwoArguments([UINavigationController class], @selector(navigationBar:shouldPopItem:), UINavigationBar *, UINavigationItem *, BOOL, ^BOOL(UINavigationController *selfObject, UINavigationBar *navigationBar, UINavigationItem *item, BOOL originReturnValue) {
+                if (originReturnValue) {
+                    BOOL isPopedByCoding = item != navigationBar.topItem;
+                    if (!isPopedByCoding) {
+                        if (navigationBar.items.count == 2 && !navigationBar.backItem.leftBarButtonItem && item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem) {
+                            // 如果从自定义返回按钮界面返回到根界面，且根界面左上角没有按钮，则不调整 layout，不然会有跳动。理论上不应该这么改，但暂时没想到优雅的解决方式
+                        } else {
+                            navigationBar.qmui_customizingBackBarButtonItem = navigationBar.backItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                        }
+                    }
+                }
+                return originReturnValue;
+            });
         }
-        
     });
-}
-
-- (BOOL)navigationButton_navigationBar:(UINavigationBar *)navigationBar shouldPopItem:(UINavigationItem *)item {
-    BOOL result = [self navigationButton_navigationBar:navigationBar shouldPopItem:item];
-    if (result) {
-        BOOL isPopedByCoding = item != navigationBar.topItem;
-        if (!isPopedByCoding) {
-            if (navigationBar.items.count == 2 && !navigationBar.backItem.leftBarButtonItem && item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem) {
-                // 如果从自定义返回按钮界面返回到根界面，且根界面左上角没有按钮，则不调整 layout，不然会有跳动。理论上不应该这么改，但暂时没想到优雅的解决方式
-            } else {
-                navigationBar.qmui_customizingBackBarButtonItem = navigationBar.backItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
-            }
-        }
-    }
-    
-    return result;
 }
 
 @end

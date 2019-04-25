@@ -265,39 +265,33 @@ QMUISynthesizeIdStrongProperty(searchBar, setSearchBar)
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations(self.class, @selector(initSubviews), @selector(search_initSubviews));
-        ExchangeImplementations(self.class, @selector(viewWillAppear:), @selector(search_viewWillAppear:));
-        ExchangeImplementations(self.class, @selector(showEmptyView), @selector(search_showEmptyView));
-        ExchangeImplementations(self.class, @selector(hideEmptyView), @selector(search_hideEmptyView));
+        
+        ExtendImplementationOfVoidMethodWithoutArguments([QMUICommonTableViewController class], @selector(initSubviews), ^(QMUICommonTableViewController *selfObject) {
+            [selfObject initSearchController];
+        });
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([QMUICommonTableViewController class], @selector(viewWillAppear:), BOOL, ^(QMUICommonTableViewController *selfObject, BOOL firstArgv) {
+            if (!selfObject.searchController.tableView.allowsMultipleSelection) {
+                [selfObject.searchController.tableView qmui_clearsSelection];
+            }
+        });
+        
+        ExtendImplementationOfVoidMethodWithoutArguments([QMUICommonTableViewController class], @selector(showEmptyView), ^(QMUICommonTableViewController *selfObject) {
+            if ([selfObject shouldHideSearchBarWhenEmptyViewShowing] && selfObject.tableView.tableHeaderView == selfObject.searchBar) {
+                selfObject.tableView.tableHeaderView = nil;
+            }
+        });
+        
+        ExtendImplementationOfVoidMethodWithoutArguments([QMUICommonTableViewController class], @selector(hideEmptyView), ^(QMUICommonTableViewController *selfObject) {
+            if (selfObject.shouldShowSearchBar && [selfObject shouldHideSearchBarWhenEmptyViewShowing] && selfObject.tableView.tableHeaderView == nil) {
+                [selfObject initSearchController];
+                // 隐藏 emptyView 后重新设置 tableHeaderView，会导致原先 shouldHideTableHeaderViewInitial 隐藏头部的操作被重置，所以下面的 force 参数要传 YES
+                // https://github.com/Tencent/QMUI_iOS/issues/128
+                selfObject.tableView.tableHeaderView = selfObject.searchBar;
+                [selfObject hideTableHeaderViewInitialIfCanWithAnimated:NO force:YES];
+            }
+        });
     });
-}
-
-- (void)search_initSubviews {
-    [self search_initSubviews];
-    [self initSearchController];
-}
-
-- (void)search_viewWillAppear:(BOOL)animated {
-    [self search_viewWillAppear:animated];
-    [self.searchController.tableView qmui_clearsSelection];
-}
-
-- (void)search_showEmptyView {
-    [self search_showEmptyView];
-    if ([self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == self.searchBar) {
-        self.tableView.tableHeaderView = nil;
-    }
-}
-
-- (void)search_hideEmptyView {
-    [self search_hideEmptyView];
-    if (self.shouldShowSearchBar && [self shouldHideSearchBarWhenEmptyViewShowing] && self.tableView.tableHeaderView == nil) {
-        [self initSearchController];
-        // 隐藏 emptyView 后重新设置 tableHeaderView，会导致原先 shouldHideTableHeaderViewInitial 隐藏头部的操作被重置，所以下面的 force 参数要传 YES
-        // https://github.com/Tencent/QMUI_iOS/issues/128
-        self.tableView.tableHeaderView = self.searchBar;
-        [self hideTableHeaderViewInitialIfCanWithAnimated:NO force:YES];
-    }
 }
 
 static char kAssociatedObjectKey_shouldShowSearchBar;

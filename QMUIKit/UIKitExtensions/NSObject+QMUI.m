@@ -63,30 +63,37 @@
 }
 
 - (void)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ... {
-    [self qmui_performSelector:selector withReturnValue:NULL arguments:firstArgument, NULL];
+    va_list valist;
+    va_start(valist, firstArgument);
+    [self _qmui_performSelector:selector withReturnValue:nil firstArgument:firstArgument otherArguments:valist];
+    va_end(valist);
 }
 
 - (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue {
-    [self qmui_performSelector:selector withReturnValue:returnValue arguments:NULL];
+    [self qmui_performSelector:selector withReturnValue:returnValue arguments:nil];
 }
 
 - (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue arguments:(void *)firstArgument, ... {
+    va_list valist;
+    va_start(valist, firstArgument);
+    [self _qmui_performSelector:selector withReturnValue:returnValue firstArgument:firstArgument otherArguments:valist];
+    va_end(valist);
+}
+
+- (void)_qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue firstArgument:(void *)firstArgument otherArguments:(va_list)valist {
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:selector]];
     [invocation setTarget:self];
     [invocation setSelector:selector];
     
     if (firstArgument) {
-        [invocation setArgument:firstArgument atIndex:2];
+        [invocation setArgument:firstArgument atIndex:2];// 0->self, 1->_cmd
         
-        va_list args;
-        va_start(args, firstArgument);
         void *currentArgument;
         NSInteger index = 3;
-        while ((currentArgument = va_arg(args, void *))) {
+        while ((currentArgument = va_arg(valist, void *))) {
             [invocation setArgument:currentArgument atIndex:index];
             index++;
         }
-        va_end(args);
     }
     
     [invocation invoke];

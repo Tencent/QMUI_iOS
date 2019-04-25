@@ -46,11 +46,18 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 保证配置表里的默认值正确被设置
-        ExchangeImplementations([UIBarItem class], @selector(init), @selector(qmuibaritem_init));
-        ExchangeImplementations([UIBarItem class], @selector(initWithCoder:), @selector(qmuibaritem_initWithCoder:));
+        ExtendImplementationOfNonVoidMethodWithoutArguments([UIBarItem class], @selector(init), __kindof UIBarItem *, ^__kindof UIBarItem *(UIBarItem *selfObject, __kindof UIBarItem *originReturnValue) {
+            [selfObject qmuibaritem_didInitialize];
+            return originReturnValue;
+        });
+        
+        ExtendImplementationOfNonVoidMethodWithSingleArgument([UIBarItem class], @selector(initWithCoder:), NSCoder *, __kindof UIBarItem *, ^__kindof UIBarItem *(UIBarItem *selfObject, NSCoder *firstArgv, __kindof UIBarItem *originReturnValue) {
+            [selfObject qmuibaritem_didInitialize];
+            return originReturnValue;
+        });
         
         // UITabBarButton 在 layoutSubviews 时每次都重新让 imageView 和 label addSubview:，这会导致我们用 qmui_layoutSubviewsBlock 时产生持续的重复调用（但又不死循环，因为每次都在下一次 runloop 执行，而且奇怪的是如果不放到下一次 runloop，反而不会重复调用），所以这里 hack 地屏蔽 addSubview: 操作
-        OverrideImplementation(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"]), @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+        OverrideImplementation(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"]), @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, UIView *firstArgv) {
                 
                 if ([selfObject isKindOfClass:originClass] && firstArgv.superview == selfObject) {
@@ -65,24 +72,13 @@
                 }
                 
                 // call super
+                IMP originalIMP = originalIMPProvider();
                 void (*originSelectorIMP)(id, SEL, UIView *);
-                originSelectorIMP = (void (*)(id, SEL, UIView *))originIMP;
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMP;
                 originSelectorIMP(selfObject, originCMD, firstArgv);
             };
         });
     });
-}
-
-- (instancetype)qmuibaritem_init {
-    [self qmuibaritem_init];
-    [self qmuibaritem_didInitialize];
-    return self;
-}
-
-- (instancetype)qmuibaritem_initWithCoder:(NSCoder *)aDecoder {
-    [self qmuibaritem_initWithCoder:aDecoder];
-    [self qmuibaritem_didInitialize];
-    return self;
 }
 
 - (void)qmuibaritem_didInitialize {

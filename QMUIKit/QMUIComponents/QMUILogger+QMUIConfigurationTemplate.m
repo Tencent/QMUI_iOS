@@ -21,18 +21,23 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
-        ExchangeImplementations([self class], @selector(printLogWithFile:line:func:logItem:), @selector(qmuiconfig_printLogWithFile:line:func:logItem:));
+        OverrideImplementation([QMUILogger class], @selector(printLogWithFile:line:func:logItem:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(QMUILogger *selfObject, const char *file, int line, const char *func, QMUILogItem *logItem) {
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    // 不同级别的 log 可通过配置表的开关来控制是否要输出
+                    if (logItem.level == QMUILogLevelDefault && !ShouldPrintDefaultLog) return;
+                    if (logItem.level == QMUILogLevelInfo && !ShouldPrintInfoLog) return;
+                    if (logItem.level == QMUILogLevelWarn && !ShouldPrintWarnLog) return;
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, const char *, int, const char *, QMUILogItem *);
+                originSelectorIMP = (void (*)(id, SEL, const char *, int, const char *, QMUILogItem *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, file, line, func, logItem);
+            };
+        });
     });
-}
-
-- (void)qmuiconfig_printLogWithFile:(nullable const char *)file line:(int)line func:(nonnull const char *)func logItem:(nullable QMUILogItem *)logItem {
-    // 不同级别的 log 可通过配置表的开关来控制是否要输出
-    if (logItem.level == QMUILogLevelDefault && !ShouldPrintDefaultLog) return;
-    if (logItem.level == QMUILogLevelInfo && !ShouldPrintInfoLog) return;
-    if (logItem.level == QMUILogLevelWarn && !ShouldPrintWarnLog) return;
-    
-    [self qmuiconfig_printLogWithFile:file line:line func:func logItem:logItem];
 }
 
 @end

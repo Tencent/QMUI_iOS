@@ -22,7 +22,37 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(scrollToItemAtIndexPath:atScrollPosition:animated:), @selector(qmui_scrollToItemAtIndexPath:atScrollPosition:animated:));
+        
+        // 防止 release 版本滚动到不合法的 indexPath 会 crash
+        OverrideImplementation([UICollectionView class], @selector(scrollToItemAtIndexPath:atScrollPosition:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UICollectionView *selfObject, NSIndexPath *indexPath, UICollectionViewScrollPosition scrollPosition, BOOL animated) {
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    BOOL isIndexPathLegal = YES;
+                    NSInteger numberOfSections = [selfObject numberOfSections];
+                    if (indexPath.section >= numberOfSections) {
+                        isIndexPathLegal = NO;
+                    } else {
+                        NSInteger items = [selfObject numberOfItemsInSection:indexPath.section];
+                        if (indexPath.item >= items) {
+                            isIndexPathLegal = NO;
+                        }
+                    }
+                    if (!isIndexPathLegal) {
+                        QMUILogWarn(@"UICollectionView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", selfObject, indexPath, [NSThread callStackSymbols]);
+                        if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
+                            NSAssert(NO, @"出现不合法的indexPath");
+                        }
+                        return;
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSIndexPath *, UICollectionViewScrollPosition, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, NSIndexPath *, UICollectionViewScrollPosition, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, indexPath, scrollPosition, animated);
+            };
+        });
     });
 }
 
@@ -91,28 +121,6 @@
     }
     
     return visibleIndexPaths.firstObject;
-}
-
-// 防止 release 版本滚动到不合法的 indexPath 会 crash
-- (void)qmui_scrollToItemAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(UICollectionViewScrollPosition)scrollPosition animated:(BOOL)animated {
-    BOOL isIndexPathLegal = YES;
-    NSInteger numberOfSections = [self numberOfSections];
-    if (indexPath.section >= numberOfSections) {
-        isIndexPathLegal = NO;
-    } else {
-        NSInteger items = [self numberOfItemsInSection:indexPath.section];
-        if (indexPath.item >= items) {
-            isIndexPathLegal = NO;
-        }
-    }
-    if (!isIndexPathLegal) {
-        QMUILogWarn(@"UICollectionView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", self, indexPath, [NSThread callStackSymbols]);
-        if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
-            NSAssert(NO, @"出现不合法的indexPath");
-        }
-    } else {
-        [self qmui_scrollToItemAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
-    }
 }
 
 @end

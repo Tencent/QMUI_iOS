@@ -58,33 +58,26 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class class = [self class];
-        ExchangeImplementations(class, @selector(viewWillAppear:), @selector(qmuiNav_viewWillAppear:));
-        ExchangeImplementations(class, @selector(viewDidAppear:), @selector(qmuiNav_viewDidAppear:));
-        ExchangeImplementations(class, @selector(viewDidDisappear:), @selector(qmuiNav_viewDidDisappear:));
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewWillAppear:), BOOL, ^(UIViewController *selfObject, BOOL firstArgv) {
+            if ([selfObject.qmui_viewWillAppearNotifyDelegate respondsToSelector:@selector(qmui_viewControllerDidInvokeViewWillAppear:)]) {
+                [selfObject.qmui_viewWillAppearNotifyDelegate qmui_viewControllerDidInvokeViewWillAppear:selfObject];
+            }
+        });
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewDidAppear:), BOOL, ^(UIViewController *selfObject, BOOL firstArgv) {
+            if ([selfObject.navigationController.viewControllers containsObject:selfObject] && [selfObject.navigationController isKindOfClass:[QMUINavigationController class]]) {
+                ((QMUINavigationController *)selfObject.navigationController).isViewControllerTransiting = NO;
+            }
+            selfObject.qmui_poppingByInteractivePopGestureRecognizer = NO;
+            selfObject.qmui_willAppearByInteractivePopGestureRecognizer = NO;
+        });
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewDidDisappear:), BOOL, ^(UIViewController *selfObject, BOOL firstArgv) {
+            selfObject.qmui_poppingByInteractivePopGestureRecognizer = NO;
+            selfObject.qmui_willAppearByInteractivePopGestureRecognizer = NO;
+        });
     });
-}
-
-- (void)qmuiNav_viewWillAppear:(BOOL)animated {
-    [self qmuiNav_viewWillAppear:animated];
-    if ([self.qmui_viewWillAppearNotifyDelegate respondsToSelector:@selector(qmui_viewControllerDidInvokeViewWillAppear:)]) {
-        [self.qmui_viewWillAppearNotifyDelegate qmui_viewControllerDidInvokeViewWillAppear:self];
-    }
-}
-
-- (void)qmuiNav_viewDidAppear:(BOOL)animated {
-    [self qmuiNav_viewDidAppear:animated];
-    if ([self.navigationController.viewControllers containsObject:self] && [self.navigationController isKindOfClass:[QMUINavigationController class]]) {
-        ((QMUINavigationController *)self.navigationController).isViewControllerTransiting = NO;
-    }
-    self.qmui_poppingByInteractivePopGestureRecognizer = NO;
-    self.qmui_willAppearByInteractivePopGestureRecognizer = NO;
-}
-
-- (void)qmuiNav_viewDidDisappear:(BOOL)animated {
-    [self qmuiNav_viewDidDisappear:animated];
-    self.qmui_poppingByInteractivePopGestureRecognizer = NO;
-    self.qmui_willAppearByInteractivePopGestureRecognizer = NO;
 }
 
 static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;

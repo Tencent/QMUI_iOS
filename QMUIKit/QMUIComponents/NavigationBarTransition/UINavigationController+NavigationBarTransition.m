@@ -73,92 +73,117 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class cls = [self class];
-        ExchangeImplementations(cls, @selector(viewWillLayoutSubviews), @selector(NavigationBarTransition_viewWillLayoutSubviews));
-        ExchangeImplementations(cls, @selector(viewWillAppear:), @selector(NavigationBarTransition_viewWillAppear:));
-        ExchangeImplementations(cls, @selector(viewDidAppear:), @selector(NavigationBarTransition_viewDidAppear:));
-        ExchangeImplementations(cls, @selector(viewDidDisappear:), @selector(NavigationBarTransition_viewDidDisappear:));
-    });
-}
-
-- (void)NavigationBarTransition_viewWillAppear:(BOOL)animated {
-    // 放在最前面，留一个时机给业务可以覆盖
-    [self renderNavigationStyleInViewController:self animated:animated];
-    [self NavigationBarTransition_viewWillAppear:animated];
-}
-
-- (void)NavigationBarTransition_viewDidAppear:(BOOL)animated {
-    
-    self.lockTransitionNavigationBar = YES;
-    
-    if (self.transitionNavigationBar) {
-
-        [UIViewController replaceStyleForNavigationBar:self.transitionNavigationBar withNavigationBar:self.navigationController.navigationBar];
-        [self removeTransitionNavigationBar];
         
-        id <UIViewControllerTransitionCoordinator> transitionCoordinator = self.transitionCoordinator;
-        [transitionCoordinator containerView].backgroundColor = self.originContainerViewBackgroundColor;
-    }
-    
-    if ([self.navigationController.viewControllers containsObject:self]) {
-        // 防止一些 childViewController 走到这里
-        self.prefersNavigationBarBackgroundViewHidden = NO;
-    }
-    
-    [self NavigationBarTransition_viewDidAppear:animated];
-}
-
-- (void)NavigationBarTransition_viewDidDisappear:(BOOL)animated {
-    
-    self.lockTransitionNavigationBar = NO;
-    
-    if (self.transitionNavigationBar) {
-        [self removeTransitionNavigationBar];
-    }
-    
-    [self NavigationBarTransition_viewDidDisappear:animated];
-}
-
-- (void)NavigationBarTransition_viewWillLayoutSubviews {
-    
-    if ([self.navigationController.delegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)]) {
-        
-        [self NavigationBarTransition_viewWillLayoutSubviews];
-        
-    } else {
-        
-        id<UIViewControllerTransitionCoordinator> transitionCoordinator = self.transitionCoordinator;
-        UIViewController *fromViewController = [transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
-        UIViewController *toViewController = [transitionCoordinator viewControllerForKey:UITransitionContextToViewControllerKey];
-        
-        BOOL isCurrentToViewController = (self == self.navigationController.viewControllers.lastObject && self == toViewController);
-        
-        if (isCurrentToViewController && !self.lockTransitionNavigationBar) {
-            
-            BOOL shouldCustomNavigationBarTransition = NO;
-            
-            if (!self.transitionNavigationBar) {
+        OverrideImplementation([UIViewController class], @selector(viewWillAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv) {
                 
-                if ([self shouldCustomTransitionAutomaticallyWithFirstViewController:fromViewController secondViewController:toViewController]) {
-                    shouldCustomNavigationBarTransition = YES;
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    // 放在最前面，留一个时机给业务可以覆盖
+                    [selfObject renderNavigationStyleInViewController:selfObject animated:firstArgv];
                 }
                 
-                if (shouldCustomNavigationBarTransition) {
-                    if (self.navigationController.navigationBar.translucent) {
-                        // 如果原生bar是半透明的，需要给containerView加个背景色，否则有可能会看到下面的默认黑色背景色
-                        toViewController.originContainerViewBackgroundColor = [transitionCoordinator containerView].backgroundColor;
-                        [transitionCoordinator containerView].backgroundColor = [self containerViewBackgroundColor];
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
+        
+        OverrideImplementation([UIViewController class], @selector(viewDidAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv) {
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    selfObject.lockTransitionNavigationBar = YES;
+                    
+                    if (selfObject.transitionNavigationBar) {
+                        
+                        [UIViewController replaceStyleForNavigationBar:selfObject.transitionNavigationBar withNavigationBar:selfObject.navigationController.navigationBar];
+                        [selfObject removeTransitionNavigationBar];
+                        
+                        id <UIViewControllerTransitionCoordinator> transitionCoordinator = selfObject.transitionCoordinator;
+                        [transitionCoordinator containerView].backgroundColor = selfObject.originContainerViewBackgroundColor;
                     }
-                    [self addTransitionNavigationBarIfNeeded];
-                    [self resizeTransitionNavigationBarFrame];
-                    self.navigationController.navigationBar.transitionNavigationBar = self.transitionNavigationBar;
-                    self.prefersNavigationBarBackgroundViewHidden = YES;
+                    
+                    if ([selfObject.navigationController.viewControllers containsObject:selfObject]) {
+                        // 防止一些 childViewController 走到这里
+                        selfObject.prefersNavigationBarBackgroundViewHidden = NO;
+                    }
                 }
-            }
-        }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
         
-        [self NavigationBarTransition_viewWillLayoutSubviews];
-    }
+        OverrideImplementation([UIViewController class], @selector(viewDidDisappear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv) {
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    selfObject.lockTransitionNavigationBar = NO;
+                    
+                    if (selfObject.transitionNavigationBar) {
+                        [selfObject removeTransitionNavigationBar];
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
+        
+        OverrideImplementation([UIViewController class], @selector(viewWillLayoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject) {
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    if (![selfObject.navigationController.delegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)]) {
+                        
+                        id<UIViewControllerTransitionCoordinator> transitionCoordinator = selfObject.transitionCoordinator;
+                        UIViewController *fromViewController = [transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
+                        UIViewController *toViewController = [transitionCoordinator viewControllerForKey:UITransitionContextToViewControllerKey];
+                        
+                        BOOL isCurrentToViewController = (selfObject == selfObject.navigationController.viewControllers.lastObject && selfObject == toViewController);
+                        
+                        if (isCurrentToViewController && !selfObject.lockTransitionNavigationBar) {
+                            
+                            BOOL shouldCustomNavigationBarTransition = NO;
+                            
+                            if (!selfObject.transitionNavigationBar) {
+                                
+                                if ([selfObject shouldCustomTransitionAutomaticallyWithFirstViewController:fromViewController secondViewController:toViewController]) {
+                                    shouldCustomNavigationBarTransition = YES;
+                                }
+                                
+                                if (shouldCustomNavigationBarTransition) {
+                                    if (selfObject.navigationController.navigationBar.translucent) {
+                                        // 如果原生bar是半透明的，需要给containerView加个背景色，否则有可能会看到下面的默认黑色背景色
+                                        toViewController.originContainerViewBackgroundColor = [transitionCoordinator containerView].backgroundColor;
+                                        [transitionCoordinator containerView].backgroundColor = [selfObject containerViewBackgroundColor];
+                                    }
+                                    [selfObject addTransitionNavigationBarIfNeeded];
+                                    [selfObject resizeTransitionNavigationBarFrame];
+                                    selfObject.navigationController.navigationBar.transitionNavigationBar = selfObject.transitionNavigationBar;
+                                    selfObject.prefersNavigationBarBackgroundViewHidden = YES;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+            };
+        });
+    });
 }
 
 - (void)addTransitionNavigationBarIfNeeded {
@@ -470,78 +495,121 @@ static char kAssociatedObjectKey_backgroundViewHidden;
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class cls = [self class];
-        ExchangeImplementations(cls, @selector(pushViewController:animated:), @selector(NavigationBarTransition_pushViewController:animated:));
-        ExchangeImplementations(cls, @selector(setViewControllers:animated:), @selector(NavigationBarTransition_setViewControllers:animated:));
-        ExchangeImplementations(cls, @selector(popViewControllerAnimated:), @selector(NavigationBarTransition_popViewControllerAnimated:));
-        ExchangeImplementations(cls, @selector(popToViewController:animated:), @selector(NavigationBarTransition_popToViewController:animated:));
-        ExchangeImplementations(cls, @selector(popToRootViewControllerAnimated:), @selector(NavigationBarTransition_popToRootViewControllerAnimated:));
+        
+        OverrideImplementation([UINavigationController class], @selector(pushViewController:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationController *selfObject, UIViewController *viewController, BOOL animated) {
+                
+                // call super
+                void (^callSuperBlock)(UIViewController *, BOOL) = ^void(UIViewController *aViewController, BOOL aAnimated) {
+                    void (*originSelectorIMP)(id, SEL, UIViewController *, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, UIViewController *, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, aViewController, aAnimated);
+                };
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    if ([selfObject.delegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)]) {
+                        return callSuperBlock(viewController, animated);
+                    }
+                    
+                    UIViewController *disappearingViewController = selfObject.viewControllers.lastObject;
+                    if (!disappearingViewController) {
+                        return callSuperBlock(viewController, animated);
+                    }
+                    
+                    BOOL shouldCustomNavigationBarTransition = [selfObject shouldCustomTransitionAutomaticallyWithFirstViewController:disappearingViewController secondViewController:viewController];
+                    
+                    if (shouldCustomNavigationBarTransition) {
+                        [disappearingViewController addTransitionNavigationBarIfNeeded];
+                        disappearingViewController.prefersNavigationBarBackgroundViewHidden = YES;
+                    }
+                }
+                callSuperBlock(viewController, animated);
+            };
+        });
+        
+        OverrideImplementation([UINavigationController class], @selector(setViewControllers:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationController *selfObject, NSArray<UIViewController *> *viewControllers, BOOL animated) {
+                
+                // call super
+                void (^callSuperBlock)(NSArray<UIViewController *>*, BOOL) = ^void(NSArray<UIViewController *> *aViewControllers, BOOL aAnimated) {
+                    void (*originSelectorIMP)(id, SEL, NSArray<UIViewController *> *, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, NSArray<UIViewController *> *, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, aViewControllers, aAnimated);
+                };
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    if (viewControllers.count <= 0 || !animated) {
+                        return callSuperBlock(viewControllers, animated);
+                    }
+                    UIViewController *disappearingViewController = selfObject.viewControllers.lastObject;
+                    UIViewController *appearingViewController = viewControllers.lastObject;
+                    if (!disappearingViewController) {
+                        return callSuperBlock(viewControllers, animated);
+                    }
+                    [selfObject handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
+                }
+                callSuperBlock(viewControllers, animated);
+            };
+        });
+        
+        OverrideImplementation([UINavigationController class], @selector(popViewControllerAnimated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIViewController *(UINavigationController *selfObject, BOOL animated) {
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    UIViewController *disappearingViewController = selfObject.viewControllers.lastObject;
+                    UIViewController *appearingViewController = selfObject.viewControllers.count >= 2 ? selfObject.viewControllers[selfObject.viewControllers.count - 2] : nil;
+                    if (disappearingViewController && appearingViewController) {
+                        [selfObject handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
+                    }
+                }
+                
+                // call super
+                UIViewController *(*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (UIViewController *(*)(id, SEL, BOOL))originalIMPProvider();
+                UIViewController *result = originSelectorIMP(selfObject, originCMD, animated);
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UINavigationController class], @selector(popToViewController:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^NSArray<UIViewController *> *(UINavigationController *selfObject, UIViewController *viewController, BOOL animated) {
+                
+                // call super
+                NSArray<UIViewController *> *(^callSuperBlock)(UIViewController *, BOOL) = ^NSArray<UIViewController *>*(UIViewController *aViewController, BOOL aAnimated) {
+                    NSArray<UIViewController *> *(*originSelectorIMP)(id, SEL, UIViewController *, BOOL);
+                    originSelectorIMP = (NSArray<UIViewController *> * (*)(id, SEL, UIViewController *, BOOL))originalIMPProvider();
+                    NSArray<UIViewController *> *result = originSelectorIMP(selfObject, originCMD, aViewController, aAnimated);
+                    return result;
+                };
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    UIViewController *disappearingViewController = selfObject.viewControllers.lastObject;
+                    UIViewController *appearingViewController = viewController;
+                    NSArray<UIViewController *> *poppedViewControllers = callSuperBlock(viewController, animated);
+                    if (poppedViewControllers) {
+                        [selfObject handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
+                    }
+                    return poppedViewControllers;
+                }
+                return callSuperBlock(viewController, animated);
+            };
+        });
+        
+        ExtendImplementationOfNonVoidMethodWithSingleArgument([UINavigationController class], @selector(popToRootViewControllerAnimated:), BOOL, NSArray<UIViewController *> *, ^NSArray<UIViewController *> *(UINavigationController *selfObject, BOOL animated, NSArray<UIViewController *> *originReturnValue) {
+            if (selfObject.viewControllers.count > 1) {
+                UIViewController *disappearingViewController = selfObject.viewControllers.lastObject;
+                UIViewController *appearingViewController = selfObject.viewControllers.firstObject;
+                if (originReturnValue) {
+                    [selfObject handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
+                }
+            }
+            return originReturnValue;
+        });
     });
-}
-
-- (void)NavigationBarTransition_pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    
-    if ([self.delegate respondsToSelector:@selector(navigationController:animationControllerForOperation:fromViewController:toViewController:)]) {
-        return [self NavigationBarTransition_pushViewController:viewController animated:animated];
-    }
-    
-    UIViewController *disappearingViewController = self.viewControllers.lastObject;
-    if (!disappearingViewController) {
-        return [self NavigationBarTransition_pushViewController:viewController animated:animated];
-    }
-    
-    BOOL shouldCustomNavigationBarTransition = [self shouldCustomTransitionAutomaticallyWithFirstViewController:disappearingViewController secondViewController:viewController];
-    
-    if (shouldCustomNavigationBarTransition) {
-        [disappearingViewController addTransitionNavigationBarIfNeeded];
-        disappearingViewController.prefersNavigationBarBackgroundViewHidden = YES;
-    }
-
-    return [self NavigationBarTransition_pushViewController:viewController animated:animated];
-}
-
-- (void)NavigationBarTransition_setViewControllers:(NSArray<UIViewController *> *)viewControllers animated:(BOOL)animated {
-    if (viewControllers.count <= 0 || !animated) {
-        return [self NavigationBarTransition_setViewControllers:viewControllers animated:animated];
-    }
-    UIViewController *disappearingViewController = self.viewControllers.lastObject;
-    UIViewController *appearingViewController = viewControllers.lastObject;
-    if (!disappearingViewController) {
-        return [self NavigationBarTransition_setViewControllers:viewControllers animated:animated];
-    }
-    [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
-    return [self NavigationBarTransition_setViewControllers:viewControllers animated:animated];
-}
-
-- (UIViewController *)NavigationBarTransition_popViewControllerAnimated:(BOOL)animated {
-    UIViewController *disappearingViewController = self.viewControllers.lastObject;
-    UIViewController *appearingViewController = self.viewControllers.count >= 2 ? self.viewControllers[self.viewControllers.count - 2] : nil;
-    if (disappearingViewController && appearingViewController) {
-        [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
-    }
-    return [self NavigationBarTransition_popViewControllerAnimated:animated];
-}
-
-- (NSArray<UIViewController *> *)NavigationBarTransition_popToViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    UIViewController *disappearingViewController = self.viewControllers.lastObject;
-    UIViewController *appearingViewController = viewController;
-    NSArray<UIViewController *> *poppedViewControllers = [self NavigationBarTransition_popToViewController:viewController animated:animated];
-    if (poppedViewControllers) {
-        [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
-    }
-    return poppedViewControllers;
-}
-
-- (NSArray<UIViewController *> *)NavigationBarTransition_popToRootViewControllerAnimated:(BOOL)animated {
-    NSArray<UIViewController *> *poppedViewControllers = [self NavigationBarTransition_popToRootViewControllerAnimated:animated];
-    if (self.viewControllers.count > 1) {
-        UIViewController *disappearingViewController = self.viewControllers.lastObject;
-        UIViewController *appearingViewController = self.viewControllers.firstObject;
-        if (poppedViewControllers) {
-            [self handlePopViewControllerNavigationBarTransitionWithDisappearViewController:disappearingViewController appearViewController:appearingViewController];
-        }
-    }
-    return poppedViewControllers;
 }
 
 - (void)handlePopViewControllerNavigationBarTransitionWithDisappearViewController:(UIViewController *)disappearViewController appearViewController:(UIViewController *)appearViewController {
@@ -578,12 +646,12 @@ static char kAssociatedObjectKey_backgroundViewHidden;
         // https://github.com/Tencent/QMUI_iOS/issues/479
         SEL selector = NSSelectorFromString([NSString stringWithFormat:@"_%@%@:", @"navigationController", @"WillShowViewController"]);
         NSAssert([[self class] instancesRespondToSelector:selector], @"iOS 版本更新导致 UISearchController 无法响应方法 %@", NSStringFromSelector(selector));
-        OverrideImplementation([self class], selector, ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+        OverrideImplementation([self class], selector, ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UISearchController *selfObject, NSNotification *firstArgv) {
                 UIViewController *nextViewController = firstArgv.userInfo[@"UINavigationControllerNextVisibleViewController"];
                 if (![selfObject isKindOfClass:originClass] || ![nextViewController canCustomNavigationBarTransitionIfBarHiddenable]) {
                     void (*originSelectorIMP)(id, SEL, NSNotification *);
-                    originSelectorIMP = (void (*)(id, SEL, NSNotification *))originIMP;
+                    originSelectorIMP = (void (*)(id, SEL, NSNotification *))originalIMPProvider();
                     originSelectorIMP(selfObject, originCMD, firstArgv);
                 }
             };

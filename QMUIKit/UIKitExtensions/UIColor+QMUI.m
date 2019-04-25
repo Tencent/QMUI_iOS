@@ -23,17 +23,15 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 使用 [UIColor colorWithRed:green:blue:alpha:] 或 [UIColor colorWithHue:saturation:brightness:alpha:] 方法创建的颜色是 UIDeviceRGBColor 类型的而不是 UIColor 类型的
-        ExchangeImplementations([UIColor colorWithRed:1 green:1 blue:1 alpha:1].class, @selector(description), @selector(qmuicolor_description));
+        ExtendImplementationOfNonVoidMethodWithoutArguments([[UIColor colorWithRed:1 green:1 blue:1 alpha:1] class], @selector(description), NSString *, ^NSString *(UIColor *selfObject, NSString *originReturnValue) {
+            NSInteger red = selfObject.qmui_red * 255;
+            NSInteger green = selfObject.qmui_green * 255;
+            NSInteger blue = selfObject.qmui_blue * 255;
+            CGFloat alpha = selfObject.qmui_alpha;
+            NSString *description = ([NSString stringWithFormat:@"%@, RGBA(%@, %@, %@, %.2f), %@", originReturnValue, @(red), @(green), @(blue), alpha, [selfObject qmui_hexString]]);
+            return description;
+        });
     });
-}
-
-- (NSString *)qmuicolor_description {
-    NSInteger red = self.qmui_red * 255;
-    NSInteger green = self.qmui_green * 255;
-    NSInteger blue = self.qmui_blue * 255;
-    CGFloat alpha = self.qmui_alpha;
-    NSString *description = [NSString stringWithFormat:@"%@, RGBA(%@, %@, %@, %.2f), %@", [self qmuicolor_description], @(red), @(green), @(blue), alpha, [self qmui_hexString]];
-    return description;
 }
 
 + (UIColor *)qmui_colorWithHexString:(NSString *)hexString {

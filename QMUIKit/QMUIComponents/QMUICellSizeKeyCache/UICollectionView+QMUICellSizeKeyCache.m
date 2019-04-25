@@ -77,14 +77,20 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        SEL selectors[] = {
-            @selector(setDelegate:)
-        };
-        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
-            SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
+        OverrideImplementation([UICollectionView class], @selector(setDelegate:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UICollectionView *selfObject, id<UICollectionViewDelegate> firstArgv) {
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    [selfObject replaceMethodForDelegateIfNeeded:firstArgv];
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, id<UICollectionViewDelegate>);
+                originSelectorIMP = (void (*)(id, SEL, id<UICollectionViewDelegate>))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
     });
 }
 
@@ -173,11 +179,6 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
 //    // 由于 QMUICellSizeKeyCache 只对 self-sizing 的 cell 生效，所以这里返回这个值，以使用 self-sizing 效果
 //    return collectionViewLayout.estimatedItemSize;
 //}
-
-- (void)qmui_setDelegate:(id<UICollectionViewDelegate>)delegate {
-    [self replaceMethodForDelegateIfNeeded:delegate];
-    [self qmui_setDelegate:delegate];
-}
 
 static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
 - (void)replaceMethodForDelegateIfNeeded:(id<UICollectionViewDelegate>)delegate {

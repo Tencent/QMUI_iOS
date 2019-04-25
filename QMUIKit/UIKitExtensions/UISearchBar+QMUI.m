@@ -30,32 +30,103 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        SEL selectors[] = {
-            @selector(setPlaceholder:),
-            @selector(layoutSubviews),
-            @selector(setFrame:),
-            @selector(setShowsCancelButton:animated:)
-        };
-        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
-            SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qmuisb_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UISearchBar class], @selector(setShowsCancelButton:animated:), BOOL, BOOL, ^(UISearchBar *selfObject, BOOL firstArgv, BOOL secondArgv) {
+            if (selfObject.qmui_cancelButton && selfObject.qmui_cancelButtonFont) {
+                selfObject.qmui_cancelButton.titleLabel.font = selfObject.qmui_cancelButtonFont;
+            }
+        });
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UISearchBar class], @selector(setPlaceholder:), NSString *, (^(UISearchBar *selfObject, NSString *placeholder) {
+            if (selfObject.qmui_placeholderColor || selfObject.qmui_font) {
+                NSMutableDictionary<NSString *, id> *attributes = [[NSMutableDictionary alloc] init];
+                if (selfObject.qmui_placeholderColor) {
+                    attributes[NSForegroundColorAttributeName] = selfObject.qmui_placeholderColor;
+                }
+                if (selfObject.qmui_font) {
+                    attributes[NSFontAttributeName] = selfObject.qmui_font;
+                }
+                selfObject.qmui_textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:attributes];
+            }
+        }));
+        
+        ExtendImplementationOfVoidMethodWithoutArguments([UISearchBar class], @selector(layoutSubviews), ^(UISearchBar *selfObject) {
+            [selfObject fixLandscapeStyle];
+            
+            [selfObject fixDismissingAnimation];
+            
+            if (!UIEdgeInsetsEqualToEdgeInsets(selfObject.qmui_textFieldMargins, UIEdgeInsetsZero)) {
+                selfObject.qmui_textField.frame = CGRectInsetEdges(selfObject.qmui_textField.frame, selfObject.qmui_textFieldMargins);
+            }
+            
+            CGFloat textFieldCornerRadius = SearchBarTextFieldCornerRadius;
+            if (textFieldCornerRadius != 0) {
+                textFieldCornerRadius = textFieldCornerRadius > 0 ? textFieldCornerRadius : CGRectGetHeight(selfObject.qmui_textField.frame) / 2.0;
+            }
+            selfObject.qmui_textField.layer.cornerRadius = textFieldCornerRadius;
+            selfObject.qmui_textField.clipsToBounds = textFieldCornerRadius != 0;
+        });
+        
+        OverrideImplementation([UISearchBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UISearchBar *selfObject, CGRect frame) {
+                
+                // call super
+                void (^callSuperBlock)(CGRect) = ^void(CGRect aFrame) {
+                    void (*originSelectorIMP)(id, SEL, CGRect);
+                    originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, aFrame);
+                };
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    if (!selfObject.qmui_usedAsTableHeaderView) {
+                        callSuperBlock(frame);
+                        return;
+                    }
+                    
+                    // 重写 setFrame: 是为了这个 issue：https://github.com/Tencent/QMUI_iOS/issues/233
+                    
+                    if (@available(iOS 11, *)) {
+                        // iOS 11 下用 tableHeaderView 的方式使用 searchBar 的话，进入搜索状态时 y 偏上了，导致间距错乱
+                        
+                        if (![selfObject qmui_isActive]) {
+                            callSuperBlock(frame);
+                            return;
+                        }
+                        
+                        if (IS_NOTCHED_SCREEN) {
+                            // 竖屏
+                            if (CGRectGetMinY(frame) == 38) {
+                                // searching
+                                frame = CGRectSetY(frame, 44);
+                            }
+                            
+                            // 横屏
+                            if (CGRectGetMinY(frame) == -6) {
+                                frame = CGRectSetY(frame, 0);
+                            }
+                        } else {
+                            
+                            // 竖屏
+                            if (CGRectGetMinY(frame) == 14) {
+                                frame = CGRectSetY(frame, 20);
+                            }
+                            
+                            // 横屏
+                            if (CGRectGetMinY(frame) == -6) {
+                                frame = CGRectSetY(frame, 0);
+                            }
+                        }
+                        // 强制在激活状态下 高度也为 56，方便后续做平滑过渡动画 (iOS 11 默认下，非刘海屏的机器激活后为 50，刘海屏激活后为 55)
+                        if (frame.size.height == SearchBarActiveHeightIOS11Later) {
+                            frame.size.height = 56;
+                        }
+                    }
+                }
+                callSuperBlock(frame);
+            };
+        });
     });
-}
-
-- (void)qmuisb_setPlaceholder:(NSString *)placeholder {
-    [self qmuisb_setPlaceholder:placeholder];
-    if (self.qmui_placeholderColor || self.qmui_font) {
-        NSMutableDictionary<NSString *, id> *attributes = [[NSMutableDictionary alloc] init];
-        if (self.qmui_placeholderColor) {
-            attributes[NSForegroundColorAttributeName] = self.qmui_placeholderColor;
-        }
-        if (self.qmui_font) {
-            attributes[NSFontAttributeName] = self.qmui_font;
-        }
-        self.qmui_textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:attributes];
-    }
 }
 
 static char kAssociatedObjectKey_PlaceholderColor;
@@ -117,13 +188,6 @@ static char kAssociatedObjectKey_cancelButtonFont;
     return (UIFont *)objc_getAssociatedObject(self, &kAssociatedObjectKey_cancelButtonFont);
 }
 
-- (void)qmuisb_setShowsCancelButton:(BOOL)showsCancelButton animated:(BOOL)animated {
-    [self qmuisb_setShowsCancelButton:showsCancelButton animated:animated];
-    if (self.qmui_cancelButton && self.qmui_cancelButtonFont) {
-        self.qmui_cancelButton.titleLabel.font = self.qmui_cancelButtonFont;
-    }
-}
-
 - (UISegmentedControl *)qmui_segmentedControl {
     // 注意，segmentedControl 只是整条 scopeBar 里的一部分，虽然它的 key 叫做“scopeBar”
     UISegmentedControl *segmentedControl = [self valueForKey:@"scopeBar"];
@@ -136,25 +200,6 @@ static char kAssociatedObjectKey_cancelButtonFont;
 
 - (UISearchController *)qmui_searchController {
     return [self valueForKey:@"_searchController"];
-}
-
-- (void)qmuisb_layoutSubviews {
-    [self qmuisb_layoutSubviews];
-    
-    [self fixLandscapeStyle];
-    
-    [self fixDismissingAnimation];
-    
-    if (!UIEdgeInsetsEqualToEdgeInsets(self.qmui_textFieldMargins, UIEdgeInsetsZero)) {
-        self.qmui_textField.frame = CGRectInsetEdges(self.qmui_textField.frame, self.qmui_textFieldMargins);
-    }
-    
-    CGFloat textFieldCornerRadius = SearchBarTextFieldCornerRadius;
-    if (textFieldCornerRadius != 0) {
-        textFieldCornerRadius = textFieldCornerRadius > 0 ? textFieldCornerRadius : CGRectGetHeight(self.qmui_textField.frame) / 2.0;
-    }
-    self.qmui_textField.layer.cornerRadius = textFieldCornerRadius;
-    self.qmui_textField.clipsToBounds = textFieldCornerRadius != 0;
 }
 
 - (void)fixLandscapeStyle {

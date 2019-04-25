@@ -55,14 +55,73 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(setItems:animated:), @selector(qmui_setItems:animated:));
-        ExchangeImplementations([self class], @selector(setSelectedItem:), @selector(qmui_setSelectedItem:));
-        ExchangeImplementations([self class], @selector(setFrame:), @selector(qmuiTabBar_setFrame:));
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UITabBar class], @selector(setItems:animated:), NSArray<UITabBarItem *> *, BOOL, ^(UITabBar *selfObject, NSArray<UITabBarItem *> *items, BOOL animated) {
+            for (UITabBarItem *item in items) {
+                UIControl *itemView = (UIControl *)item.qmui_view;
+                [itemView addTarget:selfObject action:@selector(handleTabBarItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
+            }
+        });
+        
+        OverrideImplementation([UITabBar class], @selector(setSelectedItem:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITabBar *selfObject, UITabBarItem *selectedItem) {
+                
+                // call super
+                void (^callSuperBlock)(UITabBarItem *) = ^void(UITabBarItem *aSelectedItem) {
+                    void (*originSelectorIMP)(id, SEL, UITabBarItem *);
+                    originSelectorIMP = (void (*)(id, SEL, UITabBarItem *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, aSelectedItem);
+                };
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    NSInteger olderSelectedIndex = selfObject.selectedItem ? [selfObject.items indexOfObject:selfObject.selectedItem] : -1;
+                    callSuperBlock(selectedItem);
+                    NSInteger newerSelectedIndex = [selfObject.items indexOfObject:selectedItem];
+                    // 只有双击当前正在显示的界面的 tabBarItem，才能正常触发双击事件
+                    selfObject.canItemRespondDoubleTouch = olderSelectedIndex == newerSelectedIndex;
+                } else {
+                    callSuperBlock(selectedItem);
+                }
+            };
+        });
+        
+        OverrideImplementation([UITabBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITabBar *selfObject, CGRect frame) {
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    if (IOS_VERSION < 11.2 && IS_58INCH_SCREEN && ShouldFixTabBarTransitionBugInIPhoneX) {
+                        if (CGRectGetHeight(frame) == TabBarHeight && CGRectGetMaxY(frame) < CGRectGetHeight(selfObject.superview.bounds)) {
+                            // iOS 11 在界面 push 的过程中 tabBar 会瞬间往上跳，所以做这个修复。这个 bug 在 iOS 11.2 里已被系统修复。
+                            // https://github.com/Tencent/QMUI_iOS/issues/217
+                            frame = CGRectSetY(frame, CGRectGetHeight(selfObject.superview.bounds) - CGRectGetHeight(frame));
+                        }
+                    }
+                    
+                    // 修复这个 bug：https://github.com/Tencent/QMUI_iOS/issues/309
+                    if (@available(iOS 11, *)) {
+                        if (IS_NOTCHED_SCREEN && ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32))) {// 只关注全面屏设备下的这两种非正常的 tabBar 高度即可
+                            CGFloat bottomSafeAreaInsets = selfObject.safeAreaInsets.bottom > 0 ? selfObject.safeAreaInsets.bottom : selfObject.superview.safeAreaInsets.bottom;// 注意，如果只是拿 selfObject.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
+                            if (bottomSafeAreaInsets == CGRectGetHeight(selfObject.frame)) {
+                                return;// 由于这个系统 bug https://github.com/Tencent/QMUI_iOS/issues/446，这里先暂时屏蔽本次 frame 变化
+                            }
+                            frame.size.height += bottomSafeAreaInsets;
+                            frame.origin.y -= bottomSafeAreaInsets;
+                        }
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGRect);
+                originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, frame);
+            };
+        });
         
         // 以下代码修复两个仅存在于 12.1.0 版本的系统 bug，实测 12.1.1 苹果已经修复
         if (@available(iOS 12.1, *)) {
             
-            OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
+            OverrideImplementation(NSClassFromString(@"UITabBarButton"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UIView *selfObject, CGRect firstArgv) {
                     
                     if ([selfObject isKindOfClass:originClass]) {
@@ -88,29 +147,12 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
                     
                     // call super
                     void (*originSelectorIMP)(id, SEL, CGRect);
-                    originSelectorIMP = (void (*)(id, SEL, CGRect))originIMP;
+                    originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
                     originSelectorIMP(selfObject, originCMD, firstArgv);
                 };
             });
         }
     });
-}
-
-- (void)qmui_setItems:(NSArray<UITabBarItem *> *)items animated:(BOOL)animated {
-    [self qmui_setItems:items animated:animated];
-    
-    for (UITabBarItem *item in items) {
-        UIControl *itemView = (UIControl *)item.qmui_view;
-        [itemView addTarget:self action:@selector(handleTabBarItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
-    }
-}
-
-- (void)qmui_setSelectedItem:(UITabBarItem *)selectedItem {
-    NSInteger olderSelectedIndex = self.selectedItem ? [self.items indexOfObject:self.selectedItem] : -1;
-    [self qmui_setSelectedItem:selectedItem];
-    NSInteger newerSelectedIndex = [self.items indexOfObject:selectedItem];
-    // 只有双击当前正在显示的界面的 tabBarItem，才能正常触发双击事件
-    self.canItemRespondDoubleTouch = olderSelectedIndex == newerSelectedIndex;
 }
 
 - (void)handleTabBarItemViewEvent:(UIControl *)itemView {
@@ -154,30 +196,6 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
 - (void)revertTabBarItemTouch {
     self.lastTouchedTabBarItemViewIndex = kLastTouchedTabBarItemIndexNone;
     self.tabBarItemViewTouchCount = 0;
-}
-
-- (void)qmuiTabBar_setFrame:(CGRect)frame {
-    if (IOS_VERSION < 11.2 && IS_58INCH_SCREEN && ShouldFixTabBarTransitionBugInIPhoneX) {
-        if (CGRectGetHeight(frame) == TabBarHeight && CGRectGetMaxY(frame) < CGRectGetHeight(self.superview.bounds)) {
-            // iOS 11 在界面 push 的过程中 tabBar 会瞬间往上跳，所以做这个修复。这个 bug 在 iOS 11.2 里已被系统修复。
-            // https://github.com/Tencent/QMUI_iOS/issues/217
-            frame = CGRectSetY(frame, CGRectGetHeight(self.superview.bounds) - CGRectGetHeight(frame));
-        }
-    }
-    
-    // 修复这个 bug：https://github.com/Tencent/QMUI_iOS/issues/309
-    if (@available(iOS 11, *)) {
-        if (IS_NOTCHED_SCREEN && ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32))) {// 只关注全面屏设备下的这两种非正常的 tabBar 高度即可
-            CGFloat bottomSafeAreaInsets = self.safeAreaInsets.bottom > 0 ? self.safeAreaInsets.bottom : self.superview.safeAreaInsets.bottom;// 注意，如果只是拿 self.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
-            if (bottomSafeAreaInsets == CGRectGetHeight(self.frame)) {
-                return;// 由于这个系统 bug https://github.com/Tencent/QMUI_iOS/issues/446，这里先暂时屏蔽本次 frame 变化
-            }
-            frame.size.height += bottomSafeAreaInsets;
-            frame.origin.y -= bottomSafeAreaInsets;
-        }
-    }
-    
-    [self qmuiTabBar_setFrame:frame];
 }
 
 @end

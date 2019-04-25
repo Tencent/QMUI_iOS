@@ -30,28 +30,31 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        SEL selectors[] = {
-            @selector(description),
-            @selector(resizableImageWithCapInsets:resizingMode:)
-        };
-        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
-            SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qmuiimage_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
+        
+        ExtendImplementationOfNonVoidMethodWithoutArguments([UIImage class], @selector(description), NSString *, ^NSString *(UIImage *selfObject, NSString *originReturnValue) {
+            return ([NSString stringWithFormat:@"%@, scale = %@", originReturnValue, @(selfObject.scale)]);
+        });
+        
+        OverrideImplementation([UIImage class], @selector(resizableImageWithCapInsets:resizingMode:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIImage *(UIImage *selfObject, UIEdgeInsets capInsets, UIImageResizingMode resizingMode) {
+                
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    if (!CGSizeIsEmpty(selfObject.size) && (UIEdgeInsetsGetHorizontalValue(capInsets) >= selfObject.size.width || UIEdgeInsetsGetVerticalValue(capInsets) >= selfObject.size.height)) {
+                        // 如果命中这个判断，请减小 capInsets 的值
+                        QMUILogWarn(@"UIImage (QMUI)", @"UIImage (QMUI) resizableImageWithCapInsets 传进来的 capInsets 的水平/垂直方向的和应该小于图片本身的大小，否则会导致 render 时出现 invalid context 0x0 的错误。");
+                    }
+                }
+                
+                // call super
+                UIImage *(*originSelectorIMP)(id, SEL, UIEdgeInsets, UIImageResizingMode);
+                originSelectorIMP = (UIImage *(*)(id, SEL, UIEdgeInsets, UIImageResizingMode))originalIMPProvider();
+                UIImage *result = originSelectorIMP(selfObject, originCMD, capInsets, resizingMode);
+                
+                return result;
+            };
+        });
     });
-}
-
-- (NSString *)qmuiimage_description {
-    return [NSString stringWithFormat:@"%@, scale = %@", [self qmuiimage_description], @(self.scale)];
-}
-
-- (UIImage *)qmuiimage_resizableImageWithCapInsets:(UIEdgeInsets)capInsets resizingMode:(UIImageResizingMode)resizingMode {
-    if (!CGSizeIsEmpty(self.size) && (UIEdgeInsetsGetHorizontalValue(capInsets) >= self.size.width || UIEdgeInsetsGetVerticalValue(capInsets) >= self.size.height)) {
-        // 如果命中这个判断，请减小 capInsets 的值
-        QMUILogWarn(@"UIImage (QMUI)", @"UIImage (QMUI) resizableImageWithCapInsets 传进来的 capInsets 的水平/垂直方向的和应该小于图片本身的大小，否则会导致 render 时出现 invalid context 0x0 的错误。");
-    }
-    return [self qmuiimage_resizableImageWithCapInsets:capInsets resizingMode:resizingMode];
 }
 
 + (UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock {

@@ -22,19 +22,17 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(description), @selector(qmuipointerarray_description));
+        ExtendImplementationOfNonVoidMethodWithoutArguments([NSPointerArray class], @selector(description), NSString *, ^NSString *(NSPointerArray *selfObject, NSString *originReturnValue) {
+            NSMutableString *result = [[NSMutableString alloc] initWithString:originReturnValue];
+            NSPointerArray *array = [selfObject copy];
+            for (NSInteger i = 0; i < array.count; i++) {
+                ([result appendFormat:@"\npointer[%@] is %@", @(i), [array pointerAtIndex:i]]);
+            }
+            return result;
+        });
     });
 }
 
-- (NSString *)qmuipointerarray_description {
-    NSString *superResult = [self qmuipointerarray_description];
-    NSMutableString *result = [[NSMutableString alloc] initWithString:superResult];
-    NSPointerArray *array = [self copy];
-    for (NSInteger i = 0; i < array.count; i++) {
-        [result appendFormat:@"\npointer[%@] is  %@", @(i), [array pointerAtIndex:i]];
-    }
-    return result;
-}
 
 - (NSUInteger)qmui_indexOfPointer:(nullable void *)pointer {
     if (!pointer) {

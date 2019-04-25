@@ -23,34 +23,24 @@ QMUISynthesizeIdStrongProperty(transitionNavigationBar, setTransitionNavigationB
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class cls = [self class];
-        ExchangeImplementations(cls, @selector(setShadowImage:), @selector(NavigationBarTransition_setShadowImage:));
-        ExchangeImplementations(cls, @selector(setBarTintColor:), @selector(NavigationBarTransition_setBarTintColor:));
-        ExchangeImplementations(cls, @selector(setBackgroundImage:forBarMetrics:), @selector(NavigationBarTransition_setBackgroundImage:forBarMetrics:));
+        ExtendImplementationOfVoidMethodWithSingleArgument([UINavigationBar class], @selector(setShadowImage:), UIImage *, ^(UINavigationBar *selfObject, UIImage *firstArgv) {
+            if (selfObject.transitionNavigationBar) {
+                selfObject.transitionNavigationBar.shadowImage = firstArgv;
+            }
+        });
         
+        ExtendImplementationOfVoidMethodWithSingleArgument([UINavigationBar class], @selector(setBarTintColor:), UIColor *, ^(UINavigationBar *selfObject, UIColor *firstArgv) {
+            if (selfObject.transitionNavigationBar) {
+                selfObject.transitionNavigationBar.barTintColor = firstArgv;
+            }
+        });
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UINavigationBar class], @selector(setBackgroundImage:forBarMetrics:), UIImage *, UIBarMetrics, ^(UINavigationBar *selfObject, UIImage *backgroundImage, UIBarMetrics barMetrics) {
+            if (selfObject.transitionNavigationBar) {
+                [selfObject.transitionNavigationBar setBackgroundImage:backgroundImage forBarMetrics:barMetrics];
+            }
+        });
     });
-}
-
-- (void)NavigationBarTransition_setShadowImage:(UIImage *)image {
-    [self NavigationBarTransition_setShadowImage:image];
-    if (self.transitionNavigationBar) {
-        self.transitionNavigationBar.shadowImage = image;
-    }
-}
-
-
-- (void)NavigationBarTransition_setBarTintColor:(UIColor *)tintColor {
-    [self NavigationBarTransition_setBarTintColor:tintColor];
-    if (self.transitionNavigationBar) {
-        self.transitionNavigationBar.barTintColor = self.barTintColor;
-    }
-}
-
-- (void)NavigationBarTransition_setBackgroundImage:(UIImage *)backgroundImage forBarMetrics:(UIBarMetrics)barMetrics {
-    [self NavigationBarTransition_setBackgroundImage:backgroundImage forBarMetrics:barMetrics];
-    if (self.transitionNavigationBar) {
-        [self.transitionNavigationBar setBackgroundImage:backgroundImage forBarMetrics:barMetrics];
-    }
 }
 
 @end

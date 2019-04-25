@@ -26,16 +26,14 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations(self.class, @selector(copyWithZone:), @selector(qmui_copyWithZone:));
+        ExtendImplementationOfNonVoidMethodWithSingleArgument([CAAnimation class], @selector(copyWithZone:), NSZone *, id, ^id(CAAnimation *selfObject, NSZone *firstArgv, id originReturnValue) {
+            CAAnimation *animation = (CAAnimation *)originReturnValue;
+            animation.qmui_multipleDelegatesEnabled = selfObject.qmui_multipleDelegatesEnabled;
+            animation.qmui_animationDidStartBlock = selfObject.qmui_animationDidStartBlock;
+            animation.qmui_animationDidStopBlock = selfObject.qmui_animationDidStopBlock;
+            return animation;
+        });
     });
-}
-
-- (id)qmui_copyWithZone:(NSZone *)zone {
-    CAAnimation *animation = [self qmui_copyWithZone:zone];
-    animation.qmui_multipleDelegatesEnabled = self.qmui_multipleDelegatesEnabled;
-    animation.qmui_animationDidStartBlock = self.qmui_animationDidStartBlock;
-    animation.qmui_animationDidStopBlock = self.qmui_animationDidStopBlock;
-    return animation;
 }
 
 - (void)enabledDelegateBlocks {

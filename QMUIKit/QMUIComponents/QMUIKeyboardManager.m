@@ -72,24 +72,43 @@ QMUISynthesizeBOOLProperty(keyboardManager_isFirstResponder, setKeyboardManager_
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(becomeFirstResponder), @selector(keyboardManager_becomeFirstResponder));
-        ExchangeImplementations([self class], @selector(resignFirstResponder), @selector(keyboardManager_resignFirstResponder));
+        OverrideImplementation([UIResponder class], @selector(becomeFirstResponder), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^BOOL(UIResponder *selfObject) {
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    selfObject.keyboardManager_isFirstResponder = YES;
+                }
+                
+                // call super
+                BOOL (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                BOOL result = originSelectorIMP(selfObject, originCMD);
+                
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UIResponder class], @selector(resignFirstResponder), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^BOOL(UIResponder *selfObject) {
+                // avoid superclass
+                if ([selfObject isKindOfClass:originClass]) {
+                    selfObject.keyboardManager_isFirstResponder = NO;
+                    if (selfObject.isFirstResponder &&
+                        selfObject.qmui_keyboardManager &&
+                        [selfObject.qmui_keyboardManager.allTargetResponders containsObject:selfObject]) {
+                        selfObject.qmui_keyboardManager.currentResponderWhenResign = selfObject;
+                    }
+                }
+                
+                // call super
+                BOOL (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                BOOL result = originSelectorIMP(selfObject, originCMD);
+                
+                return result;
+            };
+        });
     });
-}
-
-- (BOOL)keyboardManager_becomeFirstResponder {
-    self.keyboardManager_isFirstResponder = YES;
-    return [self keyboardManager_becomeFirstResponder];
-}
-
-- (BOOL)keyboardManager_resignFirstResponder {
-    self.keyboardManager_isFirstResponder = NO;
-    if (self.isFirstResponder &&
-        self.qmui_keyboardManager &&
-        [self.qmui_keyboardManager.allTargetResponders containsObject:self]) {
-        self.qmui_keyboardManager.currentResponderWhenResign = self;
-    }
-    return [self keyboardManager_resignFirstResponder];
 }
 
 @end

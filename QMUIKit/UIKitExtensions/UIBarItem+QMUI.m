@@ -40,21 +40,10 @@ static char kAssociatedObjectKey_referenceItem;
         
         if (IOS_VERSION_NUMBER < 110000) {
             // iOS 11.0 及以上，通过 setView: 调用 qmui_viewDidSetBlock 即可，10.0 及以下只能在 setToolbarItems 的时机触发
-            OverrideImplementation([UIViewController class], @selector(setToolbarItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP originIMP) {
-                return ^(UIViewController *selfObject, NSArray<__kindof UIBarButtonItem *> *firstArgv, BOOL secondArgv) {
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, NSArray<__kindof UIBarButtonItem *> *, BOOL);
-                    originSelectorIMP = (void (*)(id, SEL, NSArray<__kindof UIBarButtonItem *> *, BOOL))originIMP;
-                    originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
-                    
-                    // avoid superclass
-                    if (![selfObject isKindOfClass:originClass]) return;
-                    
-                    for (UIBarButtonItem *item in firstArgv) {
-                        [UIBarItem setView:item.customView inBarButtonItem:item];
-                    }
-                };
+            ExtendImplementationOfVoidMethodWithTwoArguments([UIViewController class], @selector(setToolbarItems:animated:), NSArray<__kindof UIBarButtonItem *> *, BOOL, ^(UIViewController *selfObject, NSArray<__kindof UIBarButtonItem *> *firstArgv, BOOL secondArgv) {
+                for (UIBarButtonItem *item in firstArgv) {
+                    [UIBarItem setView:item.customView inBarButtonItem:item];
+                }
             });
         }
         

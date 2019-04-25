@@ -1274,6 +1274,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CDB8CBC81DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
 				CDB8CBDC1DCC870800769DF0 /* UIView+QMUI.m in Sources */,
 				CDD12D3D1FBB320E00114EA9 /* NSArray+QMUI.m in Sources */,
 				CDE418FC20761A0F002ED021 /* UIBarItem+QMUI.m in Sources */,
@@ -1296,7 +1297,6 @@
 				CDD7C2BD212C510B00D6FA1E /* QMUIPopupMenuButtonItem.m in Sources */,
 				CD6BE14F2058C64E00BE093E /* QMUICellHeightKeyCache.m in Sources */,
 				CDA4083F214F7E2500740888 /* NSCharacterSet+QMUI.m in Sources */,
-				CDB8CBC81DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
 				CD046C4A2018688F00092035 /* QMUILogger.m in Sources */,
 				CDB8CBCC1DCC870800769DF0 /* UIScrollView+QMUI.m in Sources */,
 				CDB8CBA81DCC870700769DF0 /* UICollectionView+QMUI.m in Sources */,

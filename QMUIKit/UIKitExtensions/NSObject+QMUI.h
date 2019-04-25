@@ -72,7 +72,7 @@
 /**
  *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
  *  @param selector 要被调用的方法名
- *  @param firstArgument 调用 selector 时要传的第一个参数的指针地址
+ *  @param firstArgument 调用 selector 时要传的第一个参数的指针地址，例如 &xxx
  */
 - (void)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ...;
 

@@ -25,30 +25,19 @@ QMUISynthesizeIdCopyProperty(qmui_setSelectedBlock, setQmui_setSelectedBlock)
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        SEL selectors[] = {
-            @selector(setHighlighted:animated:),
-            @selector(setSelected:animated:)
-        };
-        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
-            SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qmuicell_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UITableViewCell class], @selector(setHighlighted:animated:), BOOL, BOOL, ^(UITableViewCell *selfObject, BOOL highlighted, BOOL animated) {
+            if (selfObject.qmui_setHighlightedBlock) {
+                selfObject.qmui_setHighlightedBlock(highlighted, animated);
+            }
+        });
+        
+        ExtendImplementationOfVoidMethodWithTwoArguments([UITableViewCell class], @selector(setSelected:animated:), BOOL, BOOL, ^(UITableViewCell *selfObject, BOOL selected, BOOL animated) {
+            if (selfObject.qmui_setSelectedBlock) {
+                selfObject.qmui_setSelectedBlock(selected, animated);
+            }
+        });
     });
-}
-
-- (void)qmuicell_setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
-    [self qmuicell_setHighlighted:highlighted animated:animated];
-    if (self.qmui_setHighlightedBlock) {
-        self.qmui_setHighlightedBlock(highlighted, animated);
-    }
-}
-
-- (void)qmuicell_setSelected:(BOOL)selected animated:(BOOL)animated {
-    [self qmuicell_setSelected:selected animated:animated];
-    if (self.qmui_setSelectedBlock) {
-        self.qmui_setSelectedBlock(selected, animated);
-    }
 }
 
 - (UIView *)qmui_accessoryView {
