@@ -40,6 +40,8 @@ QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleSta
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
+        ExchangeImplementations([UIViewController class], @selector(description), @selector(qmuivc_description));
+        
         ExtendImplementationOfVoidMethodWithoutArguments([UIViewController class], @selector(viewDidLoad), ^(UIViewController *selfObject) {
             selfObject.qmui_visibleState = QMUIViewControllerViewDidLoad;
         });
@@ -282,7 +284,7 @@ static char kAssociatedObjectKey_visibleState;
                 // 无 bar push 进有 bar 的界面时，背后的那个无 bar 的界面
                 return 0;
             }
-            if (superviewX2 > 0) {
+            if (superviewX2 > 0 && barPresentationMinX < 0) {
                 // 无 bar pop 回有 bar 的界面时，被 pop 掉的那个无 bar 的界面
                 return 0;
             }

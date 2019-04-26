@@ -259,8 +259,8 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
                 } else {
                     // result 为 nil，即遍历相片或视频完毕
                     self.isImagesAssetLoaded = YES;// 这个属性的作用描述： https://github.com/Tencent/QMUI_iOS/issues/219
+                    [self.collectionView reloadData];
                     [self.collectionView performBatchUpdates:^{
-                        [self.collectionView reloadData];
                     } completion:^(BOOL finished) {
                         [self scrollToInitialPositionIfNeeded];
                         if (self.shouldShowDefaultLoadingView) {

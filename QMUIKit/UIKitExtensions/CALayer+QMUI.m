@@ -347,7 +347,7 @@ static NSString *kMaskName = @"QMUI_CornerRadius_Mask";
                             rectCorner |= UIRectCornerBottomRight;
                         }
                         UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:selfObject.bounds byRoundingCorners:rectCorner cornerRadii:CGSizeMake(selfObject.layer.qmui_originCornerRadius, selfObject.layer.qmui_originCornerRadius)];
-                        cornerMaskLayer.frame = selfObject.bounds;
+                        cornerMaskLayer.frame = CGRectMakeWithSize(selfObject.bounds.size);
                         cornerMaskLayer.path = path.CGPath;
                         selfObject.layer.mask = cornerMaskLayer;
                     }
