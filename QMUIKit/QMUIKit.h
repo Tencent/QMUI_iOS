@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"3.1.7";
+static NSString * const QMUI_VERSION = @"3.1.8";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -33,6 +33,10 @@ static NSString * const QMUI_VERSION = @"3.1.7";
 
 #if __has_include("NSCharacterSet+QMUI.h")
 #import "NSCharacterSet+QMUI.h"
+#endif
+
+#if __has_include("NSMethodSignature+QMUI.h")
+#import "NSMethodSignature+QMUI.h"
 #endif
 
 #if __has_include("NSNumber+QMUI.h")

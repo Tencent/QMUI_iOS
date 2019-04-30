@@ -41,7 +41,7 @@
             };
         });
         
-        OverrideImplementation([[[[NSAttributedString alloc] initWithString:@"" attributes:nil] class] class], @selector(initWithString:attributes:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        OverrideImplementation([[[NSAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^NSAttributedString *(NSAttributedString *selfObject, NSString *str, NSDictionary<NSString *,id> *attrs) {
                 // avoid superclass
                 if ([selfObject isKindOfClass:originClass]) {
@@ -117,7 +117,7 @@
             };
         });
         
-        OverrideImplementation([[[[NSMutableAttributedString alloc] initWithString:@"" attributes:nil] class] class], @selector(initWithString:attributes:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        OverrideImplementation([[[NSMutableAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^NSMutableAttributedString *(NSMutableAttributedString *selfObject, NSString *str, NSDictionary<NSString *,id> *attrs) {
                 // avoid superclass
                 if ([selfObject isKindOfClass:originClass]) {

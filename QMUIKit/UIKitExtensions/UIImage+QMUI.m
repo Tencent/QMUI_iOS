@@ -467,6 +467,18 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return frameDuration;
 }
 
++ (UIImage *)qmui_animatedImageNamed:(NSString *)name {
+    return [UIImage qmui_animatedImageNamed:name scale:1];
+}
+
++ (UIImage *)qmui_animatedImageNamed:(NSString *)name scale:(CGFloat)scale {
+    NSString *type = name.pathExtension.lowercaseString;
+    type = type.length > 0 ? type : @"gif";
+    NSString *path = [[NSBundle mainBundle] pathForResource:name.stringByDeletingPathExtension ofType:type];
+    NSData *data = [NSData dataWithContentsOfFile:path];
+    return [UIImage qmui_animatedImageWithData:data scale:scale];
+}
+
 + (UIImage *)qmui_imageWithStrokeColor:(UIColor *)strokeColor size:(CGSize)size path:(UIBezierPath *)path addClip:(BOOL)addClip {
     size = CGSizeFlatted(size);
     return [UIImage qmui_imageWithSize:size opaque:NO scale:0 actions:^(CGContextRef contextRef) {
