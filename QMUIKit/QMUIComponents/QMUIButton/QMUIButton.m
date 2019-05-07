@@ -547,9 +547,6 @@
     }
     
     [super setImage:image forState:state];
-    
-    // 注意，这句必须。因 UIButton 系统特性问题，如果在设置图片前就访问过 imageView，那么之后设置图片时 imageView.image 在布局的时候还会是 nil（self.currentImage 有值），这样会导致一些布局问题。解决方法是再触发一下 self.imageView。详情请看 https://github.com/Tencent/QMUI_iOS/issues/439
-    [self imageView];
 }
 
 - (void)tintColorDidChange {
