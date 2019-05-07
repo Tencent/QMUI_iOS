@@ -80,7 +80,7 @@ static char kAssociatedObjectKey_##_getterName;\
 \
 - (_type)_getterName {\
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_##_getterName)) valueGetter];\
-}
+}\
 _Pragma("clang diagnostic pop")
 
 
