@@ -106,6 +106,9 @@ ExchangeImplementations(Class _class, SEL _originSelector, SEL _newSelector) {
 CG_INLINE BOOL
 OverrideImplementation(Class targetClass, SEL targetSelector, id (^implementationBlock)(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void))) {
     Method originMethod = class_getInstanceMethod(targetClass, targetSelector);
+    if (!originMethod) {
+        return NO;
+    }
     IMP imp = method_getImplementation(originMethod);
     BOOL hasOverride = HasOverrideSuperclassMethod(targetClass, targetSelector);
     
