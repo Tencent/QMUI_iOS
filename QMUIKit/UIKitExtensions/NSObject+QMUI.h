@@ -56,40 +56,47 @@
 - (id)qmui_performSelectorToSuperclass:(SEL)aSelector withObject:(id)object;
 
 /**
- *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
- *  这个方法用于无参数无返回值的 selector 调用。
+ *  调用一个无参数、返回值类型为非对象的 selector。如果返回值类型为对象，请直接使用系统的 performSelector: 方法。
  *  @param selector 要被调用的方法名
+ *  @param returnValue selector 的返回值的指针地址，请先定义一个变量再将其指针地址传进来，例如 &result
+ *
+ *  @code
+ *  CGFloat alpha;
+ *  [view qmui_performSelector:@selector(alpha) withPrimitiveReturnValue:&alpha];
+ *  @endcode
  */
-- (void)qmui_performSelector:(SEL)selector;
+- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(void *)returnValue;
 
 /**
- *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
+ *  调用一个带参数的 selector，参数类型支持对象和非对象，也没有数量限制。返回值为对象或者 void。
+ *  @param selector 要被调用的方法名
+ *  @param firstArgument 参数列表，请传参数的指针地址，支持多个参数
+ *  @return 方法的返回值，如果该方法返回类型为 void，则会返回 nil，如果返回类型为对象，则返回该对象。
+ *
+ *  @code
+ *  id target = xxx;
+ *  SEL action = xxx;
+ *  UIControlEvents events = xxx;
+ *  [control qmui_performSelector:@selector(addTarget:action:forControlEvents:) withArguments:&target, &action, &events, nil];
+ *  @endcode
+ */
+- (id)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ...;
+
+/**
+ *  调用一个返回值类型为非对象且带参数的 selector，参数类型支持对象和非对象，也没有数量限制。
+ *
  *  @param selector 要被调用的方法名
  *  @param returnValue selector 的返回值的指针地址
- */
-- (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue;
-
-/**
- *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
- *  @param selector 要被调用的方法名
- *  @param firstArgument 调用 selector 时要传的第一个参数的指针地址，例如 &xxx
- */
-- (void)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ...;
-
-/**
- *  系统的 performSelector 不支持参数或返回值为非对象的 selector 的调用，所以在 QMUI 增加了对应的方法，支持对象和非对象的 selector。
+ *  @param firstArgument 参数列表，请传参数的指针地址，支持多个参数
  *
- *  使用示例：
- *  CGFloat result;
- *  CGFloat arg1, arg2;
- *  [self qmui_performSelector:xxx withReturnValue:&result arguments:&arg1, &arg2, nil];
- *  // 到这里 result 已经被赋值为 selector 的 return 值
- *
- *  @param selector 要被调用的方法名
- *  @param returnValue selector 的返回值的指针地址
- *  @param firstArgument 调用 selector 时要传的第一个参数的指针地址
+ *  @code
+ *  CGPoint point = xxx;
+ *  UIEvent *event = xxx;
+ *  BOOL isInside;
+ *  [view qmui_performSelector:@selector(pointInside:withEvent:) withPrimitiveReturnValue:&isInside arguments:&point, &event, nil];
+ *  @endcode
  */
-- (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue arguments:(void *)firstArgument, ...;
+- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(void *)returnValue arguments:(void *)firstArgument, ...;
 
 
 /**

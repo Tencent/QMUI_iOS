@@ -8,12 +8,14 @@
 
 #import "NSMethodSignature+QMUI.h"
 #import "NSObject+QMUI.h"
+#import "QMUICore.h"
 
 @implementation NSMethodSignature (QMUI)
 
 - (NSString *)qmui_typeString {
-    NSString *typeString;
-    [self qmui_performSelector:NSSelectorFromString([NSString stringWithFormat:@"_%@String", @"type"]) withReturnValue:&typeString];
+    BeginIgnorePerformSelectorLeaksWarning
+    NSString *typeString = [self performSelector:NSSelectorFromString([NSString stringWithFormat:@"_%@String", @"type"])];
+    EndIgnorePerformSelectorLeaksWarning
     return typeString;
 }
 

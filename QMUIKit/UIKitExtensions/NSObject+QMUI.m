@@ -58,34 +58,14 @@
     return (*objc_superAllocTyped)(&mySuper, aSelector, object);
 }
 
-- (void)qmui_performSelector:(SEL)selector {
-    [self qmui_performSelector:selector withReturnValue:NULL arguments:NULL];
-}
-
-- (void)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ... {
-    va_list valist;
-    va_start(valist, firstArgument);
-    [self _qmui_performSelector:selector withReturnValue:nil firstArgument:firstArgument otherArguments:valist];
-    va_end(valist);
-}
-
-- (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue {
-    [self qmui_performSelector:selector withReturnValue:returnValue arguments:nil];
-}
-
-- (void)qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue arguments:(void *)firstArgument, ... {
-    va_list valist;
-    va_start(valist, firstArgument);
-    [self _qmui_performSelector:selector withReturnValue:returnValue firstArgument:firstArgument otherArguments:valist];
-    va_end(valist);
-}
-
-- (void)_qmui_performSelector:(SEL)selector withReturnValue:(void *)returnValue firstArgument:(void *)firstArgument otherArguments:(va_list)valist {
+- (id)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ... {
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:selector]];
     [invocation setTarget:self];
     [invocation setSelector:selector];
     
     if (firstArgument) {
+        va_list valist;
+        va_start(valist, firstArgument);
         [invocation setArgument:firstArgument atIndex:2];// 0->self, 1->_cmd
         
         void *currentArgument;
@@ -94,6 +74,41 @@
             [invocation setArgument:currentArgument atIndex:index];
             index++;
         }
+        va_end(valist);
+    }
+    
+    [invocation invoke];
+    
+    const char *typeEncoding = method_getTypeEncoding(class_getInstanceMethod(object_getClass(self), selector));
+    if (strncmp(typeEncoding, "@", 1) == 0) {
+        __unsafe_unretained id returnValue;
+        [invocation getReturnValue:&returnValue];
+        return returnValue;
+    }
+    return nil;
+}
+
+- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(void *)returnValue {
+    [self qmui_performSelector:selector withPrimitiveReturnValue:returnValue arguments:nil];
+}
+
+- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(void *)returnValue arguments:(void *)firstArgument, ... {
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:selector]];
+    [invocation setTarget:self];
+    [invocation setSelector:selector];
+    
+    if (firstArgument) {
+        va_list valist;
+        va_start(valist, firstArgument);
+        [invocation setArgument:firstArgument atIndex:2];// 0->self, 1->_cmd
+        
+        void *currentArgument;
+        NSInteger index = 3;
+        while ((currentArgument = va_arg(valist, void *))) {
+            [invocation setArgument:currentArgument atIndex:index];
+            index++;
+        }
+        va_end(valist);
     }
     
     [invocation invoke];

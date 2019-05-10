@@ -339,7 +339,7 @@ static NSInteger isNotchedScreen = -1;
                  */
                 SEL peripheryInsetsSelector = NSSelectorFromString([NSString stringWithFormat:@"_%@%@", @"periphery", @"Insets"]);
                 UIEdgeInsets peripheryInsets = UIEdgeInsetsZero;
-                [[UIScreen mainScreen] qmui_performSelector:peripheryInsetsSelector withReturnValue:&peripheryInsets];
+                [[UIScreen mainScreen] qmui_performSelector:peripheryInsetsSelector withPrimitiveReturnValue:&peripheryInsets];
                 if (peripheryInsets.bottom <= 0) {
                     UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
                     peripheryInsets = window.safeAreaInsets;

@@ -69,20 +69,4 @@
     return YES;
 }
 
-#ifdef DEBUG
-
-- (void)setContentOffset:(CGPoint)contentOffset {
-    [super setContentOffset:contentOffset];
-}
-
-- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated {
-    [super setContentOffset:contentOffset animated:animated];
-}
-
-- (void)setContentInset:(UIEdgeInsets)contentInset {
-    [super setContentInset:contentInset];
-}
-
-#endif
-
 @end

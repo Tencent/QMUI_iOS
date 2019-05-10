@@ -181,7 +181,7 @@ static char kAssociatedObjectKey_lineHeight;
 }
 
 - (BOOL)_hasSetQmuiLineHeight {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight);
+    return !!objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight);
 }
 
 - (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor {
@@ -201,7 +201,7 @@ static char kAssociatedObjectKey_lineHeight;
     self.textAlignment = label.textAlignment;
     if ([self respondsToSelector:@selector(setContentEdgeInsets:)] && [label respondsToSelector:@selector(contentEdgeInsets)]) {
         UIEdgeInsets contentEdgeInsets;
-        [label qmui_performSelector:@selector(contentEdgeInsets) withReturnValue:&contentEdgeInsets];
+        [label qmui_performSelector:@selector(contentEdgeInsets) withPrimitiveReturnValue:&contentEdgeInsets];
         [self qmui_performSelector:@selector(setContentEdgeInsets:) withArguments:&contentEdgeInsets, nil];
     }
 }
