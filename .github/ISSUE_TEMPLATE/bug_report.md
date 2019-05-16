@@ -1,38 +1,25 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Bug
+about: QMUIKit 框架本身的 bug（请注意区分非 QMUIKit 代码引发的问题）
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Bug 表现**
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**截图**
+Bug 现场的界面截图，或者 Xcode 控制台的错误信息截图，有问题的代码截图
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**如何重现**
+1. ...
+2. ...
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**预期的表现**
+正常情况下，应该是什么表现
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
+**其他信息**
+ - 设备: [例如模拟器、iPhone、iPad]
+ - 系统版本: [iOS 12.x]
+ - QMUI 版本: [3.x.x]
