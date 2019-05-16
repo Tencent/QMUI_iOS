@@ -1,20 +1,12 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: 建议
+about: 功能、接口设计等的相关建议
 title: ''
-labels: ''
+labels: 'suggest'
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
+**现存问题或期望目标**
+对于功能的建议，请说明具体的场景，现在的代码为什么无法实现需求。
+对于代码设计方面的建议，请说明目前的问题所在。
