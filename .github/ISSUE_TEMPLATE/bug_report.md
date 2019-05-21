@@ -2,7 +2,7 @@
 name: Bug
 about: QMUIKit 框架本身的 bug（请注意区分非 QMUIKit 代码引发的问题）
 title: ''
-labels: 'bug'
+labels: ''
 assignees: ''
 
 ---
