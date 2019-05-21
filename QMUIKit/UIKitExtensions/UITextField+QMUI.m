@@ -30,10 +30,8 @@
 
 static char kAssociatedObjectKey_clearButtonImage;
 - (void)setQmui_clearButtonImage:(UIImage *)qmui_clearButtonImage {
-    if (qmui_clearButtonImage) {
-        objc_setAssociatedObject(self, &kAssociatedObjectKey_clearButtonImage, qmui_clearButtonImage, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        [self.qmui_clearButton setImage:qmui_clearButtonImage forState:UIControlStateNormal];
-    }
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_clearButtonImage, qmui_clearButtonImage, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.qmui_clearButton setImage:qmui_clearButtonImage forState:UIControlStateNormal];
 }
 
 - (UIImage *)qmui_clearButtonImage {
