@@ -24,7 +24,7 @@
 /// 输入框右边的 clearButton，在 UITextField 初始化后就存在
 @property(nullable, nonatomic, weak, readonly) UIButton *qmui_clearButton;
 
-/// 自定义 clearButton 的图片，注意如果设置过则无法再恢复到系统默认的图片
-@property(nonnull, nonatomic, strong) UIImage *qmui_clearButtonImage UI_APPEARANCE_SELECTOR;
+/// 自定义 clearButton 的图片，设置成nil，恢复到系统默认的图片
+@property(nullable, nonatomic, strong) UIImage *qmui_clearButtonImage UI_APPEARANCE_SELECTOR;
 
 @end

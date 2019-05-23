@@ -30,9 +30,12 @@
 
 static char kAssociatedObjectKey_clearButtonImage;
 - (void)setQmui_clearButtonImage:(UIImage *)qmui_clearButtonImage {
-    if (qmui_clearButtonImage) {
-        objc_setAssociatedObject(self, &kAssociatedObjectKey_clearButtonImage, qmui_clearButtonImage, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        [self.qmui_clearButton setImage:qmui_clearButtonImage forState:UIControlStateNormal];
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_clearButtonImage, qmui_clearButtonImage, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    [self.qmui_clearButton setImage:qmui_clearButtonImage forState:UIControlStateNormal];
+    
+    // 如果当前 clearButton 正在显示的时候把自定义图片去掉，需要重新 layout 一次才能让系统默认图片显示出来
+    if (!qmui_clearButtonImage) {
+        [self setNeedsLayout];
     }
 }
 
