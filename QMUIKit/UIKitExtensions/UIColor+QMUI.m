@@ -179,8 +179,8 @@
 }
 
 - (BOOL)qmui_colorIsDark {
-    CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
-    if ([self getRed:&red green:&green blue:&blue alpha:&alpha]) {
+    CGFloat red = 0.0, green = 0.0, blue = 0.0;
+    if ([self getRed:&red green:&green blue:&blue alpha:0]) {
         float referenceValue = 0.411;
         float colorDelta = ((red * 0.299) + (green * 0.587) + (blue * 0.114));
         

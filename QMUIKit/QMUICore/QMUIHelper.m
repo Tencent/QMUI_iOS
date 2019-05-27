@@ -628,6 +628,13 @@ static NSInteger isHighPerformanceDevice = -1;
 
 @implementation QMUIHelper
 
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [QMUIHelper sharedInstance];// 确保内部的变量、notification 都正确配置
+    });
+}
+
 + (instancetype)sharedInstance {
     static dispatch_once_t onceToken;
     static QMUIHelper *instance = nil;

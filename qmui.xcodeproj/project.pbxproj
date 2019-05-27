@@ -43,6 +43,8 @@
 		CD43CB2C207B9B840090346B /* QMUIFillButton.m in Sources */ = {isa = PBXBuildFile; fileRef = CD43CB2A207B9B840090346B /* QMUIFillButton.m */; };
 		CD4EA4BF2275FA0100A55066 /* NSMethodSignature+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD4EA4BD2275FA0100A55066 /* NSMethodSignature+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD4EA4C02275FA0100A55066 /* NSMethodSignature+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4EA4BE2275FA0100A55066 /* NSMethodSignature+QMUI.m */; };
+		CD4EA576228C401E00A55066 /* QMUIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FE0AFAD11D82B9D8000D21D9 /* QMUIKit.framework */; };
+		CD4EA57E228C443B00A55066 /* UIColorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4EA57D228C443B00A55066 /* UIColorTests.m */; };
 		CD6631DB1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6631D91FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD6631DC1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6631DA1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m */; };
 		CD6BE14E2058C64E00BE093E /* QMUICellHeightKeyCache.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6BE14C2058C64E00BE093E /* QMUICellHeightKeyCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -268,6 +270,16 @@
 		FEB3639020D9061000D0F321 /* QMUIVisualEffectView.m in Sources */ = {isa = PBXBuildFile; fileRef = FEB3638E20D9061000D0F321 /* QMUIVisualEffectView.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		CD4EA577228C401E00A55066 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CD44C1BD1956D5970098D0A2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FE0AFAD01D82B9D8000D21D9;
+			remoteInfo = QMUIKit;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		1178D5672198258700AA30E5 /* NSURL+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURL+QMUI.h"; sourceTree = "<group>"; };
 		1178D5682198258700AA30E5 /* NSURL+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURL+QMUI.m"; sourceTree = "<group>"; };
@@ -319,6 +331,9 @@
 		CD4DA9C11E8E3B0500836A1A /* QMUIConfigurationTemplate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIConfigurationTemplate.m; sourceTree = "<group>"; };
 		CD4EA4BD2275FA0100A55066 /* NSMethodSignature+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSMethodSignature+QMUI.h"; sourceTree = "<group>"; };
 		CD4EA4BE2275FA0100A55066 /* NSMethodSignature+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSMethodSignature+QMUI.m"; sourceTree = "<group>"; };
+		CD4EA571228C401E00A55066 /* QMUIKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = QMUIKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CD4EA575228C401E00A55066 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CD4EA57D228C443B00A55066 /* UIColorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UIColorTests.m; sourceTree = "<group>"; };
 		CD6631D91FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUITableViewHeaderFooterView.h; sourceTree = "<group>"; };
 		CD6631DA1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUITableViewHeaderFooterView.m; sourceTree = "<group>"; };
 		CD6BE14C2058C64E00BE093E /* QMUICellHeightKeyCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUICellHeightKeyCache.h; sourceTree = "<group>"; };
@@ -547,6 +562,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		CD4EA56E228C401E00A55066 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CD4EA576228C401E00A55066 /* QMUIKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FE0AFACD1D82B9D8000D21D9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -606,6 +629,7 @@
 		CD44C1BC1956D5970098D0A2 = {
 			isa = PBXGroup;
 			children = (
+				CD4EA572228C401E00A55066 /* QMUIKitTests */,
 				CD44C1C71956D5970098D0A2 /* Frameworks */,
 				CD44C1C61956D5970098D0A2 /* Products */,
 				CD44C1CE1956D5970098D0A2 /* qmui */,
@@ -618,6 +642,7 @@
 			isa = PBXGroup;
 			children = (
 				FE0AFAD11D82B9D8000D21D9 /* QMUIKit.framework */,
+				CD4EA571228C401E00A55066 /* QMUIKitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -663,6 +688,23 @@
 				CD4DA9C11E8E3B0500836A1A /* QMUIConfigurationTemplate.m */,
 			);
 			path = QMUIConfigurationTemplate;
+			sourceTree = "<group>";
+		};
+		CD4EA572228C401E00A55066 /* QMUIKitTests */ = {
+			isa = PBXGroup;
+			children = (
+				CD4EA57C228C43FB00A55066 /* UIKitExtensions */,
+				CD4EA575228C401E00A55066 /* Info.plist */,
+			);
+			path = QMUIKitTests;
+			sourceTree = "<group>";
+		};
+		CD4EA57C228C43FB00A55066 /* UIKitExtensions */ = {
+			isa = PBXGroup;
+			children = (
+				CD4EA57D228C443B00A55066 /* UIColorTests.m */,
+			);
+			path = UIKitExtensions;
 			sourceTree = "<group>";
 		};
 		CD6BE1472058C61000BE093E /* QMUICellHeightKeyCache */ = {
@@ -1192,6 +1234,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		CD4EA570228C401E00A55066 /* QMUIKitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CD4EA57B228C401E00A55066 /* Build configuration list for PBXNativeTarget "QMUIKitTests" */;
+			buildPhases = (
+				CD4EA56D228C401E00A55066 /* Sources */,
+				CD4EA56E228C401E00A55066 /* Frameworks */,
+				CD4EA56F228C401E00A55066 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CD4EA578228C401E00A55066 /* PBXTargetDependency */,
+			);
+			name = QMUIKitTests;
+			productName = QMUIKitTests;
+			productReference = CD4EA571228C401E00A55066 /* QMUIKitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		FE0AFAD01D82B9D8000D21D9 /* QMUIKit */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = FE0AFAE81D82B9D8000D21D9 /* Build configuration list for PBXNativeTarget "QMUIKit" */;
@@ -1221,6 +1281,9 @@
 				LastUpgradeCheck = 0940;
 				ORGANIZATIONNAME = "QMUI Team";
 				TargetAttributes = {
+					CD4EA570228C401E00A55066 = {
+						CreatedOnToolsVersion = 10.2.1;
+					};
 					FE0AFAD01D82B9D8000D21D9 = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = XKMGNG3AWZ;
@@ -1244,11 +1307,19 @@
 			projectRoot = "";
 			targets = (
 				FE0AFAD01D82B9D8000D21D9 /* QMUIKit */,
+				CD4EA570228C401E00A55066 /* QMUIKitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		CD4EA56F228C401E00A55066 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FE0AFACF1D82B9D8000D21D9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1277,6 +1348,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		CD4EA56D228C401E00A55066 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CD4EA57E228C443B00A55066 /* UIColorTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FE0AFACC1D82B9D8000D21D9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1411,6 +1490,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		CD4EA578228C401E00A55066 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FE0AFAD01D82B9D8000D21D9 /* QMUIKit */;
+			targetProxy = CD4EA577228C401E00A55066 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
 		CD44C1EF1956D5970098D0A2 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1515,6 +1602,67 @@
 			};
 			name = Release;
 		};
+		CD4EA579228C401E00A55066 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = QMUIKitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		CD4EA57A228C401E00A55066 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = QMUIKitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		FE0AFAE91D82B9D8000D21D9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1608,6 +1756,15 @@
 			buildConfigurations = (
 				CD44C1EF1956D5970098D0A2 /* Debug */,
 				CD44C1F01956D5970098D0A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CD4EA57B228C401E00A55066 /* Build configuration list for PBXNativeTarget "QMUIKitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CD4EA579228C401E00A55066 /* Debug */,
+				CD4EA57A228C401E00A55066 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

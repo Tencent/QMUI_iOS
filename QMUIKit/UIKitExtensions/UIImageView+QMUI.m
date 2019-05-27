@@ -20,6 +20,7 @@
 
 @interface UIImageView ()
 
+@property(nonatomic, strong) CALayer *qimgv_animatedImageLayer;
 @property(nonatomic, strong) CADisplayLink *qimgv_displayLink;
 @property(nonatomic, strong) UIImage *qimgv_animatedImage;
 @property(nonatomic, assign) NSInteger qimgv_currentAnimatedImageIndex;
@@ -27,6 +28,7 @@
 
 @implementation UIImageView (QMUI)
 
+QMUISynthesizeIdStrongProperty(qimgv_animatedImageLayer, setQimgv_animatedImageLayer)
 QMUISynthesizeIdStrongProperty(qimgv_displayLink, setQimgv_displayLink)
 QMUISynthesizeIdStrongProperty(qimgv_animatedImage, setQimgv_animatedImage)
 QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_currentAnimatedImageIndex)
@@ -101,23 +103,11 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
                 return result;
             };
         });
-        
-        OverrideImplementation([UIImageView class], @selector(displayLayer:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIImageView *selfObject, CALayer *layer) {
-                
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (selfObject.qimgv_animatedImage) {
-                        layer.contents = (__bridge id)selfObject.qimgv_animatedImage.images[selfObject.qimgv_currentAnimatedImageIndex].CGImage;
-                        return;
-                    }
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, CALayer *);
-                originSelectorIMP = (void (*)(id, SEL, CALayer *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, layer);
-            };
+
+        ExtendImplementationOfVoidMethodWithoutArguments([UIImageView class], @selector(layoutSubviews), ^(UIImageView *selfObject) {
+            if (selfObject.qimgv_animatedImageLayer) {
+                selfObject.qimgv_animatedImageLayer.frame = selfObject.bounds;
+            }
         });
         
         ExtendImplementationOfVoidMethodWithoutArguments([UIImageView class], @selector(didMoveToWindow), ^(UIImageView *selfObject) {
@@ -163,6 +153,11 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
 - (BOOL)qimgv_requestToStartAnimation {
     if (![self qimgv_canStartAnimation]) return NO;
     
+    if (!self.qimgv_animatedImageLayer) {
+        self.qimgv_animatedImageLayer = [CALayer layer];
+        [self.layer addSublayer:self.qimgv_animatedImageLayer];
+    }
+    
     if (!self.qimgv_displayLink) {
         self.qimgv_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(handleDisplayLink:)];
         [self.qimgv_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
@@ -173,7 +168,7 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
             self.qimgv_displayLink.frameInterval = preferredFramesPerSecond;
         }
         self.qimgv_currentAnimatedImageIndex = -1;
-        self.layer.contents = (__bridge id)self.qimgv_animatedImage.images.firstObject.CGImage;// 对于那种一开始就 pause 的图，displayLayer: 不会被调用，所以看不到图，为了避免这种情况，手动先把第一帧显示出来
+        self.qimgv_animatedImageLayer.contents = (__bridge id)self.qimgv_animatedImage.images.firstObject.CGImage;// 对于那种一开始就 pause 的图，displayLayer: 不会被调用，所以看不到图，为了避免这种情况，手动先把第一帧显示出来
     }
     
     self.qimgv_displayLink.paused = self.qmui_pause;
@@ -185,6 +180,10 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
     if (self.qimgv_displayLink) {
         [self.qimgv_displayLink invalidate];
         self.qimgv_displayLink = nil;
+    }
+    if (self.qimgv_animatedImageLayer) {
+        [self.qimgv_animatedImageLayer removeFromSuperlayer];
+        self.qimgv_animatedImageLayer = nil;
     }
 }
 
@@ -202,7 +201,7 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
 
 - (void)handleDisplayLink:(CADisplayLink *)displayLink {
     self.qimgv_currentAnimatedImageIndex = self.qimgv_currentAnimatedImageIndex < self.qimgv_animatedImage.images.count - 1 ? (self.qimgv_currentAnimatedImageIndex + 1) : 0;
-    [self.layer setNeedsDisplay];
+    self.qimgv_animatedImageLayer.contents = (__bridge id)self.qimgv_animatedImage.images[self.qimgv_currentAnimatedImageIndex].CGImage;
 }
 
 static char kAssociatedObjectKey_smoothAnimation;
@@ -223,7 +222,7 @@ static char kAssociatedObjectKey_pause;
 - (void)setQmui_pause:(BOOL)qmui_pause {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_pause, @(qmui_pause), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (self.animationImages || self.image.images) {
-        self.layer.qmui_pause = qmui_pause;
+        self.qimgv_animatedImageLayer.qmui_pause = qmui_pause;
     }
     if (self.qimgv_displayLink) {
         self.qimgv_displayLink.paused = qmui_pause;
