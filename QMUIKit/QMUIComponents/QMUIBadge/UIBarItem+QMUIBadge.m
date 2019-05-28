@@ -60,7 +60,7 @@
         OverrideImplementation(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"]), @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, UIView *firstArgv) {
                 
-                if ([selfObject isKindOfClass:originClass] && firstArgv.superview == selfObject) {
+                if (firstArgv.superview == selfObject) {
                     return;
                 }
                 

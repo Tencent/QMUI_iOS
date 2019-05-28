@@ -541,7 +541,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
                 // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
                 BOOL shouldSetTagBeforeCallingSuper = NO;// 如果要 push 进的新 item 本身就是自定义返回按钮，那么要先打好标记再调用 super，否则先调用 super 再打标记，实测只有这样才不会导致跳动
                 if (@available(iOS 11, *)) {
-                    shouldSetTagBeforeCallingSuper = [selfObject isKindOfClass:originClass] && item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
+                    shouldSetTagBeforeCallingSuper = item.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
                 }
                 
                 if (shouldSetTagBeforeCallingSuper) {
@@ -563,11 +563,9 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         OverrideImplementation([UINavigationBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UINavigationBar *selfObject, NSArray<UINavigationItem *> *items, BOOL animated) {
                 
-                if ([selfObject isKindOfClass:originClass]) {
-                    // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
-                    if (@available(iOS 11, *)) {
-                        selfObject.qmui_customizingBackBarButtonItem = items.lastObject.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
-                    }
+                // iOS 11，调整自定义返回按钮的位置 https://github.com/Tencent/QMUI_iOS/issues/279
+                if (@available(iOS 11, *)) {
+                    selfObject.qmui_customizingBackBarButtonItem = items.lastObject.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
                 }
                 
                 // call super

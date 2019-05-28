@@ -47,17 +47,6 @@ QMUISynthesizeIdWeakProperty(tmp_topViewController, setTmp_topViewController)
         OverrideImplementation([UINavigationController class], @selector(navigationBar:shouldPopItem:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UINavigationController *selfObject, UINavigationBar *navigationBar, UINavigationItem *item) {
                 
-                // call super
-                BOOL (^callSuperBlock)(UINavigationController *, UINavigationBar *, UINavigationItem *) = ^BOOL(UINavigationController *aSelfObject, UINavigationBar *aNavigationBar, UINavigationItem *aItem) {
-                    BOOL (*originSelectorIMP)(id, SEL, UINavigationBar *, UINavigationItem *);
-                    originSelectorIMP = (BOOL (*)(id, SEL, UINavigationBar *, UINavigationItem *))originalIMPProvider();
-                    BOOL result = originSelectorIMP(aSelfObject, originCMD, aNavigationBar, aItem);
-                    return result;
-                };
-                
-                // avoid superclass
-                if (![selfObject isKindOfClass:originClass]) return callSuperBlock(selfObject, navigationBar, item);
-                
                 // 如果nav的vc栈中有两个vc，第一个是root，第二个是second。这时second页面如果点击系统的返回按钮，topViewController获取的栈顶vc是second，而如果是直接代码写的pop操作，则获取的栈顶vc是root。也就是说只要代码写了pop操作，则系统会直接将顶层vc也就是second出栈，然后才回调的，所以这时我们获取到的顶层vc就是root了。然而不管哪种方式，参数中的item都是second的item。
                 BOOL isPopedByCoding = item != [selfObject topViewController].navigationItem;
                 
@@ -66,7 +55,11 @@ QMUISynthesizeIdWeakProperty(tmp_topViewController, setTmp_topViewController)
                 
                 if (canPopViewController || isPopedByCoding) {
                     selfObject.tmp_topViewController = nil;
-                    BOOL result = callSuperBlock(selfObject, navigationBar, item);
+                    
+                    // call super
+                    BOOL (*originSelectorIMP)(id, SEL, UINavigationBar *, UINavigationItem *);
+                    originSelectorIMP = (BOOL (*)(id, SEL, UINavigationBar *, UINavigationItem *))originalIMPProvider();
+                    BOOL result = originSelectorIMP(selfObject, originCMD, navigationBar, item);
                     return result;
                 } else {
                     selfObject.tmp_topViewController = nil;

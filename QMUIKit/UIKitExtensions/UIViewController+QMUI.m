@@ -65,14 +65,11 @@ QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleSta
         OverrideImplementation([UIViewController class], @selector(viewWillTransitionToSize:withTransitionCoordinator:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIViewController *selfObject, CGSize size, id<UIViewControllerTransitionCoordinator> coordinator) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (selfObject == UIApplication.sharedApplication.delegate.window.rootViewController) {
-                        CGSize originalSize = selfObject.view.frame.size;
-                        BOOL sizeChanged = !CGSizeEqualToSize(originalSize, size);
-                        if (sizeChanged) {
-                            [[NSNotificationCenter defaultCenter] postNotificationName:QMUIAppSizeWillChangeNotification object:nil userInfo:@{QMUIPrecedingAppSizeUserInfoKey: @(originalSize), QMUIFollowingAppSizeUserInfoKey: @(size)}];
-                        }
+                if (selfObject == UIApplication.sharedApplication.delegate.window.rootViewController) {
+                    CGSize originalSize = selfObject.view.frame.size;
+                    BOOL sizeChanged = !CGSizeEqualToSize(originalSize, size);
+                    if (sizeChanged) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUIAppSizeWillChangeNotification object:nil userInfo:@{QMUIPrecedingAppSizeUserInfoKey: @(originalSize), QMUIFollowingAppSizeUserInfoKey: @(size)}];
                     }
                 }
                 
@@ -512,22 +509,15 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
             OverrideImplementation([UITabBar class], @selector(setHidden:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UITabBar *selfObject, BOOL hidden) {
                     
-                    // call super
-                    void (^callSuperBlock)(BOOL) = ^void(BOOL aHidden) {
-                        void (*originSelectorIMP)(id, SEL, BOOL);
-                        originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
-                        originSelectorIMP(selfObject, originCMD, aHidden);
-                    };
+                    BOOL shouldNotify = selfObject.hidden != hidden;
                     
-                    // avoid superclass
-                    if ([selfObject isKindOfClass:originClass]) {
-                        BOOL shouldNotify = selfObject.hidden != hidden;
-                        callSuperBlock(hidden);
-                        if (shouldNotify) {
-                            [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                        }
-                    } else {
-                        callSuperBlock(hidden);
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, hidden);
+                    
+                    if (shouldNotify) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
                     }
                 };
             });
@@ -535,22 +525,15 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
             OverrideImplementation([UITabBar class], @selector(setBackgroundImage:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UITabBar *selfObject, UIImage *backgroundImage) {
                     
-                    // call super
-                    void (^callSuperBlock)(UIImage *) = ^void(UIImage *aBackgroundImage) {
-                        void (*originSelectorIMP)(id, SEL, UIImage *);
-                        originSelectorIMP = (void (*)(id, SEL, UIImage *))originalIMPProvider();
-                        originSelectorIMP(selfObject, originCMD, aBackgroundImage);
-                    };
+                    BOOL shouldNotify = ![selfObject.backgroundImage isEqual:backgroundImage];
                     
-                    // avoid superclass
-                    if ([selfObject isKindOfClass:originClass]) {
-                        BOOL shouldNotify = ![selfObject.backgroundImage isEqual:backgroundImage];
-                        callSuperBlock(backgroundImage);
-                        if (shouldNotify) {
-                            [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                        }
-                    } else {
-                        callSuperBlock(backgroundImage);
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UIImage *);
+                    originSelectorIMP = (void (*)(id, SEL, UIImage *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, backgroundImage);
+                    
+                    if (shouldNotify) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
                     }
                 };
             });
@@ -558,22 +541,15 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
             OverrideImplementation([UITabBar class], @selector(setTranslucent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UITabBar *selfObject, BOOL translucent) {
                     
-                    // call super
-                    void (^callSuperBlock)(BOOL) = ^void(BOOL aTranslucent) {
-                        void (*originSelectorIMP)(id, SEL, BOOL);
-                        originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
-                        originSelectorIMP(selfObject, originCMD, aTranslucent);
-                    };
+                    BOOL shouldNotify = selfObject.translucent != translucent;
                     
-                    // avoid superclass
-                    if ([selfObject isKindOfClass:originClass]) {
-                        BOOL shouldNotify = selfObject.translucent != translucent;
-                        callSuperBlock(translucent);
-                        if (shouldNotify) {
-                            [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                        }
-                    } else {
-                        callSuperBlock(translucent);
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, translucent);
+                    
+                    if (shouldNotify) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
                     }
                 };
             });
@@ -581,22 +557,15 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
             OverrideImplementation([UITabBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UITabBar *selfObject, CGRect frame) {
                     
-                    // call super
-                    void (^callSuperBlock)(CGRect) = ^void(CGRect aFrame) {
-                        void (*originSelectorIMP)(id, SEL, CGRect);
-                        originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
-                        originSelectorIMP(selfObject, originCMD, aFrame);
-                    };
+                    BOOL shouldNotify = CGRectGetMinY(selfObject.frame) != CGRectGetMinY(frame);
                     
-                    // avoid superclass
-                    if ([selfObject isKindOfClass:originClass]) {
-                        BOOL shouldNotify = CGRectGetMinY(selfObject.frame) != CGRectGetMinY(frame);
-                        callSuperBlock(frame);
-                        if (shouldNotify) {
-                            [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                        }
-                    } else {
-                        callSuperBlock(frame);
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, CGRect);
+                    originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, frame);
+                    
+                    if (shouldNotify) {
+                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
                     }
                 };
             });

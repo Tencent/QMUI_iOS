@@ -154,8 +154,6 @@ ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSe
             originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
             originSelectorIMP(selfObject, originCMD);
             
-            if (![selfObject isKindOfClass:originClass]) return;
-            
             implementationBlock(selfObject);
         };
         #if __has_feature(objc_arc)
@@ -180,11 +178,7 @@ ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSe
                 originSelectorIMP = (_returnType (*)(id, SEL))originalIMPProvider();\
                 _returnType result = originSelectorIMP(selfObject, originCMD);\
                 \
-                if ([selfObject isKindOfClass:originClass]) {\
-                    return _implementationBlock(selfObject, result);\
-                }\
-                \
-                return result;\
+                return _implementationBlock(selfObject, result);\
             };\
         });
 
@@ -202,8 +196,6 @@ ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSe
             originSelectorIMP = (void (*)(id, SEL, _argumentType))originalIMPProvider();\
             originSelectorIMP(selfObject, originCMD, firstArgv);\
             \
-            if (![selfObject isKindOfClass:originClass]) return;\
-            \
             _implementationBlock(selfObject, firstArgv);\
         };\
     });
@@ -214,8 +206,6 @@ ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSe
             void (*originSelectorIMP)(id, SEL, _argumentType1, _argumentType2);\
             originSelectorIMP = (void (*)(id, SEL, _argumentType1, _argumentType2))originalIMPProvider();\
             originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);\
-            \
-            if (![selfObject isKindOfClass:originClass]) return;\
             \
             _implementationBlock(selfObject, firstArgv, secondArgv);\
         };\
@@ -234,11 +224,7 @@ ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSe
             originSelectorIMP = (_returnType (*)(id, SEL, _argumentType))originalIMPProvider();\
             _returnType result = originSelectorIMP(selfObject, originCMD, firstArgv);\
             \
-            if ([selfObject isKindOfClass:originClass]) {\
-                return _implementationBlock(selfObject, firstArgv, result);\
-            }\
-            \
-            return result;\
+            return _implementationBlock(selfObject, firstArgv, result);\
         };\
     });
 
@@ -249,11 +235,7 @@ ExtendImplementationOfVoidMethodWithoutArguments(Class targetClass, SEL targetSe
             originSelectorIMP = (_returnType (*)(id, SEL, _argumentType1, _argumentType2))originalIMPProvider();\
             _returnType result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);\
             \
-            if ([selfObject isKindOfClass:originClass]) {\
-                return _implementationBlock(selfObject, firstArgv, secondArgv, result);\
-            }\
-            \
-            return result;\
+            return _implementationBlock(selfObject, firstArgv, secondArgv, result);\
         };\
     });
 

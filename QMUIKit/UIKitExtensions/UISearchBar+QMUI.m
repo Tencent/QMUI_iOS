@@ -77,50 +77,47 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
                     originSelectorIMP(selfObject, originCMD, aFrame);
                 };
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (!selfObject.qmui_usedAsTableHeaderView) {
+                if (!selfObject.qmui_usedAsTableHeaderView) {
+                    callSuperBlock(frame);
+                    return;
+                }
+                
+                // 重写 setFrame: 是为了这个 issue：https://github.com/Tencent/QMUI_iOS/issues/233
+                
+                if (@available(iOS 11, *)) {
+                    // iOS 11 下用 tableHeaderView 的方式使用 searchBar 的话，进入搜索状态时 y 偏上了，导致间距错乱
+                    
+                    if (![selfObject qmui_isActive]) {
                         callSuperBlock(frame);
                         return;
                     }
                     
-                    // 重写 setFrame: 是为了这个 issue：https://github.com/Tencent/QMUI_iOS/issues/233
-                    
-                    if (@available(iOS 11, *)) {
-                        // iOS 11 下用 tableHeaderView 的方式使用 searchBar 的话，进入搜索状态时 y 偏上了，导致间距错乱
-                        
-                        if (![selfObject qmui_isActive]) {
-                            callSuperBlock(frame);
-                            return;
+                    if (IS_NOTCHED_SCREEN) {
+                        // 竖屏
+                        if (CGRectGetMinY(frame) == 38) {
+                            // searching
+                            frame = CGRectSetY(frame, 44);
                         }
                         
-                        if (IS_NOTCHED_SCREEN) {
-                            // 竖屏
-                            if (CGRectGetMinY(frame) == 38) {
-                                // searching
-                                frame = CGRectSetY(frame, 44);
-                            }
-                            
-                            // 横屏
-                            if (CGRectGetMinY(frame) == -6) {
-                                frame = CGRectSetY(frame, 0);
-                            }
-                        } else {
-                            
-                            // 竖屏
-                            if (CGRectGetMinY(frame) == 14) {
-                                frame = CGRectSetY(frame, 20);
-                            }
-                            
-                            // 横屏
-                            if (CGRectGetMinY(frame) == -6) {
-                                frame = CGRectSetY(frame, 0);
-                            }
+                        // 横屏
+                        if (CGRectGetMinY(frame) == -6) {
+                            frame = CGRectSetY(frame, 0);
                         }
-                        // 强制在激活状态下 高度也为 56，方便后续做平滑过渡动画 (iOS 11 默认下，非刘海屏的机器激活后为 50，刘海屏激活后为 55)
-                        if (frame.size.height == SearchBarActiveHeightIOS11Later) {
-                            frame.size.height = 56;
+                    } else {
+                        
+                        // 竖屏
+                        if (CGRectGetMinY(frame) == 14) {
+                            frame = CGRectSetY(frame, 20);
                         }
+                        
+                        // 横屏
+                        if (CGRectGetMinY(frame) == -6) {
+                            frame = CGRectSetY(frame, 0);
+                        }
+                    }
+                    // 强制在激活状态下 高度也为 56，方便后续做平滑过渡动画 (iOS 11 默认下，非刘海屏的机器激活后为 50，刘海屏激活后为 55)
+                    if (frame.size.height == SearchBarActiveHeightIOS11Later) {
+                        frame.size.height = 56;
                     }
                 }
                 callSuperBlock(frame);

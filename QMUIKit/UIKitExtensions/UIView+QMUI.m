@@ -65,11 +65,8 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         OverrideImplementation([UIView class], @selector(becomeFirstResponder), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UIView *selfObject) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (IS_SIMULATOR && ![selfObject isKindOfClass:[UIWindow class]] && (selfObject.window ? !selfObject.window.keyWindow : YES) && !selfObject.qmui_visible) {
-                        [selfObject QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
-                    }
+                if (IS_SIMULATOR && ![selfObject isKindOfClass:[UIWindow class]] && (selfObject.window ? !selfObject.window.keyWindow : YES) && !selfObject.qmui_visible) {
+                    [selfObject QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow];
                 }
                 
                 // call super
@@ -83,12 +80,9 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         
         OverrideImplementation([UIView class], @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, UIView *view) {
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (view == selfObject) {
-                        [selfObject printLogForAddSubviewToSelf];
-                        return;
-                    }
+                if (view == selfObject) {
+                    [selfObject printLogForAddSubviewToSelf];
+                    return;
                 }
                 
                 // call super
@@ -100,12 +94,9 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         
         OverrideImplementation([UIView class], @selector(insertSubview:atIndex:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, UIView *view, NSInteger index) {
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (view == selfObject) {
-                        [selfObject printLogForAddSubviewToSelf];
-                        return;
-                    }
+                if (view == selfObject) {
+                    [selfObject printLogForAddSubviewToSelf];
+                    return;
                 }
                 
                 // call super
@@ -117,12 +108,9 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         
         OverrideImplementation([UIView class], @selector(insertSubview:aboveSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, UIView *view, UIView *siblingSubview) {
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (view == self) {
-                        [selfObject printLogForAddSubviewToSelf];
-                        return;
-                    }
+                if (view == self) {
+                    [selfObject printLogForAddSubviewToSelf];
+                    return;
                 }
                 
                 // call super
@@ -134,12 +122,9 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         
         OverrideImplementation([UIView class], @selector(insertSubview:belowSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, UIView *view, UIView *siblingSubview) {
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (view == self) {
-                        [selfObject printLogForAddSubviewToSelf];
-                        return;
-                    }
+                if (view == self) {
+                    [selfObject printLogForAddSubviewToSelf];
+                    return;
                 }
                 
                 // call super
@@ -152,10 +137,7 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         OverrideImplementation([UIView class], @selector(convertPoint:toView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^CGPoint(UIView *selfObject, CGPoint point, UIView *view) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    [selfObject alertConvertValueWithView:view];
-                }
+                [selfObject alertConvertValueWithView:view];
                 
                 // call super
                 CGPoint (*originSelectorIMP)(id, SEL, CGPoint, UIView *);
@@ -169,10 +151,7 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         OverrideImplementation([UIView class], @selector(convertPoint:fromView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^CGPoint(UIView *selfObject, CGPoint point, UIView *view) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    [selfObject alertConvertValueWithView:view];
-                }
+                [selfObject alertConvertValueWithView:view];
                 
                 // call super
                 CGPoint (*originSelectorIMP)(id, SEL, CGPoint, UIView *);
@@ -186,10 +165,7 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         OverrideImplementation([UIView class], @selector(convertRect:toView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^CGRect(UIView *selfObject, CGRect rect, UIView *view) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    [selfObject alertConvertValueWithView:view];
-                }
+                [selfObject alertConvertValueWithView:view];
                 
                 // call super
                 CGRect (*originSelectorIMP)(id, SEL, CGRect, UIView *);
@@ -203,10 +179,7 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
         OverrideImplementation([UIView class], @selector(convertRect:fromView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^CGRect(UIView *selfObject, CGRect rect, UIView *view) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    [selfObject alertConvertValueWithView:view];
-                }
+                [selfObject alertConvertValueWithView:view];
                 
                 // call super
                 CGRect (*originSelectorIMP)(id, SEL, CGRect, UIView *);
@@ -746,45 +719,37 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
         
         OverrideImplementation([UIView class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, CGRect frame) {
-                // call super
-                void (^callSuperBlock)(CGRect) = ^void(CGRect aFrame) {
-                    void (*originSelectorIMP)(id, SEL, CGRect);
-                    originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, aFrame);
-                };
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    // QMUIViewSelfSizingHeight 的功能
-                    if (CGRectGetWidth(frame) > 0 && isinf(CGRectGetHeight(frame))) {
-                        CGFloat height = flat([selfObject sizeThatFits:CGSizeMake(CGRectGetWidth(frame), CGFLOAT_MAX)].height);
-                        frame = CGRectSetHeight(frame, height);
+                // QMUIViewSelfSizingHeight 的功能
+                if (CGRectGetWidth(frame) > 0 && isinf(CGRectGetHeight(frame))) {
+                    CGFloat height = flat([selfObject sizeThatFits:CGSizeMake(CGRectGetWidth(frame), CGFLOAT_MAX)].height);
+                    frame = CGRectSetHeight(frame, height);
+                }
+                
+                // 对非法的 frame，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
+                if (CGRectIsNaN(frame)) {
+                    QMUILogWarn(@"UIView (QMUI)", @"%@ setFrame:%@，参数包含 NaN，已被拦截并处理为 0。%@", selfObject, NSStringFromCGRect(frame), [NSThread callStackSymbols]);
+                    if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
+                        NSAssert(NO, @"UIView setFrame: 出现 NaN");
                     }
-                    
-                    // 对非法的 frame，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
-                    if (CGRectIsNaN(frame)) {
-                        QMUILogWarn(@"UIView (QMUI)", @"%@ setFrame:%@，参数包含 NaN，已被拦截并处理为 0。%@", selfObject, NSStringFromCGRect(frame), [NSThread callStackSymbols]);
-                        if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
-                            NSAssert(NO, @"UIView setFrame: 出现 NaN");
-                        }
-                        if (!IS_DEBUG) {
-                            frame = CGRectSafeValue(frame);
-                        }
+                    if (!IS_DEBUG) {
+                        frame = CGRectSafeValue(frame);
                     }
-                    
-                    CGRect precedingFrame = selfObject.frame;
-                    BOOL valueChange = !CGRectEqualToRect(frame, precedingFrame);
-                    if (selfObject.qmui_frameWillChangeBlock && valueChange) {
-                        frame = selfObject.qmui_frameWillChangeBlock(selfObject, frame);
-                    }
-                    
-                    callSuperBlock(frame);
-                    
-                    if (selfObject.qmui_frameDidChangeBlock && valueChange) {
-                        selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
-                    }
-                } else {
-                    callSuperBlock(frame);
+                }
+                
+                CGRect precedingFrame = selfObject.frame;
+                BOOL valueChange = !CGRectEqualToRect(frame, precedingFrame);
+                if (selfObject.qmui_frameWillChangeBlock && valueChange) {
+                    frame = selfObject.qmui_frameWillChangeBlock(selfObject, frame);
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGRect);
+                originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, frame);
+                
+                if (selfObject.qmui_frameDidChangeBlock && valueChange) {
+                    selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
                 }
             };
         });
@@ -792,31 +757,22 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
         OverrideImplementation([UIView class], @selector(setBounds:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, CGRect bounds) {
                 
-                // call super
-                void (^callSuperBlock)(CGRect) = ^void(CGRect aBounds) {
-                    void (*originSelectorIMP)(id, SEL, CGRect);
-                    originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, aBounds);
-                };
+                CGRect precedingFrame = selfObject.frame;
+                CGRect precedingBounds = selfObject.bounds;
+                BOOL valueChange = !CGSizeEqualToSize(bounds.size, precedingBounds.size);// bounds 只有 size 发生变化才会影响 frame
+                if (selfObject.qmui_frameWillChangeBlock && valueChange) {
+                    CGRect followingFrame = CGRectMake(CGRectGetMinX(precedingFrame) + CGFloatGetCenter(CGRectGetWidth(bounds), CGRectGetWidth(precedingFrame)), CGRectGetMinY(precedingFrame) + CGFloatGetCenter(CGRectGetHeight(bounds), CGRectGetHeight(precedingFrame)), bounds.size.width, bounds.size.height);
+                    followingFrame = selfObject.qmui_frameWillChangeBlock(selfObject, followingFrame);
+                    bounds = CGRectSetSize(bounds, followingFrame.size);
+                }
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    CGRect precedingFrame = selfObject.frame;
-                    CGRect precedingBounds = selfObject.bounds;
-                    BOOL valueChange = !CGSizeEqualToSize(bounds.size, precedingBounds.size);// bounds 只有 size 发生变化才会影响 frame
-                    if (selfObject.qmui_frameWillChangeBlock && valueChange) {
-                        CGRect followingFrame = CGRectMake(CGRectGetMinX(precedingFrame) + CGFloatGetCenter(CGRectGetWidth(bounds), CGRectGetWidth(precedingFrame)), CGRectGetMinY(precedingFrame) + CGFloatGetCenter(CGRectGetHeight(bounds), CGRectGetHeight(precedingFrame)), bounds.size.width, bounds.size.height);
-                        followingFrame = selfObject.qmui_frameWillChangeBlock(selfObject, followingFrame);
-                        bounds = CGRectSetSize(bounds, followingFrame.size);
-                    }
-                    
-                    callSuperBlock(bounds);
-                    
-                    if (selfObject.qmui_frameDidChangeBlock && valueChange) {
-                        selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
-                    }
-                } else {
-                    callSuperBlock(bounds);
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGRect);
+                originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, bounds);
+                
+                if (selfObject.qmui_frameDidChangeBlock && valueChange) {
+                    selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
                 }
             };
         });
@@ -824,31 +780,22 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
         OverrideImplementation([UIView class], @selector(setCenter:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, CGPoint center) {
                 
-                // call super
-                void (^callSuperBlock)(CGPoint) = ^void(CGPoint aCenter) {
-                    void (*originSelectorIMP)(id, SEL, CGPoint);
-                    originSelectorIMP = (void (*)(id, SEL, CGPoint))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, aCenter);
-                };
+                CGRect precedingFrame = selfObject.frame;
+                CGPoint precedingCenter = selfObject.center;
+                BOOL valueChange = !CGPointEqualToPoint(center, precedingCenter);
+                if (selfObject.qmui_frameWillChangeBlock && valueChange) {
+                    CGRect followingFrame = CGRectSetXY(precedingFrame, center.x - CGRectGetWidth(selfObject.frame) / 2, center.y - CGRectGetHeight(selfObject.frame) / 2);
+                    followingFrame = selfObject.qmui_frameWillChangeBlock(selfObject, followingFrame);
+                    center = CGPointMake(CGRectGetMidX(followingFrame), CGRectGetMidY(followingFrame));
+                }
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    CGRect precedingFrame = selfObject.frame;
-                    CGPoint precedingCenter = selfObject.center;
-                    BOOL valueChange = !CGPointEqualToPoint(center, precedingCenter);
-                    if (selfObject.qmui_frameWillChangeBlock && valueChange) {
-                        CGRect followingFrame = CGRectSetXY(precedingFrame, center.x - CGRectGetWidth(selfObject.frame) / 2, center.y - CGRectGetHeight(selfObject.frame) / 2);
-                        followingFrame = selfObject.qmui_frameWillChangeBlock(selfObject, followingFrame);
-                        center = CGPointMake(CGRectGetMidX(followingFrame), CGRectGetMidY(followingFrame));
-                    }
-                    
-                    callSuperBlock(center);
-                    
-                    if (selfObject.qmui_frameDidChangeBlock && valueChange) {
-                        selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
-                    }
-                } else {
-                    callSuperBlock(center);
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGPoint);
+                originSelectorIMP = (void (*)(id, SEL, CGPoint))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, center);
+                
+                if (selfObject.qmui_frameDidChangeBlock && valueChange) {
+                    selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
                 }
             };
         });
@@ -856,30 +803,21 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
         OverrideImplementation([UIView class], @selector(setTransform:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, CGAffineTransform transform) {
                 
-                // call super
-                void (^callSuperBlock)(CGAffineTransform) = ^void(CGAffineTransform aTransform) {
-                    void (*originSelectorIMP)(id, SEL, CGAffineTransform);
-                    originSelectorIMP = (void (*)(id, SEL, CGAffineTransform))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, aTransform);
-                };
+                CGRect precedingFrame = selfObject.frame;
+                CGAffineTransform precedingTransform = selfObject.transform;
+                BOOL valueChange = !CGAffineTransformEqualToTransform(transform, precedingTransform);
+                if (selfObject.qmui_frameWillChangeBlock && valueChange) {
+                    CGRect followingFrame = CGRectApplyAffineTransformWithAnchorPoint(precedingFrame, transform, selfObject.layer.anchorPoint);
+                    selfObject.qmui_frameWillChangeBlock(selfObject, followingFrame);// 对于 CGAffineTransform，无法根据修改后的 rect 来算出新的 transform，所以就不修改 transform 的值了
+                }
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    CGRect precedingFrame = selfObject.frame;
-                    CGAffineTransform precedingTransform = selfObject.transform;
-                    BOOL valueChange = !CGAffineTransformEqualToTransform(transform, precedingTransform);
-                    if (selfObject.qmui_frameWillChangeBlock && valueChange) {
-                        CGRect followingFrame = CGRectApplyAffineTransformWithAnchorPoint(precedingFrame, transform, selfObject.layer.anchorPoint);
-                        selfObject.qmui_frameWillChangeBlock(selfObject, followingFrame);// 对于 CGAffineTransform，无法根据修改后的 rect 来算出新的 transform，所以就不修改 transform 的值了
-                    }
-                    
-                    callSuperBlock(transform);
-                    
-                    if (selfObject.qmui_frameDidChangeBlock && valueChange) {
-                        selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
-                    }
-                } else {
-                    callSuperBlock(transform);
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGAffineTransform);
+                originSelectorIMP = (void (*)(id, SEL, CGAffineTransform))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, transform);
+                
+                if (selfObject.qmui_frameDidChangeBlock && valueChange) {
+                    selfObject.qmui_frameDidChangeBlock(selfObject, precedingFrame);
                 }
             };
         });

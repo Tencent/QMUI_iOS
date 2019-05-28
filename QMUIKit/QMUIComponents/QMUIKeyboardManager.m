@@ -74,10 +74,7 @@ QMUISynthesizeBOOLProperty(keyboardManager_isFirstResponder, setKeyboardManager_
     dispatch_once(&onceToken, ^{
         OverrideImplementation([UIResponder class], @selector(becomeFirstResponder), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UIResponder *selfObject) {
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    selfObject.keyboardManager_isFirstResponder = YES;
-                }
+                selfObject.keyboardManager_isFirstResponder = YES;
                 
                 // call super
                 BOOL (*originSelectorIMP)(id, SEL);
@@ -90,14 +87,11 @@ QMUISynthesizeBOOLProperty(keyboardManager_isFirstResponder, setKeyboardManager_
         
         OverrideImplementation([UIResponder class], @selector(resignFirstResponder), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UIResponder *selfObject) {
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    selfObject.keyboardManager_isFirstResponder = NO;
-                    if (selfObject.isFirstResponder &&
-                        selfObject.qmui_keyboardManager &&
-                        [selfObject.qmui_keyboardManager.allTargetResponders containsObject:selfObject]) {
-                        selfObject.qmui_keyboardManager.currentResponderWhenResign = selfObject;
-                    }
+                selfObject.keyboardManager_isFirstResponder = NO;
+                if (selfObject.isFirstResponder &&
+                    selfObject.qmui_keyboardManager &&
+                    [selfObject.qmui_keyboardManager.allTargetResponders containsObject:selfObject]) {
+                    selfObject.qmui_keyboardManager.currentResponderWhenResign = selfObject;
                 }
                 
                 // call super

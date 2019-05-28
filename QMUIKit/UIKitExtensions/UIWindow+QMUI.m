@@ -31,23 +31,16 @@ QMUISynthesizeBOOLProperty(qmui_capturesStatusBarAppearance, setQmui_capturesSta
         
         OverrideImplementation([UIWindow class], NSSelectorFromString([NSString stringWithFormat:@"_%@%@%@", @"canAffect", @"StatusBar", @"Appearance"]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UIWindow *selfObject) {
-                // call super
-                BOOL (^callSuperBlock)(void) = ^BOOL{
+                
+                if (selfObject.qmui_capturesStatusBarAppearance) {
+                    // call super
                     BOOL (*originSelectorIMP)(id, SEL);
                     originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
                     BOOL result = originSelectorIMP(selfObject, originCMD);
                     return result;
-                };
-                
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (selfObject.qmui_capturesStatusBarAppearance) {
-                        return callSuperBlock();
-                    }
-                    return NO;
                 }
                 
-                return callSuperBlock();
+                return NO;
             };
         });
     });

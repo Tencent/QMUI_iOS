@@ -46,10 +46,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
         
         OverrideImplementation([UITableView class], @selector(sizeThatFits:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^CGSize(UITableView *selfObject, CGSize size) {
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    [selfObject alertEstimatedHeightUsageIfDetected];
-                }
+                [selfObject alertEstimatedHeightUsageIfDetected];
                 
                 // call super
                 CGSize (*originSelectorIMP)(id, SEL, CGSize);
@@ -63,27 +60,24 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
         OverrideImplementation([UITableView class], @selector(scrollToRowAtIndexPath:atScrollPosition:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UITableView *selfObject, NSIndexPath *indexPath, UITableViewScrollPosition scrollPosition, BOOL animated) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    if (!indexPath) {
-                        return;
+                if (!indexPath) {
+                    return;
+                }
+                
+                BOOL isIndexPathLegal = YES;
+                NSInteger numberOfSections = [selfObject numberOfSections];
+                if (indexPath.section >= numberOfSections) {
+                    isIndexPathLegal = NO;
+                } else if (indexPath.row != NSNotFound) {
+                    NSInteger rows = [selfObject numberOfRowsInSection:indexPath.section];
+                    isIndexPathLegal = indexPath.row < rows;
+                }
+                if (!isIndexPathLegal) {
+                    QMUILogWarn(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", selfObject, indexPath, [NSThread callStackSymbols]);
+                    if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
+                        NSAssert(NO, @"出现不合法的indexPath");
                     }
-                    
-                    BOOL isIndexPathLegal = YES;
-                    NSInteger numberOfSections = [selfObject numberOfSections];
-                    if (indexPath.section >= numberOfSections) {
-                        isIndexPathLegal = NO;
-                    } else if (indexPath.row != NSNotFound) {
-                        NSInteger rows = [selfObject numberOfRowsInSection:indexPath.section];
-                        isIndexPathLegal = indexPath.row < rows;
-                    }
-                    if (!isIndexPathLegal) {
-                        QMUILogWarn(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", selfObject, indexPath, [NSThread callStackSymbols]);
-                        if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
-                            NSAssert(NO, @"出现不合法的indexPath");
-                        }
-                        return;
-                    }
+                    return;
                 }
                 
                 // call super

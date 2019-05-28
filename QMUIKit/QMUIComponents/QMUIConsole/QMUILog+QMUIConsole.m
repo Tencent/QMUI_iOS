@@ -31,9 +31,6 @@
                 originSelectorIMP = (void (*)(id, SEL, const char *, int, const char *, QMUILogItem *))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, file, line, func, logItem);
                 
-                // avoid superclass
-                if (![selfObject isKindOfClass:originClass]) return;
-                
                 if (!QMUICMIActivated || !ShouldPrintQMUIWarnLogToConsole) return;
                 if (!logItem.enabled) return;
                 if (logItem.level != QMUILogLevelWarn) return;

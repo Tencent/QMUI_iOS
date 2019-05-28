@@ -80,10 +80,7 @@
         OverrideImplementation([UICollectionView class], @selector(setDelegate:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UICollectionView *selfObject, id<UICollectionViewDelegate> firstArgv) {
                 
-                // avoid superclass
-                if ([selfObject isKindOfClass:originClass]) {
-                    [selfObject replaceMethodForDelegateIfNeeded:firstArgv];
-                }
+                [selfObject replaceMethodForDelegateIfNeeded:firstArgv];
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, id<UICollectionViewDelegate>);
