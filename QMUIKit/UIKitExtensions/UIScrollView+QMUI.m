@@ -31,7 +31,11 @@ QMUISynthesizeCGFloatProperty(qmuiscroll_lastInsetTopWhenScrollToTop, setQmuiscr
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         ExtendImplementationOfNonVoidMethodWithoutArguments([UIScrollView class], @selector(description), NSString *, ^NSString *(UIScrollView *selfObject, NSString *originReturnValue) {
-            return ([NSString stringWithFormat:@"%@, contentInset = %@", originReturnValue, NSStringFromUIEdgeInsets(selfObject.contentInset)]);
+            originReturnValue = ([NSString stringWithFormat:@"%@, contentInset = %@", originReturnValue, NSStringFromUIEdgeInsets(selfObject.contentInset)]);
+            if (@available(iOS 13.0, *)) {
+                return originReturnValue.mutableCopy;
+            }
+            return originReturnValue;
         });
     });
 }

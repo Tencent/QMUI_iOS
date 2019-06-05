@@ -15,6 +15,7 @@
 
 #import "NSObject+QMUI.h"
 #import "QMUIWeakObjectContainer.h"
+#import "QMUICore.h"
 #import <objc/message.h>
 
 @implementation NSObject (QMUI)
@@ -196,6 +197,41 @@
         }
     }
     free(methods);
+}
+
+- (id)qmui_valueForKey:(NSString *)key {
+    NSString * (^capString)(NSString *) = ^NSString *(NSString *string) {
+        return [NSString stringWithFormat:@"%@%@", [string substringToIndex:1].uppercaseString, [string substringFromIndex:1]];
+    };
+    
+    key = [key hasPrefix:@"_"] ? [key substringFromIndex:1] : key;
+    Ivar ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"_%@", key].UTF8String);
+    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"_is%@", capString(key)].UTF8String);
+    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), key.UTF8String);
+    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"is%@", capString(key)].UTF8String);
+    
+    if (ivar) {
+        if (isObjectIvar(ivar)) {
+            return getObjectIvarValue(self, ivar);
+        }
+        ptrdiff_t ivarOffset = ivar_getOffset(ivar);
+        unsigned char * bytes = (unsigned char *)(__bridge void *)self;
+        NSValue *value = @(*(bytes + ivarOffset));
+        return value;
+    } else {
+        BeginIgnorePerformSelectorLeaksWarning
+        SEL selector = NSSelectorFromString([NSString stringWithFormat:@"get%@", capString(key)]);
+        if ([self respondsToSelector:selector]) return [self performSelector:selector];
+        selector = NSSelectorFromString(key);
+        if ([self respondsToSelector:selector]) return [self performSelector:selector];
+        selector = NSSelectorFromString([NSString stringWithFormat:@"is%@", capString(key)]);
+        if ([self respondsToSelector:selector]) return [self performSelector:selector];
+        selector = NSSelectorFromString([NSString stringWithFormat:@"_%@", key]);// 这一步是额外加的，系统的 valueForKey: 没有
+        if ([self respondsToSelector:selector]) return [self performSelector:selector];
+        EndIgnorePerformSelectorLeaksWarning
+    }
+    NSAssert(ivar, @"%@ 不存在名为 %@ 的 selector", NSStringFromClass(self.class), key);
+    return nil;
 }
 
 @end

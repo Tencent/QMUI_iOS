@@ -33,25 +33,6 @@ QMUISynthesizeBOOLProperty(canItemRespondDoubleTouch, setCanItemRespondDoubleTou
 QMUISynthesizeNSIntegerProperty(lastTouchedTabBarItemViewIndex, setLastTouchedTabBarItemViewIndex)
 QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouchCount)
 
-- (UIView *)qmui_backgroundView {
-    return [self valueForKey:@"_backgroundView"];
-}
-
-- (UIImageView *)qmui_shadowImageView {
-    if (@available(iOS 10, *)) {
-        // iOS 10 及以后，在 UITabBar 初始化之后就能获取到 backgroundView 和 shadowView 了
-        return [self.qmui_backgroundView valueForKey:@"_shadowView"];
-    }
-    // iOS 9 及以前，shadowView 要在 UITabBar 第一次 layoutSubviews 之后才会被创建，直至 UITabBarController viewWillAppear: 时仍未能获取到 shadowView，所以为了省去调用时机的考虑，这里获取不到的时候会主动触发一次 tabBar 的布局
-    UIImageView *shadowView = [self valueForKey:@"_shadowView"];
-    if (!shadowView) {
-        [self setNeedsLayout];
-        [self layoutIfNeeded];
-        shadowView = [self valueForKey:@"_shadowView"];
-    }
-    return shadowView;
-}
-
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -141,6 +122,27 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
             });
         }
     });
+}
+
+- (UIView *)qmui_backgroundView {
+    return [self qmui_valueForKey:@"_backgroundView"];
+}
+
+- (UIImageView *)qmui_shadowImageView {
+    if (@available(iOS 13, *)) {
+        return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView1"];
+    } else if (@available(iOS 10, *)) {
+        // iOS 10 及以后，在 UITabBar 初始化之后就能获取到 backgroundView 和 shadowView 了
+        return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView"];
+    }
+    // iOS 9 及以前，shadowView 要在 UITabBar 第一次 layoutSubviews 之后才会被创建，直至 UITabBarController viewWillAppear: 时仍未能获取到 shadowView，所以为了省去调用时机的考虑，这里获取不到的时候会主动触发一次 tabBar 的布局
+    UIImageView *shadowView = [self qmui_valueForKey:@"_shadowView"];
+    if (!shadowView) {
+        [self setNeedsLayout];
+        [self layoutIfNeeded];
+        shadowView = [self qmui_valueForKey:@"_shadowView"];
+    }
+    return shadowView;
 }
 
 - (void)handleTabBarItemViewEvent:(UIControl *)itemView {

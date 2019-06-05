@@ -76,7 +76,7 @@ static char kAssociatedObjectKey_referenceItem;
 - (UIView *)qmui_view {
     // UIBarItem 本身没有 view 属性，只有子类 UIBarButtonItem 和 UITabBarItem 才有
     if ([self respondsToSelector:@selector(view)]) {
-        return [self valueForKey:@"view"];
+        return [self qmui_valueForKey:@"view"];
     }
     return nil;
 }

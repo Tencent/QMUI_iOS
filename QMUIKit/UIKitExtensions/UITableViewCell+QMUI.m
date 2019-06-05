@@ -45,12 +45,12 @@ QMUISynthesizeIdCopyProperty(qmui_setSelectedBlock, setQmui_setSelectedBlock)
         if (self.editingAccessoryView) {
             return self.editingAccessoryView;
         }
-        return [self valueForKey:@"_editingAccessoryView"];
+        return [self qmui_valueForKey:@"_editingAccessoryView"];
     }
     if (self.accessoryView) {
         return self.accessoryView;
     }
-    return [self valueForKey:@"_accessoryView"];
+    return [self qmui_valueForKey:@"_accessoryView"];
 }
 
 @end

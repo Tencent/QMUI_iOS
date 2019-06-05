@@ -418,7 +418,7 @@ static char kAssociatedObjectKey_viewController;
             } else {
                 // 临时修复 iOS 10.0.2 上在输入框内切换输入法可能引发死循环的 bug，待查
                 // https://github.com/Tencent/QMUI_iOS/issues/471
-                ((UIView *)[selfObject valueForKey:@"_view"]).qmui_viewController = selfObject;
+                ((UIView *)[selfObject qmui_valueForKey:@"_view"]).qmui_viewController = selfObject;
             }
         });
     });

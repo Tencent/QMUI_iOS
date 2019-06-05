@@ -14,22 +14,26 @@
 //
 
 #import "UINavigationBar+QMUI.h"
+#import "QMUICore.h"
+#import "NSObject+QMUI.h"
 
 @implementation UINavigationBar (QMUI)
 
 - (UIView *)qmui_backgroundView {
-    return [self valueForKey:@"_backgroundView"];
+    return [self qmui_valueForKey:@"_backgroundView"];
 }
 
 - (__kindof UIView *)qmui_backgroundContentView {
-    if (@available(iOS 10, *)) {
-        UIImageView *imageView = [self.qmui_backgroundView valueForKey:@"_backgroundImageView"];
-        UIVisualEffectView *visualEffectView = [self.qmui_backgroundView valueForKey:@"_backgroundEffectView"];
-        UIView *customView = [self.qmui_backgroundView valueForKey:@"_customBackgroundView"];
+    if (@available(iOS 13, *)) {
+        return [self.qmui_backgroundView qmui_valueForKey:@"_colorAndImageView1"];
+    } else if (@available(iOS 10, *)) {
+        UIImageView *imageView = [self.qmui_backgroundView qmui_valueForKey:@"_backgroundImageView"];
+        UIVisualEffectView *visualEffectView = [self.qmui_backgroundView qmui_valueForKey:@"_backgroundEffectView"];
+        UIView *customView = [self.qmui_backgroundView qmui_valueForKey:@"_customBackgroundView"];
         UIView *result = customView && customView.superview ? customView : (imageView && imageView.superview ? imageView : visualEffectView);
         return result;
     } else {
-        UIView *backdrop = [self.qmui_backgroundView valueForKey:@"_adaptiveBackdrop"];
+        UIView *backdrop = [self.qmui_backgroundView qmui_valueForKey:@"_adaptiveBackdrop"];
         UIView *result = backdrop && backdrop.superview ? backdrop : self.qmui_backgroundView;
         return result;
     }
@@ -37,7 +41,10 @@
 
 - (UIImageView *)qmui_shadowImageView {
     // UINavigationBar 在 init 完就可以获取到 backgroundView 和 shadowView，无需关心调用时机的问题
-    return [self.qmui_backgroundView valueForKey:@"_shadowView"];
+    if (@available(iOS 13, *)) {
+        return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView1"];
+    }
+    return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView"];
 }
 
 @end

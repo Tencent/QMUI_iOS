@@ -127,6 +127,7 @@
 		CDB8CBE01DCC870800769DF0 /* UIViewController+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CABD1DCC870700769DF0 /* UIViewController+QMUI.m */; };
 		CDB8CBE11DCC870800769DF0 /* UIWindow+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDB8CABE1DCC870700769DF0 /* UIWindow+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDB8CBE41DCC870800769DF0 /* UIWindow+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CDB8CABF1DCC870700769DF0 /* UIWindow+QMUI.m */; };
+		CDC006E522A804D800A81771 /* NSObjectTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC006E422A804D800A81771 /* NSObjectTests.m */; };
 		CDC163C6204D441000E4CC13 /* QMUILogManagerViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC163C4204D441000E4CC13 /* QMUILogManagerViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC163C7204D441000E4CC13 /* QMUILogManagerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC163C5204D441000E4CC13 /* QMUILogManagerViewController.m */; };
 		CDC86FBD1F68D617000E8829 /* QMUIAsset.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F411F68D5F9000E8829 /* QMUIAsset.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -417,6 +418,7 @@
 		CDB8CABD1DCC870700769DF0 /* UIViewController+QMUI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+QMUI.m"; sourceTree = "<group>"; };
 		CDB8CABE1DCC870700769DF0 /* UIWindow+QMUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIWindow+QMUI.h"; sourceTree = "<group>"; };
 		CDB8CABF1DCC870700769DF0 /* UIWindow+QMUI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIWindow+QMUI.m"; sourceTree = "<group>"; };
+		CDC006E422A804D800A81771 /* NSObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSObjectTests.m; sourceTree = "<group>"; };
 		CDC163C4204D441000E4CC13 /* QMUILogManagerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUILogManagerViewController.h; sourceTree = "<group>"; };
 		CDC163C5204D441000E4CC13 /* QMUILogManagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUILogManagerViewController.m; sourceTree = "<group>"; };
 		CDC86F3E1F68D5F8000E8829 /* QMUIResources.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = QMUIResources.bundle; sourceTree = "<group>"; };
@@ -703,6 +705,7 @@
 			isa = PBXGroup;
 			children = (
 				CD4EA57D228C443B00A55066 /* UIColorTests.m */,
+				CDC006E422A804D800A81771 /* NSObjectTests.m */,
 			);
 			path = UIKitExtensions;
 			sourceTree = "<group>";
@@ -1353,6 +1356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD4EA57E228C443B00A55066 /* UIColorTests.m in Sources */,
+				CDC006E522A804D800A81771 /* NSObjectTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1620,7 +1624,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = QMUIKitTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1649,7 +1653,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = QMUIKitTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

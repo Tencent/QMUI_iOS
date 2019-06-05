@@ -16,6 +16,8 @@
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSObject (QMUI)
 
 /**
@@ -43,7 +45,7 @@
  @return 消息执行后的结果
  @link http://stackoverflow.com/questions/14635024/using-objc-msgsendsuper-to-invoke-a-class-method @/link
  */
-- (id)qmui_performSelectorToSuperclass:(SEL)aSelector;
+- (nullable id)qmui_performSelectorToSuperclass:(SEL)aSelector;
 
 /**
  对 super 发送消息
@@ -53,7 +55,7 @@
  @return 消息执行后的结果
  @link http://stackoverflow.com/questions/14635024/using-objc-msgsendsuper-to-invoke-a-class-method @/link
  */
-- (id)qmui_performSelectorToSuperclass:(SEL)aSelector withObject:(id)object;
+- (nullable id)qmui_performSelectorToSuperclass:(SEL)aSelector withObject:(nullable id)object;
 
 /**
  *  调用一个无参数、返回值类型为非对象的 selector。如果返回值类型为对象，请直接使用系统的 performSelector: 方法。
@@ -65,7 +67,7 @@
  *  [view qmui_performSelector:@selector(alpha) withPrimitiveReturnValue:&alpha];
  *  @endcode
  */
-- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(void *)returnValue;
+- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(nullable void *)returnValue;
 
 /**
  *  调用一个带参数的 selector，参数类型支持对象和非对象，也没有数量限制。返回值为对象或者 void。
@@ -80,7 +82,7 @@
  *  [control qmui_performSelector:@selector(addTarget:action:forControlEvents:) withArguments:&target, &action, &events, nil];
  *  @endcode
  */
-- (id)qmui_performSelector:(SEL)selector withArguments:(void *)firstArgument, ...;
+- (nullable id)qmui_performSelector:(SEL)selector withArguments:(nullable void *)firstArgument, ...;
 
 /**
  *  调用一个返回值类型为非对象且带参数的 selector，参数类型支持对象和非对象，也没有数量限制。
@@ -96,7 +98,7 @@
  *  [view qmui_performSelector:@selector(pointInside:withEvent:) withPrimitiveReturnValue:&isInside arguments:&point, &event, nil];
  *  @endcode
  */
-- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(void *)returnValue arguments:(void *)firstArgument, ...;
+- (void)qmui_performSelector:(SEL)selector withPrimitiveReturnValue:(nullable void *)returnValue arguments:(nullable void *)firstArgument, ...;
 
 
 /**
@@ -153,6 +155,8 @@
  */
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL selector))block;
 
+- (nullable id)qmui_valueForKey:(NSString *)key;
+
 @end
 
 
@@ -176,17 +180,17 @@
  }
  @endcode
  */
-- (void)qmui_bindObject:(id)object forKey:(NSString *)key;
+- (void)qmui_bindObject:(nullable id)object forKey:(NSString *)key;
 
 /**
  给对象绑定上另一个对象以供后续取出使用，但相比于 qmui_bindObject:forKey:，该方法不会 strong 强引用传入的 object
  */
-- (void)qmui_bindObjectWeakly:(id)object forKey:(NSString *)key;
+- (void)qmui_bindObjectWeakly:(nullable id)object forKey:(NSString *)key;
 
 /**
  取出之前使用 bind 方法绑定的对象
  */
-- (id)qmui_getBoundObjectForKey:(NSString *)key;
+- (nullable id)qmui_getBoundObjectForKey:(NSString *)key;
 
 /**
  给对象绑定上一个 double 值以供后续取出使用
@@ -240,3 +244,5 @@
 - (BOOL)qmui_hasBindingKey:(NSString *)key;
 
 @end
+
+NS_ASSUME_NONNULL_END

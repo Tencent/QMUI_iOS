@@ -166,12 +166,12 @@ static char kAssociatedObjectKey_font;
 }
 
 - (UITextField *)qmui_textField {
-    UITextField *textField = [self valueForKey:@"searchField"];
+    UITextField *textField = [self qmui_valueForKey:@"searchField"];
     return textField;
 }
 
 - (UIButton *)qmui_cancelButton {
-    UIButton *cancelButton = [self valueForKey:@"cancelButton"];
+    UIButton *cancelButton = [self qmui_valueForKey:@"cancelButton"];
     return cancelButton;
 }
 
@@ -187,7 +187,7 @@ static char kAssociatedObjectKey_cancelButtonFont;
 
 - (UISegmentedControl *)qmui_segmentedControl {
     // 注意，segmentedControl 只是整条 scopeBar 里的一部分，虽然它的 key 叫做“scopeBar”
-    UISegmentedControl *segmentedControl = [self valueForKey:@"scopeBar"];
+    UISegmentedControl *segmentedControl = [self qmui_valueForKey:@"scopeBar"];
     return segmentedControl;
 }
 
@@ -196,7 +196,7 @@ static char kAssociatedObjectKey_cancelButtonFont;
 }
 
 - (UISearchController *)qmui_searchController {
-    return [self valueForKey:@"_searchController"];
+    return [self qmui_valueForKey:@"_searchController"];
 }
 
 - (void)fixLandscapeStyle {
@@ -255,7 +255,9 @@ static char kAssociatedObjectKey_cancelButtonFont;
 }
 
 - (UIView *)qmui_backgroundView {
-    UIView *backgroundView = [self valueForKey:@"background"];
+    BeginIgnorePerformSelectorLeaksWarning
+    UIView *backgroundView = [self performSelector:NSSelectorFromString(@"_backgroundView")];
+    EndIgnorePerformSelectorLeaksWarning
     return backgroundView;
 }
 
