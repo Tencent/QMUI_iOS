@@ -155,6 +155,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL selector))block;
 
+/// iOS 13 下系统禁止通过 KVC 访问私有 API，因此提供这种方式兼容
+/// https://github.com/Tencent/QMUI_iOS/issues/617
 - (nullable id)qmui_valueForKey:(NSString *)key;
 
 @end
@@ -243,6 +245,18 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)qmui_hasBindingKey:(NSString *)key;
 
+@end
+
+@interface NSObject (QMUI_Debug)
+
+/// 获取当前对象的所有 @property、方法，父类的方法也会分别列出
+- (NSString *)qmui_methodList;
+
+/// 获取当前对象的所有 @property、方法，不包含父类的
+- (NSString *)qmui_shortMethodList;
+
+/// 获取当前对象的所有 Ivar 变量
+- (NSString *)qmui_ivarList;
 @end
 
 NS_ASSUME_NONNULL_END

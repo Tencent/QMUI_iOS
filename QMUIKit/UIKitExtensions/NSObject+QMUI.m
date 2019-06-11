@@ -16,6 +16,7 @@
 #import "NSObject+QMUI.h"
 #import "QMUIWeakObjectContainer.h"
 #import "QMUICore.h"
+#import "NSString+QMUI.h"
 #import <objc/message.h>
 
 @implementation NSObject (QMUI)
@@ -200,15 +201,11 @@
 }
 
 - (id)qmui_valueForKey:(NSString *)key {
-    NSString * (^capString)(NSString *) = ^NSString *(NSString *string) {
-        return [NSString stringWithFormat:@"%@%@", [string substringToIndex:1].uppercaseString, [string substringFromIndex:1]];
-    };
-    
     key = [key hasPrefix:@"_"] ? [key substringFromIndex:1] : key;
     Ivar ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"_%@", key].UTF8String);
-    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"_is%@", capString(key)].UTF8String);
+    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"_is%@", key.qmui_capitalizedString].UTF8String);
     if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), key.UTF8String);
-    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"is%@", capString(key)].UTF8String);
+    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"is%@", key.qmui_capitalizedString].UTF8String);
     
     if (ivar) {
         if (isObjectIvar(ivar)) {
@@ -220,11 +217,11 @@
         return value;
     } else {
         BeginIgnorePerformSelectorLeaksWarning
-        SEL selector = NSSelectorFromString([NSString stringWithFormat:@"get%@", capString(key)]);
+        SEL selector = NSSelectorFromString([NSString stringWithFormat:@"get%@", key.qmui_capitalizedString]);
         if ([self respondsToSelector:selector]) return [self performSelector:selector];
         selector = NSSelectorFromString(key);
         if ([self respondsToSelector:selector]) return [self performSelector:selector];
-        selector = NSSelectorFromString([NSString stringWithFormat:@"is%@", capString(key)]);
+        selector = NSSelectorFromString([NSString stringWithFormat:@"is%@", key.qmui_capitalizedString]);
         if ([self respondsToSelector:selector]) return [self performSelector:selector];
         selector = NSSelectorFromString([NSString stringWithFormat:@"_%@", key]);// 这一步是额外加的，系统的 valueForKey: 没有
         if ([self respondsToSelector:selector]) return [self performSelector:selector];
@@ -347,5 +344,23 @@ static char kAssociatedObjectKey_QMUIAllBoundObjects;
 - (BOOL)qmui_hasBindingKey:(NSString *)key {
     return [[self qmui_allBindingKeys] containsObject:key];
 }
+
+@end
+
+@implementation NSObject (QMUI_Debug)
+
+BeginIgnorePerformSelectorLeaksWarning
+- (NSString *)qmui_methodList {
+    return [self performSelector:NSSelectorFromString(@"_methodDescription")];
+}
+
+- (NSString *)qmui_shortMethodList {
+    return [self performSelector:NSSelectorFromString(@"_shortMethodDescription")];
+}
+
+- (NSString *)qmui_ivarList {
+    return [self performSelector:NSSelectorFromString(@"_ivarDescription")];
+}
+EndIgnorePerformSelectorLeaksWarning
 
 @end
