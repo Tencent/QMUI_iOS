@@ -31,17 +31,27 @@ QMUISynthesizeIdCopyProperty(qmui_doubleTapBlock, setQmui_doubleTapBlock)
         return nil;
     }
     
-    for (UIView *subview in tabBarButton.subviews) {
-        // iOS10及以后，imageView都是用UITabBarSwappableImageView实现的，所以遇到这个class就直接拿
-        if ([NSStringFromClass([subview class]) isEqualToString:@"UITabBarSwappableImageView"]) {
-            return (UIImageView *)subview;
+    UIView *superview = tabBarButton;
+    if (@available(iOS 13.0, *)) {
+        if ([tabBarButton.subviews.firstObject isKindOfClass:[UIVisualEffectView class]]) {
+            // iOS 13 下如果 tabBar 是磨砂的，则每个 button 内部都会有一个磨砂，而磨砂再包裹了图片、label 等 subview
+            // https://github.com/Tencent/QMUI_iOS/issues/616
+            superview = ((UIVisualEffectView *)tabBarButton.subviews.firstObject).contentView;
         }
+    }
+    
+    for (UIView *subview in superview.subviews) {
         
-        if (IOS_VERSION < 10) {
-            // iOS10以前，选中的item的高亮是用UITabBarSelectionIndicatorView实现的，所以要屏蔽掉
-            if ([subview isKindOfClass:[UIImageView class]] && ![NSStringFromClass([subview class]) isEqualToString:@"UITabBarSelectionIndicatorView"]) {
+        if (@available(iOS 10.0, *)) {
+            // iOS10及以后，imageView都是用UITabBarSwappableImageView实现的，所以遇到这个class就直接拿
+            if ([NSStringFromClass([subview class]) isEqualToString:@"UITabBarSwappableImageView"]) {
                 return (UIImageView *)subview;
             }
+        }
+        
+        // iOS10以前，选中的item的高亮是用UITabBarSelectionIndicatorView实现的，所以要屏蔽掉
+        if ([subview isKindOfClass:[UIImageView class]] && ![NSStringFromClass([subview class]) isEqualToString:@"UITabBarSelectionIndicatorView"]) {
+            return (UIImageView *)subview;
         }
         
     }
