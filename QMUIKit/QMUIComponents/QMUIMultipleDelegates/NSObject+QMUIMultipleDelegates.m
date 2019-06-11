@@ -17,6 +17,7 @@
 #import "QMUIMultipleDelegates.h"
 #import "QMUICore.h"
 #import "NSPointerArray+QMUI.h"
+#import "NSString+QMUI.h"
 #import <objc/runtime.h>
 
 @interface NSObject ()
@@ -168,8 +169,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
 - (SEL)originSetterWithGetter:(SEL)getter {
     NSString *getterString = NSStringFromSelector(getter);
     NSMutableString *setterString = [[NSMutableString alloc] initWithString:@"set"];
-    [setterString appendString:[getterString substringToIndex:1].uppercaseString];
-    [setterString appendString:[getterString substringFromIndex:1]];
+    [setterString appendString:getterString.qmui_capitalizedString];
     [setterString appendString:@":"];
     SEL setter = NSSelectorFromString(setterString);
     return setter;
