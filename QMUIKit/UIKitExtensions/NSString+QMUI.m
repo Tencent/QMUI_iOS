@@ -68,6 +68,12 @@
     return [self stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet qmui_URLUserInputQueryAllowedCharacterSet]];
 }
 
+- (NSString *)qmui_capitalizedString {
+    if (self.length)
+        return [NSString stringWithFormat:@"%@%@", [self substringToIndex:1].uppercaseString, [self substringFromIndex:1]].copy;
+    return nil;
+}
+
 + (NSString *)hexLetterStringWithInteger:(NSInteger)integer {
     NSAssert(integer < 16, @"要转换的数必须是16进制里的个位数，也即小于16，但你传给我是%@", @(integer));
     

@@ -16,13 +16,15 @@
 #import <Foundation/Foundation.h>
 #import <CoreGraphics/CGBase.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSString (QMUI)
 
 /// 将字符串按一个一个字符拆成数组，类似 JavaScript 里的 split("")，如果多个空格，则每个空格也会当成一个 item
-@property(readonly, copy) NSArray<NSString *> *qmui_toArray;
+@property(nullable, readonly, copy) NSArray<NSString *> *qmui_toArray;
 
 /// 将字符串按一个一个字符拆成数组，类似 JavaScript 里的 split("")，但会自动过滤掉空白字符
-@property(readonly, copy) NSArray<NSString *> *qmui_toTrimmedArray;
+@property(nullable, readonly, copy) NSArray<NSString *> *qmui_toTrimmedArray;
 
 /// 去掉头尾的空白字符
 @property(readonly, copy) NSString *qmui_trim;
@@ -38,13 +40,16 @@
 
 /// 返回一个符合 query value 要求的编码后的字符串，例如&、#、=等字符均会被变为 %xxx 的编码
 /// @see `NSCharacterSet (QMUI) qmui_URLUserInputQueryAllowedCharacterSet`
-@property(readonly, copy) NSString *qmui_stringByEncodingUserInputQuery;
+@property(nullable, readonly, copy) NSString *qmui_stringByEncodingUserInputQuery;
+
+/// 把当前文本的第一个字符改为大写，其他的字符保持不变，例如 backgroundView.qmui_capitalizedString -> BackgroundView（系统的 capitalizedString 会变成 Backgroundview）
+@property(nullable, readonly, copy) NSString *qmui_capitalizedString;
 
 /**
  * 用正则表达式匹配的方式去除字符串里一些特殊字符，避免UI上的展示问题
  * @link http://www.croton.su/en/uniblock/Diacriticals.html @/link
  */
-@property(readonly, copy) NSString *qmui_removeMagicalChar;
+@property(nullable, readonly, copy) NSString *qmui_removeMagicalChar;
 
 /**
  *  按照中文 2 个字符、英文 1 个字符的方式来计算文本长度
@@ -155,3 +160,5 @@
 + (instancetype)qmui_stringWithCGFloat:(CGFloat)floatValue;
 + (instancetype)qmui_stringWithCGFloat:(CGFloat)floatValue decimal:(NSUInteger)decimal;
 @end
+
+NS_ASSUME_NONNULL_END
