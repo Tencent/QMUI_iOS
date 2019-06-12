@@ -66,6 +66,13 @@
 #define BeginIgnoreDeprecatedWarning BeginIgnoreClangWarning(-Wdeprecated-declarations)
 #define EndIgnoreDeprecatedWarning EndIgnoreClangWarning
 
+#pragma mark - 忽略 iOS13 KVC 访问私有属性限制
+
+#define QMUIIgnoreUIKVCAccessProhibitedKey @"QMUIIgnoreUIKVCAccessProhibitedKey"
+/// 将 KVC 代码包裹在这个宏中，可忽略系统的  KVC 访问限制
+#define BeginIgnoreUIKVCAccessProhibited [[NSThread currentThread] qmui_bindBOOL:YES forKey:QMUIIgnoreUIKVCAccessProhibitedKey];
+#define EndIgnoreUIKVCAccessProhibited [[NSThread currentThread] qmui_bindBOOL:NO forKey:QMUIIgnoreUIKVCAccessProhibitedKey];
+
 #pragma mark - 变量-设备相关
 
 /// 设备类型

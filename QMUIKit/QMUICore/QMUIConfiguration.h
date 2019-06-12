@@ -239,6 +239,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               shouldFixTabBarButtonBugForAll;
 @property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
+@property(nonatomic, assign) BOOL               ignoreKVCAccessProhibited;
 
 NS_ASSUME_NONNULL_END
 

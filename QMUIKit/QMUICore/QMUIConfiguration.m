@@ -284,6 +284,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.shouldFixTabBarButtonBugForAll = NO;
     self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG;
     self.sendAnalyticsToQMUITeam = YES;
+    self.ignoreKVCAccessProhibited = NO;
 }
 
 - (void)setNavBarButtonFont:(UIFont *)navBarButtonFont {

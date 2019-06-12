@@ -159,6 +159,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// https://github.com/Tencent/QMUI_iOS/issues/617
 - (nullable id)qmui_valueForKey:(NSString *)key;
 
+- (void)qmui_setValue:(nullable id)value forKey:(NSString *)key;
+
 @end
 
 

@@ -19,7 +19,9 @@
 #import "NSString+QMUI.h"
 #import <objc/message.h>
 
+
 @implementation NSObject (QMUI)
+
 
 - (BOOL)qmui_hasOverrideMethod:(SEL)selector ofSuperclass:(Class)superclass {
     return [NSObject qmui_hasOverrideMethod:selector forClass:self.class ofSuperclass:superclass];
@@ -201,34 +203,20 @@
 }
 
 - (id)qmui_valueForKey:(NSString *)key {
-    key = [key hasPrefix:@"_"] ? [key substringFromIndex:1] : key;
-    Ivar ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"_%@", key].UTF8String);
-    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"_is%@", key.qmui_capitalizedString].UTF8String);
-    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), key.UTF8String);
-    if (!ivar) ivar = class_getInstanceVariable(object_getClass(self), [NSString stringWithFormat:@"is%@", key.qmui_capitalizedString].UTF8String);
+    if (![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self valueForKey:key];
     
-    if (ivar) {
-        if (isObjectIvar(ivar)) {
-            return getObjectIvarValue(self, ivar);
-        }
-        ptrdiff_t ivarOffset = ivar_getOffset(ivar);
-        unsigned char * bytes = (unsigned char *)(__bridge void *)self;
-        NSValue *value = @(*(bytes + ivarOffset));
-        return value;
-    } else {
-        BeginIgnorePerformSelectorLeaksWarning
-        SEL selector = NSSelectorFromString([NSString stringWithFormat:@"get%@", key.qmui_capitalizedString]);
-        if ([self respondsToSelector:selector]) return [self performSelector:selector];
-        selector = NSSelectorFromString(key);
-        if ([self respondsToSelector:selector]) return [self performSelector:selector];
-        selector = NSSelectorFromString([NSString stringWithFormat:@"is%@", key.qmui_capitalizedString]);
-        if ([self respondsToSelector:selector]) return [self performSelector:selector];
-        selector = NSSelectorFromString([NSString stringWithFormat:@"_%@", key]);// 这一步是额外加的，系统的 valueForKey: 没有
-        if ([self respondsToSelector:selector]) return [self performSelector:selector];
-        EndIgnorePerformSelectorLeaksWarning
-    }
-    NSAssert(ivar, @"%@ 不存在名为 %@ 的 selector", NSStringFromClass(self.class), key);
-    return nil;
+    BeginIgnoreUIKVCAccessProhibited
+    id value = [self valueForKey:key];
+    EndIgnoreUIKVCAccessProhibited
+    return value;
+}
+
+- (void)qmui_setValue:(id)value forKey:(NSString *)key {
+    if (![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self setValue:value forKey:key];
+    
+    BeginIgnoreUIKVCAccessProhibited
+    [self setValue:value forKey:key];
+    EndIgnoreUIKVCAccessProhibited
 }
 
 @end
@@ -362,5 +350,35 @@ BeginIgnorePerformSelectorLeaksWarning
     return [self performSelector:NSSelectorFromString(@"_ivarDescription")];
 }
 EndIgnorePerformSelectorLeaksWarning
+
+@end
+
+
+@implementation NSException (QMUI)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OverrideImplementation(object_getClass([NSException class]), @selector(raise:format:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(NSObject *selfObject, NSExceptionName raise, NSString *format, ...) {
+                
+                if (raise == NSGenericException && [format isEqualToString:@"Access to %@'s %@ ivar is prohibited. This is an application bug"]) {
+                    BOOL shouldIgnoreUIKVCAccessProhibited = ((QMUICMIActivated && IgnoreKVCAccessProhibited) || [[NSThread currentThread] qmui_getBoundBOOLForKey:QMUIIgnoreUIKVCAccessProhibitedKey]);
+                    if (shouldIgnoreUIKVCAccessProhibited) return;
+                    
+                    QMUILogWarn(@"NSObject (QMUI)", @"使用 KVC 访问了 UIKit 的私有属性，会触发系统的 NSException，建议尽量避免此类操作，仍需访问可使用 BeginIgnoreUIKVCAccessProhibited 和 EndIgnoreUIKVCAccessProhibited 把相关代码包裹起来，或者直接使用 qmui_valueForKey: 、qmui_setValue:forKey:");
+                }
+                
+                id (*originSelectorIMP)(id, SEL, NSExceptionName name, NSString *, ...);
+                originSelectorIMP = (id (*)(id, SEL, NSExceptionName name, NSString *, ...))originalIMPProvider();
+                va_list args;
+                va_start(args, format);
+                NSString *reason =  [[NSString alloc] initWithFormat:format arguments:args];
+                originSelectorIMP(selfObject, originCMD, raise, reason);
+                va_end(args);
+            };
+        });
+    });
+}
 
 @end
