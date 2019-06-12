@@ -83,6 +83,15 @@ QMUISynthesizeIdStrongProperty(qbt_customizeButtonPropDict, setQbt_customizeButt
         ExtendImplementationOfVoidMethodWithTwoArguments([UIButton class], @selector(setAttributedTitle:forState:), NSAttributedString *, UIControlState, ^(UIButton *selfObject, NSAttributedString *title, UIControlState state) {
             [selfObject _markQMUICustomizeType:QMUICustomizeButtonPropTypeAttributedTitle forState:state value:title];
         });
+        
+        if (@available(iOS 13, *)) {
+            ExtendImplementationOfVoidMethodWithoutArguments([UIButton class], @selector(layoutSubviews), ^(UIButton *selfObject) {
+                // 临时解决 iOS 13 开启了粗体文本（Bold Text）导致 UIButton Title 显示不完整 https://github.com/Tencent/QMUI_iOS/issues/620
+                if (UIAccessibilityIsBoldTextEnabled()) {
+                    [selfObject.titleLabel sizeToFit];
+                }
+            });
+        }
     });
 }
 
