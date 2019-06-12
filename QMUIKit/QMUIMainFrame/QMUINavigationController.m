@@ -100,6 +100,16 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 
 #pragma mark - 生命周期函数 && 基类方法重写
 
+- (instancetype)initWithRootViewController:(UIViewController *)rootViewController {
+    if (self = [super initWithRootViewController:rootViewController]) {
+        if (@available(iOS 13.0, *)) {
+            // -[UINavigationController initWithRootViewController:] 在 iOS 13 以下的版本内部会调用 [self initWithNibName:bundle] 而在 iOS 13 上则是直接调用 [super initWithNibName:bundle] 所以这里需要手动调用一次 [self didInitialize]
+            [self didInitialize];
+        }
+    }
+    return self;
+}
+
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         [self didInitialize];
