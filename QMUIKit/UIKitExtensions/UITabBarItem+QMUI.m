@@ -33,8 +33,8 @@ QMUISynthesizeIdCopyProperty(qmui_doubleTapBlock, setQmui_doubleTapBlock)
     
     UIView *superview = tabBarButton;
     if (@available(iOS 13.0, *)) {
-        if ([tabBarButton.subviews.firstObject isKindOfClass:[UIVisualEffectView class]]) {
-            // iOS 13 下如果 tabBar 是磨砂的，则每个 button 内部都会有一个磨砂，而磨砂再包裹了图片、label 等 subview
+        if ([tabBarButton.subviews.firstObject isKindOfClass:[UIVisualEffectView class]] && ((UIVisualEffectView *)tabBarButton.subviews.firstObject).contentView.subviews.count) {
+            // iOS 13 下如果 tabBar 是磨砂的，则每个 button 内部都会有一个磨砂，而磨砂再包裹了 imageView、label 等 subview，但某些时机后系统又会把 imageView、label 挪出来放到 button 上，所以这里做个保护
             // https://github.com/Tencent/QMUI_iOS/issues/616
             superview = ((UIVisualEffectView *)tabBarButton.subviews.firstObject).contentView;
         }

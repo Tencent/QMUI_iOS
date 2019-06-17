@@ -356,9 +356,9 @@ static char kAssociatedObjectKey_updatesIndicatorView;
         CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_updatesIndicatorView.centerOffsetLandscape : self.qmui_updatesIndicatorView.centerOffset;
 
         UIView *superview = self.qmui_updatesIndicatorView.superview;
-        if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
+        if ([self isKindOfClass:[UITabBarItem class]]) {
             // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
-            UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
+            UIView *imageView = ((UITabBarItem *)self).qmui_imageView;
             if (!imageView) return;
 
             self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.y);
@@ -376,9 +376,9 @@ static char kAssociatedObjectKey_updatesIndicatorView;
         CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_badgeLabel.centerOffsetLandscape : self.qmui_badgeLabel.centerOffset;
         
         UIView *superview = self.qmui_badgeLabel.superview;
-        if ([NSStringFromClass(superview.class) hasPrefix:@"UITabBar"]) {
+        if ([self isKindOfClass:[UITabBarItem class]]) {
             // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
-            UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:superview];
+            UIView *imageView = ((UITabBarItem *)self).qmui_imageView;
             if (!imageView) return;
             
             self.qmui_badgeLabel.frame = CGRectSetXY(self.qmui_badgeLabel.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_badgeLabel.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_badgeLabel.frame) + centerOffset.y);
