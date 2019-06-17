@@ -69,6 +69,11 @@
     }
 }
 
+- (void)setHighlightedBackgroundColor:(UIColor *)highlightedBackgroundColor {
+    _highlightedBackgroundColor = highlightedBackgroundColor;
+    if (highlightedBackgroundColor) self.originalBackgroundColor = self.backgroundColor;
+}
+
 #pragma mark - 长按复制功能
 
 - (void)setCanPerformCopyAction:(BOOL)canPerformCopyAction {
