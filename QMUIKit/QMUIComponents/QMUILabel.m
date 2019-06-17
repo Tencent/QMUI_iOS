@@ -61,14 +61,6 @@
     [super drawTextInRect:rect];
 }
 
-- (void)setHighlightedBackgroundColor:(UIColor *)highlightedBackgroundColor {
-    _highlightedBackgroundColor = highlightedBackgroundColor;
-    
-    if (highlightedBackgroundColor) {
-        self.originalBackgroundColor = self.backgroundColor;
-    }
-}
-
 - (void)setHighlighted:(BOOL)highlighted {
     [super setHighlighted:highlighted];
     
@@ -87,10 +79,6 @@
         [self addGestureRecognizer:self.longGestureRecognizer];
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleMenuWillHideNotification:) name:UIMenuControllerWillHideMenuNotification object:nil];
-        
-        if (!self.highlightedBackgroundColor) {
-            self.highlightedBackgroundColor = TableViewCellSelectedBackgroundColor; // 设置个默认值
-        }
     } else if (!_canPerformCopyAction && self.longGestureRecognizer) {
         [self removeGestureRecognizer:self.longGestureRecognizer];
         self.longGestureRecognizer = nil;
@@ -136,9 +124,11 @@
         [menuController setTargetRect:self.frame inView:self.superview];
         [menuController setMenuVisible:YES animated:YES];
         
-        [self setHighlighted:YES];
+        if (self.highlightedBackgroundColor) self.originalBackgroundColor = self.backgroundColor;
+        
+        self.highlighted = YES;
     } else if (gestureRecognizer.state == UIGestureRecognizerStatePossible) {
-        [self setHighlighted:NO];
+        self.highlighted = NO;
     }
 }
 

@@ -32,8 +32,8 @@
 /// 当 canPerformCopyAction 开启时，长按出来的菜单上的复制按钮的文本，默认为 nil，nil 时 menuItem 上的文字为“复制”
 @property(nonatomic, copy) IBInspectable NSString *menuItemTitleForCopyAction;
 
-/// 如果打开了`canPerformCopyAction`，则长按时背景色将会被改为`highlightedBackgroundColor`
-@property(nonatomic,strong) IBInspectable UIColor *highlightedBackgroundColor;
+/// 如果打开了`canPerformCopyAction`，则长按时背景色将会被改为`highlightedBackgroundColor`，默认值为 nil
+@property(nonatomic,strong) IBInspectable UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 点击了“复制”后的回调
 @property(nonatomic, copy) void (^didCopyBlock)(QMUILabel *label, NSString *stringCopied);
