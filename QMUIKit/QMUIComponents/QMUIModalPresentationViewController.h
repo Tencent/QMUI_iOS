@@ -186,7 +186,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nonatomic, assign) BOOL onlyRespondsToKeyboardEventFromDescendantViews;
 
 /**
- *  管理自定义的浮层布局，将会在浮层显示前、控件的容器大小发生变化时（例如横竖屏、来电状态栏）被调用
+ *  管理自定义的浮层布局，将会在浮层显示前、控件的容器大小发生变化时（例如横竖屏、来电状态栏）被调用，请在 block 内主动为 view 设置期望的 frame，设置时建议用 qmui_frameApplyTransform 取代 setFrame:，否则在有键盘的情况下，显隐动画可能有错。
  *  @arg  containerBounds         浮层所在的父容器的大小，也即`self.view.bounds`
  *  @arg  keyboardHeight          键盘在当前界面里的高度，若无键盘，则为0
  *  @arg  contentViewDefaultFrame 不使用自定义布局的情况下的默认布局，会受`contentViewMargins`、`maximumContentViewWidth`、`contentView sizeThatFits:`的影响

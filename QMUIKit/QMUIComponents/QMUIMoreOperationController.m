@@ -58,8 +58,8 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     if (!moreOperationViewControllerAppearance) {
         moreOperationViewControllerAppearance = [[QMUIMoreOperationController alloc] init];
         moreOperationViewControllerAppearance.contentBackgroundColor = UIColorWhite;
-        moreOperationViewControllerAppearance.contentEdgeMargin = 10;
-        moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - moreOperationViewControllerAppearance.contentEdgeMargin * 2;
+        moreOperationViewControllerAppearance.contentEdgeMargins = UIEdgeInsetsMake(0, 10, 10, 10);
+        moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(moreOperationViewControllerAppearance.contentEdgeMargins);
         moreOperationViewControllerAppearance.contentCornerRadius = 10;
         moreOperationViewControllerAppearance.contentPaddings = UIEdgeInsetsMake(10, 0, 5, 0);
         
@@ -118,7 +118,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 - (void)didInitialize {
     if (moreOperationViewControllerAppearance) {
         self.contentBackgroundColor = [QMUIMoreOperationController appearance].contentBackgroundColor;
-        self.contentEdgeMargin = [QMUIMoreOperationController appearance].contentEdgeMargin;
+        self.contentEdgeMargins = [QMUIMoreOperationController appearance].contentEdgeMargins;
         self.contentMaximumWidth = [QMUIMoreOperationController appearance].contentMaximumWidth;
         self.contentCornerRadius = [QMUIMoreOperationController appearance].contentCornerRadius;
         self.contentPaddings = [QMUIMoreOperationController appearance].contentPaddings;
@@ -262,12 +262,12 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     QMUIModalPresentationViewController *modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
     modalPresentationViewController.delegate = self;
     modalPresentationViewController.maximumContentViewWidth = self.contentMaximumWidth;
-    modalPresentationViewController.contentViewMargins = UIEdgeInsetsMake(self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin);
+    modalPresentationViewController.contentViewMargins = self.contentEdgeMargins;
     modalPresentationViewController.contentViewController = self;
     
     __weak __typeof(modalPresentationViewController)weakModalController = modalPresentationViewController;
     modalPresentationViewController.layoutBlock = ^(CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewDefaultFrame) {
-        weakModalController.contentView.frame = CGRectSetY(contentViewDefaultFrame, CGRectGetHeight(containerBounds) - weakModalController.contentViewMargins.bottom - CGRectGetHeight(contentViewDefaultFrame) - weakModalController.view.qmui_safeAreaInsets.bottom);
+        weakModalController.contentView.qmui_frameApplyTransform = CGRectSetY(contentViewDefaultFrame, CGRectGetHeight(containerBounds) - weakModalController.contentViewMargins.bottom - CGRectGetHeight(contentViewDefaultFrame) - weakModalController.view.qmui_safeAreaInsets.bottom);
     };
     modalPresentationViewController.showingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewFrame, void(^completion)(BOOL finished)) {
         

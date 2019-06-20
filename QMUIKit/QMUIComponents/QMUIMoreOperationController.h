@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface QMUIMoreOperationController : UIViewController <QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationViewControllerDelegate, QMUIModalPresentationComponentProtocol>
 
 @property(nullable, nonatomic, strong) UIColor *contentBackgroundColor UI_APPEARANCE_SELECTOR;// 面板上半部分（不包含取消按钮）背景色
-@property(nonatomic, assign) CGFloat contentEdgeMargin UI_APPEARANCE_SELECTOR;// 面板距离屏幕的上下左右间距
+@property(nonatomic, assign) UIEdgeInsets contentEdgeMargins UI_APPEARANCE_SELECTOR;// 面板距离屏幕的上下左右间距
 @property(nonatomic, assign) CGFloat contentMaximumWidth UI_APPEARANCE_SELECTOR;// 面板的最大宽度
 @property(nonatomic, assign) CGFloat contentCornerRadius UI_APPEARANCE_SELECTOR;// 面板的圆角大小，当值大于 0 时会设置 self.view.clipsToBounds = YES
 @property(nonatomic, assign) UIEdgeInsets contentPaddings UI_APPEARANCE_SELECTOR;// 面板内部的 padding，UIScrollView 会布局在除去 padding 之后的区域
