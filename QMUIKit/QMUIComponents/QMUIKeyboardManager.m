@@ -315,6 +315,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 
 - (instancetype)initWithDelegate:(id <QMUIKeyboardManagerDelegate>)delegate {
     if (self = [super init]) {
+        self.debug = NO; 
         _delegate = delegate;
         _delegateEnabled = YES;
         _targetResponderValues = [[NSMutableArray alloc] init];
