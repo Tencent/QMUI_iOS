@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
  
  @param block 用于遍历的 block
  */
-- (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
+- (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarDescription))block;
 
 /**
  使用 block 遍历指定 class 的所有成员变量（也即 _xxx 那种），不包含 property 对应的 _property 成员变量
@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param includingInherited 是否要包含由继承链带过来的 ivars
  @param block  用于遍历的 block
  */
-+ (void)qmui_enumrateIvarsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar ivar, NSString *ivarName))block;
++ (void)qmui_enumrateIvarsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar ivar, NSString *ivarDescription))block;
 
 /**
  使用 block 遍历指定 class 的所有属性，不包含 superclasses 里定义的 property
@@ -155,10 +155,36 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL selector))block;
 
-/// iOS 13 下系统禁止通过 KVC 访问私有 API，因此提供这种方式兼容
-/// https://github.com/Tencent/QMUI_iOS/issues/617
+/**
+ iOS 13 下系统禁止通过 KVC 访问私有 API，因此提供这种方式在遇到 access prohibited 的异常时可以取代 valueForKey: 使用。
+ 
+ 对 iOS 12 及以下的版本，等价于 valueForKey:。
+ 
+ @note QMUI 提供2种方式兼容系统的 access prohibited 异常：
+ 1. 通过将配置表的 IgnoreKVCAccessProhibited 置为 YES 来全局屏蔽系统的异常警告，代码中依然正常使用系统的 valueForKey:、setValue:forKey:，当开启后再遇到 access prohibited 异常时，将会用 QMUIWarnLog 来提醒，不再中断 App 的运行，这是首选推荐方案。
+ 2. 使用 qmui_valueForKey:、qmui_setValue:forKey: 代替系统的 valueForKey:、setValue:forKey:，适用于不希望全局屏蔽，只针对某个局部代码自己处理的场景。
+ 
+ @link https://github.com/Tencent/QMUI_iOS/issues/617
+ 
+ @param key ivar 属性名，支持下划线或不带下划线
+ @return key 对应的 value，如果该 key 原本是非对象的值，会被用 NSNumber、NSValue 包裹后返回
+ */
 - (nullable id)qmui_valueForKey:(NSString *)key;
 
+/**
+ iOS 13 下系统禁止通过 KVC 访问私有 API，因此提供这种方式在遇到 access prohibited 的异常时可以取代 setValue:forKey: 使用。
+ 
+ 对 iOS 12 及以下的版本，等价于 setValue:forKey:。
+ 
+ @note QMUI 提供2种方式兼容系统的 access prohibited 异常：
+ 1. 通过将配置表的 IgnoreKVCAccessProhibited 置为 YES 来全局屏蔽系统的异常警告，代码中依然正常使用系统的 valueForKey:、setValue:forKey:，当开启后再遇到 access prohibited 异常时，将会用 QMUIWarnLog 来提醒，不再中断 App 的运行，这是首选推荐方案。
+ 2. 使用 qmui_valueForKey:、qmui_setValue:forKey: 代替系统的 valueForKey:、setValue:forKey:，适用于不希望全局屏蔽，只针对某个局部代码自己处理的场景。
+ 
+ @link https://github.com/Tencent/QMUI_iOS/issues/617
+ 
+ @param key ivar 属性名，支持下划线或不带下划线
+ @return key 对应的 value，如果该 key 原本是非对象的值，会被用 NSNumber、NSValue 包裹后返回
+ */
 - (void)qmui_setValue:(nullable id)value forKey:(NSString *)key;
 
 @end
@@ -259,6 +285,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 获取当前对象的所有 Ivar 变量
 - (NSString *)qmui_ivarList;
+@end
+
+@interface NSThread (QMUI_KVC)
+
+/// 是否将当前线程标记为忽略系统的 KVC access prohibited 警告，默认为 NO，当开启后，NSException 将不会再抛出 access prohibited 异常
+/// @see BeginIgnoreUIKVCAccessProhibited、EndIgnoreUIKVCAccessProhibited
+@property(nonatomic, assign) BOOL qmui_shouldIgnoreUIKVCAccessProhibited;
 @end
 
 NS_ASSUME_NONNULL_END

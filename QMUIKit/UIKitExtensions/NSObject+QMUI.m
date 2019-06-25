@@ -122,25 +122,60 @@
     }
 }
 
-- (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarName))block {
-    [NSObject qmui_enumrateIvarsOfClass:self.class includingInherited:NO usingBlock:block];
+- (void)qmui_enumrateIvarsUsingBlock:(void (^)(Ivar ivar, NSString *ivarDescription))block {
+    [self qmui_enumrateIvarsIncludingInherited:NO usingBlock:block];
 }
 
-+ (void)qmui_enumrateIvarsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar, NSString *))block {
+- (void)qmui_enumrateIvarsIncludingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar ivar, NSString *ivarDescription))block {
+    NSMutableArray<NSString *> *ivarDescriptions = [NSMutableArray new];
+    NSString *ivarList = [self qmui_ivarList];
+    NSError *error;
+    NSRegularExpression *reg = [NSRegularExpression regularExpressionWithPattern:[NSString stringWithFormat:@"in %@:(.*?)((?=in \\w+:)|$)", NSStringFromClass(self.class)] options:NSRegularExpressionDotMatchesLineSeparators error:&error];
+    if (!error) {
+        NSArray<NSTextCheckingResult *> *result = [reg matchesInString:ivarList options:NSMatchingReportCompletion range:NSMakeRange(0, ivarList.length)];
+        [result enumerateObjectsUsingBlock:^(NSTextCheckingResult * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSString *ivars = [ivarList substringWithRange:[obj rangeAtIndex:1]];
+            [ivars enumerateLinesUsingBlock:^(NSString * _Nonnull line, BOOL * _Nonnull stop) {
+                if (![line hasPrefix:@"\t\t"]) {// 有些 struct 类型的变量，会把 struct 的成员也缩进打出来，所以用这种方式过滤掉
+                    line = line.qmui_trim;
+                    if (line.length > 2) {// 过滤掉空行或者 struct 结尾的"}"
+                        NSRange range = [line rangeOfString:@":"];
+                        if (range.location != NSNotFound)// 有些"unknow type"的变量不会显示指针地址（例如 UIView->_viewFlags）
+                            line = [line substringToIndex:range.location];// 去掉指针地址
+                        NSUInteger typeStart = [line rangeOfString:@" ("].location;
+                        line = [NSString stringWithFormat:@"%@ %@", [line substringWithRange:NSMakeRange(typeStart + 2, line.length - 1 - (typeStart + 2))], [line substringToIndex:typeStart]];// 交换变量类型和变量名的位置，变量类型在前，变量名在后，空格隔开
+                        [ivarDescriptions addObject:line];
+                    }
+                }
+            }];
+        }];
+    }
+    
     unsigned int outCount = 0;
-    Ivar *ivars = class_copyIvarList(aClass, &outCount);
+    Ivar *ivars = class_copyIvarList(self.class, &outCount);
     for (unsigned int i = 0; i < outCount; i ++) {
         Ivar ivar = ivars[i];
-        if (block) block(ivar, [NSString stringWithFormat:@"%s", ivar_getName(ivar)]);
+        NSString *ivarName = [NSString stringWithFormat:@"%s", ivar_getName(ivar)];
+        for (NSString *desc in ivarDescriptions) {
+            if ([desc hasSuffix:ivarName]) {
+                block(ivar, desc);
+                break;
+            }
+        }
     }
     free(ivars);
     
     if (includingInherited) {
-        Class superclass = class_getSuperclass(aClass);
+        Class superclass = self.superclass;
         if (superclass) {
             [NSObject qmui_enumrateIvarsOfClass:superclass includingInherited:includingInherited usingBlock:block];
         }
     }
+}
+
++ (void)qmui_enumrateIvarsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar, NSString *))block {
+    if (!block) return;
+    [[aClass new] qmui_enumrateIvarsIncludingInherited:includingInherited usingBlock:block];
 }
 
 - (void)qmui_enumratePropertiesUsingBlock:(void (^)(objc_property_t property, NSString *propertyName))block {
@@ -148,6 +183,8 @@
 }
 
 + (void)qmui_enumratePropertiesOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(objc_property_t, NSString *))block {
+    if (!block) return;
+    
     unsigned int propertiesCount = 0;
     objc_property_t *properties = class_copyPropertyList(aClass, &propertiesCount);
     
@@ -171,6 +208,8 @@
 }
 
 + (void)qmui_enumrateInstanceMethodsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Method, SEL))block {
+    if (!block) return;
+    
     unsigned int methodCount = 0;
     Method *methods = class_copyMethodList(aClass, &methodCount);
     
@@ -191,6 +230,8 @@
 }
 
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL))block {
+    if (!block) return;
+    
     unsigned int methodCount = 0;
     struct objc_method_description *methods = protocol_copyMethodDescriptionList(protocol, NO, YES, &methodCount);
     for (int i = 0; i < methodCount; i++) {
@@ -203,7 +244,7 @@
 }
 
 - (id)qmui_valueForKey:(NSString *)key {
-    if (![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self valueForKey:key];
+    if (IOS_VERSION < 13.0 || ![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self valueForKey:key];
     
     BeginIgnoreUIKVCAccessProhibited
     id value = [self valueForKey:key];
@@ -212,7 +253,7 @@
 }
 
 - (void)qmui_setValue:(id)value forKey:(NSString *)key {
-    if (![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self setValue:value forKey:key];
+    if (IOS_VERSION < 13.0 || ![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self setValue:value forKey:key];
     
     BeginIgnoreUIKVCAccessProhibited
     [self setValue:value forKey:key];
@@ -353,32 +394,43 @@ EndIgnorePerformSelectorLeaksWarning
 
 @end
 
+@implementation NSThread (QMUI_KVC)
 
-@implementation NSException (QMUI)
+QMUISynthesizeBOOLProperty(qmui_shouldIgnoreUIKVCAccessProhibited, setQmui_shouldIgnoreUIKVCAccessProhibited)
+
+@end
+
+@interface NSException (QMUI_KVC)
+
+@end
+
+@implementation NSException (QMUI_KVC)
 
 + (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        OverrideImplementation(object_getClass([NSException class]), @selector(raise:format:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(NSObject *selfObject, NSExceptionName raise, NSString *format, ...) {
-                
-                if (raise == NSGenericException && [format isEqualToString:@"Access to %@'s %@ ivar is prohibited. This is an application bug"]) {
-                    BOOL shouldIgnoreUIKVCAccessProhibited = ((QMUICMIActivated && IgnoreKVCAccessProhibited) || [[NSThread currentThread] qmui_getBoundBOOLForKey:QMUIIgnoreUIKVCAccessProhibitedKey]);
-                    if (shouldIgnoreUIKVCAccessProhibited) return;
+    if (@available(iOS 13.0, *)) {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            OverrideImplementation(object_getClass([NSException class]), @selector(raise:format:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(NSObject *selfObject, NSExceptionName raise, NSString *format, ...) {
                     
-                    QMUILogWarn(@"NSObject (QMUI)", @"使用 KVC 访问了 UIKit 的私有属性，会触发系统的 NSException，建议尽量避免此类操作，仍需访问可使用 BeginIgnoreUIKVCAccessProhibited 和 EndIgnoreUIKVCAccessProhibited 把相关代码包裹起来，或者直接使用 qmui_valueForKey: 、qmui_setValue:forKey:");
-                }
-                
-                id (*originSelectorIMP)(id, SEL, NSExceptionName name, NSString *, ...);
-                originSelectorIMP = (id (*)(id, SEL, NSExceptionName name, NSString *, ...))originalIMPProvider();
-                va_list args;
-                va_start(args, format);
-                NSString *reason =  [[NSString alloc] initWithFormat:format arguments:args];
-                originSelectorIMP(selfObject, originCMD, raise, reason);
-                va_end(args);
-            };
+                    if (raise == NSGenericException && [format isEqualToString:@"Access to %@'s %@ ivar is prohibited. This is an application bug"]) {
+                        BOOL shouldIgnoreUIKVCAccessProhibited = ((QMUICMIActivated && IgnoreKVCAccessProhibited) || NSThread.currentThread.qmui_shouldIgnoreUIKVCAccessProhibited);
+                        if (shouldIgnoreUIKVCAccessProhibited) return;
+                        
+                        QMUILogWarn(@"NSObject (QMUI)", @"使用 KVC 访问了 UIKit 的私有属性，会触发系统的 NSException，建议尽量避免此类操作，仍需访问可使用 BeginIgnoreUIKVCAccessProhibited 和 EndIgnoreUIKVCAccessProhibited 把相关代码包裹起来，或者直接使用 qmui_valueForKey: 、qmui_setValue:forKey:");
+                    }
+                    
+                    id (*originSelectorIMP)(id, SEL, NSExceptionName name, NSString *, ...);
+                    originSelectorIMP = (id (*)(id, SEL, NSExceptionName name, NSString *, ...))originalIMPProvider();
+                    va_list args;
+                    va_start(args, format);
+                    NSString *reason =  [[NSString alloc] initWithFormat:format arguments:args];
+                    originSelectorIMP(selfObject, originCMD, raise, reason);
+                    va_end(args);
+                };
+            });
         });
-    });
+    }
 }
 
 @end
