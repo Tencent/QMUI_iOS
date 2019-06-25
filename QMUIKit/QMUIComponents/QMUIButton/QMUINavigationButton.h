@@ -38,6 +38,12 @@ typedef NS_ENUM(NSUInteger, QMUINavigationButtonType) {
 @property(nonatomic, assign, readonly) QMUINavigationButtonType type;
 
 /**
+ * UIBarButtonItem 默认都是跟随 tintColor 的，所以这里声明是否让图片也是用 AlwaysTemplate 模式
+ * 默认为 YES
+ */
+@property(nonatomic, assign) BOOL adjustsImageTintColorAutomatically;
+
+/**
  *  导航栏按钮的初始化函数，指定的初始化方法
  *  @param type 按钮类型
  *  @param title 按钮的title

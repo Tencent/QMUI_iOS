@@ -20,6 +20,7 @@
 #import "QMUINavigationController.h"
 #import "QMUILog.h"
 #import "UIControl+QMUI.h"
+#import "UIView+QMUI.h"
 
 typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     QMUINavigationButtonPositionNone = -1,  // 不处于navigationBar最左（右）边的按钮，则使用None。用None则不会在alignmentRectInsets里调整位置
@@ -69,6 +70,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     if (font) {
         self.titleLabel.font = font;
     }
+    self.adjustsImageTintColorAutomatically = YES;
     self.titleLabel.backgroundColor = UIColorClear;
     self.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     self.contentMode = UIViewContentModeCenter;
@@ -134,7 +136,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 - (void)setImage:(UIImage *)image forState:(UIControlState)state {
     if (image && [self imageForState:state] != image) {
-        if (image.renderingMode == UIImageRenderingModeAutomatic) {
+        if (image.renderingMode == UIImageRenderingModeAutomatic && self.adjustsImageTintColorAutomatically) {
             // UIBarButtonItem 默认都是跟随 tintColor 的，所以这里让图片也是用 AlwaysTemplate 模式
             image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         }
@@ -576,22 +578,56 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         });
         
         // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
+//        if (@available(iOS 11, *)) {
+//            ExtendImplementationOfVoidMethodWithoutArguments([UINavigationBar class], @selector(layoutSubviews), ^(UINavigationBar *selfObject) {
+//                UIView *contentView = selfObject.qmui_contentView;
+//                if (contentView) {
+//                    NSDirectionalEdgeInsets value = contentView.directionalLayoutMargins;
+//                    value.leading = value.trailing - (selfObject.qmui_customizingBackBarButtonItem ? 8 : 0);
+//                    contentView.directionalLayoutMargins = value;
+//                }
+//            });
+//        }
+        
+        // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
+        // Xcode11 beta2 修改私有 view 的 directionalLayoutMargins 会 crash，换个方式
         if (@available(iOS 11, *)) {
-            ExtendImplementationOfVoidMethodWithoutArguments([UINavigationBar class], @selector(layoutSubviews), ^(UINavigationBar *selfObject) {
-                UIView *contentView = selfObject.qmui_contentView;
-                if (contentView) {
-                    NSDirectionalEdgeInsets value = contentView.directionalLayoutMargins;
-                    value.leading = value.trailing - (selfObject.qmui_customizingBackBarButtonItem ? 8 : 0);
-                    contentView.directionalLayoutMargins = value;
-                }
+            
+            NSString *barContentViewString = [NSString stringWithFormat:@"_%@Content%@", @"UINavigationBar", @"View"];
+            
+            OverrideImplementation(NSClassFromString(barContentViewString), @selector(directionalLayoutMargins), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^NSDirectionalEdgeInsets(UIView *selfObject) {
+                    
+                    // call super
+                    NSDirectionalEdgeInsets (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (NSDirectionalEdgeInsets (*)(id, SEL))originalIMPProvider();
+                    NSDirectionalEdgeInsets originResult = originSelectorIMP(selfObject, originCMD);
+                    
+                    // get navbar
+                    UINavigationBar *navBar = nil;
+                    if ([NSStringFromClass([selfObject class]) isEqualToString:barContentViewString] &&
+                        [selfObject.superview isKindOfClass:[UINavigationBar class]]) {
+                        navBar = (UINavigationBar *)selfObject.superview;
+                    }
+                    
+                    // change insets
+                    if (navBar) {
+                        NSDirectionalEdgeInsets value = originResult;
+                        value.leading = value.trailing - (navBar.qmui_customizingBackBarButtonItem ? 8 : 0);
+                        return value;
+                    }
+                    
+                    return originResult;
+                };
             });
         }
+        
     });
 }
 
 - (UIView *)qmui_contentView {
     for (UIView *subview in self.subviews) {
-        if ([NSStringFromClass(subview.class) containsString:@"ContentView"]) {
+        if ([NSStringFromClass(subview.class) containsString:@"BarContentView"]) {
             return subview;
         }
     }
