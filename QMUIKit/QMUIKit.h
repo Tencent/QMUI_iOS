@@ -75,6 +75,10 @@ static NSString * const QMUI_VERSION = @"3.2.1";
 #import "QMUIAlertController.h"
 #endif
 
+#if __has_include("QMUIAnimationHelper.h")
+#import "QMUIAnimationHelper.h"
+#endif
+
 #if __has_include("QMUIAsset.h")
 #import "QMUIAsset.h"
 #endif
@@ -145,6 +149,14 @@ static NSString * const QMUI_VERSION = @"3.2.1";
 
 #if __has_include("QMUIDialogViewController.h")
 #import "QMUIDialogViewController.h"
+#endif
+
+#if __has_include("QMUIDisplayLinkAnimation.h")
+#import "QMUIDisplayLinkAnimation.h"
+#endif
+
+#if __has_include("QMUIEasings.h")
+#import "QMUIEasings.h"
 #endif
 
 #if __has_include("QMUIEmotionInputManager.h")
@@ -379,6 +391,14 @@ static NSString * const QMUI_VERSION = @"3.2.1";
 #import "QMUITextView.h"
 #endif
 
+#if __has_include("QMUITheme.h")
+#import "QMUITheme.h"
+#endif
+
+#if __has_include("QMUIThemeManager.h")
+#import "QMUIThemeManager.h"
+#endif
+
 #if __has_include("QMUITips.h")
 #import "QMUITips.h"
 #endif
@@ -409,6 +429,10 @@ static NSString * const QMUI_VERSION = @"3.2.1";
 
 #if __has_include("QMUIWeakObjectContainer.h")
 #import "QMUIWeakObjectContainer.h"
+#endif
+
+#if __has_include("QMUIWindowSizeMonitor.h")
+#import "QMUIWindowSizeMonitor.h"
 #endif
 
 #if __has_include("QMUIZoomImageView.h")
@@ -445,6 +469,10 @@ static NSString * const QMUI_VERSION = @"3.2.1";
 
 #if __has_include("UIColor+QMUI.h")
 #import "UIColor+QMUI.h"
+#endif
+
+#if __has_include("UIColor+QMUITheme.h")
+#import "UIColor+QMUITheme.h"
 #endif
 
 #if __has_include("UIControl+QMUI.h")

@@ -59,6 +59,10 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
+    ss.subspec 'QMUIAnimation' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUIAnimation'
+    end
+
     ss.subspec 'QMUINavigationTitleView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUINavigationTitleView.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'

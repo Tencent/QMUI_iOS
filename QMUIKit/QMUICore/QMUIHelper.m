@@ -540,6 +540,14 @@ static NSInteger isHighPerformanceDevice = -1;
     preferredLayoutWidth = -1;
 }
 
++ (CGSize)applicationSize {
+    /// applicationFrame 在 iPad 下返回的 size 要比 window 实际的 size 小，这个差值体现在 origin 上，所以用 origin + size 修正得到正确的大小。
+    BeginIgnoreDeprecatedWarning
+    CGRect applicationFrame = [UIScreen mainScreen].applicationFrame;
+    EndIgnoreDeprecatedWarning
+    return CGSizeMake(applicationFrame.size.width + applicationFrame.origin.x, applicationFrame.size.height + applicationFrame.origin.y);
+}
+
 @end
 
 @implementation QMUIHelper (UIApplication)

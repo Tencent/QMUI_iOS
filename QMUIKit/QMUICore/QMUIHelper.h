@@ -184,6 +184,12 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 /// 系统设置里是否开启了“放大显示-试图-放大”，支持放大模式的 iPhone 设备可在官方文档中查询 https://support.apple.com/zh-cn/guide/iphone/iphd6804774e/ios
 + (BOOL)isZoomedMode;
 
+/**
+ 在 iPad 分屏模式下可获得实际运行区域的窗口大小，如需适配 iPad 分屏，建议用这个方法来代替 [UIScreen mainScreen].bounds.size
+ @return 应用运行的窗口大小
+ */
++ (CGSize)applicationSize;
+
 @end
 
 @interface QMUIHelper (UIApplication)

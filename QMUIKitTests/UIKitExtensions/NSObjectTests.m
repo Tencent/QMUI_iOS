@@ -40,6 +40,11 @@
     searchBar.scopeButtonTitles = @[@"A", @"B"];
     searchBar.showsCancelButton = YES;
     [searchBar sizeToFit];
+    [searchBar qmui_setValue:@"Test" forKey:@"_cancelButtonText"];
+    // iOS13 crash : [searchBar setValue:@"Test" forKey:@"_cancelButtonText"];
+    UIView *searchField = [searchBar qmui_valueForKey:@"_searchField"];
+    // iOS13 crash : [searchBar valueForKey:@"_searchField"];
+
     XCTAssertTrue(searchBar.qmui_backgroundView);
     XCTAssertTrue(searchBar.qmui_cancelButton);
     XCTAssertTrue(searchBar.qmui_segmentedControl);
