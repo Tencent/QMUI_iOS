@@ -28,7 +28,7 @@ static QMUIKeyboardManager *kKeyboardManagerInstance;
 @property(nonatomic, assign) CGRect keyboardMoveBeginRect;
 
 @property(nonatomic, weak) UIResponder *currentResponder;
-@property(nonatomic, weak) UIResponder *currentResponderWhenResign;
+//@property(nonatomic, weak) UIResponder *currentResponderWhenResign;
 
 @property(nonatomic, assign) BOOL debug;
 
@@ -88,12 +88,11 @@ QMUISynthesizeBOOLProperty(keyboardManager_isFirstResponder, setKeyboardManager_
         OverrideImplementation([UIResponder class], @selector(resignFirstResponder), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UIResponder *selfObject) {
                 selfObject.keyboardManager_isFirstResponder = NO;
-                if (selfObject.isFirstResponder &&
-                    selfObject.qmui_keyboardManager &&
-                    [selfObject.qmui_keyboardManager.allTargetResponders containsObject:selfObject]) {
-                    selfObject.qmui_keyboardManager.currentResponderWhenResign = selfObject;
-                }
-                
+//                if (selfObject.isFirstResponder &&
+//                    selfObject.qmui_keyboardManager &&
+//                    [selfObject.qmui_keyboardManager.allTargetResponders containsObject:selfObject]) {
+//                    selfObject.qmui_keyboardManager.currentResponderWhenResign = selfObject;
+//                }
                 // call super
                 BOOL (*originSelectorIMP)(id, SEL);
                 originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
@@ -406,10 +405,14 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive) {
         return NO;
     }
-    if (![[notification.userInfo valueForKey:UIKeyboardIsLocalUserInfoKey] boolValue]) {
+    if (![[notification.userInfo valueForKey:UIKeyboardIsLocalUserInfoKey] boolValue] && !IS_SPLIT_SCREEN_IPAD) {
         return NO;
     }
     return YES;
+}
+
+- (BOOL)isSplitScreenKeyboardNotification {
+    return IS_SPLIT_SCREEN_IPAD;
 }
 
 - (void)keyboardWillShowNotification:(NSNotification *)notification {
@@ -481,7 +484,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         return;
     }
     
-    if (![self shouldReceiveHideNotification]) {
+    if (![self shouldReceiveHideNotification] && ![self isSplitScreenKeyboardNotification]) {
         return;
     }
     
@@ -514,13 +517,14 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     self.lastUserInfo = userInfo;
     userInfo.targetResponder = self.currentResponder ?: nil;
     
-    if ([self shouldReceiveHideNotification]) {
+    if ([self shouldReceiveHideNotification] || [self isSplitScreenKeyboardNotification]) {
         if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardDidHideWithUserInfo:)]) {
             [self.delegate keyboardDidHideWithUserInfo:userInfo];
         }
     }
     
     if (self.currentResponder && !self.currentResponder.keyboardManager_isFirstResponder && !IS_IPAD) {
+        // 时机最晚，设置为 nil
         self.currentResponder = nil;
     }
     
@@ -546,9 +550,9 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     self.lastUserInfo = userInfo;
     
-    if ([self shouldReceiveShowNotification]) {
-        userInfo.targetResponder = self.currentResponder ?: nil;
-    } else if ([self shouldReceiveHideNotification]) {
+    if ([self shouldReceiveShowNotification] ||
+        [self shouldReceiveHideNotification] ||
+        [self isSplitScreenKeyboardNotification]) {
         userInfo.targetResponder = self.currentResponder ?: nil;
     } else {
         return;
@@ -578,9 +582,9 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     self.lastUserInfo = userInfo;
     
-    if ([self shouldReceiveShowNotification]) {
-        userInfo.targetResponder = self.currentResponder ?: nil;
-    } else if ([self shouldReceiveHideNotification]) {
+    if ([self shouldReceiveShowNotification] ||
+        [self shouldReceiveHideNotification] ||
+        [self isSplitScreenKeyboardNotification]) {
         userInfo.targetResponder = self.currentResponder ?: nil;
     } else {
         return;
@@ -604,9 +608,8 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (BOOL)shouldReceiveShowNotification {
-    // 这里有BUG，如果点击了webview导致键盘下降，这个时候运行shouldReceiveHideNotification就会判断错误
-    self.currentResponder = self.currentResponderWhenResign ?: [self firstResponderInWindows];
-    self.currentResponderWhenResign = nil;
+    // 这里有 BUG，如果点击了 webview 导致键盘下降，这个时候运行 shouldReceiveHideNotification 就会判断错误，所以如果发现是 nil 则值不变
+    self.currentResponder = [self firstResponderInWindows] ?: self.currentResponder;
     if (self.targetResponderValues.count <= 0) {
         return YES;
     } else {
@@ -651,7 +654,9 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     }
     
     // 也需要判断targetResponder
-    if (![self shouldReceiveShowNotification] && ![self shouldReceiveHideNotification]) {
+    if (![self shouldReceiveShowNotification] &&
+        ![self shouldReceiveHideNotification] &&
+        ![self isSplitScreenKeyboardNotification]) {
         return;
     }
     
