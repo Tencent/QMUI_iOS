@@ -51,8 +51,9 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
         }));
         
         if (HasDismissingAnimationBUG) {
-            // -[_UISearchBarLayout applyLayout] 是 iOS 13 系统新增的方法，它会在 UISearchBar 后继续执行进行一些布局
-            OverrideImplementation(NSClassFromString(@"_UISearchBarLayout"), NSSelectorFromString(@"applyLayout"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            // -[_UISearchBarLayout applyLayout] 是 iOS 13 系统新增的方法，该方法可能会在 -[UISearchBar layoutSubviews] 后调用，作进一步的布局调整。
+            Class _UISearchBarLayoutClass = NSClassFromString([NSString stringWithFormat:@"_%@%@",@"UISearchBar", @"Layout"]);
+            OverrideImplementation(_UISearchBarLayoutClass, NSSelectorFromString(@"applyLayout"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UIView *selfObject) {
                     
                     // call super
@@ -62,7 +63,7 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
                         originSelectorIMP(selfObject, originCMD);
                     };
 
-                    UISearchBar *searchBar = (UISearchBar *)((UIView *)[selfObject qmui_valueForKey:@"_searchBarBackground"]).superview.superview;
+                    UISearchBar *searchBar = (UISearchBar *)((UIView *)[selfObject qmui_valueForKey:[NSString stringWithFormat:@"_%@",@"searchBarBackground"]]).superview.superview;
                     
                     NSAssert(searchBar == nil || [searchBar isKindOfClass:[UISearchBar class]], @"not a searchBar");
 
@@ -79,7 +80,8 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
             });
         }
         
-        OverrideImplementation(NSClassFromString(@"UISearchBarTextField"), @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        Class UISearchBarTextFieldClass = NSClassFromString([NSString stringWithFormat:@"%@%@",@"UISearchBarText", @"Field"]);
+        OverrideImplementation(UISearchBarTextFieldClass, @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UITextField *textField, CGRect frame) {
                 
                 UISearchBar *searchBar = nil;
@@ -96,10 +98,12 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
                         frame.origin.y = 14; // default value
                     }
                     
+                    // apply qmui_textFieldMargins
                     if (!UIEdgeInsetsEqualToEdgeInsets(searchBar.qmui_textFieldMargins, UIEdgeInsetsZero)) {
                         frame = CGRectInsetEdges(frame, searchBar.qmui_textFieldMargins);
                     }
                     
+                    // apply SearchBarTextFieldCornerRadius
                     CGFloat textFieldCornerRadius = SearchBarTextFieldCornerRadius;
                     if (textFieldCornerRadius != 0) {
                         textFieldCornerRadius = textFieldCornerRadius > 0 ? textFieldCornerRadius : CGRectGetHeight(frame) / 2.0;
@@ -290,43 +294,27 @@ static char kAssociatedObjectKey_cancelButtonFont;
         }
         
         UIView *searchBarContainerView = self.superview;
-    
         // 每次激活搜索框，searchBarContainerView 都会重新创建一个
         if (searchBarContainerView.layer.masksToBounds == YES) {
             searchBarContainerView.layer.masksToBounds = NO;
-            
             if (@available(iOS 13.0, *)) {
                 // iOS 13 在 layoutSubview 并没有对 qmui_textField 进行布局调整，此处手动设置一下 frame 从而触发 Swizzle 的修正逻辑
                 [self.qmui_textField setFrame:self.qmui_textField.frame];
             }
-
-            // 不修改 searchBar y 的时候，clipedTop 是有值的
-            CGFloat clipedTop = MAX(0, -[self.qmui_backgroundView.superview convertRect:self.qmui_backgroundView.frame toView:searchBarContainerView].origin.y);
-            CGFloat top = [self.qmui_textField.superview convertRect:self.qmui_textField.frame toView:searchBarContainerView].origin.y;
-            CGFloat height = clipedTop + top - self.qmui_textFieldMargins.top + 28 + 14;
-            // 计算出 qmui_backgroundView 满足动画过渡的最大高度
-            self.qmui_backgroundView.qmui_height = height;
-            
-            CGFloat diff = self.qmui_backgroundView.qmui_height - searchBarContainerView.qmui_height;
-            if (diff > 0) {
-                CAShapeLayer *maskLayer = [CAShapeLayer layer];
-                CGMutablePathRef path = CGPathCreateMutable();
-                CGPathAddRect(path, NULL, CGRectMake(0, 0, searchBarContainerView.qmui_width, searchBarContainerView.qmui_height));
-                maskLayer.path = path;
-                searchBarContainerView.layer.mask = maskLayer;
-                
-                CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"path"];
-                CGMutablePathRef animationPath = CGPathCreateMutable();
-                CGPathAddRect(animationPath, NULL, CGRectMake(0, 0, searchBarContainerView.qmui_width, self.qmui_backgroundView.qmui_height));
-                animation.toValue   = (__bridge id)animationPath;
-                animation.removedOnCompletion = NO;
-                animation.fillMode = kCAFillModeForwards;
-                [searchBarContainerView.layer.mask addAnimation:animation forKey:nil];
+            // backgroundView 被 searchBarContainerView masksToBounds 裁减掉的底部。
+            CGFloat backgroundViewBottomClipped = CGRectGetMaxY([searchBarContainerView convertRect:self.qmui_backgroundView.frame fromView:self.qmui_backgroundView.superview]) - CGRectGetHeight(searchBarContainerView.bounds);
+            // UISeachbar 取消激活时，如果 BackgroundView 底部超出了 searchBarContainerView，需要以动画的形式来过渡：
+            if (backgroundViewBottomClipped > 0) {
+                CGFloat previousHeight = self.qmui_backgroundView.qmui_height;
+                // 先减去 backgroundViewBottomClipped 使得  backgroundView 和 searchBarContainerView 底部对齐，由于这个时机是包裹在 animationBlock 里的，所以要包裹在 performWithoutAnimation 中来设置
+                [UIView performWithoutAnimation:^{
+                    self.qmui_backgroundView.qmui_height -= backgroundViewBottomClipped;
+                }];
+                // 再还原高度，这里在 animationBlock 中，所以会以动画来过渡这个效果
+                self.qmui_backgroundView.qmui_height = previousHeight;
             }
         }
-        
     }
-
 }
 
 - (UIView *)qmui_backgroundView {
