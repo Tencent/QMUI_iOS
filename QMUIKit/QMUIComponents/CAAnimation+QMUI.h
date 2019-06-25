@@ -15,6 +15,8 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+// 这个文件依赖了 QMUIMultipleDelegates，无法作为 UIKitExtensions 的一部分，所以放在 QMUIComponents 内
+
 @interface CAAnimation (QMUI)
 
 @property(nonatomic, copy) void (^qmui_animationDidStartBlock)(__kindof CAAnimation *aAnimation);
