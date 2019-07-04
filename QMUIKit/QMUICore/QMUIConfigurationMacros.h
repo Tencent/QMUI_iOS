@@ -211,7 +211,6 @@
 #define BadgeTextColor                                  [QMUICMI badgeTextColor]
 #define BadgeFont                                       [QMUICMI badgeFont]
 #define BadgeContentEdgeInsets                          [QMUICMI badgeContentEdgeInsets]
-#define BadgeContentEdgeInsets                          [QMUICMI badgeContentEdgeInsets]
 #define BadgeCenterOffset                               [QMUICMI badgeCenterOffset]
 #define BadgeCenterOffsetLandscape                      [QMUICMI badgeCenterOffsetLandscape]
 
