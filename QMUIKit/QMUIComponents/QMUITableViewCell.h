@@ -16,6 +16,7 @@
 #import <UIKit/UIKit.h>
 #import "UITableView+QMUI.h"
 
+NS_ASSUME_NONNULL_BEGIN
 
 @interface QMUITableViewCell : UITableViewCell
 
@@ -45,8 +46,8 @@
 /// 设置当前cell是否enabled，setter方法里面会修改当前的subviews样式。
 @property(nonatomic, assign, getter = isEnabled) BOOL enabled;
 
-/// 保存对tableView的弱引用，在布局时可能会使用到tableView的一些属性例如separatorColor等。只有使用下面两个 initForTableView: 的接口初始化时这个属性才有值，否则就只能自己初始化后赋值
-@property(nonatomic, weak) UITableView *parentTableView;
+/// 保存对tableView的弱引用，在布局时可能会使用到tableView的一些属性例如separatorColor等
+@property(nonatomic, weak, nullable) UITableView *parentTableView;
 
 /**
  *  cell 处于 section 中的位置，要求：
@@ -65,10 +66,10 @@
  *
  *  @return 一个QMUITableViewCell实例
  */
-- (instancetype)initForTableView:(UITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
+- (nullable instancetype)initForTableView:(nullable UITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier;
 
 /// 同上
-- (instancetype)initForTableView:(UITableView *)tableView withReuseIdentifier:(NSString *)reuseIdentifier;
+- (nullable instancetype)initForTableView:(nullable UITableView *)tableView withReuseIdentifier:(NSString *)reuseIdentifier;
 
 @end
 
@@ -81,6 +82,8 @@
 - (void)didInitializeWithStyle:(UITableViewCellStyle)style NS_REQUIRES_SUPER;
 
 /// 用于继承的接口，设置一些cell相关的UI，需要自 cellForRowAtIndexPath 里面调用。默认实现是设置当前cell在哪个position。
-- (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath NS_REQUIRES_SUPER;
+- (void)updateCellAppearanceWithIndexPath:(nullable NSIndexPath *)indexPath NS_REQUIRES_SUPER;
 
 @end
+
+NS_ASSUME_NONNULL_END

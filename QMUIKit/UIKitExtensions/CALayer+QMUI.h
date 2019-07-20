@@ -26,6 +26,9 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
 
 @interface CALayer (QMUI)
 
+/// 是否为某个 UIView 自带的 layer
+@property(nonatomic, assign, readonly) BOOL qmui_isRootLayerOfView;
+
 /// 暂停/恢复当前 layer 上的所有动画
 @property(nonatomic, assign) BOOL qmui_pause;
 
@@ -58,6 +61,13 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
  * 移除 CALayer（包括 CAShapeLayer 和 CAGradientLayer）所有支持动画的属性的默认动画，方便需要一个不带动画的 layer 时使用。
  */
 - (void)qmui_removeDefaultAnimations;
+
+/**
+ * 对 CALayer 执行一些操作，不以动画的形式展示过程（默认情况下修改 CALayer 的属性都会以动画形式展示出来）。
+ * @param actionsWithoutAnimation 要执行的操作，可以在里面修改 layer 的属性，例如 frame、backgroundColor 等。
+ * @note 如果该 layer 的任何属性修改都不需要动画，也可使用 qmui_removeDefaultAnimations。
+ */
++ (void)qmui_performWithoutAnimation:(void (NS_NOESCAPE ^)(void))actionsWithoutAnimation;
 
 /**
  * 生成虚线的方法，注意返回的是 CAShapeLayer
@@ -95,4 +105,11 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
  */
 + (CALayer *)qmui_separatorLayerForTableView;
 
+@end
+
+@interface CALayer (QMUI_DynamicColor)
+
+/// 如果 layer 的 backgroundColor、borderColor、shadowColor 是使用 dynamic color（UIDynamicProviderColor、QMUIThemeColor 等）生成的，则调用这个方法可以重新设置一遍这些属性，从而更新颜色
+/// iOS 13 系统设置里的界面样式变化（Dark Mode），以及 QMUIThemeManager 触发的主题变化，都会自动调用 layer 的这个方法，业务无需关心。
+- (void)qmui_setNeedsUpdateDynamicStyle NS_REQUIRES_SUPER;
 @end

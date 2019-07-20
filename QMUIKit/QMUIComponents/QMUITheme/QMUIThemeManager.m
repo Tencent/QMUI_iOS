@@ -8,21 +8,17 @@
 
 #import "QMUIThemeManager.h"
 #import "QMUICore.h"
+#import "UIView+QMUITheme.h"
+#import "UIViewController+QMUITheme.h"
+#import "QMUIThemePrivate.h"
+#import "UITraitCollection+QMUI.h"
 
-NSString *const QMUIThemeIdentifierLight = @"UIUserInterfaceStyleLight";
-NSString *const QMUIThemeIdentifierDark = @"UIUserInterfaceStyleDark";
-
-@interface _QMUIThemeWindow : UIWindow
-
-@end
-
-@implementation _QMUIThemeWindow
-
-@end
+NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotification";
 
 @interface QMUIThemeManager ()
 
-@property(nonatomic, strong) _QMUIThemeWindow *traitCollectionWindow;
+@property(nonatomic, strong) NSMutableArray<NSObject<NSCopying> *> *_themeIdentifiers;
+@property(nonatomic, strong) NSMutableArray<NSObject *> *_themes;
 @end
 
 @implementation QMUIThemeManager
@@ -32,34 +28,6 @@ NSString *const QMUIThemeIdentifierDark = @"UIUserInterfaceStyleDark";
     static QMUIThemeManager *instance = nil;
     dispatch_once(&onceToken,^{
         instance = [[super allocWithZone:NULL] init];
-        instance->_themes = NSMutableDictionary.new;
-        
-#ifdef IOS13_SDK_ALLOWED
-        if (@available(iOS 13.0, *)) {
-            instance.adjustSystemUserInterfaceStyleAutomatically = YES;
-            instance.themes[QMUIThemeIdentifierLight] = @(UIUserInterfaceStyleLight);
-            instance.themes[QMUIThemeIdentifierDark] = @(UIUserInterfaceStyleDark);
-            if (UITraitCollection.currentTraitCollection.userInterfaceStyle == UIUserInterfaceStyleLight) instance.currentThemeIdentifier = QMUIThemeIdentifierLight;
-            else if (UITraitCollection.currentTraitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) instance.currentThemeIdentifier = QMUIThemeIdentifierDark;
-            
-            _QMUIThemeWindow *window = [[_QMUIThemeWindow alloc] initWithFrame:CGRectMake(0, 0, CGFLOAT_MIN, CGFLOAT_MIN)];// 用最小的尺寸避免影响 App 操作
-            window.userInteractionEnabled = NO;
-            window.hidden = NO;// 要可视并且处于 view 层级树内才能保证 provider block 被及时调用（App 回到后台时、回到前台时）
-            __weak __typeof(instance)weakInstance = instance;
-            window.backgroundColor = [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull trait) {
-                if (!weakInstance.adjustSystemUserInterfaceStyleAutomatically)
-                    return UIColorClear;
-                
-                if (trait.userInterfaceStyle == UIUserInterfaceStyleLight && [weakInstance.currentThemeIdentifier isEqual:QMUIThemeIdentifierDark]) {
-                    weakInstance.currentThemeIdentifier = QMUIThemeIdentifierLight;
-                } else if (trait.userInterfaceStyle == UIUserInterfaceStyleDark && [weakInstance.currentThemeIdentifier isEqual:QMUIThemeIdentifierLight]) {
-                    weakInstance.currentThemeIdentifier = QMUIThemeIdentifierDark;
-                }
-                return UIColorClear;
-            }];
-            instance.traitCollectionWindow = window;
-        }
-#endif
     });
     return instance;
 }
@@ -68,16 +36,127 @@ NSString *const QMUIThemeIdentifierDark = @"UIUserInterfaceStyleDark";
     return [self sharedInstance];
 }
 
-- (void)setCurrentTheme:(NSObject *)currentTheme {
-    NSAssert([self.themes.allValues containsObject:currentTheme], @"%@ should be added to QMUIThemeManager.themes before it becomes current theme.", currentTheme);
-    _currentTheme = currentTheme;
-    _currentThemeIdentifier = [self.themes allKeysForObject:currentTheme].firstObject;
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (instancetype)init {
+    if (self = [super init]) {
+        self._themeIdentifiers = NSMutableArray.new;
+        self._themes = NSMutableArray.new;
+        if (@available(iOS 13.0, *)) {
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleUserInterfaceStyleWillChangeNotification:) name:QMUIUserInterfaceStyleWillChangeNotification object:nil];
+        }
+    }
+    return self;
+}
+
+- (void)handleUserInterfaceStyleWillChangeNotification:(NSNotification *)notification {
+    if (!_respondsSystemStyleAutomatically) return;
+    
+    if (@available(iOS 13.0, *)) {
+        UITraitCollection *traitCollection = notification.object;
+        if (traitCollection && self.identifierForTrait) {
+            self.currentThemeIdentifier = self.identifierForTrait(traitCollection);
+        }
+    }
+}
+
+- (void)setRespondsSystemStyleAutomatically:(BOOL)respondsSystemStyleAutomatically {
+    _respondsSystemStyleAutomatically = respondsSystemStyleAutomatically;
+#ifdef IOS13_SDK_ALLOWED
+    if (@available(iOS 13.0, *)) {
+        if (_respondsSystemStyleAutomatically && self.identifierForTrait) {
+             self.currentThemeIdentifier = self.identifierForTrait([UITraitCollection currentTraitCollection]);
+        }
+    }
+#endif
 }
 
 - (void)setCurrentThemeIdentifier:(NSObject<NSCopying> *)currentThemeIdentifier {
-    NSAssert([self.themes.allKeys containsObject:currentThemeIdentifier], @"%@ should be added to QMUIThemeManager.themes before it becomes current theme identifier.", currentThemeIdentifier);
+    if (![self._themeIdentifiers containsObject:currentThemeIdentifier] && self.themeGenerator) {
+        NSObject *theme = self.themeGenerator(currentThemeIdentifier);
+        [self addThemeIdentifier:currentThemeIdentifier theme:theme];
+    }
+    
+    NSAssert([self._themeIdentifiers containsObject:currentThemeIdentifier], @"%@ should be added to QMUIThemeManager.themes before it becomes current theme identifier.", currentThemeIdentifier);
+    
+    BOOL themeChanged = _currentThemeIdentifier && ![_currentThemeIdentifier isEqual:currentThemeIdentifier];
+    
     _currentThemeIdentifier = currentThemeIdentifier;
-    _currentTheme = self.themes[currentThemeIdentifier];
+    _currentTheme = [self themeForIdentifier:currentThemeIdentifier];
+    
+    if (themeChanged) {
+        [self notifyThemeChanged];
+    }
+}
+
+- (void)setCurrentTheme:(NSObject *)currentTheme {
+    if (![self._themes containsObject:currentTheme] && self.themeIdentifierGenerator) {
+        __kindof NSObject<NSCopying> *identifier = self.themeIdentifierGenerator(currentTheme);
+        [self addThemeIdentifier:identifier theme:currentTheme];
+    }
+    
+    NSAssert([self._themes containsObject:currentTheme], @"%@ should be added to QMUIThemeManager.themes before it becomes current theme.", currentTheme);
+    
+    BOOL themeChanged = _currentTheme && ![_currentTheme isEqual:currentTheme];
+    
+    _currentTheme = currentTheme;
+    _currentThemeIdentifier = [self identifierForTheme:currentTheme];
+    
+    if (themeChanged) {
+        [self notifyThemeChanged];
+    }
+}
+
+- (NSArray<NSObject<NSCopying> *> *)themeIdentifiers {
+    return self._themeIdentifiers.count ? self._themeIdentifiers.copy : nil;
+}
+
+- (NSArray<NSObject *> *)themes {
+    return self._themes.count ? self._themes.copy : nil;
+}
+
+- (__kindof NSObject *)themeForIdentifier:(__kindof NSObject<NSCopying> *)identifier {
+    NSUInteger index = [self._themeIdentifiers indexOfObject:identifier];
+    if (index != NSNotFound) return self._themes[index];
+    return nil;
+}
+
+- (__kindof NSObject<NSCopying> *)identifierForTheme:(__kindof NSObject *)theme {
+    NSUInteger index = [self._themes indexOfObject:theme];
+    if (index != NSNotFound) return self._themeIdentifiers[index];
+    return nil;
+}
+
+- (void)addThemeIdentifier:(NSObject<NSCopying> *)identifier theme:(NSObject *)theme {
+    NSAssert(![self._themeIdentifiers containsObject:identifier], @"unable to add duplicate theme identifier");
+    NSAssert(![self._themes containsObject:theme], @"unable to add duplicate theme");
+    
+    [self._themeIdentifiers addObject:identifier];
+    [self._themes addObject:theme];
+}
+
+- (void)removeThemeIdentifier:(NSObject<NSCopying> *)identifier {
+    [self._themeIdentifiers removeObject:identifier];
+}
+
+- (void)removeTheme:(NSObject *)theme {
+    [self._themes removeObject:theme];
+}
+
+- (void)notifyThemeChanged {
+    [[NSNotificationCenter defaultCenter] postNotificationName:QMUIThemeDidChangeNotification object:self];
+    
+    [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (!window.hidden && window.alpha > 0.01 && window.rootViewController) {
+            [window.rootViewController qmui_themeDidChangeByManager:self identifier:self.currentThemeIdentifier theme:self.currentTheme];
+            if (window.rootViewController.isViewLoaded) {
+                window.rootViewController.view.qmui_currentThemeIdentifier = self.currentThemeIdentifier;
+                window.rootViewController.view.qmui_currentTheme = self.currentTheme;
+            }
+        }
+    }];
 }
 
 @end

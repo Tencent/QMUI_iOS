@@ -49,11 +49,6 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
 - (void)qmui_styledAsQMUITableView;
 
 /**
- 列表默认的 contentInset，会自动将 contentInset 和 scrollIndicatorInsets 都设置为这个值并且调用一次 qmui_scrollToTopUponContentInsetTopChange 设置默认的 contentOffset，一般用于 UIScrollViewContentInsetAdjustmentNever 的列表。
- */
-@property(nonatomic, assign) UIEdgeInsets qmui_initialContentInset;
-
-/**
  *  获取某个 view 在 tableView 里的 indexPath
  *
  *  使用场景：例如每个 cell 内均有一个按钮，在该按钮的 addTarget 点击事件回调里可以用这个方法计算出按钮所在的 indexPath

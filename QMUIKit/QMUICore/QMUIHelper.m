@@ -155,9 +155,13 @@ QMUISynthesizeCGFloatProperty(lastKeyboardHeight, setLastKeyboardHeight)
 
 + (CGFloat)keyboardHeightWithNotification:(nullable NSNotification *)notification inView:(nullable UIView *)view {
     CGRect keyboardRect = [self keyboardRectWithNotification:notification];
-    if (!view) {
-        return CGRectGetHeight(keyboardRect);
+    if (@available(iOS 13.0, *)) {
+        // iOS 13 分屏键盘 x 不是 0，不知道是系统 BUG 还是故意这样，先这样保护，再观察一下后面的 beta 版本
+        if (IS_SPLIT_SCREEN_IPAD && keyboardRect.origin.x > 0) {
+            keyboardRect.origin.x = 0;
+        }
     }
+    if (!view) { return CGRectGetHeight(keyboardRect); }
     CGRect keyboardRectInView = [view convertRect:keyboardRect fromView:view.window];
     CGRect keyboardVisibleRectInView = CGRectIntersection(view.bounds, keyboardRectInView);
     CGFloat resultHeight = CGRectIsValidated(keyboardVisibleRectInView) ? CGRectGetHeight(keyboardVisibleRectInView) : 0;
@@ -345,7 +349,6 @@ static NSInteger isNotchedScreen = -1;
                     peripheryInsets = window.safeAreaInsets;
                     if (peripheryInsets.bottom <= 0) {
                         UIViewController *viewController = [UIViewController new];
-                        [viewController loadViewIfNeeded];
                         window.rootViewController = viewController;
                         if (CGRectGetMinY(viewController.view.frame) > 20) {
                             peripheryInsets.bottom = 1;

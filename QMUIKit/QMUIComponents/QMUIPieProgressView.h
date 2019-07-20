@@ -24,6 +24,12 @@
  *
  * 通过 `UIControlEventValueChanged` 来监听进度变化
  */
+
+typedef NS_ENUM(NSUInteger, QMUIPieProgressViewShape) {
+    QMUIPieProgressViewShapeSector, // 扇形，默认
+    QMUIPieProgressViewShapeRing // 环形
+};
+
 @interface QMUIPieProgressView : UIControl
 
 /**
@@ -47,10 +53,21 @@
 @property(nonatomic, assign) IBInspectable CGFloat borderInset;
 
 /**
+ 线宽，用于环形绘制，默认为 0。
+ */
+@property(nonatomic, assign) IBInspectable CGFloat lineWidth;
+
+/**
+ 绘制形状，默认是扇形。
+ */
+@property(nonatomic, assign) IBInspectable QMUIPieProgressViewShape shape;
+
+/**
  修改当前的进度，会触发 UIControlEventValueChanged 事件
 
  @param progress 当前的进度，取值范围 [0.0-1.0]
  @param animated 是否以动画来表现
  */
 - (void)setProgress:(float)progress animated:(BOOL)animated;
+
 @end

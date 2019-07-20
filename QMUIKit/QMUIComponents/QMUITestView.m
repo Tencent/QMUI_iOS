@@ -25,6 +25,19 @@
     return self;
 }
 
+- (void)tintColorDidChange {
+    [super tintColorDidChange];
+}
+
+- (void)setTintColor:(UIColor *)tintColor {
+    [super setTintColor:tintColor];
+    NSLog(@"QMUITestView setTintColor");
+}
+
+//- (void)setBackgroundColor:(UIColor *)backgroundColor {
+//    [super setBackgroundColor:backgroundColor];
+//}
+
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
         
@@ -47,37 +60,37 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    QMUILog(NSStringFromClass(self.class), @"%s, frame = %@", __func__, NSStringFromCGRect(self.frame));
+    QMUILog(NSStringFromClass(self.class), @"frame = %@", NSStringFromCGRect(self.frame));
 }
 
 - (void)willMoveToSuperview:(UIView *)newSuperview {
     [super willMoveToSuperview:newSuperview];
-    QMUILog(NSStringFromClass(self.class), @"%s, superview is %@, newSuperview is %@, window is %@", __func__, self.superview, newSuperview, self.window);
+    QMUILog(NSStringFromClass(self.class), @"superview is %@, newSuperview is %@, window is %@", self.superview, newSuperview, self.window);
 }
 
 - (void)didMoveToSuperview {
     [super didMoveToSuperview];
-    QMUILog(NSStringFromClass(self.class), @"%s, superview is %@, window is %@", __func__, self.superview, self.window);
+    QMUILog(NSStringFromClass(self.class), @"superview is %@, window is %@", self.superview, self.window);
 }
 
 - (void)willMoveToWindow:(UIWindow *)newWindow {
     [super willMoveToWindow:newWindow];
-    QMUILog(NSStringFromClass(self.class), @"%s, self.window is %@, newWindow is %@", __func__, self.window, newWindow);
+    QMUILog(NSStringFromClass(self.class), @"self.window is %@, newWindow is %@", self.window, newWindow);
 }
 
 - (void)didMoveToWindow {
     [super didMoveToWindow];
-    QMUILog(NSStringFromClass(self.class), @"%s, self.window is %@", __func__, self.window);
+    QMUILog(NSStringFromClass(self.class), @"self.window is %@", self.window);
 }
 
 - (void)addSubview:(UIView *)view {
     [super addSubview:view];
-    QMUILog(NSStringFromClass(self.class), @"%s, subview is %@, subviews.count before addSubview is %@", __func__, view, @(self.subviews.count));
+    QMUILog(NSStringFromClass(self.class), @"subview is %@, subviews.count before addSubview is %@", view, @(self.subviews.count));
 }
 
 - (void)setHidden:(BOOL)hidden {
     [super setHidden:hidden];
-    QMUILog(NSStringFromClass(self.class), @"%s, hidden is %@", __func__, @(hidden));
+    QMUILog(NSStringFromClass(self.class), @"hidden is %@", @(hidden));
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {

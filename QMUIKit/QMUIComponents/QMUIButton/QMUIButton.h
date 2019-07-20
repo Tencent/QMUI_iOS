@@ -56,7 +56,6 @@ typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
 
 /**
  *  等价于 adjustsTitleTintColorAutomatically = YES & adjustsImageTintColorAutomatically = YES & tintColor = xxx
- *  @note 一般只使用这个属性的 setter，而 getter 永远返回 self.tintColor
  *  @warning 不支持传 nil
  */
 @property(nonatomic, strong) IBInspectable UIColor *tintColorAdjustsTitleAndImage;

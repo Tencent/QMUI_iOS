@@ -26,7 +26,7 @@
 - (void)applyConfigurationTemplate;
 
 @optional
-/// 当返回 YES 时，启动 App 的时候 QMUIConfiguration 会自动应用这份配置表。但启动 App 时自动应用的配置表最多只允许一份，如果有多份则其他的会被忽略，需要在某些时机手动应用
+/// 当返回 YES 时，启动 App 的时候 QMUIConfiguration 会自动应用这份配置表。但启动 App 时自动应用的配置表最多只允许一份，如果有多份则其他的会被忽略
 /// QMUIConfiguration automatically applies this template on launch when set to YES. Since only one copy of configuration template is allowed when the app launches, you'll have to call `applyConfigurationTemplate` manually if you have more than one configuration templates. 
 - (BOOL)shouldApplyTemplateAutomatically;
 
@@ -94,6 +94,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, strong, nullable) UIColor  *textFieldTintColor;
 @property(nonatomic, assign) UIEdgeInsets       textFieldTextInsets;
+@property(nonatomic, assign) UIKeyboardAppearance keyboardAppearance;
+
+#pragma mark - UISwitch
+@property(nonatomic, strong, nullable) UIColor  *switchOnTintColor;
+@property(nonatomic, strong, nullable) UIColor  *switchTintColor;
+@property(nonatomic, strong, nullable) UIColor  *switchThumbTintColor;
+@property(nonatomic, strong, nullable) UIImage  *switchOnImage;
+@property(nonatomic, strong, nullable) UIImage  *switchOffImage;
 
 #pragma mark - NavigationBar
 
@@ -104,6 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIImage  *navBarBackgroundImage;
 @property(nonatomic, strong, nullable) UIImage  *navBarShadowImage;
 @property(nonatomic, strong, nullable) UIColor  *navBarBarTintColor;
+@property(nonatomic, assign) UIBarStyle         navBarStyle;
 @property(nonatomic, strong, nullable) UIColor  *navBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *navBarTitleColor;
 @property(nonatomic, strong, nullable) UIFont   *navBarTitleFont;
@@ -124,6 +133,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIImage  *tabBarBackgroundImage;
 @property(nonatomic, strong, nullable) UIColor  *tabBarBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarShadowImageColor;
+@property(nonatomic, assign) UIBarStyle         tabBarStyle;
 @property(nonatomic, strong, nullable) UIColor  *tabBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColorSelected;
@@ -139,6 +149,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIImage  *toolBarBackgroundImage;
 @property(nonatomic, strong, nullable) UIColor  *toolBarBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *toolBarShadowImageColor;
+@property(nonatomic, assign) UIBarStyle         toolBarStyle;
 @property(nonatomic, strong, nullable) UIFont   *toolBarButtonFont;
 
 #pragma mark - SearchBar
@@ -162,7 +173,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               tableViewEstimatedHeightEnabled;
 
 @property(nonatomic, strong, nullable) UIColor  *tableViewBackgroundColor;
-@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableSectionIndexColor;
 @property(nonatomic, strong, nullable) UIColor  *tableSectionIndexBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableSectionIndexTrackingBackgroundColor;
@@ -190,6 +200,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterContentInset;
 
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellTitleLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellDetailLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellSelectedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellWarningBackgroundColor;
 @property(nonatomic, strong, nullable) UIFont   *tableViewGroupedSectionHeaderFont;
 @property(nonatomic, strong, nullable) UIFont   *tableViewGroupedSectionFooterFont;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedSectionHeaderTextColor;
@@ -213,17 +229,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - QMUIBadge
 
-@property(nonatomic, strong, nullable) UIColor *badgeBackgroundColor;
-@property(nonatomic, strong, nullable) UIColor *badgeTextColor;
-@property(nonatomic, strong, nullable) UIFont *badgeFont;
-@property(nonatomic, assign) UIEdgeInsets badgeContentEdgeInsets;
-@property(nonatomic, assign) CGPoint badgeCenterOffset;
-@property(nonatomic, assign) CGPoint badgeCenterOffsetLandscape;
+@property(nonatomic, strong, nullable) UIColor  *badgeBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *badgeTextColor;
+@property(nonatomic, strong, nullable) UIFont   *badgeFont;
+@property(nonatomic, assign) UIEdgeInsets       badgeContentEdgeInsets;
+@property(nonatomic, assign) CGPoint            badgeCenterOffset;
+@property(nonatomic, assign) CGPoint            badgeCenterOffsetLandscape;
 
-@property(nonatomic, strong, nullable) UIColor *updatesIndicatorColor;
-@property(nonatomic, assign) CGSize updatesIndicatorSize;
-@property(nonatomic, assign) CGPoint updatesIndicatorCenterOffset;
-@property(nonatomic, assign) CGPoint updatesIndicatorCenterOffsetLandscape;
+@property(nonatomic, strong, nullable) UIColor  *updatesIndicatorColor;
+@property(nonatomic, assign) CGSize             updatesIndicatorSize;
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffset;
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffsetLandscape;
 
 #pragma mark - Others
 
@@ -240,7 +256,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
 @property(nonatomic, assign) BOOL               dynamicPreferredValueForIPad;
-@property(nonatomic, assign) BOOL               ignoreKVCAccessProhibited;
+@property(nonatomic, assign) BOOL               ignoreKVCAccessProhibited API_AVAILABLE(ios(13.0));
+@property(nonatomic, assign) BOOL               adjustScrollIndicatorInsetsByContentInsetAdjustment API_AVAILABLE(ios(13.0));
 
 NS_ASSUME_NONNULL_END
 

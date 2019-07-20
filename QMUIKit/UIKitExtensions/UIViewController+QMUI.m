@@ -30,11 +30,14 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 @interface UIViewController ()
 
 @property(nonatomic, strong) UINavigationBar *transitionNavigationBar;// by molice 对应 UIViewController (NavigationBarTransition) 里的 transitionNavigationBar，为了让这个属性在这里可以被访问到，有点 hack，具体请查看 https://github.com/Tencent/QMUI_iOS/issues/268
+
+@property(nonatomic, assign) BOOL qmui_hasFixedTabBarInsets;
 @end
 
 @implementation UIViewController (QMUI)
 
 QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleStateDidChangeBlock)
+QMUISynthesizeBOOLProperty(qmui_hasFixedTabBarInsets, setQmui_hasFixedTabBarInsets)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -149,14 +152,26 @@ static char kAssociatedObjectKey_visibleState;
         // 这串判断条件来源于这个 issue：https://github.com/Tencent/QMUI_iOS/issues/218
         BOOL isOpaqueBarAndCanExtendedLayout = !tabBar.translucent && self.extendedLayoutIncludesOpaqueBars;
         if (!isOpaqueBarAndCanExtendedLayout) {
+            
+            // 如果前面的 isOpaqueBarAndCanExtendedLayout 为 NO，理论上并不满足 issue #218 所陈述的条件，但有可能项目一开始先设置了 translucent 为 NO，于是走了下面的主动调整 additionalSafeAreaInsets 的逻辑，后来又改为 translucent 为 YES，此时如果不把之前主动调整的 additionalSafeAreaInsets 重置回来，就会一直存在一个多余的 inset，导致底部间距错误，因此增加了 qmui_hasFixedTabBarInsets 这个属性便于做重置操作。
+            if (!self.qmui_hasFixedTabBarInsets) {
+                return;
+            }
+        }
+        
+        self.qmui_hasFixedTabBarInsets = YES;
+        
+        if (!isOpaqueBarAndCanExtendedLayout) {
+            self.additionalSafeAreaInsets = UIEdgeInsetsSetBottom(self.additionalSafeAreaInsets, 0);
             return;
         }
         
         BOOL tabBarHidden = tabBar.hidden;
         
         // 这里直接用 CGRectGetHeight(tabBar.frame) 来计算理论上不准确，但因为系统有这个 bug（https://github.com/Tencent/QMUI_iOS/issues/217），所以暂时用 CGRectGetHeight(tabBar.frame) 来代替
-        CGFloat correctSafeAreaInsetsBottom = tabBarHidden ? tabBar.safeAreaInsets.bottom : CGRectGetHeight(tabBar.frame);
-        CGFloat additionalSafeAreaInsetsBottom = correctSafeAreaInsetsBottom - tabBar.safeAreaInsets.bottom;
+        CGFloat bottom = tabBar.safeAreaInsets.bottom;
+        CGFloat correctSafeAreaInsetsBottom = tabBarHidden ? bottom : CGRectGetHeight(tabBar.frame);
+        CGFloat additionalSafeAreaInsetsBottom = correctSafeAreaInsetsBottom - bottom;
         self.additionalSafeAreaInsets = UIEdgeInsetsSetBottom(self.additionalSafeAreaInsets, additionalSafeAreaInsetsBottom);
     }
 }
@@ -348,6 +363,29 @@ static char kAssociatedObjectKey_visibleState;
         return self.childViewControllerForStatusBarStyle.qmui_preferredStatusBarStyle;
     }
     return self.preferredStatusBarStyle;
+}
+
+- (BOOL)qmui_prefersLargeTitleDisplayed {
+    if (@available(iOS 11.0, *)) {
+        NSAssert(self.navigationController, @"必现在 navigationController 栈内才能正确判断");
+        UINavigationBar *navigationBar = self.navigationController.navigationBar;
+        if (!navigationBar.prefersLargeTitles) {
+            return NO;
+        }
+        if (self.navigationItem.largeTitleDisplayMode == UINavigationItemLargeTitleDisplayModeAlways) {
+            return YES;
+        } else if (self.navigationItem.largeTitleDisplayMode == UINavigationItemLargeTitleDisplayModeNever) {
+            return NO;
+        } else if (self.navigationItem.largeTitleDisplayMode == UINavigationItemLargeTitleDisplayModeAutomatic) {
+            if (self.navigationController.childViewControllers.firstObject == self) {
+                return YES;
+            } else {
+                UIViewController *previousViewController = self.navigationController.childViewControllers[[self.navigationController.childViewControllers indexOfObject:self] - 1];
+                return previousViewController.qmui_prefersLargeTitleDisplayed == YES;
+            }
+        }
+    }
+    return NO;
 }
 
 @end

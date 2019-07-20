@@ -57,7 +57,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 + (void)resetAppearance {
     if (!moreOperationViewControllerAppearance) {
         moreOperationViewControllerAppearance = [[QMUIMoreOperationController alloc] init];
-        moreOperationViewControllerAppearance.contentBackgroundColor = UIColorWhite;
+        moreOperationViewControllerAppearance.contentBackgroundColor = UIColorForBackground;
         moreOperationViewControllerAppearance.contentEdgeMargins = UIEdgeInsetsMake(0, 10, 10, 10);
         moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(moreOperationViewControllerAppearance.contentEdgeMargins);
         moreOperationViewControllerAppearance.contentCornerRadius = 10;
@@ -74,7 +74,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         moreOperationViewControllerAppearance.itemMinimumMarginHorizontal = 0;
         moreOperationViewControllerAppearance.automaticallyAdjustItemMargins = YES;
         
-        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorWhite;
+        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorForBackground;
         moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
         moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
         moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(16);

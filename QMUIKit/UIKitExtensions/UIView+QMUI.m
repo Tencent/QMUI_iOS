@@ -38,6 +38,7 @@
 
 @implementation UIView (QMUI)
 
+QMUISynthesizeBOOLProperty(qmui_tintColorCustomized, setQmui_tintColorCustomized)
 QMUISynthesizeIdCopyProperty(qmui_frameWillChangeBlock, setQmui_frameWillChangeBlock)
 QMUISynthesizeIdCopyProperty(qmui_frameDidChangeBlock, setQmui_frameDidChangeBlock)
 QMUISynthesizeIdCopyProperty(qmui_layoutSubviewsBlock, setQmui_layoutSubviewsBlock)
@@ -47,6 +48,10 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIView class], @selector(setTintColor:), UIColor *, ^(UIView *selfObject, UIColor *tintColor) {
+            selfObject.qmui_tintColorCustomized = !!tintColor;
+        });
         
         ExtendImplementationOfVoidMethodWithoutArguments([UIView class], @selector(tintColorDidChange), ^(UIView *selfObject) {
             if (selfObject.qmui_tintColorDidChangeBlock) {

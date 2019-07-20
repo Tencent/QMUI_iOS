@@ -39,6 +39,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
 
 /**
+ 有修改过 tintColor，则不会再受 superview.tintColor 的影响
+ */
+@property(nonatomic, assign, readonly) BOOL qmui_tintColorCustomized;
+
+/**
  移除当前所有 subviews
  */
 - (void)qmui_removeAllSubviews;

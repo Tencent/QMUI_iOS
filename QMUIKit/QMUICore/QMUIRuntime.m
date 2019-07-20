@@ -14,6 +14,7 @@
 //
 
 #import "QMUIRuntime.h"
+#import "QMUICommonDefines.h"
 
 @implementation QMUIPropertyDescriptor
 
@@ -31,7 +32,7 @@
     
     // setter
     char *setterChar = property_copyAttributeValue(property, "S");
-    NSString *setterString = setterChar != NULL ? [NSString stringWithUTF8String:setterChar] : [QMUIPropertyDescriptor defaultSetterStringWithPropertyName:propertyName];
+    NSString *setterString = setterChar != NULL ? [NSString stringWithUTF8String:setterChar] : NSStringFromSelector(setterWithGetter(NSSelectorFromString(propertyName)));
     descriptor.setter = NSSelectorFromString(setterString);
     if (setterChar != NULL) {
         free(setterChar);
@@ -93,21 +94,13 @@
     [result appendString:self.isAssign ? @"assign" : (self.isWeak ? @"weak" : (self.isStrong ? @"strong" : @"copy"))];
     if (self.isReadonly) [result appendString:@", readonly"];
     if (![NSStringFromSelector(self.getter) isEqualToString:self.name]) [result appendFormat:@", getter=%@", NSStringFromSelector(self.getter)];
-    if (self.setter != NSSelectorFromString([QMUIPropertyDescriptor defaultSetterStringWithPropertyName:self.name])) [result appendFormat:@", setter=%@", NSStringFromSelector(self.setter)];
+    if (self.setter != setterWithGetter(NSSelectorFromString(self.name))) [result appendFormat:@", setter=%@", NSStringFromSelector(self.setter)];
     [result appendString:@") "];
     [result appendString:self.type];
     [result appendString:@" "];
     [result appendString:self.name];
     [result appendString:@";"];
     return result.copy;
-}
-
-+ (NSString *)defaultSetterStringWithPropertyName:(NSString *)propertyName {
-    NSMutableString *string = [[NSMutableString alloc] initWithString:@"set"];
-    [string appendString:[propertyName substringToIndex:1].uppercaseString];
-    [string appendString:[propertyName substringFromIndex:1]];
-    [string appendString:@":"];
-    return string.copy;
 }
 
 #define _DetectTypeAndReturn(_type) if (strncmp(@encode(_type), typeEncoding, strlen(@encode(_type))) == 0) return @#_type;

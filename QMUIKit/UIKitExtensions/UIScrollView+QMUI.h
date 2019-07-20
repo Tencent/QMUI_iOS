@@ -27,6 +27,11 @@
 @property(nonatomic, assign, readonly) UIEdgeInsets qmui_contentInset;
 
 /**
+ UIScrollView 默认的 contentInset，会自动将 contentInset 和 scrollIndicatorInsets 都设置为这个值并且调用一次 qmui_scrollToTopUponContentInsetTopChange 设置默认的 contentOffset，一般用于 UIScrollViewContentInsetAdjustmentNever 的列表。
+ */
+@property(nonatomic, assign) UIEdgeInsets qmui_initialContentInset;
+
+/**
  * 判断当前的scrollView内容是否足够滚动
  * @warning 避免与<i>scrollEnabled</i>混淆
  */

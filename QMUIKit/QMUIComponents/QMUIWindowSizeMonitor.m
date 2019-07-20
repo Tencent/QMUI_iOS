@@ -81,31 +81,24 @@ QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        OverrideImplementation([UIWindow class], @selector(layoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^void(UIWindow *selfObject) {
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD);
-                
-                CGSize newSize = selfObject.bounds.size;
-                if (!CGSizeEqualToSize(newSize, selfObject.qwsm_previousSzie)) {
-                    if (!CGSizeEqualToSize(selfObject.qwsm_previousSzie, CGSizeZero)) {
-                        NSLog(@"%@ :change size from %@ to %@",NSStringFromClass(selfObject.class), NSStringFromCGSize(selfObject.qwsm_previousSzie),NSStringFromCGSize(newSize));
-                        [selfObject qwsm_notifyObserversWithNewSize:newSize];
-                    }
-                    selfObject.qwsm_previousSzie = selfObject.bounds.size;
-                    
+        
+        void (^notifyNewSizeBlock)(UIWindow *, CGRect) = ^(UIWindow *selfObject, CGRect firstArgv) {
+            CGSize newSize = selfObject.bounds.size;
+            if (!CGSizeEqualToSize(newSize, selfObject.qwsm_previousSzie)) {
+                if (!CGSizeEqualToSize(selfObject.qwsm_previousSzie, CGSizeZero)) {
+                    [selfObject qwsm_notifyWithNewSize:newSize];
                 }
-                
-            };
-        });
+                selfObject.qwsm_previousSzie = selfObject.bounds.size;
+            }
+        };
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIWindow class], @selector(setFrame:), CGRect, notifyNewSizeBlock);
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIWindow class], @selector(setBounds:), CGRect, notifyNewSizeBlock);
         
         OverrideImplementation([UIView class], @selector(willMoveToWindow:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^void(UIView *selfObject, UIWindow *newWindow) {
                 
-                // call super
                 void (*originSelectorIMP)(id, SEL, UIWindow *);
                 originSelectorIMP = (void (*)(id, SEL, UIWindow *))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, newWindow);
@@ -118,7 +111,6 @@ QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
                     if ([nextResponder isKindOfClass:[UIViewController class]] && [nextResponder respondsToSelector:@selector(windowDidTransitionToSize:)]) {
                         [newWindow qwsm_addDidTransitionToSizeMethodReceiver:nextResponder];
                     }
-                    
                 }
                 
             };
@@ -126,19 +118,10 @@ QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
     });
 }
 
-- (void)qwsm_notifyObserversWithNewSize:(CGSize)newSize {
-    for (NSUInteger i = 0, count = self.qwsm_sizeObservers.count; i < count; i++) {
-        NSObject *object = [self.qwsm_sizeObservers pointerAtIndex:i];
-        for (NSUInteger i = 0, count = object.qwsm_windowSizeChangeHandlers.count; i < count; i++) {
-            QMUIWindowSizeObserverHandler handler = object.qwsm_windowSizeChangeHandlers[i];
-            handler(newSize);
-        }
-    }
-    
-    for (NSUInteger i = 0, count = self.qwsm_canReceiveWindowDidTransitionToSizeResponders.count; i < count; i++) {
-        UIResponder <QMUIWindowSizeMonitorProtocol>*responder = [self.qwsm_canReceiveWindowDidTransitionToSizeResponders pointerAtIndex:i];
-        [responder windowDidTransitionToSize:self.bounds.size];
-    }
+
+- (void)qwsm_addSizeObserver:(NSObject *)observer {
+    if ([self.qwsm_sizeObservers qmui_containsPointer:(__bridge void *)(observer)]) return;
+    [self.qwsm_sizeObservers addPointer:(__bridge void *)(observer)];
 }
 
 - (void)qwsm_removeSizeObserver:(NSObject *)observer {
@@ -151,15 +134,49 @@ QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
 - (void)qwsm_addDidTransitionToSizeMethodReceiver:(UIResponder *)receiver {
     if ([self.qwsm_canReceiveWindowDidTransitionToSizeResponders qmui_containsPointer:(__bridge void *)(receiver)]) return;
     if (receiver.qwsm_previousWindow && receiver.qwsm_previousWindow != self) {
-        [receiver.qwsm_previousWindow qwsm_removeSizeObserver:receiver];
+        [receiver.qwsm_previousWindow qwsm_removeDidTransitionToSizeMethodReceiver:receiver];
     }
     receiver.qwsm_previousWindow = self;
     [self.qwsm_canReceiveWindowDidTransitionToSizeResponders addPointer:(__bridge void *)(receiver)];
 }
 
-- (void)qwsm_addSizeObserver:(NSObject *)observer {
-    if ([self.qwsm_sizeObservers qmui_containsPointer:(__bridge void *)(observer)]) return;
-    [self.qwsm_sizeObservers addPointer:(__bridge void *)(observer)];
+- (void)qwsm_removeDidTransitionToSizeMethodReceiver:(UIResponder *)receiver {
+    NSUInteger index = [self.qwsm_canReceiveWindowDidTransitionToSizeResponders qmui_indexOfPointer:(__bridge void *)(receiver)];
+    if (index != NSNotFound) {
+        [self.qwsm_canReceiveWindowDidTransitionToSizeResponders removePointerAtIndex:index];
+    }
+}
+
+
+- (void)qwsm_notifyWithNewSize:(CGSize)newSize {
+    // notify sizeObservers
+    for (NSUInteger i = 0, count = self.qwsm_sizeObservers.count; i < count; i++) {
+        NSObject *object = [self.qwsm_sizeObservers pointerAtIndex:i];
+        for (NSUInteger i = 0, count = object.qwsm_windowSizeChangeHandlers.count; i < count; i++) {
+            QMUIWindowSizeObserverHandler handler = object.qwsm_windowSizeChangeHandlers[i];
+            handler(newSize);
+        }
+    }
+    // send ‘windowDidTransitionToSize:’ to responders
+    for (NSUInteger i = 0, count = self.qwsm_canReceiveWindowDidTransitionToSizeResponders.count; i < count; i++) {
+        UIResponder <QMUIWindowSizeMonitorProtocol>*responder = [self.qwsm_canReceiveWindowDidTransitionToSizeResponders pointerAtIndex:i];
+        // call superclass automatically
+        Method lastMethod = NULL;
+        NSMutableArray <NSValue *>*selectorIMPArray = [NSMutableArray array];
+        for (Class responderClass = object_getClass(responder); responderClass != [UIResponder class]; responderClass = class_getSuperclass(responderClass)) {
+            Method methodOfClass = class_getInstanceMethod(responderClass, @selector(windowDidTransitionToSize:));
+            if (methodOfClass == NULL) break;
+            if (methodOfClass == lastMethod) continue;
+            void (*selectorIMP)(id, SEL, CGSize) = (void (*)(id, SEL, CGSize))method_getImplementation(methodOfClass);
+            [selectorIMPArray addObject:[NSValue valueWithPointer:selectorIMP]];
+            lastMethod = methodOfClass;
+        }
+        // call the superclass before calling the subclass
+        for (NSInteger i = selectorIMPArray.count - 1; i >= 0; i--) {
+            void (*selectorIMP)(id, SEL, CGSize) = selectorIMPArray[i].pointerValue;
+            selectorIMP(responder, @selector(windowDidTransitionToSize:), newSize);
+        }
+    }
 }
 
 - (NSPointerArray *)qwsm_sizeObservers {

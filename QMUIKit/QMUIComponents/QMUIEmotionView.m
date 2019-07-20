@@ -380,7 +380,7 @@
 
 + (void)setDefaultAppearance {
     QMUIEmotionView *appearance = [QMUIEmotionView appearance];
-    appearance.backgroundColor = UIColorWhite;
+    appearance.backgroundColor = UIColorForBackground;
     appearance.deleteButtonImage = [QMUIHelper imageWithName:@"QMUI_emotion_delete"];
     appearance.paddingInPage = UIEdgeInsetsMake(18, 18, 65, 18);
     appearance.numberOfRowsPerPage = 4;

@@ -67,6 +67,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 @synthesize cloudDownloadRetryButton = _cloudDownloadRetryButton;
 
 - (void)didMoveToWindow {
+    [super didMoveToWindow];
     // 当 self.window 为 nil 时说明此 view 被移出了可视区域（比如所在的 controller 被 pop 了），此时应该停止视频播放
     if (!self.window) {
         [self endPlayingVideo];

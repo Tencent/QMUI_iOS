@@ -37,6 +37,27 @@ QMUISynthesizeCGFloatProperty(qmuiscroll_lastInsetTopWhenScrollToTop, setQmuiscr
             }
             return originReturnValue;
         });
+#ifdef IOS13_SDK_ALLOWED
+        if (@available(iOS 13.0, *)) {
+            if (QMUICMIActivated && AdjustScrollIndicatorInsetsByContentInsetAdjustment) {
+                OverrideImplementation([UIScrollView class], @selector(setContentInsetAdjustmentBehavior:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^(UIScrollView *selfObject, UIScrollViewContentInsetAdjustmentBehavior firstArgv) {
+                        
+                        // call super
+                        void (*originSelectorIMP)(id, SEL, UIScrollViewContentInsetAdjustmentBehavior);
+                        originSelectorIMP = (void (*)(id, SEL, UIScrollViewContentInsetAdjustmentBehavior))originalIMPProvider();
+                        originSelectorIMP(selfObject, originCMD, firstArgv);
+                        
+                        if (firstArgv == UIScrollViewContentInsetAdjustmentNever) {
+                            selfObject.automaticallyAdjustsScrollIndicatorInsets = NO;
+                        } else {
+                            selfObject.automaticallyAdjustsScrollIndicatorInsets = YES;
+                        }
+                    };
+                });
+            }
+        }
+#endif
     });
 }
 
@@ -66,6 +87,18 @@ QMUISynthesizeCGFloatProperty(qmuiscroll_lastInsetTopWhenScrollToTop, setQmuiscr
     } else {
         return self.contentInset;
     }
+}
+
+static char kAssociatedObjectKey_initialContentInset;
+- (void)setQmui_initialContentInset:(UIEdgeInsets)qmui_initialContentInset {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_initialContentInset, [NSValue valueWithUIEdgeInsets:qmui_initialContentInset], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.contentInset = qmui_initialContentInset;
+    self.scrollIndicatorInsets = qmui_initialContentInset;
+    [self qmui_scrollToTopUponContentInsetTopChange];
+}
+
+- (UIEdgeInsets)qmui_initialContentInset {
+    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_initialContentInset)) UIEdgeInsetsValue];
 }
 
 - (BOOL)qmui_canScroll {

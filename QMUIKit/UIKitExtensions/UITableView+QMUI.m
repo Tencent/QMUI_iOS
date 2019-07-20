@@ -135,18 +135,6 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     self.sectionIndexBackgroundColor = TableSectionIndexBackgroundColor;
 }
 
-static char kAssociatedObjectKey_initialContentInset;
-- (void)setQmui_initialContentInset:(UIEdgeInsets)qmui_initialContentInset {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_initialContentInset, [NSValue valueWithUIEdgeInsets:qmui_initialContentInset], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    self.contentInset = qmui_initialContentInset;
-    self.scrollIndicatorInsets = qmui_initialContentInset;
-    [self qmui_scrollToTopUponContentInsetTopChange];
-}
-
-- (UIEdgeInsets)qmui_initialContentInset {
-    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_initialContentInset)) UIEdgeInsetsValue];
-}
-
 - (NSIndexPath *)qmui_indexPathForRowAtView:(UIView *)view {
     if (!view || !view.superview) {
         return nil;

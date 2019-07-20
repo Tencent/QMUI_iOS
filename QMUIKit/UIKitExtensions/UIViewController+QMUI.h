@@ -107,6 +107,12 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
  */
 @property(nonatomic, assign, readonly) UIStatusBarStyle qmui_preferredStatusBarStyle;
 
+/**
+ 判断当前 viewController 是否具备显示 LargeTitle 的条件
+ @warning 需要 viewController 在 navigationController 栈内才能正确判断
+ */
+@property(nonatomic, assign, readonly) BOOL qmui_prefersLargeTitleDisplayed;
+
 @end
 
 /**

@@ -11,6 +11,9 @@
 
 #import "QMUIThemeManager.h"
 #import "UIColor+QMUITheme.h"
+#import "UIImage+QMUITheme.h"
+#import "UIVisualEffect+QMUITheme.h"
 #import "UIView+QMUITheme.h"
+#import "UIViewController+QMUITheme.h"
 
 #endif /* QMUITheme_h */

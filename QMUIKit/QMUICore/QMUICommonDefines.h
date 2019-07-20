@@ -18,6 +18,7 @@
 
 #import <UIKit/UIKit.h>
 #import "QMUIHelper.h"
+#import "NSString+QMUI.h"
 
 #pragma mark - 变量-编译相关
 
@@ -200,12 +201,12 @@
 #define _65INCH_WIDTH [QMUIHelper screenSizeFor65Inch].width
 
 #define AS_IPAD (DynamicPreferredValueForIPad ? ((IS_IPAD && !IS_SPLIT_SCREEN_IPAD) || (IS_SPLIT_SCREEN_IPAD && APPLICATION_WIDTH >= 768)) : IS_IPAD)
-#define AS_65INCH_SCREEN (IS_65INCH_SCREEN || (DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _65INCH_WIDTH))
+#define AS_65INCH_SCREEN (IS_65INCH_SCREEN || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _65INCH_WIDTH))
 #define AS_61INCH_SCREEN IS_61INCH_SCREEN
-#define AS_58INCH_SCREEN (IS_58INCH_SCREEN || ((AS_61INCH_SCREEN || AS_65INCH_SCREEN) && IS_ZOOMEDMODE) || (DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _58INCH_WIDTH))
+#define AS_58INCH_SCREEN (IS_58INCH_SCREEN || ((AS_61INCH_SCREEN || AS_65INCH_SCREEN) && IS_ZOOMEDMODE) || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _58INCH_WIDTH))
 #define AS_55INCH_SCREEN IS_55INCH_SCREEN
 #define AS_47INCH_SCREEN (IS_47INCH_SCREEN || (IS_55INCH_SCREEN && IS_ZOOMEDMODE))
-#define AS_40INCH_SCREEN (IS_40INCH_SCREEN || (DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _40INCH_WIDTH))
+#define AS_40INCH_SCREEN (IS_40INCH_SCREEN || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _40INCH_WIDTH))
 #define AS_35INCH_SCREEN IS_35INCH_SCREEN
 #define AS_320WIDTH_SCREEN IS_320WIDTH_SCREEN
 
@@ -264,6 +265,23 @@ AddAccessibilityHint(NSObject *obj, NSString *hint) {
 #pragma mark - 其他
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")
+
+#pragma mark - Selector
+
+/**
+ 根据给定的 getter selector 获取对应的 setter selector
+ @param getter 目标 getter selector
+ @return 对应的 setter selector
+ */
+CG_INLINE SEL
+setterWithGetter(SEL getter) {
+    NSString *getterString = NSStringFromSelector(getter);
+    NSMutableString *setterString = [[NSMutableString alloc] initWithString:@"set"];
+    [setterString appendString:getterString.qmui_capitalizedString];
+    [setterString appendString:@":"];
+    SEL setter = NSSelectorFromString(setterString);
+    return setter;
+}
 
 #pragma mark - CGFloat
 

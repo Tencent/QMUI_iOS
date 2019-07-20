@@ -175,7 +175,13 @@
 
 + (void)qmui_enumrateIvarsOfClass:(Class)aClass includingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar, NSString *))block {
     if (!block) return;
-    [[aClass new] qmui_enumrateIvarsIncludingInherited:includingInherited usingBlock:block];
+    NSObject *obj = nil;
+    if ([aClass isSubclassOfClass:[UICollectionView class]]) {
+        obj = [[aClass alloc] initWithFrame:CGRectZero collectionViewLayout:UICollectionViewFlowLayout.new];
+    } else {
+        obj = [aClass new];
+    }
+    [obj qmui_enumrateIvarsIncludingInherited:includingInherited usingBlock:block];
 }
 
 - (void)qmui_enumratePropertiesUsingBlock:(void (^)(objc_property_t property, NSString *propertyName))block {
@@ -244,20 +250,28 @@
 }
 
 - (id)qmui_valueForKey:(NSString *)key {
-    if (IOS_VERSION < 13.0 || ![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self valueForKey:key];
-    
-    BeginIgnoreUIKVCAccessProhibited
-    id value = [self valueForKey:key];
-    EndIgnoreUIKVCAccessProhibited
-    return value;
+    if (@available(iOS 13.0, *)) {
+        if ([self isKindOfClass:[UIView class]] && QMUICMIActivated && !IgnoreKVCAccessProhibited) {
+            BeginIgnoreUIKVCAccessProhibited
+            id value = [self valueForKey:key];
+            EndIgnoreUIKVCAccessProhibited
+            return value;
+        }
+    }
+    return [self valueForKey:key];
 }
 
 - (void)qmui_setValue:(id)value forKey:(NSString *)key {
-    if (IOS_VERSION < 13.0 || ![self isKindOfClass:[UIView class]] || (QMUICMIActivated && IgnoreKVCAccessProhibited)) return [self setValue:value forKey:key];
+    if (@available(iOS 13.0, *)) {
+        if ([self isKindOfClass:[UIView class]] && QMUICMIActivated && !IgnoreKVCAccessProhibited) {
+            BeginIgnoreUIKVCAccessProhibited
+            [self setValue:value forKey:key];
+            EndIgnoreUIKVCAccessProhibited
+            return;
+        }
+    }
     
-    BeginIgnoreUIKVCAccessProhibited
     [self setValue:value forKey:key];
-    EndIgnoreUIKVCAccessProhibited
 }
 
 @end

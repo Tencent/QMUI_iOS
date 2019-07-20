@@ -212,11 +212,28 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 - (void)setNotification:(NSNotification *)notification {
     _notification = notification;
     if (self.originUserInfo) {
+        
         _animationDuration = [[self.originUserInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+        
         _animationCurve = (UIViewAnimationCurve)[[self.originUserInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey] integerValue];
+        
         _animationOptions = self.animationCurve<<16;
-        _beginFrame = [[self.originUserInfo objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue];
-        _endFrame = [[self.originUserInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+        
+        CGRect beginFrame = [[self.originUserInfo objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+        CGRect endFrame = [[self.originUserInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+        
+        if (@available(iOS 13.0, *)) {
+            // iOS 13 分屏键盘 x 不是 0，不知道是系统 BUG 还是故意这样，先这样保护，再观察一下后面的 beta 版本
+            if (IS_SPLIT_SCREEN_IPAD && beginFrame.origin.x > 0) {
+                beginFrame.origin.x = 0;
+            }
+            if (IS_SPLIT_SCREEN_IPAD && endFrame.origin.x > 0) {
+                endFrame.origin.x = 0;
+            }
+        }
+        
+        _beginFrame = beginFrame;
+        _endFrame = endFrame;
     }
 }
 
@@ -401,18 +418,24 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardDidChangeFrameNotification:) name:UIKeyboardDidChangeFrameNotification object:nil];
 }
 
-- (BOOL)isAppActive:(NSNotification *)notification {
-    if ([[UIApplication sharedApplication] applicationState] != UIApplicationStateActive) {
-        return NO;
+- (BOOL)isAppActive {
+    if (self.ignoreApplicationState) {
+        return YES;
     }
-    if (![[notification.userInfo valueForKey:UIKeyboardIsLocalUserInfoKey] boolValue] && !IS_SPLIT_SCREEN_IPAD) {
-        return NO;
+    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive) {
+        return YES;
     }
-    return YES;
+    return NO;
 }
 
-- (BOOL)isSplitScreenKeyboardNotification {
-    return IS_SPLIT_SCREEN_IPAD;
+- (BOOL)isLocalKeyboard:(NSNotification *)notification {
+    if ([[notification.userInfo valueForKey:UIKeyboardIsLocalUserInfoKey] boolValue]) {
+        return YES;
+    }
+    if (IS_SPLIT_SCREEN_IPAD) {
+        return YES;
+    }
+    return NO;
 }
 
 - (void)keyboardWillShowNotification:(NSNotification *)notification {
@@ -421,7 +444,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         QMUILog(NSStringFromClass(self.class), @"keyboardWillShowNotification - %@", self);
     }
     
-    if (![self isAppActive:notification]) {
+    if (![self isAppActive] || ![self isLocalKeyboard:notification]) {
         QMUILog(NSStringFromClass(self.class), @"app is not active");
         return;
     }
@@ -450,7 +473,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         QMUILog(NSStringFromClass(self.class), @"keyboardDidShowNotification - %@", self);
     }
     
-    if (![self isAppActive:notification]) {
+    if (![self isAppActive] || ![self isLocalKeyboard:notification]) {
         QMUILog(NSStringFromClass(self.class), @"app is not active");
         return;
     }
@@ -479,12 +502,12 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         QMUILog(NSStringFromClass(self.class), @"keyboardWillHideNotification - %@", self);
     }
     
-    if (![self isAppActive:notification]) {
+    if (![self isAppActive] || ![self isLocalKeyboard:notification]) {
         QMUILog(NSStringFromClass(self.class), @"app is not active");
         return;
     }
     
-    if (![self shouldReceiveHideNotification] && ![self isSplitScreenKeyboardNotification]) {
+    if (![self shouldReceiveHideNotification]) {
         return;
     }
     
@@ -508,7 +531,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         QMUILog(NSStringFromClass(self.class), @"keyboardDidHideNotification - %@", self);
     }
     
-    if (![self isAppActive:notification]) {
+    if (![self isAppActive] || ![self isLocalKeyboard:notification]) {
         QMUILog(NSStringFromClass(self.class), @"app is not active");
         return;
     }
@@ -517,7 +540,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     self.lastUserInfo = userInfo;
     userInfo.targetResponder = self.currentResponder ?: nil;
     
-    if ([self shouldReceiveHideNotification] || [self isSplitScreenKeyboardNotification]) {
+    if ([self shouldReceiveHideNotification]) {
         if (self.delegateEnabled && [self.delegate respondsToSelector:@selector(keyboardDidHideWithUserInfo:)]) {
             [self.delegate keyboardDidHideWithUserInfo:userInfo];
         }
@@ -542,7 +565,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         QMUILog(NSStringFromClass(self.class), @"keyboardWillChangeFrameNotification - %@", self);
     }
     
-    if (![self isAppActive:notification]) {
+    if (![self isAppActive] || ![self isLocalKeyboard:notification]) {
         QMUILog(NSStringFromClass(self.class), @"app is not active");
         return;
     }
@@ -550,9 +573,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     self.lastUserInfo = userInfo;
     
-    if ([self shouldReceiveShowNotification] ||
-        [self shouldReceiveHideNotification] ||
-        [self isSplitScreenKeyboardNotification]) {
+    if ([self shouldReceiveShowNotification] || [self shouldReceiveHideNotification]) {
         userInfo.targetResponder = self.currentResponder ?: nil;
     } else {
         return;
@@ -574,7 +595,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         QMUILog(NSStringFromClass(self.class), @"keyboardDidChangeFrameNotification - %@", self);
     }
     
-    if (![self isAppActive:notification]) {
+    if (![self isAppActive] || ![self isLocalKeyboard:notification]) {
         QMUILog(NSStringFromClass(self.class), @"app is not active");
         return;
     }
@@ -582,9 +603,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     QMUIKeyboardUserInfo *userInfo = [self newUserInfoWithNotification:notification];
     self.lastUserInfo = userInfo;
     
-    if ([self shouldReceiveShowNotification] ||
-        [self shouldReceiveHideNotification] ||
-        [self isSplitScreenKeyboardNotification]) {
+    if ([self shouldReceiveShowNotification] || [self shouldReceiveHideNotification]) {
         userInfo.targetResponder = self.currentResponder ?: nil;
     } else {
         return;
@@ -654,9 +673,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     }
     
     // 也需要判断targetResponder
-    if (![self shouldReceiveShowNotification] &&
-        ![self shouldReceiveHideNotification] &&
-        ![self isSplitScreenKeyboardNotification]) {
+    if (![self shouldReceiveShowNotification] && ![self shouldReceiveHideNotification]) {
         return;
     }
     
@@ -687,8 +704,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         keyboardMoveUserInfo.endFrame = endFrame;
         
         if (self.debug) {
-            NSLog(@"keyboardDidMoveNotification - %@", self);
-            NSLog(@"\n");
+            NSLog(@"keyboardDidMoveNotification - %@\n", self);
         }
         
         [self.delegate keyboardWillChangeFrameWithUserInfo:keyboardMoveUserInfo];
@@ -766,7 +782,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     
     for (UIWindow *window in [UIApplication sharedApplication].windows) {
         NSString *windowName = NSStringFromClass(window.class);
-        if (windowName.length == 22 && [windowName hasPrefix:@"UI"] && [windowName hasSuffix:[NSString stringWithFormat:@"%@%@", @"Remote", @"KeyboardWindow"]]) {
+        if ([windowName isEqualToString:[NSString stringWithFormat:@"UI%@%@", @"Remote", @"KeyboardWindow"]]) {
             // UIRemoteKeyboardWindow（iOS9 以下 UITextEffectsWindow）
             if (!kbWindows) kbWindows = [NSMutableArray new];
             [kbWindows addObject:window];

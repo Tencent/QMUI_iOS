@@ -923,10 +923,10 @@ static QMUIAlertController *alertControllerAppearance;
         weakSelf.maskView.alpha = 1;
         weakSelf.willShow = NO;
         weakSelf.showing = YES;
-        if (self.isNeedsHideAfterAlertShowed) {
-            [self hideWithAnimated:self.isAnimatedForHideAfterAlertShowed];
-            self.isNeedsHideAfterAlertShowed = NO;
-            self.isAnimatedForHideAfterAlertShowed = NO;
+        if (weakSelf.isNeedsHideAfterAlertShowed) {
+            [weakSelf hideWithAnimated:weakSelf.isAnimatedForHideAfterAlertShowed];
+            weakSelf.isNeedsHideAfterAlertShowed = NO;
+            weakSelf.isAnimatedForHideAfterAlertShowed = NO;
         }
         if ([weakSelf.delegate respondsToSelector:@selector(didShowAlertController:)]) {
             [weakSelf.delegate didShowAlertController:weakSelf];

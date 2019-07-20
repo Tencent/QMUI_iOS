@@ -53,6 +53,11 @@
 @property(nonatomic, assign) BOOL delegateEnabled;
 
 /**
+ *  是否忽视 `applicationState` 状态的影响。默认为 NO，也即只有 `UIApplicationStateActive` 才会响应通知，如果设置为 YES，则任何 state 都会响应通知。
+ */
+@property(nonatomic, assign) BOOL ignoreApplicationState;
+
+/**
  *  添加触发键盘事件的 UIResponder，一般是 UITextView 或者 UITextField ，不添加 targetResponder 的话，则默认接受任何 UIResponder 产生的键盘通知。
  *  添加成功将会返回YES，否则返回NO。
  */

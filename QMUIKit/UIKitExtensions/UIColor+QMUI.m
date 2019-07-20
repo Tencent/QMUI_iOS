@@ -16,6 +16,7 @@
 #import "UIColor+QMUI.h"
 #import "QMUICore.h"
 #import "NSString+QMUI.h"
+#import "NSObject+QMUI.h"
 
 @implementation UIColor (QMUI)
 
@@ -254,6 +255,54 @@
     CGFloat green = ( arc4random() % 255 / 255.0 );
     CGFloat blue = ( arc4random() % 255 / 255.0 );
     return [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
+}
+
+@end
+
+
+NSString *const QMUICGColorOriginalColorBindKey = @"QMUICGColorOriginalColorBindKey";
+
+@implementation UIColor (QMUI_DynamicColor)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+#ifdef IOS13_SDK_ALLOWED
+        if (@available(iOS 13.0, *)) {
+            ExtendImplementationOfNonVoidMethodWithoutArguments([UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull trait) {
+                return [UIColor clearColor];
+            }].class, @selector(CGColor), CGColorRef, ^CGColorRef(UIColor *selfObject, CGColorRef originReturnValue) {
+                if (selfObject.qmui_isDynamicColor) {
+                    UIColor *color = [UIColor colorWithCGColor:originReturnValue];
+                    originReturnValue = color.CGColor;
+                    [(__bridge id)(originReturnValue) qmui_bindObject:selfObject forKey:QMUICGColorOriginalColorBindKey];
+                }
+                return originReturnValue;
+            });
+        }
+#endif
+    });
+}
+
+- (BOOL)qmui_isDynamicColor {
+    if ([self respondsToSelector:@selector(_isDynamic)]) {
+        return self._isDynamic;
+    }
+    return NO;
+}
+
+- (UIColor *)qmui_rawColor {
+    if (self.qmui_isDynamicColor) {
+#ifdef IOS13_SDK_ALLOWED
+        if (@available(iOS 13.0, *)) {
+            if ([self respondsToSelector:@selector(resolvedColorWithTraitCollection:)]) {
+                UIColor *color = [self resolvedColorWithTraitCollection:UITraitCollection.currentTraitCollection];
+                return color.qmui_rawColor;
+            }
+        }
+#endif
+    }
+    return self;
 }
 
 @end

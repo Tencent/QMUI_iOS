@@ -146,6 +146,12 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 }
 
 - (UIImage *)qmui_imageWithTintColor:(UIColor *)tintColor {
+    // iOS 13 的 imageWithTintColor: 方法里并不会去更新 CGImage，所以通过它更改了图片颜色后再获取到的 CGImage 依然是旧的，因此暂不使用
+//#ifdef IOS13_SDK_ALLOWED
+//    if (@available(iOS 13.0, *)) {
+//        return [self imageWithTintColor:tintColor];
+//    }
+//#endif
     return [UIImage qmui_imageWithSize:self.size opaque:self.qmui_opaque scale:self.scale actions:^(CGContextRef contextRef) {
         CGContextTranslateCTM(contextRef, 0, self.size.height);
         CGContextScaleCTM(contextRef, 1.0, -1.0);
