@@ -3,7 +3,6 @@
 //  WeRead
 //
 //  Created by zhoonchen on 2018/9/3.
-//  Copyright © 2018年 tencent. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
