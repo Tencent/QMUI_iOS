@@ -64,6 +64,8 @@ const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize = {-1, -1};
     CGFloat currentRowMaxY = itemViewOrigin.y;
     CGSize maximumItemSize = CGSizeEqualToSize(self.maximumItemSize, QMUIFloatLayoutViewAutomaticalMaximumItemSize) ? CGSizeMake(size.width - UIEdgeInsetsGetHorizontalValue(self.padding), size.height - UIEdgeInsetsGetVerticalValue(self.padding)) : self.maximumItemSize;
     
+    NSMutableArray *lineIndexArray = [NSMutableArray array];
+    NSInteger lastBreaklineIndex = 0;
     for (NSInteger i = 0, l = visibleItemViews.count; i < l; i ++) {
         UIView *itemView = visibleItemViews[i];
         
@@ -83,6 +85,11 @@ const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize = {-1, -1};
             
             itemViewOrigin.x = ValueSwitchAlignLeftOrRight(self.padding.left + itemViewSize.width + self.itemMargins.right, size.width - self.padding.right - itemViewSize.width - self.itemMargins.left);
             itemViewOrigin.y = currentRowMaxY;
+            
+            if (i > 0) {
+                [lineIndexArray addObject:@[@(lastBreaklineIndex), @(i-1)]];
+                lastBreaklineIndex = i;
+            }
         } else {
             // 当前行放得下
             if (shouldLayout) {
@@ -94,6 +101,26 @@ const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize = {-1, -1};
         }
         
         currentRowMaxY = fmax(currentRowMaxY, itemViewOrigin.y + UIEdgeInsetsGetVerticalValue(self.itemMargins) + itemViewSize.height);
+    }
+    
+    [lineIndexArray addObject:@[@(lastBreaklineIndex), @(visibleItemViews.count-1)]];
+    
+    //居中布局
+    if (self.contentMode == UIViewContentModeCenter && shouldLayout) {
+        for (NSArray *index in lineIndexArray) {
+            NSInteger startIndex = [index[0] integerValue];
+            NSInteger endIndex = [index[1] integerValue];
+            
+            CGFloat totalWidth = CGRectGetMaxX(visibleItemViews[endIndex].frame) - CGRectGetMinX(visibleItemViews[startIndex].frame);
+            
+            CGFloat margin = (size.width - totalWidth) / 2 - self.padding.left;
+            for (NSInteger j = startIndex; j <= endIndex; j ++) {
+                UIView *itemView = visibleItemViews[j];
+                CGRect frame = itemView.frame;
+                frame.origin.x += margin;
+                itemView.frame = frame;
+            }
+        }
     }
     
     // 最后一行不需要考虑 itemMarins.bottom，所以这里减掉
