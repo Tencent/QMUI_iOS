@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSUInteger, QMUIToolbarButtonType) {
     QMUIToolbarButtonTypeNormal,            // 普通工具栏按钮
     QMUIToolbarButtonTypeRed,               // 工具栏红色按钮，用于删除等警告性操作
-    QMUIToolbarButtonTypeImage,              // 图标类型的按钮
+    QMUIToolbarButtonTypeImage,             // 图标类型的按钮
 };
 
 /**

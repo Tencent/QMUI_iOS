@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
 
 /**
  *  相册里某一个资源的包装对象，该资源可能是图片、视频等。
- *  @note QMUIAsset 重写了 isEqual: 方法，只要两个 QMUIAsset 的 adentifier 相同，则认为是同一个对象，以方便在数组、字典等容器中对大量 QMUIAsset 进行遍历查找等操作。
+ *  @note QMUIAsset 重写了 isEqual: 方法，只要两个 QMUIAsset 的 identifier 相同，则认为是同一个对象，以方便在数组、字典等容器中对大量 QMUIAsset 进行遍历查找等操作。
  */
 @interface QMUIAsset : NSObject
 
@@ -117,7 +117,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  *  @param completion        完成请求后调用的 block，参数中包含了请求的 Live Photo 以及相关信息，若 assetType 不是 QMUIAssetTypeLivePhoto 则为 nil
  *  @param phProgressHandler 处理请求进度的 handler，不在主线程上执行，在 block 中修改 UI 时注意需要手工放到主线程处理。
  *
- *  @wraning iOS 9.1 以下中并没有 Live Photo，因此无法获取有效结果。
+ *  @warning iOS 9.1 以下中并没有 Live Photo，因此无法获取有效结果。
  *
  *  @return 返回请求图片的请求 id
  */
