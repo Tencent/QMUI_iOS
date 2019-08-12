@@ -19,7 +19,7 @@
 /**
  *  提供一系列方便书写的宏，以便在代码里读取配置表的各种属性。
  *  @warning 请不要在 + load 方法里调用 QMUIConfigurationTemplate 或 QMUIConfigurationMacros 提供的宏，那个时机太早，可能导致 crash
- *  @waining 维护时，如果需要增加一个宏，则需要定义一个新的 QMUIConfiguration 属性。
+ *  @warning 维护时，如果需要增加一个宏，则需要定义一个新的 QMUIConfiguration 属性。
  */
 
 

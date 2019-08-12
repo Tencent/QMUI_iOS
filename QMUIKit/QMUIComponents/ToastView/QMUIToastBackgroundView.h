@@ -27,7 +27,7 @@
 @property(nullable, nonatomic, strong, readonly) QMUIVisualEffectView *effectView;
 
 /**
- * 如果不设置磨砂，则styleColor直接作为`QMUIToastBackgroundView`的backgroundColor；如果需要磨砂，则会新增加一个`UIVisualEffectView`放在`QMUIToastBackgroundView`上面
+ * 如果不设置磨砂，则styleColor直接作为`QMUIToastBackgroundView`的backgroundColor；如果需要磨砂，则会新增加一个`UIVisualEffectView`放在`QMUIToastBackgroundView`上面。
  */
 @property(nullable, nonatomic, strong) UIColor *styleColor UI_APPEARANCE_SELECTOR;
 
