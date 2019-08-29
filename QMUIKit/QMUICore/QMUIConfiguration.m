@@ -46,7 +46,7 @@ const CGSize kUINavigationBarBackIndicatorImageSize = {13, 21};
 
 static BOOL QMUI_hasAppliedInitialTemplate;
 - (void)applyInitialTemplate {
-    if (QMUI_hasAppliedInitialTemplate) {
+    if (QMUI_hasAppliedInitialTemplate || !self.configurationTemplateEnable) {
         return;
     }
     
@@ -228,6 +228,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.preventConcurrentNavigationControllerTransitions = YES;
     self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG;
     self.sendAnalyticsToQMUITeam = YES;
+    
+    #pragma mark - ConfigurationTemplate
+    self.configurationTemplateEnable = YES;
 }
 
 - (void)setSwitchOnTintColor:(UIColor *)switchOnTintColor {

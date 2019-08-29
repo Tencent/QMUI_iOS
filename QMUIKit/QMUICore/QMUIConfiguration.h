@@ -42,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 标志当前项目是否有使用配置表功能
 @property(nonatomic, assign, readonly) BOOL active;
+/// 是否使用配置表功能，默认Yes
+@property(nonatomic, assign) BOOL configurationTemplateEnable;
 
 #pragma mark - Global Color
 
