@@ -131,7 +131,10 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 @interface QMUIHelper (Device)
 
+/// 如 iPhone12,5、iPad6,8
 + (nonnull NSString *)deviceModel;
+/// 如 iPhone 11 Pro Max、iPad Pro (12.9 inch)
++ (nonnull NSString *)deviceName;
 
 + (BOOL)isIPad;
 + (BOOL)isIPod;
