@@ -294,7 +294,7 @@ static CGFloat pixelOne = -1.0f;
     static NSString *name;
     dispatch_once(&onceToken, ^{
         NSString *model = [self deviceModel];
-        if (!model) return @"UnKnown Device";
+        if (!model) return @"Unknown Device";
         NSDictionary *dic = @{
             // See https://www.theiphonewiki.com/wiki/Models
             @"iPhone1,1" : @"iPhone 1G",
