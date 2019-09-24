@@ -289,7 +289,7 @@ static CGFloat pixelOne = -1.0f;
     return [NSString stringWithCString:systemInfo.machine encoding:NSUTF8StringEncoding];
 }
 
-- (NSString *)deviceName {
++ (NSString *)deviceName {
     static dispatch_once_t onceToken;
     static NSString *name;
     dispatch_once(&onceToken, ^{
