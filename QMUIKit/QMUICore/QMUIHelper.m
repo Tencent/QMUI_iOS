@@ -294,8 +294,12 @@ static CGFloat pixelOne = -1.0f;
     static NSString *name;
     dispatch_once(&onceToken, ^{
         NSString *model = [self deviceModel];
-        if (!model) return @"Unknown Device";
-        NSDictionary *dic = @{
+        if (!model) {
+            name = @"Unknown Device";
+            return;
+        }
+        
+        NSDictionary *dict = @{
             // See https://www.theiphonewiki.com/wiki/Models
             @"iPhone1,1" : @"iPhone 1G",
             @"iPhone1,2" : @"iPhone 3G",
@@ -423,7 +427,7 @@ static CGFloat pixelOne = -1.0f;
             @"AppleTV5,3" : @"Apple TV 4",
             @"AppleTV6,2" : @"Apple TV 4K",
         };
-        name = dic[model];
+        name = dict[model];
         if (!name) name = model;
         if (IS_SIMULATOR) name = [name stringByAppendingString:@" Simulator"];
     });
