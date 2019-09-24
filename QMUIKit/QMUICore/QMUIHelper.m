@@ -529,7 +529,7 @@ static NSInteger is65InchScreen = -1;
 static NSInteger is61InchScreen = -1;
 + (BOOL)is61InchScreen {
     if (is61InchScreen < 0) {
-        is61InchScreen = (DEVICE_WIDTH == self.screenSizeFor61Inch.width && DEVICE_HEIGHT == self.screenSizeFor61Inch.height && [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,8"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone12,1"]) ? 1 : 0;
+        is61InchScreen = (DEVICE_WIDTH == self.screenSizeFor61Inch.width && DEVICE_HEIGHT == self.screenSizeFor61Inch.height && ([[QMUIHelper deviceModel] isEqualToString:@"iPhone11,8"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone12,1"])) ? 1 : 0;
     }
     return is61InchScreen > 0;
 }
