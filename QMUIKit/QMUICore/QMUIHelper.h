@@ -144,13 +144,13 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 /// 将屏幕分为普通和紧凑两种，这个方法用于判断普通屏幕
 + (BOOL)isRegularScreen;
 
-/// iPhone XS Max
+/// iPhone XS Max / 11 Pro Max
 + (BOOL)is65InchScreen;
 
-/// iPhone XR
+/// iPhone XR / 11
 + (BOOL)is61InchScreen;
 
-/// iPhone X/XS
+/// iPhone X / XS / 11Pro
 + (BOOL)is58InchScreen;
 
 /// iPhone 8 Plus
