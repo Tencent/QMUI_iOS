@@ -131,7 +131,10 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 @interface QMUIHelper (Device)
 
+/// 如 iPhone12,5、iPad6,8
 + (nonnull NSString *)deviceModel;
+/// 如 iPhone 11 Pro Max、iPad Pro (12.9 inch)
++ (nonnull NSString *)deviceName;
 
 + (BOOL)isIPad;
 + (BOOL)isIPod;
@@ -144,13 +147,13 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 /// 将屏幕分为普通和紧凑两种，这个方法用于判断普通屏幕
 + (BOOL)isRegularScreen;
 
-/// iPhone XS Max
+/// iPhone XS Max / 11 Pro Max
 + (BOOL)is65InchScreen;
 
-/// iPhone XR
+/// iPhone XR / 11
 + (BOOL)is61InchScreen;
 
-/// iPhone X/XS
+/// iPhone X / XS / 11Pro
 + (BOOL)is58InchScreen;
 
 /// iPhone 8 Plus
