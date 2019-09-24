@@ -376,7 +376,8 @@ static NSInteger is65InchScreen = -1;
     if (is65InchScreen < 0) {
         // Since iPhone XS Max and iPhone XR share the same resolution, we have to distinguish them using the model identifiers
         // 由于 iPhone XS Max 和 iPhone XR 的屏幕宽高是一致的，我们通过机器 Identifier 加以区别
-        is65InchScreen = (DEVICE_WIDTH == self.screenSizeFor65Inch.width && DEVICE_HEIGHT == self.screenSizeFor65Inch.height && ([[QMUIHelper deviceModel] isEqualToString:@"iPhone11,4"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,6"])) ? 1 : 0;
+        // 数据来源：https://www.theiphonewiki.com/wiki/Models
+        is65InchScreen = (DEVICE_WIDTH == self.screenSizeFor65Inch.width && DEVICE_HEIGHT == self.screenSizeFor65Inch.height && ([[QMUIHelper deviceModel] isEqualToString:@"iPhone11,4"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,6"] && [[QMUIHelper deviceModel] isEqualToString:@"iPhone12,5"])) ? 1 : 0;
     }
     return is65InchScreen > 0;
 }
@@ -384,7 +385,7 @@ static NSInteger is65InchScreen = -1;
 static NSInteger is61InchScreen = -1;
 + (BOOL)is61InchScreen {
     if (is61InchScreen < 0) {
-        is61InchScreen = (DEVICE_WIDTH == self.screenSizeFor61Inch.width && DEVICE_HEIGHT == self.screenSizeFor61Inch.height && [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,8"]) ? 1 : 0;
+        is61InchScreen = (DEVICE_WIDTH == self.screenSizeFor61Inch.width && DEVICE_HEIGHT == self.screenSizeFor61Inch.height && [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,8"] && [[QMUIHelper deviceModel] isEqualToString:@"iPhone12,1"]) ? 1 : 0;
     }
     return is61InchScreen > 0;
 }
