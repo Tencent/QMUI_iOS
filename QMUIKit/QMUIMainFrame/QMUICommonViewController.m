@@ -128,19 +128,25 @@
 
 #pragma mark - 空列表视图 QMUIEmptyView
 
-- (void)showEmptyView {
-    if (!self.emptyView) {
-        self.emptyView = [[QMUIEmptyView alloc] initWithFrame:self.view.bounds];
+@synthesize emptyView = _emptyView;
+
+- (QMUIEmptyView *)emptyView {
+    if (!_emptyView && self.isViewLoaded) {
+        _emptyView = [[QMUIEmptyView alloc] initWithFrame:self.view.bounds];
     }
+    return _emptyView;
+}
+
+- (void)showEmptyView {
     [self.view addSubview:self.emptyView];
 }
 
 - (void)hideEmptyView {
-    [self.emptyView removeFromSuperview];
+    [_emptyView removeFromSuperview];
 }
 
 - (BOOL)isEmptyViewShowing {
-    return self.emptyView && self.emptyView.superview;
+    return _emptyView && _emptyView.superview;
 }
 
 - (void)showEmptyViewWithLoading {
@@ -184,7 +190,7 @@
 }
 
 - (BOOL)layoutEmptyView {
-    if (self.emptyView) {
+    if (_emptyView) {
         // 由于为self.emptyView设置frame时会调用到self.view，为了避免导致viewDidLoad提前触发，这里需要判断一下self.view是否已经被初始化
         BOOL viewDidLoad = self.emptyView.superview && [self isViewLoaded];
         if (viewDidLoad) {
@@ -264,6 +270,9 @@
     }
     if ([self respondsToSelector:@selector(navigationBarBarTintColor)]) {
         navigationBar.barTintColor = [self navigationBarBarTintColor];
+    }
+    if ([self respondsToSelector:@selector(navigationBarStyle)]) {
+        navigationBar.barStyle = [self navigationBarStyle];
     }
     if ([self respondsToSelector:@selector(navigationBarShadowImage)]) {
         navigationBar.shadowImage = [self navigationBarShadowImage];

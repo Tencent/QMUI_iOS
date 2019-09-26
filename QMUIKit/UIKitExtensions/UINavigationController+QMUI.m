@@ -36,8 +36,13 @@ QMUISynthesizeBOOLProperty(qmui_isPoppingByGesture, setQmui_isPoppingByGesture)
 
 @end
 
+@interface UINavigationController (QMUI_Private)
+@property(nullable, nonatomic, readwrite) UIViewController *qmui_endedTransitionTopViewController;
+@end
 
 @implementation UINavigationController (QMUI)
+
+QMUISynthesizeIdWeakProperty(qmui_endedTransitionTopViewController, setQmui_endedTransitionTopViewController)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -75,10 +80,41 @@ QMUISynthesizeBOOLProperty(qmui_isPoppingByGesture, setQmui_isPoppingByGesture)
                 return NO;
             };
         });
+        
+        OverrideImplementation([UINavigationController class], NSSelectorFromString(@"navigationTransitionView:didEndTransition:fromView:toView:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^void(UINavigationController *selfObject, UIView *transitionView, NSInteger transition, UIView *fromView, UIView *toView) {
+                
+               BOOL (*originSelectorIMP)(id, SEL, UIView *, NSInteger , UIView *, UIView *);
+               originSelectorIMP = (BOOL (*)(id, SEL, UIView *, NSInteger , UIView *, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, transitionView, transition, fromView, toView);
+                selfObject.qmui_endedTransitionTopViewController = selfObject.topViewController;
+            };
+        });
     });
 }
 
 static char originGestureDelegateKey;
+
+- (BOOL)qmui_isPushing {
+    if (self.viewControllers.count >= 2) {
+        UIViewController *previousViewController = self.childViewControllers[self.childViewControllers.count - 2];
+        if (previousViewController == self.qmui_endedTransitionTopViewController) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)qmui_isPopping {
+    return self.qmui_topViewController != self.topViewController;
+}
+
+- (UIViewController *)qmui_topViewController {
+    if (self.qmui_isPushing) {
+        return self.topViewController;
+    }
+    return self.qmui_endedTransitionTopViewController ? self.qmui_endedTransitionTopViewController : self.topViewController;
+}
 
 - (nullable UIViewController *)qmui_rootViewController {
     return self.viewControllers.firstObject;

@@ -6,27 +6,24 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
 //
-//  UIViewController+QMUITheme.h
+//  QMUIThemeManagerCenter.h
 //  QMUIKit
 //
-//  Created by MoLice on 2019/6/26.
+//  Created by MoLice on 2019/S/4.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+#import "QMUIThemeManager.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class QMUIThemeManager;
+extern NSString *const QMUIThemeManagerNameDefault;
 
-@interface UIViewController (QMUITheme)
+@interface QMUIThemeManagerCenter : NSObject
 
-/**
- 当主题变化时这个方法会被调用
- @param manager 当前的主题管理对象
- @param identifier 当前主题的标志，可自行修改参数类型为目标类型
- @param theme 当前主题对象，可自行修改参数类型为目标类型
- */
-- (void)qmui_themeDidChangeByManager:(QMUIThemeManager *)manager identifier:(__kindof NSObject<NSCopying> *)identifier theme:(__kindof NSObject *)theme NS_REQUIRES_SUPER;
+@property(class, nonatomic, strong, readonly) QMUIThemeManager *defaultThemeManager;
+@property(class, nonatomic, copy, readonly) NSArray<QMUIThemeManager *> *themeManagers;
++ (nullable QMUIThemeManager *)themeManagerWithName:(__kindof NSObject<NSCopying> *)name;
 @end
 
 NS_ASSUME_NONNULL_END

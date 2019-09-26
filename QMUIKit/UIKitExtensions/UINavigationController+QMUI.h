@@ -20,8 +20,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UINavigationController (QMUI) <UIGestureRecognizerDelegate>
 
+/// 是否在 push 的过程中
+@property(nonatomic, readonly) BOOL qmui_isPushing;
+
+/// 是否在 pop 的过程中，包括手势、以及代码触发的 pop
+@property(nonatomic, readonly) BOOL qmui_isPopping;
+
+/// 获取顶部的 ViewController，相比于系统的方法，这个方法能获取到 pop 的转场过程中顶部还没有完全消失的 ViewController （请注意：这种情况下，获取到的 topViewController 已经不在栈内）
+@property(nullable, nonatomic, readonly) UIViewController *qmui_topViewController;
+
 /// 获取<b>rootViewController</b>
-- (nullable UIViewController *)qmui_rootViewController;
+@property(nullable, nonatomic, readonly) UIViewController *qmui_rootViewController;
 
 - (void)qmui_pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^_Nullable)(void))completion;
 - (UIViewController *)qmui_popViewControllerAnimated:(BOOL)animated completion:(void (^_Nullable)(void))completion;
@@ -41,11 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 是否需要拦截系统返回按钮的事件，只有当这里返回YES的时候，才会询问方法：`canPopViewController`
 /// @warning 此接口已经被废弃，请使用 `shouldPopViewControllerByBackButtonOrPopGesture`
-- (BOOL)shouldHoldBackButtonEvent DEPRECATED_MSG_ATTRIBUTE("新版本已经废弃，请使用`shouldPopViewControllerByBackButtonOrPopGesture`代替");
+- (BOOL)shouldHoldBackButtonEvent DEPRECATED_MSG_ATTRIBUTE("从 4.0.0 开始已废弃，请使用 shouldPopViewControllerByBackButtonOrPopGesture 代替");
 
 /// 是否可以`popViewController`，可以在这个返回里面做一些业务的判断，比如点击返回按钮的时候，如果输入框里面的文本没有满足条件的则可以弹 Alert 并且返回 NO
 /// @warning 此接口已经被废弃，请使用 `shouldPopViewControllerByBackButtonOrPopGesture`
-- (BOOL)canPopViewController DEPRECATED_MSG_ATTRIBUTE("新版本已经废弃，请使用`shouldPopViewControllerByBackButtonOrPopGesture`代替");
+- (BOOL)canPopViewController DEPRECATED_MSG_ATTRIBUTE("从 4.0.0 开始已废弃，请使用 shouldPopViewControllerByBackButtonOrPopGesture 代替");
 
 /**
  * 点击系统返回按钮或者手势返回的时候是否要相应界面返回（手动调用代码pop排除）。支持参数判断是点击系统返回按钮还是通过手势触发，`shouldHoldBackButtonEvent` 和 `canPopViewController` 即将被废弃，可能会在某个版本删除代码停止支持，请尽快更换新的接口。

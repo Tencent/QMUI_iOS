@@ -1,9 +1,15 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
 //
 //  QMUIThemePrivate.m
 //  QMUIKit
 //
 //  Created by MoLice on 2019/J/26.
-//  Copyright © 2019 QMUI Team. All rights reserved.
 //
 
 #import "QMUIThemePrivate.h"
@@ -74,9 +80,18 @@
                                        NSStringFromClass(UITabBar.class):                   ({
                                                                                            NSArray<NSString *> *result = nil;
                                                                                            if (@available(iOS 10.0, *)) {
-                                                                                               result = @[NSStringFromSelector(@selector(barTintColor)),
-                                                                                                          NSStringFromSelector(@selector(unselectedItemTintColor)),
-                                                                                                          NSStringFromSelector(@selector(selectedImageTintColor)),];
+                                                                                               #ifdef IOS13_SDK_ALLOWED
+                                                                                               if (@available(iOS 13.0, *)) {
+                                                                                                   // iOS 13 在 UITabBar (QMUI) 里对所有旧版接口都映射到 standardAppearance，所以重新设置一次 standardAppearance 就可以更新所有样式
+                                                                                                   result = @[NSStringFromSelector(@selector(standardAppearance)),];
+                                                                                               } else {
+                                                                                               #endif
+                                                                                                   result = @[NSStringFromSelector(@selector(barTintColor)),
+                                                                                                              NSStringFromSelector(@selector(unselectedItemTintColor)),
+                                                                                                              NSStringFromSelector(@selector(selectedImageTintColor)),];
+                                                                                               #ifdef IOS13_SDK_ALLOWED
+                                                                                               }
+                                                                                               #endif
                                                                                            } else {
                                                                                                result = @[NSStringFromSelector(@selector(barTintColor)),
                                                                                                           NSStringFromSelector(@selector(selectedImageTintColor)),];
@@ -90,6 +105,7 @@
                                                                                                       NSStringFromSelector(@selector(backgroundColor)),
                                                                                                       NSStringFromSelector(@selector(qmui_borderColor)),],
                                        NSStringFromClass(UIVisualEffectView.class):                 @[NSStringFromSelector(@selector(effect))],
+                                       NSStringFromClass(UIImageView.class):                        @[NSStringFromSelector(@selector(image))],
                                        
                                        // QMUI classes
                                        NSStringFromClass(QMUIImagePickerCollectionViewCell.class):  @[NSStringFromSelector(@selector(videoDurationLabelTextColor)),],
@@ -346,6 +362,59 @@
                 originSelectorIMP(selfObject, originCMD, effect);
             };
         });
+    });
+}
+
+@end
+
+@implementation UILabel (QMUIThemeCompatibility)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // iOS 10-11 里，UILabel.attributedText 如果整个字符串都是同个颜色，则调用 -[UILabel setNeedsDisplay] 无法刷新文字样式，但如果字符串中存在不同 range 有不同颜色，就可以刷新。iOS 9、12-13 都没这个问题，所以这里做了兼容，给 UIView (QMUITheme) 那边刷新 UILabel 用。
+        if (@available(iOS 10.0, *)) {
+            if (@available(iOS 12.0, *)) {
+            } else {
+                OverrideImplementation([UILabel class], NSSelectorFromString(@"_needsContentsFormatUpdate"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^BOOL(UILabel *selfObject) {
+                        
+                        __block BOOL attributedTextContainsDynamicColor = NO;
+                        if (selfObject.attributedText) {
+                            [selfObject.attributedText enumerateAttribute:NSForegroundColorAttributeName inRange:NSMakeRange(0, selfObject.attributedText.length) options:0 usingBlock:^(UIColor *color, NSRange range, BOOL * _Nonnull stop) {
+                                if (color.qmui_isDynamicColor) {
+                                    attributedTextContainsDynamicColor = YES;
+                                    *stop = YES;
+                                }
+                            }];
+                        }
+                        if (attributedTextContainsDynamicColor) return YES;
+                        
+                        BOOL (*originSelectorIMP)(id, SEL);
+                        originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                        return originSelectorIMP(selfObject, originCMD);
+                    };
+                });
+            }
+        }
+    });
+}
+
+@end
+
+@implementation UITextView (QMUIThemeCompatibility)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // UITextView 在 iOS 12 及以上重写了 -[UIView setNeedsDisplay]，在里面会去刷新文字样式，但 iOS 11 及以下没有重写，所以这里对此作了兼容，从而保证 QMUITheme 那边遇到 UITextView 时能使用 setNeedsDisplay 刷新文字样式。至于实现思路是参考 iOS 13 系统原生实现。
+        if (@available(iOS 12.0, *)) {
+        } else {
+            ExtendImplementationOfVoidMethodWithoutArguments([UITextView class], @selector(setNeedsDisplay), ^(UITextView *selfObject) {
+                UIView *textContainerView = [selfObject qmui_valueForKey:@"_containerView"];
+                if (textContainerView) [textContainerView setNeedsDisplay];
+            });
+        }
     });
 }
 

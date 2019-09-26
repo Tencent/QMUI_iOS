@@ -70,8 +70,12 @@ static QMUIModalPresentationViewController *appearance;
 /// 标志 modal 本身以 present 的形式显示之后，又再继续 present 了一个子界面后从子界面回来时触发的 viewWillAppear:
 @property(nonatomic, assign) BOOL viewWillAppearByPresentedViewController;
 
-/// 标志是否已经走过一次viewWillAppear了，用于hideInView的情况
+/// 标志是否已经走过一次viewWillDisappear了，用于hideInView的情况
 @property(nonatomic, assign) BOOL hasAlreadyViewWillDisappear;
+
+/// 如果用 showInView 的方式显示浮层，则在浮层所在的父界面被 pop（或 push 到下一个界面）时，会自动触发 viewWillDisappear:，导致浮层被隐藏，为了保证走到 viewWillDisappear: 一定是手动调用 hide 的，就加了这个标志位
+/// https://github.com/Tencent/QMUI_iOS/issues/639
+@property(nonatomic, assign) BOOL willHideInView;
 
 @property(nonatomic, strong) UITapGestureRecognizer *dimmingViewTapGestureRecognizer;
 @property(nonatomic, strong) QMUIKeyboardManager *keyboardManager;
@@ -237,6 +241,12 @@ static QMUIModalPresentationViewController *appearance;
         return;
     }
     
+    /// 如果用 showInView 的方式显示浮层，则在浮层所在的父界面被 pop（或 push 到下一个界面）时，会自动触发 viewWillDisappear:，导致浮层被隐藏，为了保证走到 viewWillDisappear: 一定是手动调用 hide 的，就用 willHideInView 来区分。
+    /// https://github.com/Tencent/QMUI_iOS/issues/639
+    if (self.shownInSubviewMode && !self.willHideInView) {
+        return;
+    }
+    
     [super viewWillDisappear:animated];
     
     if (self.shownInWindowMode) {
@@ -287,6 +297,8 @@ static QMUIModalPresentationViewController *appearance;
         }
         
         if (self.shownInSubviewMode) {
+            self.willHideInView = NO;
+            
             // 这句是给addSubview的形式显示的情况下使用，但会触发第二次viewWillDisappear:，所以要搭配self.hasAlreadyViewWillDisappear使用
             [self.view removeFromSuperview];
             self.hasAlreadyViewWillDisappear = NO;
@@ -538,6 +550,7 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (void)hideInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    self.willHideInView = YES;
     self.disappearCompletionBlock = completion;
     [self beginAppearanceTransition:NO animated:animated];
     self.hasAlreadyViewWillDisappear = YES;
@@ -568,7 +581,7 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (BOOL)isShownInSubviewMode {
-    return !self.shownInPresentedMode && self.view.superview;
+    return !self.shownInWindowMode && !self.shownInPresentedMode && self.view.superview;
 }
 
 - (BOOL)isShowingPresentedViewController {

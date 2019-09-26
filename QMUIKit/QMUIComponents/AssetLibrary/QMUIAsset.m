@@ -153,9 +153,18 @@ static NSString * const kAssetInfoSize = @"size";
 
 - (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *livePhoto, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     if ([[PHCachingImageManager class] instancesRespondToSelector:@selector(requestLivePhotoForAsset:targetSize:contentMode:options:resultHandler:)]) {
+#ifdef IOS13_SDK_ALLOWED
+        // 使用 iOS 13 SDK 编译，只要代码中有 PHLivePhotoRequestOptions 在 iOS 9.0 的机器上一启动就会 crash : dyld: Symbol not found: _OBJC_CLASS_$_PHLivePhotoRequestOptions，所以改成这种动态调用。
+        Class PHLivePhotoRequestOptionsClass = NSClassFromString(@"PHLivePhotoRequestOptions");
+        id livePhotoRequestOptions = [[PHLivePhotoRequestOptionsClass alloc] init];
+        BOOL networkAccessAllowed = YES;
+        [livePhotoRequestOptions qmui_performSelector:@selector(setNetworkAccessAllowed:) withArguments:&networkAccessAllowed, nil]; // 允许访问网络
+        [livePhotoRequestOptions qmui_performSelector:@selector(setProgressHandler:) withArguments:&phProgressHandler, nil];
+#else
         PHLivePhotoRequestOptions *livePhotoRequestOptions = [[PHLivePhotoRequestOptions alloc] init];
         livePhotoRequestOptions.networkAccessAllowed = YES; // 允许访问网络
         livePhotoRequestOptions.progressHandler = phProgressHandler;
+#endif
         return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestLivePhotoForAsset:_phAsset targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT) contentMode:PHImageContentModeDefault options:livePhotoRequestOptions resultHandler:^(PHLivePhoto * _Nullable livePhoto, NSDictionary * _Nullable info) {
             if (completion) {
                 completion(livePhoto, info);

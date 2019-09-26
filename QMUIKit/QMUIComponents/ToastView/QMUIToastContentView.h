@@ -24,7 +24,7 @@
 @interface QMUIToastContentView : UIView
 
 /**
- * 设置一个UIView，可以是：菊花、图片等等，请自行保证 customView 的 size 被正确设置。
+ * 设置一个UIView，可以是：菊花、图片等等，请自行保证 customView 的 size 被正确设置
  */
 @property(nonatomic, strong) UIView *customView;
 
@@ -59,27 +59,27 @@
 @property(nonatomic, assign) CGSize minimumSize UI_APPEARANCE_SELECTOR;
 
 /**
- * 设置customView的marginBottom。
+ * 设置customView的marginBottom
  */
 @property(nonatomic, assign) CGFloat customViewMarginBottom UI_APPEARANCE_SELECTOR;
 
 /**
- * 设置textLabel的marginBottom。
+ * 设置textLabel的marginBottom
  */
 @property(nonatomic, assign) CGFloat textLabelMarginBottom UI_APPEARANCE_SELECTOR;
 
 /**
- * 设置detailTextLabel的marginBottom。
+ * 设置detailTextLabel的marginBottom
  */
 @property(nonatomic, assign) CGFloat detailTextLabelMarginBottom UI_APPEARANCE_SELECTOR;
 
 /**
- * 设置textLabel的attributes，如果包含 NSForegroundColorAttributeName 则 textLabel 不响应 tintColor，如果不包含则 textLabel 会拿 tintColor 当成文字颜色。
+ * 设置textLabel的attributes，如果包含 NSForegroundColorAttributeName 则 textLabel 不响应 tintColor，如果不包含则 textLabel 会拿 tintColor 当成文字颜色
  */
 @property(nonatomic, strong) NSDictionary <NSString *, id> *textLabelAttributes UI_APPEARANCE_SELECTOR;
 
 /**
- * 设置 detailTextLabel 的 attributes，如果包含 NSForegroundColorAttributeName 则 detailTextLabel 不响应 tintColor，如果不包含则 detailTextLabel 会拿 tintColor 当成文字颜色。
+ * 设置 detailTextLabel 的 attributes，如果包含 NSForegroundColorAttributeName 则 detailTextLabel 不响应 tintColor，如果不包含则 detailTextLabel 会拿 tintColor 当成文字颜色
  */
 @property(nonatomic, strong) NSDictionary <NSString *, id> *detailTextLabelAttributes UI_APPEARANCE_SELECTOR;
 

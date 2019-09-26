@@ -104,11 +104,11 @@
 /// 屏幕高度，会根据横竖屏的变化而变化
 #define SCREEN_HEIGHT ([[UIScreen mainScreen] bounds].size.height)
 
-/// 屏幕宽度，跟横竖屏无关
-#define DEVICE_WIDTH (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.height : [[UIScreen mainScreen] bounds].size.width)
+/// 设备宽度，跟横竖屏无关
+#define DEVICE_WIDTH MIN([[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)
 
-/// 屏幕高度，跟横竖屏无关
-#define DEVICE_HEIGHT (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height)
+/// 设备高度，跟横竖屏无关
+#define DEVICE_HEIGHT MAX([[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)
 
 /// 在 iPad 分屏模式下等于 app 实际运行宽度，否则等同于 SCREEN_WIDTH
 #define APPLICATION_WIDTH [QMUIHelper applicationSize].width
@@ -263,6 +263,9 @@ AddAccessibilityHint(NSObject *obj, NSString *hint) {
 
 
 #pragma mark - 其他
+
+// 固定黑色的 StatusBarStyle，用于亮色背景
+#define QMUIStatusBarStyleDarkContent [QMUIHelper statusBarStyleDarkContent]
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")
 

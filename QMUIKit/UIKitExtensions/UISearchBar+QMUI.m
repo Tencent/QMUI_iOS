@@ -17,6 +17,7 @@
 #import "QMUICore.h"
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
+#import "UIImage+QMUITheme.h"
 
 @implementation UISearchBar (QMUI)
 
@@ -73,6 +74,14 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
                 };
                 
             });
+            
+            // iOS 13 后，cancelButton 的 frame 由 -[_UISearchBarSearchContainerView layoutSubviews] 去修改
+            Class _UISearchBarSearchContainerViewClass = NSClassFromString([NSString stringWithFormat:@"_%@%@",@"UISearchBarSearch", @"ContainerView"]);
+            ExtendImplementationOfVoidMethodWithoutArguments(_UISearchBarSearchContainerViewClass, @selector(layoutSubviews), ^(UIView *selfObject) {
+                UISearchBar *searchBar = (UISearchBar *)selfObject.superview.superview;
+                NSAssert(searchBar == nil || [searchBar isKindOfClass:[UISearchBar class]], @"not a searchBar");
+                [searchBar qmui_adjustCancelButtonFrameIfNeeded];
+            });
         }
         
         Class UISearchBarTextFieldClass = NSClassFromString([NSString stringWithFormat:@"%@%@",@"UISearchBarText", @"Field"]);
@@ -109,6 +118,8 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
             }
             [selfObject qmui_adjustCancelButtonFrameIfNeeded];
             [selfObject qmui_fixDismissingAnimationIfNeeded];
+            [selfObject qmui_fixSearchResultsScrollViewContentInsetIfNeeded];
+            
         });
         
         OverrideImplementation([UISearchBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
@@ -255,10 +266,17 @@ static char kAssociatedObjectKey_cancelButtonFont;
     self.tintColor = SearchBarTintColor;
 
     // 输入框背景图
-    UIColor *textFieldBackgroundColor = SearchBarTextFieldBackground;
-    if (textFieldBackgroundColor) {
-        [self setSearchFieldBackgroundImage:[[UIImage qmui_imageWithColor:textFieldBackgroundColor size:CGSizeMake(60, 28) cornerRadius:0] resizableImageWithCapInsets:UIEdgeInsetsMake(10, 10, 10, 10)] forState:UIControlStateNormal];
+    UIImage *searchFieldBackgroundImage = SearchBarTextFieldBackgroundImage;
+    if (!searchFieldBackgroundImage) {
+        BeginIgnoreDeprecatedWarning
+        if (SearchBarTextFieldBackground) {
+            searchFieldBackgroundImage = [UIImage qmui_imageWithThemeProvider:^UIImage * _Nonnull(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme) {
+                return [UISearchBar qmui_generateTextFieldBackgroundImageWithColor:SearchBarTextFieldBackground];
+            }];
+        }
+        EndIgnoreDeprecatedWarning
     }
+    [self setSearchFieldBackgroundImage:searchFieldBackgroundImage forState:UIControlStateNormal];
     
     // 输入框边框
     UIColor *textFieldBorderColor = SearchBarTextFieldBorderColor;
@@ -269,38 +287,49 @@ static char kAssociatedObjectKey_cancelButtonFont;
     
     // 整条bar的背景
     // 为了让 searchBar 底部的边框颜色支持修改，背景色不使用 barTintColor 的方式去改，而是用 backgroundImage
-    UIImage *backgroundImage = nil;
-    
-    UIColor *barTintColor = SearchBarBarTintColor;
-    if (barTintColor) {
-        backgroundImage = [UIImage qmui_imageWithColor:barTintColor size:CGSizeMake(10, 10) cornerRadius:0];
-    }
-    
-    UIColor *bottomBorderColor = SearchBarBottomBorderColor;
-    if (bottomBorderColor) {
-        if (!backgroundImage) {
-            backgroundImage = [UIImage qmui_imageWithColor:UIColorWhite size:CGSizeMake(10, 10) cornerRadius:0];
+    UIImage *backgroundImage = SearchBarBackgroundImage;
+    if (!backgroundImage) {
+        BeginIgnoreDeprecatedWarning
+        if (SearchBarBarTintColor || SearchBarBottomBorderColor) {
+            backgroundImage = [UIImage qmui_imageWithThemeProvider:^UIImage * _Nonnull(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme) {
+                return [UISearchBar qmui_generateBackgroundImageWithColor:SearchBarBarTintColor borderColor:SearchBarBottomBorderColor];
+            }];
         }
-        backgroundImage = [backgroundImage qmui_imageWithBorderColor:bottomBorderColor borderWidth:PixelOne borderPosition:QMUIImageBorderPositionBottom];
+        EndIgnoreDeprecatedWarning
     }
-    
-    if (backgroundImage) {
+    [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+    [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefaultPrompt];
+}
+
++ (UIImage *)qmui_generateTextFieldBackgroundImageWithColor:(UIColor *)color {
+    // 背景图片的高度会决定输入框的高度，在 iOS 11 及以上，系统默认高度是 36，iOS 10 及以下的高度是 28
+    // 至于圆角，输入框会在 UIView 层面控制，背景图里无需处理
+    return [[UIImage qmui_imageWithColor:color size:self.qmui_textFieldDefaultSize cornerRadius:0] resizableImageWithCapInsets:UIEdgeInsetsMake(10, 10, 10, 10)];
+}
+
++ (UIImage *)qmui_generateBackgroundImageWithColor:(UIColor *)backgroundColor borderColor:(UIColor *)borderColor {
+    UIImage *backgroundImage = nil;
+    if (backgroundColor || borderColor) {
+        backgroundImage = [UIImage qmui_imageWithColor:backgroundColor ?: UIColorWhite size:CGSizeMake(10, 10) cornerRadius:0];
+        if (borderColor) {
+            backgroundImage = [backgroundImage qmui_imageWithBorderColor:borderColor borderWidth:PixelOne borderPosition:QMUIImageBorderPositionBottom];
+        }
         backgroundImage = [backgroundImage resizableImageWithCapInsets:UIEdgeInsetsMake(1, 1, 1, 1)];
-        [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-        [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefaultPrompt];
     }
+    return backgroundImage;
 }
 
 #pragma mark - Layout Fix
 
 - (BOOL)qmui_shouldFixLayoutWhenUsedAsTableHeaderView {
     if (@available(iOS 11, *)) {
-        return self.qmui_usedAsTableHeaderView;
+        return self.qmui_usedAsTableHeaderView && self.qmui_searchController.hidesNavigationBarDuringPresentation;
     }
     return NO;
 }
 
 - (void)qmui_adjustCancelButtonFrameIfNeeded  {
+    if (!self.qmui_shouldFixLayoutWhenUsedAsTableHeaderView) return;
     if ([self qmui_isActive]) {
         CGRect textFieldFrame = self.qmui_textField.frame;
         self.qmui_cancelButton.qmui_top = CGRectGetMinYVerticallyCenter(textFieldFrame, self.qmui_cancelButton.frame);
@@ -366,9 +395,9 @@ static char kAssociatedObjectKey_cancelButtonFont;
     if (self.qmui_shouldFixLayoutWhenUsedAsTableHeaderView) {
         if (self.qmui_searchController.isBeingPresented) {
             CGFloat visibleHeight = [UIApplication sharedApplication].statusBarHidden ? 56 : 50;
-            frame.origin.y = (visibleHeight - 28) / 2;
+            frame.origin.y = (visibleHeight - self.qmui_textField.qmui_height) / 2;
         } else if (self.qmui_searchController.isBeingDismissed) {
-            frame.origin.y = 14; // (56 - 28) / 2
+            frame.origin.y = (56 - self.qmui_textField.qmui_height) / 2;
         }
     }
     
@@ -426,6 +455,35 @@ static char kAssociatedObjectKey_cancelButtonFont;
             }
         }
     }
+}
+
+- (void)qmui_fixSearchResultsScrollViewContentInsetIfNeeded {
+    if (!self.qmui_shouldFixLayoutWhenUsedAsTableHeaderView) return;
+    if (self.qmui_isActive) {
+        UIViewController *searchResultsController = self.qmui_searchController.searchResultsController;
+        if (searchResultsController && [searchResultsController isViewLoaded]) {
+            UIView *view = searchResultsController.view;
+            UIScrollView *scrollView =
+            [view isKindOfClass:UIScrollView.class] ? view :
+            [view.subviews.firstObject isKindOfClass:UIScrollView.class] ? view.subviews.firstObject : nil;
+            UIView *searchBarContainerView = self.superview;
+            if (scrollView && searchBarContainerView) {
+                scrollView.contentInset = UIEdgeInsetsMake(searchBarContainerView.qmui_height, 0, 0, 0);
+            }
+        }
+    }
+}
+
+static CGSize textFieldDefaultSize;
++ (CGSize)qmui_textFieldDefaultSize {
+    if (CGSizeIsEmpty(textFieldDefaultSize)) {
+        textFieldDefaultSize = CGSizeMake(60, 28);
+        // 在 iOS 11 及以上，搜索输入框系统默认高度是 36，iOS 10 及以下的高度是 28
+        if (@available(iOS 11.0, *)) {
+            textFieldDefaultSize.height = 36;
+        }
+    }
+    return textFieldDefaultSize;
 }
 
 @end

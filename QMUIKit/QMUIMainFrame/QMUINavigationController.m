@@ -417,7 +417,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     // https://github.com/Tencent/QMUI_iOS/issues/502
     // https://github.com/Tencent/QMUI_iOS/issues/632
     UIViewController *visibleViewController = self.visibleViewController;
-    if (visibleViewController && [visibleViewController isKindOfClass:UIAlertController.class]) {
+    if (!visibleViewController || visibleViewController.isBeingDismissed || [visibleViewController isKindOfClass:UIAlertController.class]) {
         visibleViewController = self.topViewController;
     }
     return [visibleViewController qmui_hasOverrideUIKitMethod:_cmd] ? [visibleViewController supportedInterfaceOrientations] : SupportedOrientationMask;

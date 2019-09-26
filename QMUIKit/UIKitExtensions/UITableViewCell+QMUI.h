@@ -22,7 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取当前 cell 所在的 tableView，iOS 13 下在 init 时就可以获取到值，而 iOS 12 及以下只能在 cell 被塞给 tableView 后才能获取到值
 @property(nonatomic, weak, readonly, nullable) UITableView *qmui_tableView;
 
-/// 设置 cell 点击时的背景色，如果没有 selectedBackgroundView 会创建一个
+/// 设置 cell 点击时的背景色，如果没有 selectedBackgroundView 会创建一个。
+/// @warning 请勿再使用 self.selectedBackgroundView.backgroundColor 修改，因为 QMUITheme 里会重新应用 qmui_selectedBackgroundColor，会覆盖 self.selectedBackgroundView.backgroundColor 的效果。
 @property(nonatomic, strong, nullable) UIColor *qmui_selectedBackgroundColor;
 
 /// setHighlighted:animated: 方法的回调 block

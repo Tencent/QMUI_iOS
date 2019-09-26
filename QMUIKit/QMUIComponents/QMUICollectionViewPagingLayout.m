@@ -269,8 +269,8 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         } else {
             CGFloat remainder = progress - currentIndex;
             CGFloat offset = remainder * itemSpacing;
-            BOOL shouldNext = (forcePaging && !scrollingToBottom) ? YES : (offset / _finalItemSize.height >= self.pagingThreshold);
-            BOOL shouldPrev = (forcePaging && scrollingToBottom) ? YES : (offset / _finalItemSize.height <= 1 - self.pagingThreshold);
+            BOOL shouldNext = (forcePaging && !scrollingToBottom && velocity.y > 0) ? YES : (offset / _finalItemSize.height >= self.pagingThreshold);
+            BOOL shouldPrev = (forcePaging && scrollingToBottom && velocity.y < 0) ? YES : (offset / _finalItemSize.height <= 1 - self.pagingThreshold);
             targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
         }
         proposedContentOffset.y = -contentInset.top + targetIndex * itemSpacing;
@@ -304,8 +304,9 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         } else {
             CGFloat remainder = progress - currentIndex;
             CGFloat offset = remainder * itemSpacing;
-            BOOL shouldNext = (forcePaging && !scrollingToRight) ? YES : (offset / _finalItemSize.width >= self.pagingThreshold);
-            BOOL shouldPrev = (forcePaging && scrollingToRight) ? YES : (offset / _finalItemSize.width <= 1 - self.pagingThreshold);
+            // collectionView 关闭了 bounces 后，如果在第一页向左边快速滑动一段距离，并不会触发上一个「最左/最右」的判断（因为 proposedContentOffset 不够），此时的 velocity 为负数，所以要加上 velocity.x > 0 的判断，否则这种情况会命中 forcePaging && !scrollingToRight 这两个条件，当做下一页处理。
+            BOOL shouldNext = (forcePaging && !scrollingToRight && velocity.x > 0) ? YES : (offset / _finalItemSize.width >= self.pagingThreshold);
+            BOOL shouldPrev = (forcePaging && scrollingToRight && velocity.x < 0) ? YES : (offset / _finalItemSize.width <= 1 - self.pagingThreshold);
             targetIndex = currentIndex + (shouldNext ? 1 : (shouldPrev ? -1 : 0));
         }
         proposedContentOffset.x = -contentInset.left + targetIndex * itemSpacing;

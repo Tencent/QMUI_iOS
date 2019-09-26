@@ -1,9 +1,15 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
 //
 //  UIImage+QMUITheme.h
 //  QMUIKit
 //
 //  Created by MoLice on 2019/J/16.
-//  Copyright © 2019 QMUI Team. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
@@ -28,10 +34,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  生成一个动态的 image 对象，每次使用该图片时都会动态根据当前的 QMUIThemeManager 主题返回对应的图片。
- @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值
+ @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值，请不要在这个 block 里做耗时操作，如果需要动态处理图片，请自行做好缓存工作，避免每次都生成
  @return 当前主题下的实际图片，由 provider 返回
  */
 + (UIImage *)qmui_imageWithThemeProvider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
+
++ (UIImage *)qmui_imageWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
 @end
 

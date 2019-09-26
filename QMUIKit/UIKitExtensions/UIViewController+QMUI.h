@@ -160,6 +160,15 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
 
 /// 当前 viewController 是否是手势返回中，背后的那个界面
 @property(nonatomic, assign) BOOL qmui_willAppearByInteractivePopGestureRecognizer;
+
+
+/// 可用于对  View 执行一些操作， 如果此时处于转场过渡中，这些操作会跟随转场进度以动画的形式展示过程
+/// @param animation 要执行的操作
+/// @param completion 转场完成或取消后的回调
+/// @note 如果处于非转场过程中，也会执行 animation ，随后执行 completion，业务无需关心是否处于转场过程中。
+- (void)qmui_animateAlongsideTransition:(void (^ __nullable)(id <UIViewControllerTransitionCoordinatorContext>context))animation
+                             completion:(void (^ __nullable)(id <UIViewControllerTransitionCoordinatorContext>context))completion;
+
 @end
 
 @interface QMUIHelper (ViewController)

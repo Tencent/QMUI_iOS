@@ -112,6 +112,44 @@
     return NO;
 }
 
+#pragma mark - Overrides
+
+- (BOOL)isKindOfClass:(Class)aClass {
+    BOOL result = [super isKindOfClass:aClass];
+    if (result) return YES;
+    
+    NSPointerArray *delegates = [self.delegates copy];
+    for (id delegate in delegates) {
+        if ([delegate isKindOfClass:aClass]) return YES;
+    }
+    
+    return NO;
+}
+
+- (BOOL)isMemberOfClass:(Class)aClass {
+    BOOL result = [super isMemberOfClass:aClass];
+    if (result) return YES;
+    
+    NSPointerArray *delegates = [self.delegates copy];
+    for (id delegate in delegates) {
+        if ([delegate isMemberOfClass:aClass]) return YES;
+    }
+    
+    return NO;
+}
+
+- (BOOL)conformsToProtocol:(Protocol *)aProtocol {
+    BOOL result = [super conformsToProtocol:aProtocol];
+    if (result) return YES;
+    
+    NSPointerArray *delegates = [self.delegates copy];
+    for (id delegate in delegates) {
+        if ([delegate conformsToProtocol:aProtocol]) return YES;
+    }
+    
+    return NO;
+}
+
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@, parentObject is %@, %@", [super description], self.parentObject, self.delegates];
 }

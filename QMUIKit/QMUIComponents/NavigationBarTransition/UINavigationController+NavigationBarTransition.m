@@ -65,6 +65,57 @@
 
 @end
 
+@interface UILabel (NavigationBarTransition)
+@property(nonatomic, strong) UIColor *qmui_specifiedTextColor;
+@end
+
+@implementation UILabel (NavigationBarTransition)
+
+QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextColor)
+
++ (void)load {
+    if (@available(iOS 11, *)) ; else return;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OverrideImplementation(NSClassFromString(@"UIButtonLabel"), @selector(setAttributedText:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UILabel *selfObject, NSAttributedString *attributedText) {
+                
+                if (selfObject.qmui_specifiedTextColor) {
+                    NSMutableAttributedString *mutableAttributedText = [attributedText isKindOfClass:NSMutableAttributedString.class] ? attributedText : [attributedText mutableCopy];
+                    [mutableAttributedText addAttributes:@{ NSForegroundColorAttributeName : selfObject.qmui_specifiedTextColor} range:NSMakeRange(0, mutableAttributedText.length)];
+                    attributedText = mutableAttributedText;
+                }
+                
+                void (*originSelectorIMP)(id, SEL, NSAttributedString *);
+                originSelectorIMP = (void (*)(id, SEL, NSAttributedString *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, attributedText);
+            };
+        });
+    });
+}
+
+@end
+
+@implementation UINavigationBar (NavigationBarTransition)
+
+/// 获取 iOS 11之后的系统自带的返回按钮 Label，如果在转场时，会获取到最上面控制器的。
+- (UILabel *)qmui_backButtonLabel {
+    if (@available(iOS 11, *)) ; else return nil;
+    
+    UIView *navigationBarContentView = [self valueForKeyPath:@"visualProvider.contentView"];
+    __block UILabel *backButtonLabel = nil;
+    [navigationBarContentView.subviews enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(__kindof UIView * _Nonnull subview, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([subview isKindOfClass:NSClassFromString(@"_UIButtonBarButton")]) {
+            UIButton *titleButton = [subview valueForKeyPath:@"visualProvider.titleButton"];
+            backButtonLabel = titleButton.titleLabel;
+            *stop = YES;
+        }
+    }];
+    return backButtonLabel;
+}
+
+@end
+
 
 @implementation UIViewController (NavigationBarTransition)
 
@@ -279,7 +330,7 @@
             UIColor *barTintColor = [vc navigationBarBarTintColor];
             viewController.navigationController.navigationBar.barTintColor = barTintColor;
         } else if (QMUICMIActivated) {
-            viewController.navigationController.navigationBar.barTintColor = NavBarBarTintColor;
+            viewController.navigationController.navigationBar.barTintColor = UINavigationBar.appearance.barTintColor;
         }
         
         // 导航栏的背景
@@ -287,7 +338,15 @@
             UIImage *backgroundImage = [vc navigationBarBackgroundImage];
             [viewController.navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
         } else if (QMUICMIActivated) {
-            [viewController.navigationController.navigationBar setBackgroundImage:NavBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+            [viewController.navigationController.navigationBar setBackgroundImage:[UINavigationBar.appearance backgroundImageForBarMetrics:UIBarMetricsDefault] forBarMetrics:UIBarMetricsDefault];
+        }
+        
+        //  导航栏的 style
+        if ([vc respondsToSelector:@selector(navigationBarStyle)]) {
+            UIBarStyle barStyle = [vc navigationBarStyle];
+            viewController.navigationController.navigationBar.barStyle = barStyle;
+        } else if (QMUICMIActivated) {
+            viewController.navigationController.navigationBar.barStyle = UINavigationBar.appearance.barStyle;
         }
         
         // 导航栏底部的分隔线
@@ -295,7 +354,8 @@
             UIImage *shadowImage = [vc navigationBarShadowImage];
             [viewController.navigationController.navigationBar setShadowImage:shadowImage];
         } else if (QMUICMIActivated) {
-            [viewController.navigationController.navigationBar setShadowImage:NavBarShadowImage];
+            // 分隔线的实际控制权在 NavBarShadowImageColor 上，但这里又不适合重新使用 NavBarShadowImageColor 再生成一遍 image，而配置表的值最终都是设置到 appearance 上，所以这里用 appearance 来获取值，而不是直接读取 NavBarShadowImage
+            [viewController.navigationController.navigationBar setShadowImage:UINavigationBar.appearance.shadowImage];
         }
         
         // 导航栏上控件的主题色
@@ -303,15 +363,24 @@
         [vc respondsToSelector:@selector(navigationBarTintColor)] ? [vc navigationBarTintColor] :
                                                  QMUICMIActivated ? NavBarTintColor : nil;
         if (tintColor) {
-            // 手势从 B 返回 A 过程中，取消手势，会调用 B 的 viewWillAppear，animateAlongsideTransition 在这种情况下不会生效，所以要用 qmui_poppingByInteractivePopGestureRecognizer 针对这种情况判断。
-            BOOL shouldApplyTintColorTransition = (animated && ![vc qmui_poppingByInteractivePopGestureRecognizer]);
-            if (shouldApplyTintColorTransition) {
-                [viewController.transitionCoordinator animateAlongsideTransition:^ (id <UIViewControllerTransitionCoordinatorContext> context) {
-                    viewController.navigationController.navigationBar.tintColor = tintColor;
-                } completion:nil];
-            } else {
-                viewController.navigationController.navigationBar.tintColor = tintColor;
+            if (@available(iOS 11, *)) {
+                // https://github.com/Tencent/QMUI_iOS/issues/654
+                // 改变 navigationBar.tintColor 后会同步改变返回按钮的文字颜色，在 iOS 10及以下，把修改 tintColor 的代码包裹在 animateAlongsideTransition 中能实现转场过渡，而从 iOS 11 开始不生效，现象是：修改了 navigationBar.tintColor 后，返回按钮的文字颜色瞬间变化。
+                // 为了实现转场过渡，不要让返回按钮的文字瞬间变化，在转场前锁定 topViewController 所属的 backButtonLabel 颜色，这样在转场过程中改变了 navBar 的 tintColor 不会影响到他。
+                if (self.navigationController.qmui_isPopping) {
+                    UILabel *backButtonLabel = viewController.navigationController.navigationBar.qmui_backButtonLabel;
+                    if (backButtonLabel) {
+                        backButtonLabel.qmui_specifiedTextColor = backButtonLabel.textColor;
+                        [viewController qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                            backButtonLabel.qmui_specifiedTextColor = nil;
+                        }];
+                    }
+                }
             }
+           
+            [viewController qmui_animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                viewController.navigationController.navigationBar.tintColor = tintColor;
+            } completion:nil];
         }
         
         // 导航栏title的颜色
@@ -415,7 +484,7 @@
         }
     }
     
-    // 如果存在 backgroundImage，则 barTintColor 就算存在也不会被显示出来，所以这里只判断两个 backgroundImage 都不存在的时候
+    // 如果存在 backgroundImage，则 barTintColor、barStyle 就算存在也不会被显示出来，所以这里只判断两个 backgroundImage 都不存在的时候
     if (!bg1 && !bg2) {
         UIColor *barTintColor1 = [vc1 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc1 navigationBarBarTintColor] : [UINavigationBar appearance].barTintColor;
         UIColor *barTintColor2 = [vc2 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc2 navigationBarBarTintColor] : [UINavigationBar appearance].barTintColor;
@@ -426,6 +495,12 @@
             if (![barTintColor1 isEqual:barTintColor2]) {
                 return YES;
             }
+        }
+        
+        UIBarStyle barStyle1 = [vc1 respondsToSelector:@selector(navigationBarStyle)] ? [vc1 navigationBarStyle] : [UINavigationBar appearance].barStyle;
+        UIBarStyle barStyle2 = [vc2 respondsToSelector:@selector(navigationBarStyle)] ? [vc2 navigationBarStyle] : [UINavigationBar appearance].barStyle;
+        if (barStyle1 != barStyle2) {
+            return YES;
         }
     }
     

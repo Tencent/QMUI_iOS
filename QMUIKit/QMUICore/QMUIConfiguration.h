@@ -111,6 +111,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIFont   *navBarButtonFontBold;
 @property(nonatomic, strong, nullable) UIImage  *navBarBackgroundImage;
 @property(nonatomic, strong, nullable) UIImage  *navBarShadowImage;
+@property(nonatomic, strong, nullable) UIColor  *navBarShadowImageColor;
 @property(nonatomic, strong, nullable) UIColor  *navBarBarTintColor;
 @property(nonatomic, assign) UIBarStyle         navBarStyle;
 @property(nonatomic, strong, nullable) UIColor  *navBarTintColor;
@@ -134,10 +135,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *tabBarBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarShadowImageColor;
 @property(nonatomic, assign) UIBarStyle         tabBarStyle;
-@property(nonatomic, strong, nullable) UIColor  *tabBarTintColor;
+@property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFont;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColorSelected;
-@property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFont;
+@property(nonatomic, strong, nullable) UIColor  *tabBarItemImageColor;
+@property(nonatomic, strong, nullable) UIColor  *tabBarItemImageColorSelected;
 
 #pragma mark - Toolbar
 
@@ -154,10 +156,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - SearchBar
 
-@property(nonatomic, strong, nullable) UIColor  *searchBarTextFieldBackground;
+@property(nonatomic, strong, nullable) UIImage  *searchBarTextFieldBackgroundImage;
+@property(nonatomic, strong, nullable) UIColor  *searchBarTextFieldBackground DEPRECATED_MSG_ATTRIBUTE("为了适配 iOS 13 Dark Mode，请使用 searchBarTextFieldBackgroundImage");
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextFieldBorderColor;
-@property(nonatomic, strong, nullable) UIColor  *searchBarBottomBorderColor;
-@property(nonatomic, strong, nullable) UIColor  *searchBarBarTintColor;
+@property(nonatomic, strong, nullable) UIImage  *searchBarBackgroundImage;
+@property(nonatomic, strong, nullable) UIColor  *searchBarBottomBorderColor DEPRECATED_MSG_ATTRIBUTE("为了适配 iOS 13 Dark Mode，请使用 searchBarBackgroundImage");
+@property(nonatomic, strong, nullable) UIColor  *searchBarBarTintColor DEPRECATED_MSG_ATTRIBUTE("为了适配 iOS 13 Dark Mode，请使用 searchBarBackgroundImage");
 @property(nonatomic, strong, nullable) UIColor  *searchBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarPlaceholderColor;

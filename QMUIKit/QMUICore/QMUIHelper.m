@@ -369,13 +369,15 @@ static CGFloat pixelOne = -1.0f;
             @"iPad6,7" : @"iPad Pro (12.9 inch)",
             @"iPad6,8" : @"iPad Pro (12.9 inch)",
             @"iPad6,11": @"iPad 5 (WiFi)",
-            @"iPad6,12": @"iPad 5 (WiFi / Cellular)",
+            @"iPad6,12": @"iPad 5 (Cellular)",
             @"iPad7,1" : @"iPad Pro (12.9 inch, 2nd generation)",
             @"iPad7,2" : @"iPad Pro (12.9 inch, 2nd generation)",
             @"iPad7,3" : @"iPad Pro (10.5 inch)",
             @"iPad7,4" : @"iPad Pro (10.5 inch)",
-            @"iPad7,5" : @"iPad 6",
-            @"iPad7,6" : @"iPad 6",
+            @"iPad7,5" : @"iPad 6 (WiFi)",
+            @"iPad7,6" : @"iPad 6 (Cellular)",
+            @"iPad7,11": @"iPad 7 (WiFi)",
+            @"iPad7,12": @"iPad 7 (Cellular)",
             @"iPad8,1" : @"iPad Pro (11 inch)",
             @"iPad8,2" : @"iPad Pro (11 inch)",
             @"iPad8,3" : @"iPad Pro (11 inch)",
@@ -400,20 +402,24 @@ static CGFloat pixelOne = -1.0f;
             @"i386" : @"Simulator x86",
             @"x86_64" : @"Simulator x64",
             
-            @"Watch1,1" : @"Apple Watch (1st generation) 38mm",
-            @"Watch1,2" : @"Apple Watch (1st generation) 42mm",
+            @"Watch1,1" : @"Apple Watch 38mm",
+            @"Watch1,2" : @"Apple Watch 42mm",
             @"Watch2,3" : @"Apple Watch Series 2 38mm",
             @"Watch2,4" : @"Apple Watch Series 2 42mm",
             @"Watch2,6" : @"Apple Watch Series 1 38mm",
             @"Watch2,7" : @"Apple Watch Series 1 42mm",
             @"Watch3,1" : @"Apple Watch Series 3 38mm",
             @"Watch3,2" : @"Apple Watch Series 3 42mm",
-            @"Watch3,3" : @"Apple Watch Series 3 38mm",
-            @"Watch3,4" : @"Apple Watch Series 3 42mm",
+            @"Watch3,3" : @"Apple Watch Series 3 38mm (LTE)",
+            @"Watch3,4" : @"Apple Watch Series 3 42mm (LTE)",
             @"Watch4,1" : @"Apple Watch Series 4 40mm",
             @"Watch4,2" : @"Apple Watch Series 4 44mm",
-            @"Watch4,3" : @"Apple Watch Series 4 40mm",
-            @"Watch4,4" : @"Apple Watch Series 4 44mm",
+            @"Watch4,3" : @"Apple Watch Series 4 40mm (LTE)",
+            @"Watch4,4" : @"Apple Watch Series 4 44mm (LTE)",
+            @"Watch5,1" : @"Apple Watch Series 5 40mm",
+            @"Watch5,2" : @"Apple Watch Series 5 44mm",
+            @"Watch5,3" : @"Apple Watch Series 5 40mm (LTE)",
+            @"Watch5,4" : @"Apple Watch Series 5 44mm (LTE)",
             
             @"AudioAccessory1,1" : @"HomePod",
             @"AudioAccessory1,2" : @"HomePod",
@@ -718,6 +724,15 @@ static NSInteger isHighPerformanceDevice = -1;
     UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
     window.tintAdjustmentMode = UIViewTintAdjustmentModeNormal;
     [window tintColorDidChange];
+}
+
++ (UIStatusBarStyle)statusBarStyleDarkContent {
+#ifdef IOS13_SDK_ALLOWED
+    if (@available(iOS 13.0, *))
+        return UIStatusBarStyleDarkContent;
+    else
+#endif
+        return UIStatusBarStyleDefault;
 }
 
 @end

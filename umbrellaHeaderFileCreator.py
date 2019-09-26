@@ -11,12 +11,16 @@ except ImportError:
 infoFilePath = str(os.getenv('SRCROOT')) + '/QMUIKit/Info.plist'
 infoTree = ET.parse(infoFilePath)
 infoDictList = list(infoTree.find('dict'))
-versionString = '0.0.0'
+versionString = ''
 for index in range(len(infoDictList)):
   element = infoDictList[index]
   if element.text == 'CFBundleShortVersionString':
     versionString = infoDictList[index + 1].text
     break
+if versionString.startswith('$'):
+  versionEnvName = versionString[2:-1]
+  versionString = os.getenv(versionEnvName)
+  print 'umbrella creator: bundle versions string is %s, env name is %s' % (versionString, versionEnvName)
 
 # 读取头文件准备生成 umbrella file
 publicHeaderFilePath = str(os.getenv('BUILT_PRODUCTS_DIR')) + '/' + os.getenv('PUBLIC_HEADERS_FOLDER_PATH') 

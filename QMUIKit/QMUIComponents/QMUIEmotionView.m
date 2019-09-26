@@ -394,8 +394,8 @@
     appearance.pageControlMarginBottom = 22;
     
     UIPageControl *pageControlAppearance = [UIPageControl appearanceWhenContainedInInstancesOfClasses:@[[QMUIEmotionView class]]];
-    pageControlAppearance.pageIndicatorTintColor = UIColorMake(210, 210, 210);
-    pageControlAppearance.currentPageIndicatorTintColor = UIColorMake(162, 162, 162);
+    pageControlAppearance.pageIndicatorTintColor = appearance.pageIndicatorTintColor;
+    pageControlAppearance.currentPageIndicatorTintColor = appearance.currentPageIndicatorTintColor;
 }
 
 @end

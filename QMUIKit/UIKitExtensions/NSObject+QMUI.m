@@ -178,6 +178,8 @@
     NSObject *obj = nil;
     if ([aClass isSubclassOfClass:[UICollectionView class]]) {
         obj = [[aClass alloc] initWithFrame:CGRectZero collectionViewLayout:UICollectionViewFlowLayout.new];
+    } else if ([aClass isSubclassOfClass:[UIApplication class]]) {
+        obj = UIApplication.sharedApplication;
     } else {
         obj = [aClass new];
     }

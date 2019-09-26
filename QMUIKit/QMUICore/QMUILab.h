@@ -11,7 +11,6 @@
 //  QMUIKit
 //
 //  Created by MoLice on 2019/J/8.
-//  Copyright © 2019 QMUI Team. All rights reserved.
 //
 
 #ifndef QMUILab_h

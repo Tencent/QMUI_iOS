@@ -34,10 +34,7 @@
 }
 
 - (void)didInitialize {
-    // UIView.tintColor 并不支持 UIAppearance 协议，所以不能通过 appearance 来设置，只能在实例里设置
-    if (QMUICMIActivated) {
-        self.tabBar.tintColor = TabBarTintColor;
-    }
+    // subclass hooking
 }
 
 #pragma mark - StatusBar
@@ -63,8 +60,12 @@
     // https://github.com/Tencent/QMUI_iOS/issues/502
     // https://github.com/Tencent/QMUI_iOS/issues/632
     UIViewController *visibleViewController = self.presentedViewController;
-    if (visibleViewController && [visibleViewController isKindOfClass:UIAlertController.class]) {
+    if (!visibleViewController || visibleViewController.isBeingDismissed || [visibleViewController isKindOfClass:UIAlertController.class]) {
         visibleViewController = self.selectedViewController;
+    }
+    
+    if ([visibleViewController isKindOfClass:NSClassFromString(@"AVFullScreenViewController")]) {
+        return visibleViewController.supportedInterfaceOrientations;
     }
     
     return [visibleViewController qmui_hasOverrideUIKitMethod:_cmd] ? [visibleViewController supportedInterfaceOrientations] : SupportedOrientationMask;

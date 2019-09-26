@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleIdentifier</key>
-	<string>GYQMUI.QMUIResources</string>
+	<string>QMUI.QMUIResources</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -35,6 +35,6 @@
 	<key>DTXcodeBuild</key>
 	<string>6D2105</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2015年 QMUI Team. All rights reserved.</string>
+	<string>Copyright © 2019年 QMUI Team. All rights reserved.</string>
 </dict>
 </plist>

@@ -16,6 +16,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  提供更丰富的接口来修改 UISearchBar 的样式，注意大部分接口都同时支持配置表和 UIAppearance，如果有使用配置表并且该项的值不为 nil，则以配置表的值为准。
  */
@@ -54,4 +56,12 @@
 
 - (void)qmui_styledAsQMUISearchBar;
 
+/// 生成指定颜色的搜索框输入框背景图，大小与系统默认的保持一致，只是颜色不同
++ (nullable UIImage *)qmui_generateTextFieldBackgroundImageWithColor:(nullable UIColor *)color;
+
+/// 生成指定背景色和底部边框颜色的搜索框背景图
++ (nullable UIImage *)qmui_generateBackgroundImageWithColor:(nullable UIColor *)backgroundColor borderColor:(nullable UIColor *)borderColor;
+
 @end
+
+NS_ASSUME_NONNULL_END

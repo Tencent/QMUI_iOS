@@ -11,7 +11,6 @@
 //  QMUIKit
 //
 //  Created by MoLice on 2018/D/19.
-//  Copyright © 2018 QMUI Team. All rights reserved.
 //
 
 #import "QMUIImagePreviewViewTransitionAnimator.h"

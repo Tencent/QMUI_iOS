@@ -16,6 +16,7 @@
 #import "QMUINavigationButton.h"
 #import "QMUICore.h"
 #import "UIImage+QMUI.h"
+#import "UIColor+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "QMUINavigationController.h"
 #import "QMUILog.h"
@@ -109,10 +110,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             UIImage *backIndicatorImage = [UINavigationBar appearance].backIndicatorImage;
             if (!backIndicatorImage) {
                 // 配置表没有自定义的图片，则按照系统的返回按钮图片样式创建一张，颜色按照 tintColor 来
-                UIColor *tintColor = QMUICMIActivated ? NavBarTintColor : ({
-                    UIView *view = [[UIView alloc] init];
-                    view.tintColor;
-                });
+                UIColor *tintColor = QMUICMIActivated ? NavBarTintColor : UIColor.qmui_systemTintColor;
                 backIndicatorImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavBack size:CGSizeMake(13, 23) lineWidth:3 tintColor:tintColor];
             }
             [self setImage:backIndicatorImage forState:UIControlStateNormal];
@@ -616,18 +614,6 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
                 originSelectorIMP(selfObject, originCMD, items, animated);
             };
         });
-        
-        // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
-//        if (@available(iOS 11, *)) {
-//            ExtendImplementationOfVoidMethodWithoutArguments([UINavigationBar class], @selector(layoutSubviews), ^(UINavigationBar *selfObject) {
-//                UIView *contentView = selfObject.qmui_contentView;
-//                if (contentView) {
-//                    NSDirectionalEdgeInsets value = contentView.directionalLayoutMargins;
-//                    value.leading = value.trailing - (selfObject.qmui_customizingBackBarButtonItem ? 8 : 0);
-//                    contentView.directionalLayoutMargins = value;
-//                }
-//            });
-//        }
         
         // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
         // Xcode11 beta2 修改私有 view 的 directionalLayoutMargins 会 crash，换个方式

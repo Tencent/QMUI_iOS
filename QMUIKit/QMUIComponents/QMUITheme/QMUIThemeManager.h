@@ -1,9 +1,15 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
 //
 //  QMUIThemeManager.h
 //  QMUIKit
 //
 //  Created by MoLice on 2019/J/20.
-//  Copyright © 2019 QMUI Team. All rights reserved.
 //
 
 #import <Foundation/Foundation.h>
@@ -16,6 +22,9 @@ extern NSNotificationName const QMUIThemeDidChangeNotification;
 
 /**
  主题管理组件，可添加自定义的主题对象，并为每个对象指定一个专门的 identifier，当主题发生变化时，会遍历 UIViewController 和 UIView，调用每个 viewController 和每个可视 view 的 qmui_themeDidChangeByManager:identifier:theme: 方法，在里面由业务去自行根据当前主题设置不同的外观（color、image 等）。
+ 
+ 详细文档请查看 GitHub Wiki
+ @link https://github.com/Tencent/QMUI_iOS/wiki/%E4%BD%BF%E7%94%A8-QMUITheme-%E5%AE%9E%E7%8E%B0%E6%8D%A2%E8%82%A4%E5%B9%B6%E9%80%82%E9%85%8D-iOS-13-Dark-Mode
  
  关于 theme 的概念：
  1. 一个主题包含两个元素：identifier 表示主题的标志/名字，不允许重复；theme 代表主题对象本身，可以是任意的 NSObject 类型，只要业务自行规定即可。对于任意主题而言，identifier 和 theme 都不能为空，也不能重复。
@@ -42,7 +51,14 @@ extern NSNotificationName const QMUIThemeDidChangeNotification;
  */
 @interface QMUIThemeManager : NSObject
 
-+ (instancetype)sharedInstance;
++ (instancetype)sharedInstance DEPRECATED_MSG_ATTRIBUTE("QMUIThemeManager 不再主动初始化，请使用 QMUIThemeManagerCenter.defaultThemeManager 或者 -[QMUIThemeManagerCenter themeManagerWithName:] 获取");
+- (instancetype)initWithName:(__kindof NSObject<NSCopying> *)name NS_DESIGNATED_INITIALIZER;
+
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
+@property(nonatomic, copy, readonly) __kindof NSObject<NSCopying> *name;
 
 /// 自动响应 iOS 13 里的 Dark Mode 切换，默认为 NO。当为 YES 时，能自动监听系统 Dark Mode 的切换，并通过询问 identifierForTrait 来将当前的系统界面样式转换成业务定义的主题，剩下的事情就跟 iOS 12 及以下的系统相同了。
 /// @warning 当设置这个属性为 YES 之前，请先为 identifierForTrait 赋值。

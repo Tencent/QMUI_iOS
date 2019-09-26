@@ -519,6 +519,23 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
     return self.qmui_poppingByInteractivePopGestureRecognizer || self.qmui_willAppearByInteractivePopGestureRecognizer;
 }
 
+- (void)qmui_animateAlongsideTransition:(void (^ __nullable)(id <UIViewControllerTransitionCoordinatorContext>context))animation
+                             completion:(void (^ __nullable)(id <UIViewControllerTransitionCoordinatorContext>context))completion {
+    if (self.transitionCoordinator) {
+        BOOL animationQueuedToRun = [self.transitionCoordinator animateAlongsideTransition:animation completion:completion];
+        // 某些情况下传给 animateAlongsideTransition 的 animation 不会被执行，这时候要自己手动调用一下
+        // 但即便如此，completion 也会在动画结束后才被调用，因此这样写不会导致 completion 比 animation block 先调用
+        // 某些情况包含：从 B 手势返回 A 的过程中，取消手势，animation 不会被调用
+        // https://github.com/Tencent/QMUI_iOS/issues/692
+        if (!animationQueuedToRun && animation) {
+            animation(nil);
+        }
+    } else {
+        if (animation) animation(nil);
+        if (completion) completion(nil);
+    }
+}
+
 @end
 
 @implementation QMUIHelper (ViewController)

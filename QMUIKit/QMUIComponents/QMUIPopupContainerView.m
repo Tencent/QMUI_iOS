@@ -335,7 +335,7 @@
     
     // 调整浮层里的箭头的位置
     CGPoint targetRectCenter = CGPointGetCenterWithRect(targetRect);
-    CGFloat selfMidX = targetRectCenter.x - (CGRectGetMinX(containerRect) + CGRectGetMinX(self.frame));
+    CGFloat selfMidX = targetRectCenter.x - CGRectGetMinX(self.frame);
     _arrowMinX = selfMidX - self.arrowSize.width / 2;
     [self setNeedsLayout];
     

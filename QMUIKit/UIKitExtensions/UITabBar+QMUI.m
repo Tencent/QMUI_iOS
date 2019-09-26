@@ -17,6 +17,7 @@
 #import "QMUICore.h"
 #import "UITabBarItem+QMUI.h"
 #import "UIBarItem+QMUI.h"
+#import "UIImage+QMUI.h"
 
 NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 
@@ -37,11 +38,49 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        ExtendImplementationOfVoidMethodWithTwoArguments([UITabBar class], @selector(setItems:animated:), NSArray<UITabBarItem *> *, BOOL, ^(UITabBar *selfObject, NSArray<UITabBarItem *> *items, BOOL animated) {
-            for (UITabBarItem *item in items) {
-                UIControl *itemView = (UIControl *)item.qmui_view;
-                [itemView addTarget:selfObject action:@selector(handleTabBarItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
+        ExtendImplementationOfNonVoidMethodWithSingleArgument([UITabBar class], @selector(initWithFrame:), CGRect, UITabBar *, ^UITabBar *(UITabBar *selfObject, CGRect frame, UITabBar *originReturnValue) {
+            if (QMUICMIActivated) {
+                if (@available(iOS 13.0, *)) {
+                    // iOS 13 不使用 tintColor 了，改为用 UITabBarAppearance，具体请看 QMUIConfiguration.m
+                } else {
+                    // UIView.tintColor 并不支持 UIAppearance 协议，所以不能通过 appearance 来设置，只能在实例里设置
+                    selfObject.tintColor = TabBarItemImageColorSelected;
+                }
             }
+            return originReturnValue;
+        });
+        
+        OverrideImplementation([UITabBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^void(UITabBar *selfObject, NSArray<UITabBarItem *> *items, BOOL animated) {
+                
+                // 应用配置表样式
+                [items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
+                    if (QMUICMIActivated) {
+                        if (@available(iOS 13.0, *)) {
+                            // iOS 13 通过 appearance 的方式修改，具体请查看 QMUIConfiguration.m
+                        } else {
+                            UIImage *image = item.image;
+                            if (TabBarItemImageColor) {
+                                image = [[image qmui_imageWithTintColor:TabBarItemImageColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];// 如果不强制指定 original，系统总是会以 template 的方式渲染，并且颜色也是系统默认的灰色，无法改变
+                            } else {
+                                image = [image imageWithRenderingMode:UIImageRenderingModeAutomatic];
+                            }
+                            item.image = image;
+                        }
+                    }
+                }];
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSArray<UITabBarItem *> *, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, NSArray<UITabBarItem *> *, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, items, animated);
+                
+                [items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
+                    // 双击 tabBarItem 的功能需要在设置完 item 后才能获取到 qmui_view 来实现
+                    UIControl *itemView = (UIControl *)item.qmui_view;
+                    [itemView addTarget:selfObject action:@selector(handleTabBarItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
+                }];
+            };
         });
         
         OverrideImplementation([UITabBar class], @selector(setSelectedItem:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
@@ -121,6 +160,54 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
                 };
             });
         }
+        
+        // 以下是将 iOS 12 修改 UITabBar 样式的接口转换成用 iOS 13 的新接口去设置（因为新旧方法是互斥的，所以统一在新系统都用新方法）
+        // 但这样有个风险，因为 QMUIConfiguration 配置表里都是用 appearance 的方式去设置 standardAppearance，所以如果在 UITabBar 实例被添加到 window 之前修改过旧版任意一个样式接口，就会导致一个新的 UITabBarAppearance 对象被设置给 standardAppearance 属性，这样系统就会认为你这个 UITabBar 实例自定义了 standardAppearance，那么当它被 moveToWindow 时就不会自动应用 appearance 的值了，因此需要保证在添加到 window 前不要自行修改属性
+#ifdef IOS13_SDK_ALLOWED
+        if (@available(iOS 13.0, *)) {
+            ExtendImplementationOfVoidMethodWithSingleArgument([UITabBar class], @selector(setTintColor:), UIColor *, ^(UITabBar *selfObject, UIColor *tintColor) {
+                UITabBarAppearance *appearance = selfObject.standardAppearance;
+                appearance.stackedLayoutAppearance.selected.iconColor = tintColor;
+                NSMutableDictionary *textAttributes = appearance.stackedLayoutAppearance.selected.titleTextAttributes.mutableCopy;
+                textAttributes[NSForegroundColorAttributeName] = tintColor;
+                appearance.stackedLayoutAppearance.selected.titleTextAttributes = textAttributes.copy;
+                selfObject.standardAppearance = appearance;
+            });
+            
+            ExtendImplementationOfVoidMethodWithSingleArgument([UITabBar class], @selector(setBarTintColor:), UIColor *, ^(UITabBar *selfObject, UIColor *barTintColor) {
+                UITabBarAppearance *appearance = selfObject.standardAppearance;
+                appearance.backgroundColor = barTintColor;
+                selfObject.standardAppearance = appearance;
+            });
+            
+            ExtendImplementationOfVoidMethodWithSingleArgument([UITabBar class], @selector(setUnselectedItemTintColor:), UIColor *, ^(UITabBar *selfObject, UIColor *tintColor) {
+                UITabBarAppearance *appearance = selfObject.standardAppearance;
+                appearance.stackedLayoutAppearance.normal.iconColor = tintColor;
+                NSMutableDictionary *textAttributes = appearance.stackedLayoutAppearance.selected.titleTextAttributes.mutableCopy;
+                textAttributes[NSForegroundColorAttributeName] = tintColor;
+                appearance.stackedLayoutAppearance.normal.titleTextAttributes = textAttributes.copy;
+                selfObject.standardAppearance = appearance;
+            });
+            
+            ExtendImplementationOfVoidMethodWithSingleArgument([UITabBar class], @selector(setBackgroundImage:), UIImage *, ^(UITabBar *selfObject, UIImage *image) {
+                UITabBarAppearance *appearance = selfObject.standardAppearance;
+                appearance.backgroundImage = image;
+                selfObject.standardAppearance = appearance;
+            });
+            
+            ExtendImplementationOfVoidMethodWithSingleArgument([UITabBar class], @selector(setShadowImage:), UIImage *, ^(UITabBar *selfObject, UIImage *shadowImage) {
+                UITabBarAppearance *appearance = selfObject.standardAppearance;
+                appearance.shadowImage = shadowImage;
+                selfObject.standardAppearance = appearance;
+            });
+            
+            ExtendImplementationOfVoidMethodWithSingleArgument([UITabBar class], @selector(setBarStyle:), UIBarStyle, ^(UITabBar *selfObject, UIBarStyle barStyle) {
+                UITabBarAppearance *appearance = selfObject.standardAppearance;
+                appearance.backgroundEffect = [UIBlurEffect effectWithStyle:barStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemMaterialLight : UIBlurEffectStyleSystemMaterialDark];
+                selfObject.standardAppearance = appearance;
+            });
+        }
+#endif
     });
 }
 
