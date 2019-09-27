@@ -539,8 +539,8 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "UISearchBar+QMUI.h"
 #endif
 
-#if __has_include("UISearchBar+QMUITheme.h")
-#import "UISearchBar+QMUITheme.h"
+#if __has_include("UISearchController+QMUI.h")
+#import "UISearchController+QMUI.h"
 #endif
 
 #if __has_include("UISwitch+QMUI.h")

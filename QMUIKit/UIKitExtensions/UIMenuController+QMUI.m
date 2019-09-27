@@ -14,7 +14,6 @@
 
 #import "UIMenuController+QMUI.h"
 #import "QMUICore.h"
-#import "QMUIKeyboardManager.h"
 
 @interface UIMenuController ()
 
@@ -60,7 +59,7 @@ static BOOL kHasAddedMenuControllerNotification = NO;
 - (void)handleMenuWillShowNotification:(NSNotification *)notification {
     UIWindow *window = [self menuControllerWindow];
     UIWindow *targetWindow = [self windowForFirstResponder];
-    if (window && targetWindow && ![QMUIKeyboardManager isKeyboardVisible]) {
+    if (window && targetWindow && ![QMUIHelper isKeyboardVisible]) {
         QMUILog(NSStringFromClass(self.class), @"show menu - cur window level = %@, origin window level = %@ target window level = %@", @(window.windowLevel), @(self.qmui_originWindowLevel), @(targetWindow.windowLevel));
         self.qmui_windowLevelChanged = YES;
         self.qmui_originWindowLevel = window.windowLevel;

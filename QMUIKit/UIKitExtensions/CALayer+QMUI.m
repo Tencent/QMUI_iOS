@@ -18,8 +18,6 @@
 #import "QMUICore.h"
 #import "QMUILog.h"
 #import "UIColor+QMUI.h"
-#import "UIColor+QMUITheme.h"
-#import "QMUIThemePrivate.h"
 
 @interface CALayer ()
 
@@ -313,108 +311,6 @@ static char kAssociatedObjectKey_maskedCorners;
            (self.qmui_maskedCorners & QMUILayerMaxXMinYCorner) == QMUILayerMaxXMinYCorner &&
            (self.qmui_maskedCorners & QMUILayerMinXMaxYCorner) == QMUILayerMinXMaxYCorner &&
            (self.qmui_maskedCorners & QMUILayerMaxXMaxYCorner) == QMUILayerMaxXMaxYCorner;
-}
-
-@end
-
-@interface CALayer ()
-
-@property(nonatomic, strong) UIColor *qcl_originalBackgroundColor;
-@property(nonatomic, strong) UIColor *qcl_originalBorderColor;
-@property(nonatomic, strong) UIColor *qcl_originalShadowColor;
-@end
-
-@implementation CALayer (QMUI_DynamicColor)
-
-QMUISynthesizeIdStrongProperty(qcl_originalBackgroundColor, setQcl_originalBackgroundColor)
-QMUISynthesizeIdStrongProperty(qcl_originalBorderColor, setQcl_originalBorderColor)
-QMUISynthesizeIdStrongProperty(qcl_originalShadowColor, setQcl_originalShadowColor)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        OverrideImplementation([CALayer class], @selector(setBackgroundColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(CALayer *selfObject, CGColorRef color) {
-                
-                // iOS 13 的 UIDynamicProviderColor，以及 QMUIThemeColor 在获取 CGColor 时会将自身绑定到 CGColorRef 上，这里把原始的 color 重新获取出来存到 property 里，以备样式更新时调用
-                UIColor *originalColor = [(__bridge id)(color) qmui_getBoundObjectForKey:QMUICGColorOriginalColorBindKey];
-                selfObject.qcl_originalBackgroundColor = originalColor;
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, CGColorRef);
-                originSelectorIMP = (void (*)(id, SEL, CGColorRef))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, color);
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(setBackgroundColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^void(UIView *selfObject, UIColor *color) {
-                
-                if ([selfObject.backgroundColor isKindOfClass:[QMUIThemeColor class]] || [color isKindOfClass:[QMUIThemeColor class]]) {
-                    // -[UIView setBackgroundColor:] 会同步修改 layer 的 backgroundColor，但它内部又有一个判断条件即：如果参入传入的 color.CGColor 和当前的 self.layr.backgroundColor 一样，就不会重新设置，而如果 layer.backgroundColor 如果关联了 QMUI 的动态色，忽略这个设置，就会导致前后不一致的问题，这里要强制把 layer.backgroundColor 清空，让每次都调用 -[CALayer setBackgroundColor:] 方法
-                    selfObject.layer.backgroundColor = nil;
-                }
-                
-                void (*originSelectorIMP)(id, SEL, UIColor *);
-                originSelectorIMP = (void (*)(id, SEL, UIColor *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, color);
-                
-            };
-        });
-        
-        OverrideImplementation([CALayer class], @selector(setBorderColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(CALayer *selfObject, CGColorRef color) {
-                
-                UIColor *originalColor = [(__bridge id)(color) qmui_getBoundObjectForKey:QMUICGColorOriginalColorBindKey];
-                selfObject.qcl_originalBorderColor = originalColor;
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, CGColorRef);
-                originSelectorIMP = (void (*)(id, SEL, CGColorRef))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, color);
-            };
-        });
-        
-        OverrideImplementation([CALayer class], @selector(setShadowColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(CALayer *selfObject, CGColorRef color) {
-                
-                UIColor *originalColor = [(__bridge id)(color) qmui_getBoundObjectForKey:QMUICGColorOriginalColorBindKey];
-                selfObject.qcl_originalShadowColor = originalColor;
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, CGColorRef);
-                originSelectorIMP = (void (*)(id, SEL, CGColorRef))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, color);
-            };
-        });
-        
-        // iOS 13 下，如果系统的主题发生变化，会自动调用每个 view 的 layoutSubviews，所以我们在这里面自动更新样式
-        // 如果是 QMUIThemeManager 引发的主题变化，会在 theme 那边主动调用 qmui_setNeedsUpdateDynamicStyle，就不依赖这里
-        if (@available(iOS 13.0, *)) {
-            ExtendImplementationOfVoidMethodWithoutArguments([UIView class], @selector(layoutSubviews), ^(UIView *selfObject) {
-                [selfObject.layer qmui_setNeedsUpdateDynamicStyle];
-            });
-        }
-    });
-}
-
-- (void)qmui_setNeedsUpdateDynamicStyle {
-    if (self.qcl_originalBackgroundColor) {
-        UIColor *originalColor = self.qcl_originalBackgroundColor;
-        self.backgroundColor = originalColor.CGColor;
-    }
-    if (self.qcl_originalBorderColor) {
-        self.borderColor = self.qcl_originalBorderColor.CGColor;
-    }
-    if (self.qcl_originalShadowColor) {
-        self.shadowColor = self.qcl_originalShadowColor.CGColor;
-    }
-    
-    [self.sublayers enumerateObjectsUsingBlock:^(__kindof CALayer * _Nonnull sublayer, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (!sublayer.qmui_isRootLayerOfView) {// 如果是 UIView 的 rootLayer，它会依赖 UIView 树自己的 layoutSubviews 去逐个触发，不需要手动遍历到，这里只需要遍历那些额外添加到 layer 上的 sublayer 即可
-            [sublayer qmui_setNeedsUpdateDynamicStyle];
-        }
-    }];
 }
 
 @end
