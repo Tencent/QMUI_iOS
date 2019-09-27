@@ -157,11 +157,8 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - SearchBar
 
 @property(nonatomic, strong, nullable) UIImage  *searchBarTextFieldBackgroundImage;
-@property(nonatomic, strong, nullable) UIColor  *searchBarTextFieldBackground DEPRECATED_MSG_ATTRIBUTE("为了适配 iOS 13 Dark Mode，请使用 searchBarTextFieldBackgroundImage");
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextFieldBorderColor;
 @property(nonatomic, strong, nullable) UIImage  *searchBarBackgroundImage;
-@property(nonatomic, strong, nullable) UIColor  *searchBarBottomBorderColor DEPRECATED_MSG_ATTRIBUTE("为了适配 iOS 13 Dark Mode，请使用 searchBarBackgroundImage");
-@property(nonatomic, strong, nullable) UIColor  *searchBarBarTintColor DEPRECATED_MSG_ATTRIBUTE("为了适配 iOS 13 Dark Mode，请使用 searchBarBackgroundImage");
 @property(nonatomic, strong, nullable) UIColor  *searchBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarPlaceholderColor;

@@ -148,12 +148,9 @@
 
 #pragma mark - SearchBar
 
-#define SearchBarTextFieldBackground                    [QMUICMI searchBarTextFieldBackground]
 #define SearchBarTextFieldBorderColor                   [QMUICMI searchBarTextFieldBorderColor]
 #define SearchBarTextFieldBackgroundImage               [QMUICMI searchBarTextFieldBackgroundImage]
 #define SearchBarBackgroundImage                        [QMUICMI searchBarBackgroundImage]
-#define SearchBarBottomBorderColor                      [QMUICMI searchBarBottomBorderColor]
-#define SearchBarBarTintColor                           [QMUICMI searchBarBarTintColor]
 #define SearchBarTintColor                              [QMUICMI searchBarTintColor]
 #define SearchBarTextColor                              [QMUICMI searchBarTextColor]
 #define SearchBarPlaceholderColor                       [QMUICMI searchBarPlaceholderColor]

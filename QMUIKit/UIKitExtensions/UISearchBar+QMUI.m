@@ -17,7 +17,6 @@
 #import "QMUICore.h"
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
-#import "UIImage+QMUITheme.h"
 
 @implementation UISearchBar (QMUI)
 
@@ -267,16 +266,9 @@ static char kAssociatedObjectKey_cancelButtonFont;
 
     // 输入框背景图
     UIImage *searchFieldBackgroundImage = SearchBarTextFieldBackgroundImage;
-    if (!searchFieldBackgroundImage) {
-        BeginIgnoreDeprecatedWarning
-        if (SearchBarTextFieldBackground) {
-            searchFieldBackgroundImage = [UIImage qmui_imageWithThemeProvider:^UIImage * _Nonnull(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme) {
-                return [UISearchBar qmui_generateTextFieldBackgroundImageWithColor:SearchBarTextFieldBackground];
-            }];
-        }
-        EndIgnoreDeprecatedWarning
+    if (searchFieldBackgroundImage) {
+        [self setSearchFieldBackgroundImage:searchFieldBackgroundImage forState:UIControlStateNormal];
     }
-    [self setSearchFieldBackgroundImage:searchFieldBackgroundImage forState:UIControlStateNormal];
     
     // 输入框边框
     UIColor *textFieldBorderColor = SearchBarTextFieldBorderColor;
@@ -288,17 +280,10 @@ static char kAssociatedObjectKey_cancelButtonFont;
     // 整条bar的背景
     // 为了让 searchBar 底部的边框颜色支持修改，背景色不使用 barTintColor 的方式去改，而是用 backgroundImage
     UIImage *backgroundImage = SearchBarBackgroundImage;
-    if (!backgroundImage) {
-        BeginIgnoreDeprecatedWarning
-        if (SearchBarBarTintColor || SearchBarBottomBorderColor) {
-            backgroundImage = [UIImage qmui_imageWithThemeProvider:^UIImage * _Nonnull(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme) {
-                return [UISearchBar qmui_generateBackgroundImageWithColor:SearchBarBarTintColor borderColor:SearchBarBottomBorderColor];
-            }];
-        }
-        EndIgnoreDeprecatedWarning
+    if (backgroundImage) {
+        [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+        [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefaultPrompt];
     }
-    [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-    [self setBackgroundImage:backgroundImage forBarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefaultPrompt];
 }
 
 + (UIImage *)qmui_generateTextFieldBackgroundImageWithColor:(UIColor *)color {
