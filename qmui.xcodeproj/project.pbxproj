@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08230CEC233D285B00BF9CB1 /* UISearchController+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 08230CEA233D285B00BF9CB1 /* UISearchController+QMUI.h */; };
+		08230CED233D285B00BF9CB1 /* UISearchController+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = 08230CEB233D285B00BF9CB1 /* UISearchController+QMUI.m */; };
 		089F1E4E2322F6EA0063061E /* UISearchBar+QMUITheme.h in Headers */ = {isa = PBXBuildFile; fileRef = 089F1E4C2322F6E90063061E /* UISearchBar+QMUITheme.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		089F1E4F2322F6EA0063061E /* UISearchBar+QMUITheme.m in Sources */ = {isa = PBXBuildFile; fileRef = 089F1E4D2322F6EA0063061E /* UISearchBar+QMUITheme.m */; };
 		08B399C922E18A3B000A8A45 /* UITraitCollection+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 08B399C722E18A3B000A8A45 /* UITraitCollection+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -315,6 +317,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		08230CEA233D285B00BF9CB1 /* UISearchController+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISearchController+QMUI.h"; sourceTree = "<group>"; };
+		08230CEB233D285B00BF9CB1 /* UISearchController+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISearchController+QMUI.m"; sourceTree = "<group>"; };
 		089F1E4A2322F6D50063061E /* UIView+QMUITheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+QMUITheme.h"; sourceTree = "<group>"; };
 		089F1E4C2322F6E90063061E /* UISearchBar+QMUITheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UISearchBar+QMUITheme.h"; sourceTree = "<group>"; };
 		089F1E4D2322F6EA0063061E /* UISearchBar+QMUITheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UISearchBar+QMUITheme.m"; sourceTree = "<group>"; };
@@ -958,6 +962,8 @@
 				CDB8CABF1DCC870700769DF0 /* UIWindow+QMUI.m */,
 				FE8710FC22E499EC00DF1354 /* UIMenuController+QMUI.h */,
 				FE8710FB22E499EB00DF1354 /* UIMenuController+QMUI.m */,
+				08230CEA233D285B00BF9CB1 /* UISearchController+QMUI.h */,
+				08230CEB233D285B00BF9CB1 /* UISearchController+QMUI.m */,
 			);
 			path = UIKitExtensions;
 			sourceTree = "<group>";
@@ -1231,6 +1237,7 @@
 				CDD7599D22BBE11200BC8F36 /* QMUITheme.h in Headers */,
 				CDAA653622BBC1240004C6BB /* UIColor+QMUITheme.h in Headers */,
 				CDAA653A22BBC3340004C6BB /* QMUIThemeManager.h in Headers */,
+				08230CEC233D285B00BF9CB1 /* UISearchController+QMUI.h in Headers */,
 				CD4EA4BF2275FA0100A55066 /* NSMethodSignature+QMUI.h in Headers */,
 				FECD352C22BBC93500DC69DE /* QMUIWindowSizeMonitor.h in Headers */,
 				CD8AA7B321E8C0F300BA7369 /* QMUIConsoleViewController.h in Headers */,
@@ -1629,6 +1636,7 @@
 				CDC870271F68D63B000E8829 /* QMUIStaticTableViewCellDataSource.m in Sources */,
 				CD745E2D21CA5B8F006EC132 /* QMUIImagePreviewViewController.m in Sources */,
 				CD745E2F21CA5B8F006EC132 /* QMUIImagePreviewView.m in Sources */,
+				08230CED233D285B00BF9CB1 /* UISearchController+QMUI.m in Sources */,
 				CDC870281F68D63B000E8829 /* UITableView+QMUIStaticCell.m in Sources */,
 				CDC870291F68D63B000E8829 /* QMUIToastAnimator.m in Sources */,
 				D0D0D81B20C2B973000A33D8 /* UIBarItem+QMUIBadge.m in Sources */,

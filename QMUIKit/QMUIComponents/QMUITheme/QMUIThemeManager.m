@@ -46,6 +46,7 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
     return [NSString stringWithFormat:@"%@, name = %@, themes = %@", [super description], self.name, self.themes];
 }
 
+// 这个方法的声明放在 QMUIThemeManagerCenter.m 里，简单实现 private 的效果
 - (instancetype)initWithName:(__kindof NSObject<NSCopying> *)name {
     if (self = [super init]) {
         _name = name;

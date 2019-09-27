@@ -88,16 +88,20 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
             };
         });
         
+        // 修复 iOS 13.0 UIButton 作为 cell.accessoryView 时布局错误的问题
+        // https://github.com/Tencent/QMUI_iOS/issues/693
         if (@available(iOS 13.0, *)) {
-            // 修复 iOS 13 UIButton 作为 cell.accessoryView 时布局错误的问题 https://github.com/Tencent/QMUI_iOS/issues/693
-            ExtendImplementationOfVoidMethodWithoutArguments([UITableViewCell class], @selector(layoutSubviews), ^(UITableViewCell *selfObject) {
-                if ([selfObject.accessoryView isKindOfClass:[UIButton class]]) {
-                    CGFloat defaultRightMargin = 15 + SafeAreaInsetsConstantForDeviceWithNotch.right;
-                    selfObject.accessoryView.qmui_left = selfObject.qmui_width - defaultRightMargin - selfObject.accessoryView.qmui_width;
-                    selfObject.accessoryView.qmui_top = CGRectGetMinYVerticallyCenterInParentRect(selfObject.frame, selfObject.accessoryView.frame);;
-                    selfObject.contentView.qmui_right = selfObject.accessoryView.qmui_left;
-                }
-            });
+            if (@available(iOS 13.1, *)) {
+            } else {
+                ExtendImplementationOfVoidMethodWithoutArguments([UITableViewCell class], @selector(layoutSubviews), ^(UITableViewCell *selfObject) {
+                    if ([selfObject.accessoryView isKindOfClass:[UIButton class]]) {
+                        CGFloat defaultRightMargin = 15 + SafeAreaInsetsConstantForDeviceWithNotch.right;
+                        selfObject.accessoryView.qmui_left = selfObject.qmui_width - defaultRightMargin - selfObject.accessoryView.qmui_width;
+                        selfObject.accessoryView.qmui_top = CGRectGetMinYVerticallyCenterInParentRect(selfObject.frame, selfObject.accessoryView.frame);;
+                        selfObject.contentView.qmui_right = selfObject.accessoryView.qmui_left;
+                    }
+                });
+            }
         }
     });
 }

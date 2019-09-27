@@ -706,14 +706,6 @@ static NSInteger isHighPerformanceDevice = -1;
 
 @implementation QMUIHelper (UIApplication)
 
-+ (void)renderStatusBarStyleDark {
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
-}
-
-+ (void)renderStatusBarStyleLight {
-    [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
-}
-
 + (void)dimmedApplicationWindow {
     UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
     window.tintAdjustmentMode = UIViewTintAdjustmentModeDimmed;

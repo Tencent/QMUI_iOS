@@ -39,6 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (UIVisualEffect *)qmui_effectWithThemeProvider:(UIVisualEffect *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
+/**
+ 生成一个动态的 UIVisualEffect 对象，每次使用该对象时都会动态根据当前的 QMUIThemeManager  name 和主题返回对应的 effect。
+ @param name themeManager 的 name，用于区分不同维度的主题管理器
+ @param provider 当 UIVisualEffect 被使用时，这个 provider 会被调用，返回对应当前主题的 effect 值。请不要在这个 block 里做耗时操作。
+ @return 一个动态的 UIVisualEffect 对象，被使用时才会返回实际的 effect 效果
+*/
 + (UIVisualEffect *)qmui_effectWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIVisualEffect *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 @end
 

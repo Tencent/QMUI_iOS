@@ -199,20 +199,6 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 @interface QMUIHelper (UIApplication)
 
 /**
- *  更改状态栏内容颜色为深色
- *
- *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
- */
-+ (void)renderStatusBarStyleDark DEPRECATED_MSG_ATTRIBUTE("使用系统的 preferredStatusBarStyle 和 preferredStatusBarUpdateAnimation 代替");
-
-/**
- *  更改状态栏内容颜色为浅色
- *
- *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
- */
-+ (void)renderStatusBarStyleLight DEPRECATED_MSG_ATTRIBUTE("使用系统的 preferredStatusBarStyle 和 preferredStatusBarUpdateAnimation 代替");
-
-/**
  * 把App的主要window置灰，用于浮层弹出时，请注意要在适当时机调用`resetDimmedApplicationWindow`恢复到正常状态
  */
 + (void)dimmedApplicationWindow;

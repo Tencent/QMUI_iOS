@@ -16,6 +16,12 @@
 
 NSString *const QMUIThemeManagerNameDefault = @"Default";
 
+@interface QMUIThemeManager ()
+
+// 这个方法的实现在 QMUIThemeManager.m 里，这里只是为了内部使用而显式声明一次
+- (instancetype)initWithName:(__kindof NSObject<NSCopying> *)name;
+@end
+
 @interface QMUIThemeManagerCenter ()
 
 @property(nonatomic, strong) NSMutableArray<QMUIThemeManager *> *allManagers;

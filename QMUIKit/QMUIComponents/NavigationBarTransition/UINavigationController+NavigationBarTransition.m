@@ -299,19 +299,6 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     if ([viewController conformsToProtocol:@protocol(QMUINavigationControllerAppearanceDelegate)]) {
         UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController;
         
-        // 控制界面的状态栏颜色
-        BeginIgnoreDeprecatedWarning
-        if ([vc respondsToSelector:@selector(shouldSetStatusBarStyleLight)] && [vc shouldSetStatusBarStyleLight]) {
-            if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleLight];
-            }
-        } else {
-            if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleDark];
-            }
-        }
-        EndIgnoreDeprecatedWarning
-        
         // 显示/隐藏 导航栏
         if ([vc canCustomNavigationBarTransitionIfBarHiddenable]) {
             if ([vc hideNavigationBarWhenTransitioning]) {

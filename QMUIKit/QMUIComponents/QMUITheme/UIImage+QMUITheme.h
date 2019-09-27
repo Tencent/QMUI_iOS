@@ -34,11 +34,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  生成一个动态的 image 对象，每次使用该图片时都会动态根据当前的 QMUIThemeManager 主题返回对应的图片。
- @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值，请不要在这个 block 里做耗时操作，如果需要动态处理图片，请自行做好缓存工作，避免每次都生成
+ @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值
  @return 当前主题下的实际图片，由 provider 返回
  */
 + (UIImage *)qmui_imageWithThemeProvider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
+/**
+ 生成一个动态的 image 对象，每次使用该图片时都会动态根据当前的 QMUIThemeManager name 和主题返回对应的图片。
+ @param name themeManager 的 name，用于区分不同维度的主题管理器
+ @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值
+ @return 当前主题下的实际图片，由 provider 返回
+*/
 + (UIImage *)qmui_imageWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
 @end

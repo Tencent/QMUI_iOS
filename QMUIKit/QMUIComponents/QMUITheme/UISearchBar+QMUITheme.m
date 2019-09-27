@@ -70,43 +70,12 @@
             };
         });
         
-        OverrideImplementation([UISearchBar class], @selector(setBackgroundImage:forBarPosition:barMetrics:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-
-            NSMethodSignature *methodSignature = [originClass instanceMethodSignatureForSelector:originCMD];
-
-            return ^(UISearchBar *selfObject, UIImage *image, UIBarPosition position, UIBarMetrics state) {
-                
-                void (*originSelectorIMP)(id, SEL, UIImage *, UIBarPosition, UIBarMetrics);
-                originSelectorIMP = (void (*)(id, SEL, UIImage *, UIBarPosition, UIBarMetrics))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, image, position, state);
-                
-                NSInvocation *invocation = nil;
-                NSString *invocationActionKey = [NSString stringWithFormat:@"%@-%zd-%zd", NSStringFromSelector(originCMD), position, state];
-                if (image.qmui_isDynamicImage) {
-                    [NSInvocation invocationWithMethodSignature:methodSignature];
-                    [invocation setSelector:originCMD];
-                    [invocation setArgument:&image atIndex:2];
-                    [invocation setArgument:&position atIndex:3];
-                    [invocation setArgument:&state atIndex:4];
-                    [invocation retainArguments];
-                }
-                selfObject.qmuiTheme_invocations[invocationActionKey] = invocation;
-            };
-        });
-        
-        OverrideImplementation([UISearchBar class], @selector(qmui_themeDidChangeByManager:identifier:theme:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UISearchBar *selfObject, QMUIThemeManager *manager, __kindof NSObject<NSCopying> *identifier, __kindof NSObject *theme) {
-                
-                void (*originSelectorIMP)(id, SEL, QMUIThemeManager *, __kindof NSObject<NSCopying> *, __kindof NSObject *);
-                originSelectorIMP = (void (*)(id, SEL,QMUIThemeManager *, __kindof NSObject<NSCopying> *, __kindof NSObject *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, manager, identifier, theme);
-                
-                [selfObject qmuiTheme_performUpdateInvocations];
-                
-            };
-        });
-        
     });
+}
+
+- (void)_qmui_themeDidChangeByManager:(QMUIThemeManager *)manager identifier:(__kindof NSObject<NSCopying> *)identifier theme:(__kindof NSObject *)theme shouldEnumeratorSubviews:(BOOL)shouldEnumeratorSubviews {
+    [super _qmui_themeDidChangeByManager:manager identifier:identifier theme:theme shouldEnumeratorSubviews:shouldEnumeratorSubviews];
+    [self qmuiTheme_performUpdateInvocations];
 }
 
 - (void)qmuiTheme_performUpdateInvocations {

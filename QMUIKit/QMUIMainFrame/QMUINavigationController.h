@@ -93,11 +93,6 @@
 
 @optional
 
-/// 是否需要将状态栏改为浅色文字，对于 QMUICommonViewController 子类，返回值默认为宏 StatusbarStyleLightInitially 的值，对于 UIViewController，不实现该方法则视为返回 NO。
-/// @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请使用系统提供的 - preferredStatusBarStyle 方法
-/// 该方法已废弃，请使用系统提供的 - preferredStatusBarStyle 方法。
-- (BOOL)shouldSetStatusBarStyleLight DEPRECATED_MSG_ATTRIBUTE("请使用系统的 preferredStatusBarStyle 代替");
-
 /// 设置 titleView 的 tintColor
 - (nullable UIColor *)titleViewTintColor;
 

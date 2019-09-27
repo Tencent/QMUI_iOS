@@ -264,7 +264,7 @@ AddAccessibilityHint(NSObject *obj, NSString *hint) {
 
 #pragma mark - 其他
 
-// 固定黑色的 StatusBarStyle，用于亮色背景
+// 固定黑色的 StatusBarStyle，用于亮色背景，作为 -preferredStatusBarStyle 方法的 return 值使用。
 #define QMUIStatusBarStyleDarkContent [QMUIHelper statusBarStyleDarkContent]
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")

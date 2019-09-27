@@ -251,20 +251,6 @@
     UINavigationBar *navigationBar = self.navigationController.navigationBar;
     if (!navigationBar) return;
     
-    BeginIgnoreDeprecatedWarning
-    if ([self respondsToSelector:@selector(shouldSetStatusBarStyleLight)]) {
-        if ([self shouldSetStatusBarStyleLight]) {
-            if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleLight];
-            }
-        } else {
-            if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleDark];
-            }
-        }
-    }
-    EndIgnoreDeprecatedWarning
-    
     if ([self respondsToSelector:@selector(navigationBarBackgroundImage)]) {
         [navigationBar setBackgroundImage:[self navigationBarBackgroundImage] forBarMetrics:UIBarMetricsDefault];
     }
@@ -286,12 +272,6 @@
 }
 
 #pragma mark - <QMUINavigationControllerDelegate>
-
-BeginIgnoreClangWarning(-Wdeprecated-implementations)
-- (BOOL)shouldSetStatusBarStyleLight {
-    return StatusbarStyleLightInitially;
-}
-EndIgnoreClangWarning
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
     return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;

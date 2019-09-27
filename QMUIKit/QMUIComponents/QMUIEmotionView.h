@@ -117,10 +117,4 @@
 /// 分页控件距离底部的间距，默认为22
 @property(nonatomic, assign) CGFloat pageControlMarginBottom UI_APPEARANCE_SELECTOR;
 
-/// 分页控件颜色
-@property(nonatomic, strong) UIColor *pageIndicatorTintColor;
-
-/// 分页控件选中颜色
-@property(nonatomic, strong) UIColor *currentPageIndicatorTintColor;
-
 @end
