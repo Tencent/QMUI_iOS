@@ -28,12 +28,12 @@ extern NSString *const QMUIPrecedingAppSizeUserInfoKey;
 extern NSString *const QMUIFollowingAppSizeUserInfoKey;
 
 typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
-    QMUIViewControllerUnknow        = 1 << 0,   /// 初始化完成但尚未触发 viewDidLoad
-    QMUIViewControllerViewDidLoad   = 1 << 1,   /// 触发了 viewDidLoad
-    QMUIViewControllerWillAppear    = 1 << 2,   /// 触发了 viewWillAppear
-    QMUIViewControllerDidAppear     = 1 << 3,   /// 触发了 viewDidAppear
-    QMUIViewControllerWillDisappear = 1 << 4,   /// 触发了 viewWillDisappear
-    QMUIViewControllerDidDisappear  = 1 << 5,   /// 触发了 viewDidDisappear
+    QMUIViewControllerUnknow        = 1 << 0,   // 初始化完成但尚未触发 viewDidLoad
+    QMUIViewControllerViewDidLoad   = 1 << 1,   // 触发了 viewDidLoad
+    QMUIViewControllerWillAppear    = 1 << 2,   // 触发了 viewWillAppear
+    QMUIViewControllerDidAppear     = 1 << 3,   // 触发了 viewDidAppear
+    QMUIViewControllerWillDisappear = 1 << 4,   // 触发了 viewWillDisappear
+    QMUIViewControllerDidDisappear  = 1 << 5,   // 触发了 viewDidDisappear
     
     QMUIViewControllerVisible       = QMUIViewControllerWillAppear | QMUIViewControllerDidAppear,// 表示是否处于可视范围，判断时请用 & 运算，例如 qmui_visibleState & QMUIViewControllerVisible
 };
