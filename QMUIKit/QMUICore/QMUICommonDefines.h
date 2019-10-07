@@ -158,7 +158,7 @@
 /// tabBar相关frame
 #define TabBarHeight (IS_IPAD ? (IS_NOTCHED_SCREEN ? 65 : (IOS_VERSION >= 12.0 ? 50 : 49)) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(49, 32) : 49) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
 
-/// 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算)
+/// 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算，iOS 13 起，来电等情况下状态栏高度不会改变)
 #define StatusBarHeight ([UIApplication sharedApplication].statusBarHidden ? 0 : [[UIApplication sharedApplication] statusBarFrame].size.height)
 
 /// 状态栏高度(如果状态栏不可见，也会返回一个普通状态下可见的高度)
