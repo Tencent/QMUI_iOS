@@ -53,6 +53,12 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 - 关于 Swift：可以正常使用，如遇到问题请提 issue。
 - 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:91](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L91-L101)，可直接查看。
 
+## 设计资源
+
+QMUIKit 框架内自带图片资源的组件主要是 QMUIConsole、QMUIEmotion、QMUIImagePicker、QMUITips，另外作为 Sample Code 使用的 QMUI Demo 是另一个独立的项目，它拥有自己另外一套设计。
+
+QMUIKit 和 QMUI Demo 的 Sketch 设计稿均存放在 [https://github.com/QMUI/QMUIDemo_Design](https://github.com/QMUI/QMUIDemo_Design)。
+
 ## 其他
 
 建议搭配 QMUI 专用的 Code Snippets 及文件模板使用：
