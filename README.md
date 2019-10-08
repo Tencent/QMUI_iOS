@@ -42,9 +42,9 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 请下载 QMUI Demo：[https://github.com/QMUI/QMUIDemo_iOS](https://github.com/QMUI/QMUIDemo_iOS)。
 
 ![Launch](https://user-images.githubusercontent.com/1190261/49869307-041fdf00-fe4b-11e8-8f77-8007317e71c6.gif)
-![UIColor](https://user-images.githubusercontent.com/1190261/49869346-1d289000-fe4b-11e8-9e75-00b861f72b2a.gif)
-![Popup](https://user-images.githubusercontent.com/1190261/49869336-169a1880-fe4b-11e8-9fab-b3ff8233d562.gif)
-![MarqueeLabel](https://user-images.githubusercontent.com/1190261/49869323-100ba100-fe4b-11e8-947c-92082fb4ddd8.gif)
+![QMUITheme](https://user-images.githubusercontent.com/1190261/66378391-ecbb6f00-e9e5-11e9-9d47-8456347ba886.gif)
+![QMUIPopup](https://user-images.githubusercontent.com/1190261/49869336-169a1880-fe4b-11e8-9fab-b3ff8233d562.gif)
+![QMUIMarqueeLabel](https://user-images.githubusercontent.com/1190261/49869323-100ba100-fe4b-11e8-947c-92082fb4ddd8.gif)
 
 ## 注意事项
 
