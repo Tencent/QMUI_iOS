@@ -555,6 +555,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)setTabBarBackgroundImage:(UIImage *)tabBarBackgroundImage {
     _tabBarBackgroundImage = tabBarBackgroundImage;
+    
 #ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
         self.tabBarAppearance.backgroundImage = tabBarBackgroundImage;
@@ -572,6 +573,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)setTabBarShadowImageColor:(UIColor *)tabBarShadowImageColor {
     _tabBarShadowImageColor = tabBarShadowImageColor;
+    
 #ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
         self.tabBarAppearance.shadowColor = tabBarShadowImageColor;
@@ -590,11 +592,14 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)setTabBarItemTitleFont:(UIFont *)tabBarItemTitleFont {
     _tabBarItemTitleFont = tabBarItemTitleFont;
+    
 #ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
-        NSMutableDictionary<NSAttributedStringKey, id> *attributes = self.tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes.mutableCopy;
-        attributes[NSFontAttributeName] = tabBarItemTitleFont;
-        self.tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = attributes.copy;
+        [self.tabBarAppearance qmui_applyItemAppearanceWithBlock:^(UITabBarItemAppearance * _Nonnull itemAppearance) {
+            NSMutableDictionary<NSAttributedStringKey, id> *attributes = itemAppearance.normal.titleTextAttributes.mutableCopy;
+            attributes[NSFontAttributeName] = tabBarItemTitleFont;
+            itemAppearance.normal.titleTextAttributes = attributes.copy;
+        }];
         [self updateTabBarAppearance];
     } else {
 #endif
@@ -615,18 +620,19 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)setTabBarItemTitleColor:(UIColor *)tabBarItemTitleColor {
     _tabBarItemTitleColor = tabBarItemTitleColor;
+    
 #ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
-        NSMutableDictionary<NSAttributedStringKey, id> *attributes = self.tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes.mutableCopy;
-        attributes[NSForegroundColorAttributeName] = tabBarItemTitleColor;
-        self.tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = attributes.copy;
+        [self.tabBarAppearance qmui_applyItemAppearanceWithBlock:^(UITabBarItemAppearance * _Nonnull itemAppearance) {
+            NSMutableDictionary<NSAttributedStringKey, id> *attributes = itemAppearance.normal.titleTextAttributes.mutableCopy;
+            attributes[NSForegroundColorAttributeName] = tabBarItemTitleColor;
+            itemAppearance.normal.titleTextAttributes = attributes.copy;
+        }];
         [self updateTabBarAppearance];
     } else {
 #endif
         NSMutableDictionary<NSString *, id> *textAttributes = [[NSMutableDictionary alloc] initWithDictionary:[[UITabBarItem appearance] titleTextAttributesForState:UIControlStateNormal]];
-        if (_tabBarItemTitleColor) {
-            textAttributes[NSForegroundColorAttributeName] = _tabBarItemTitleColor;
-        }
+        textAttributes[NSForegroundColorAttributeName] = _tabBarItemTitleColor;
         [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateNormal];
         [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
             [tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -640,18 +646,19 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)setTabBarItemTitleColorSelected:(UIColor *)tabBarItemTitleColorSelected {
     _tabBarItemTitleColorSelected = tabBarItemTitleColorSelected;
+    
 #ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
-        NSMutableDictionary<NSAttributedStringKey, id> *attributes = self.tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes.mutableCopy;
-        attributes[NSForegroundColorAttributeName] = tabBarItemTitleColorSelected;
-        self.tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = attributes.copy;
+        [self.tabBarAppearance qmui_applyItemAppearanceWithBlock:^(UITabBarItemAppearance * _Nonnull itemAppearance) {
+            NSMutableDictionary<NSAttributedStringKey, id> *attributes = itemAppearance.selected.titleTextAttributes.mutableCopy;
+            attributes[NSForegroundColorAttributeName] = tabBarItemTitleColorSelected;
+            itemAppearance.selected.titleTextAttributes = attributes.copy;
+        }];
         [self updateTabBarAppearance];
     } else {
 #endif
         NSMutableDictionary<NSString *, id> *textAttributes = [[NSMutableDictionary alloc] initWithDictionary:[[UITabBarItem appearance] titleTextAttributesForState:UIControlStateSelected]];
-        if (_tabBarItemTitleColorSelected) {
-            textAttributes[NSForegroundColorAttributeName] = _tabBarItemTitleColorSelected;
-        }
+        textAttributes[NSForegroundColorAttributeName] = _tabBarItemTitleColorSelected;
         [[UITabBarItem appearance] setTitleTextAttributes:textAttributes forState:UIControlStateSelected];
         [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
             [tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -665,9 +672,12 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)setTabBarItemImageColor:(UIColor *)tabBarItemImageColor {
     _tabBarItemImageColor = tabBarItemImageColor;
+    
 #ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
-        self.tabBarAppearance.stackedLayoutAppearance.normal.iconColor = tabBarItemImageColor;
+        [self.tabBarAppearance qmui_applyItemAppearanceWithBlock:^(UITabBarItemAppearance * _Nonnull itemAppearance) {
+            itemAppearance.normal.iconColor = tabBarItemImageColor;
+        }];
         [self updateTabBarAppearance];
     } else {
 #endif
@@ -685,9 +695,12 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (void)setTabBarItemImageColorSelected:(UIColor *)tabBarItemImageColorSelected {
     _tabBarItemImageColorSelected = tabBarItemImageColorSelected;
+    
 #ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
-        self.tabBarAppearance.stackedLayoutAppearance.selected.iconColor = tabBarItemImageColorSelected;
+        [self.tabBarAppearance qmui_applyItemAppearanceWithBlock:^(UITabBarItemAppearance * _Nonnull itemAppearance) {
+            itemAppearance.selected.iconColor = tabBarItemImageColorSelected;
+        }];
         [self updateTabBarAppearance];
     } else {
 #endif

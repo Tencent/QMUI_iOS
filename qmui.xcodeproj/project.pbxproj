@@ -23,6 +23,7 @@
 		CD046C4A2018688F00092035 /* QMUILogger.m in Sources */ = {isa = PBXBuildFile; fileRef = CD046C482018688F00092035 /* QMUILogger.m */; };
 		CD046C4D2018698200092035 /* QMUILog.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C4B2018698200092035 /* QMUILog.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD0BD676233B9888005E47CE /* UIView+QMUITheme.h in Headers */ = {isa = PBXBuildFile; fileRef = 089F1E4A2322F6D50063061E /* UIView+QMUITheme.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD0BD68B234F6C34005E47CE /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CD0BD68A234F6C34005E47CE /* Images.xcassets */; };
 		CD1817E42010CC4000F8CDEC /* NSNumber+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CD1817E22010CC4000F8CDEC /* NSNumber+QMUI.m */; };
 		CD1817E52010CC4000F8CDEC /* NSNumber+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD1817E32010CC4000F8CDEC /* NSNumber+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD18BC7321760D5900E2A4E6 /* QMUINavigationBarScrollingAnimator.h in Headers */ = {isa = PBXBuildFile; fileRef = CD18BC7121760D5900E2A4E6 /* QMUINavigationBarScrollingAnimator.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -250,7 +251,6 @@
 		CDC870301F68D63B000E8829 /* QMUICommonViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86FB81F68D5F9000E8829 /* QMUICommonViewController.m */; };
 		CDC870311F68D63B000E8829 /* QMUINavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86FBA1F68D5F9000E8829 /* QMUINavigationController.m */; };
 		CDC870321F68D63B000E8829 /* QMUITabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86FBC1F68D5F9000E8829 /* QMUITabBarViewController.m */; };
-		CDC870401F68D66A000E8829 /* QMUIResources.bundle in Resources */ = {isa = PBXBuildFile; fileRef = CDC86F3E1F68D5F8000E8829 /* QMUIResources.bundle */; };
 		CDD071FD2060F82700343AB6 /* QMUICellHeightCache.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD071FB2060F82700343AB6 /* QMUICellHeightCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDD071FE2060F82700343AB6 /* QMUICellHeightCache.m in Sources */ = {isa = PBXBuildFile; fileRef = CDD071FC2060F82700343AB6 /* QMUICellHeightCache.m */; };
 		CDD12D3C1FBB320E00114EA9 /* NSArray+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CDD12D3A1FBB320E00114EA9 /* NSArray+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -334,6 +334,7 @@
 		CD046C472018688F00092035 /* QMUILogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUILogger.h; sourceTree = "<group>"; };
 		CD046C482018688F00092035 /* QMUILogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUILogger.m; sourceTree = "<group>"; };
 		CD046C4B2018698200092035 /* QMUILog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUILog.h; sourceTree = "<group>"; };
+		CD0BD68A234F6C34005E47CE /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		CD1817E22010CC4000F8CDEC /* NSNumber+QMUI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+QMUI.m"; sourceTree = "<group>"; };
 		CD1817E32010CC4000F8CDEC /* NSNumber+QMUI.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNumber+QMUI.h"; sourceTree = "<group>"; };
 		CD18BC7121760D5900E2A4E6 /* QMUINavigationBarScrollingAnimator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUINavigationBarScrollingAnimator.h; sourceTree = "<group>"; };
@@ -468,7 +469,6 @@
 		CDC006E422A804D800A81771 /* NSObjectTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NSObjectTests.m; sourceTree = "<group>"; };
 		CDC163C4204D441000E4CC13 /* QMUILogManagerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUILogManagerViewController.h; sourceTree = "<group>"; };
 		CDC163C5204D441000E4CC13 /* QMUILogManagerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUILogManagerViewController.m; sourceTree = "<group>"; };
-		CDC86F3E1F68D5F8000E8829 /* QMUIResources.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = QMUIResources.bundle; sourceTree = "<group>"; };
 		CDC86F411F68D5F9000E8829 /* QMUIAsset.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIAsset.h; sourceTree = "<group>"; };
 		CDC86F421F68D5F9000E8829 /* QMUIAsset.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIAsset.m; sourceTree = "<group>"; };
 		CDC86F431F68D5F9000E8829 /* QMUIAssetsGroup.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIAssetsGroup.h; sourceTree = "<group>"; };
@@ -965,7 +965,7 @@
 		CDC86F3C1F68D5F8000E8829 /* QMUIResources */ = {
 			isa = PBXGroup;
 			children = (
-				CDC86F3E1F68D5F8000E8829 /* QMUIResources.bundle */,
+				CD0BD68A234F6C34005E47CE /* Images.xcassets */,
 			);
 			path = QMUIResources;
 			sourceTree = "<group>";
@@ -1467,7 +1467,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CDC870401F68D66A000E8829 /* QMUIResources.bundle in Resources */,
+				CD0BD68B234F6C34005E47CE /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

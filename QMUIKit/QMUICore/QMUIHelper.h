@@ -16,22 +16,19 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface QMUIHelper : NSObject
 
-+ (instancetype _Nonnull)sharedInstance;
++ (instancetype)sharedInstance;
 @end
-
-
-extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 @interface QMUIHelper (Bundle)
 
-// QMUI专属
-+ (nullable NSBundle *)resourcesBundle;
-+ (nullable UIImage *)imageWithName:(nullable NSString *)name;
+/// 获取 QMUIKit.framework Images.xcassets 内的图片资源
+/// @param name 图片名
++ (nullable UIImage *)imageWithName:(NSString *)name;
 
-+ (nullable NSBundle *)resourcesBundleWithName:(nullable NSString *)bundleName;
-+ (nullable UIImage *)imageInBundle:(nullable NSBundle *)bundle withName:(nullable NSString *)name;
 @end
 
 @interface QMUIHelper (SystemVersion)
@@ -124,8 +121,8 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 + (void)inspectContextSize:(CGSize)size;
 
 /// context是否合法
-+ (void)inspectContextIfInvalidatedInDebugMode:(CGContextRef _Nonnull)context;
-+ (BOOL)inspectContextIfInvalidatedInReleaseMode:(CGContextRef _Nonnull)context;
++ (void)inspectContextIfInvalidatedInDebugMode:(CGContextRef)context;
++ (BOOL)inspectContextIfInvalidatedInReleaseMode:(CGContextRef)context;
 @end
 
 
@@ -228,3 +225,5 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 + (void)executeAnimationBlock:(nonnull __attribute__((noescape)) void (^)(void))animationBlock completionBlock:(nullable __attribute__((noescape)) void (^)(void))completionBlock;
 
 @end
+
+NS_ASSUME_NONNULL_END

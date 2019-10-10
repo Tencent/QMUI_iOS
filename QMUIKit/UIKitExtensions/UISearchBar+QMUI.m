@@ -287,7 +287,7 @@ static char kAssociatedObjectKey_cancelButtonFont;
 }
 
 + (UIImage *)qmui_generateTextFieldBackgroundImageWithColor:(UIColor *)color {
-    // 背景图片的高度会决定输入框的高度，在 iOS 11 及以上，系统默认高度是 36，iOS 10 及以下的高度是 28
+    // 背景图片的高度会决定输入框的高度，在 iOS 11 及以上，系统默认高度是 36，iOS 10 及以下的高度是 28 的搜索输入框的高度计算:QMUIKit/UIKitExtensions/UISearchBar+QMUI.m
     // 至于圆角，输入框会在 UIView 层面控制，背景图里无需处理
     return [[UIImage qmui_imageWithColor:color size:self.qmui_textFieldDefaultSize cornerRadius:0] resizableImageWithCapInsets:UIEdgeInsetsMake(10, 10, 10, 10)];
 }

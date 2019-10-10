@@ -66,10 +66,17 @@
 - (void)setImage:(UIImage *)image {
     _image = image;
     [self.button setImage:image forState:UIControlStateNormal];
-    if (image) {
-        self.button.imageEdgeInsets = UIEdgeInsetsMake(0, 0, 0, self.imageMarginRight);
-    } else {
-        self.button.imageEdgeInsets = UIEdgeInsetsZero;
+    [self updateButtonImageEdgeInsets];
+}
+
+- (void)setImageMarginRight:(CGFloat)imageMarginRight {
+    _imageMarginRight = imageMarginRight;
+    [self updateButtonImageEdgeInsets];
+}
+
+- (void)updateButtonImageEdgeInsets {
+    if (self.button.currentImage) {
+        self.button.imageEdgeInsets = UIEdgeInsetsSetRight(self.button.imageEdgeInsets, self.imageMarginRight);
     }
 }
 

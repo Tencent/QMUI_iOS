@@ -13,6 +13,7 @@
 //
 
 #import "UIViewController+QMUITheme.h"
+#import "QMUIModalPresentationViewController.h"
 
 @implementation UIViewController (QMUITheme)
 
@@ -20,6 +21,20 @@
     [self.childViewControllers enumerateObjectsUsingBlock:^(__kindof UIViewController * _Nonnull childViewController, NSUInteger idx, BOOL * _Nonnull stop) {
         [childViewController qmui_themeDidChangeByManager:manager identifier:identifier theme:theme];
     }];
+    if (self.presentedViewController && self.presentedViewController.presentingViewController == self) {
+        [self.presentedViewController qmui_themeDidChangeByManager:manager identifier:identifier theme:theme];
+    }
+}
+
+@end
+
+@implementation QMUIModalPresentationViewController (QMUITheme)
+
+- (void)qmui_themeDidChangeByManager:(QMUIThemeManager *)manager identifier:(__kindof NSObject<NSCopying> *)identifier theme:(__kindof NSObject *)theme {
+    [super qmui_themeDidChangeByManager:manager identifier:identifier theme:theme];
+    if (self.contentViewController) {
+        [self.contentViewController qmui_themeDidChangeByManager:manager identifier:identifier theme:theme];
+    }
 }
 
 @end

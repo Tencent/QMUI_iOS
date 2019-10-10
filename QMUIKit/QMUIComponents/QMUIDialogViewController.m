@@ -364,7 +364,6 @@ EndIgnoreClangWarning
 - (QMUIButton *)generateButtonWithText:(NSString *)buttonText {
     QMUIButton *button = [[QMUIButton alloc] init];
     button.titleLabel.font = UIFontBoldMake((IS_320WIDTH_SCREEN) ? 14 : 15);
-    button.adjustsTitleTintColorAutomatically = YES;
     button.backgroundColor = self.buttonBackgroundColor;
     button.highlightedBackgroundColor = self.buttonHighlightedBackgroundColor;
     [button setAttributedTitle:[[NSAttributedString alloc] initWithString:buttonText attributes:self.buttonTitleAttributes] forState:UIControlStateNormal];

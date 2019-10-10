@@ -83,8 +83,19 @@
 + (void)show {
     QMUIConsole *console = [QMUIConsole sharedInstance];
     if (console.canShow) {
-        [[QMUIConsole sharedInstance] initConsoleWindowIfNeeded];
-        [QMUIConsole sharedInstance].consoleWindow.hidden = NO;
+        
+        if (!console.consoleWindow.hidden) return;
+        
+        // 在某些情况下 show 的时候刚好界面正在做动画，就可能会看到 consoleWindow 从左上角展开的过程（window 默认背景色是黑色的），所以这里做了一些小处理
+        // https://github.com/Tencent/QMUI_iOS/issues/743
+        [UIView performWithoutAnimation:^{
+            [console initConsoleWindowIfNeeded];
+            console.consoleWindow.alpha = 0;
+            console.consoleWindow.hidden = NO;
+        }];
+        [UIView animateWithDuration:.25 delay:.2 options:QMUIViewAnimationOptionsCurveOut animations:^{
+            console.consoleWindow.alpha = 1;
+        } completion:nil];
     }
 }
 
