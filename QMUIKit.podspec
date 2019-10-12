@@ -149,6 +149,7 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIConsole' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIConsole/*.{h,m}'
+      sss.dependency 'QMUIKit/QMUIResources'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITextView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITextField'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'

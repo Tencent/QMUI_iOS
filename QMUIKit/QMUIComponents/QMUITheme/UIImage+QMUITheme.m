@@ -20,9 +20,25 @@
 #import "QMUICore.h"
 #import <objc/message.h>
 
+@interface QMUIThemeImageCache : NSCache
+
+@end
+
+@implementation QMUIThemeImageCache
+
+- (instancetype)init {
+    if (self = [super init]) {
+        // NSCache 在 app 进入后台时会删除所有缓存，它的实现方式是在 init 的时候去监听 UIApplicationDidEnterBackgroundNotification ，一旦进入后台则调用 removeAllObjects，通过 removeObserver 可以禁用掉这个策略
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
+    }
+    return self;
+}
+
+@end
+
 @interface QMUIThemeImage()
 
-@property(nonatomic, strong) NSCache *cachedRawImages;
+@property(nonatomic, strong) QMUIThemeImageCache *cachedRawImages;
 
 @end
 
@@ -53,6 +69,18 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        Class selfClass = [QMUIThemeImage class];
+        UIImage *instance =  UIImage.new;
+        // QMUIThemeImage 覆盖重写了大部分 UIImage 的方法，在这些方法调用时，会交给 qmui_rawImage 处理
+        // 除此之外 UIImage 内部还有很多私有方法，无法全部在 QMUIThemeImage 重写一遍，这些方法将通过消息转发的形式交给 qmui_rawImage 调用。
+        [NSObject qmui_enumrateInstanceMethodsOfClass:instance.class includingInherited:NO usingBlock:^(Method  _Nonnull method, SEL  _Nonnull selector) {
+            // 如果 QMUIThemeImage 已经实现了该方法，则不需要消息转发
+            if (class_getInstanceMethod(selfClass, selector) != method) return;
+            const char * typeDescription = (char *)method_getTypeEncoding(method);
+            class_addMethod(selfClass, selector, qmui_getMsgForwardIMP(instance, selector), typeDescription);
+        }];
+        
+        // dealloc 时，不应该转发给 qmui_rawImage 处理，因为 qmui_rawImage 可能会有其他对象引用，不一定在 QMUIThemeImage 释放后就随之释放
         // 这里不能在 QMUIThemeImage 直接写 '- (void)dealloc { _themeProvider = nil; }' ，因为这样写会先调用 super dealloc，而 UIImage 的 dealloc 方法里会调用其他方法，从而再次触发消息转发、访问 qmui_rawImage，这可能会导致一些野指针问题，通过下面的方式，保持在执行 super dealloc 之前，先清空 _themeProvider
         OverrideImplementation([QMUIThemeImage class], NSSelectorFromString(@"dealloc"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(__unsafe_unretained QMUIThemeImage *selfObject) {
@@ -62,15 +90,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
                 originSelectorIMP(selfObject, originCMD);
             };
         });
-        
-        Class selfClass = [self class];
-        UIImage *instance =  UIImage.new;
-        [NSObject qmui_enumrateInstanceMethodsOfClass:UIImage.class includingInherited:NO usingBlock:^(Method  _Nonnull method, SEL  _Nonnull selector) {
-            if (class_getInstanceMethod(selfClass, selector) != method) return;
-            
-            const char * typeDescription = (char *)method_getTypeEncoding(method);
-            class_addMethod(selfClass, selector, qmui_getMsgForwardIMP(instance, selector), typeDescription);
-        }];
     });
 }
 
@@ -129,6 +148,154 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
     return NO;
 }
 
+- (CGSize)size {
+    return self.qmui_rawImage.size;
+}
+
+- (CGImageRef)CGImage {
+    return self.qmui_rawImage.CGImage;
+}
+
+- (CIImage *)CIImage {
+    return self.qmui_rawImage.CIImage;
+}
+
+- (UIImageOrientation)imageOrientation {
+    return self.qmui_rawImage.imageOrientation;
+}
+
+- (CGFloat)scale {
+    return self.qmui_rawImage.scale;
+}
+
+- (BOOL)isSymbolImage {
+    return self.qmui_rawImage.isSymbolImage;
+}
+
+- (NSArray<UIImage *> *)images {
+    return self.qmui_rawImage.images;
+}
+
+- (NSTimeInterval)duration {
+    return self.qmui_rawImage.duration;
+}
+
+- (UIEdgeInsets)alignmentRectInsets {
+    return self.qmui_rawImage.alignmentRectInsets;
+}
+
+- (void)drawAtPoint:(CGPoint)point {
+    [self.qmui_rawImage drawAtPoint:point];
+}
+
+- (void)drawAtPoint:(CGPoint)point blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha {
+    [self.qmui_rawImage drawAtPoint:point blendMode:blendMode alpha:alpha];
+}
+
+- (void)drawInRect:(CGRect)rect {
+    [self.qmui_rawImage drawInRect:rect];
+}
+
+- (void)drawInRect:(CGRect)rect blendMode:(CGBlendMode)blendMode alpha:(CGFloat)alpha {
+    [self.qmui_rawImage drawInRect:rect blendMode:blendMode alpha:alpha];
+}
+
+- (void)drawAsPatternInRect:(CGRect)rect {
+    [self.qmui_rawImage drawAsPatternInRect:rect];
+}
+
+- (UIImage *)resizableImageWithCapInsets:(UIEdgeInsets)capInsets {
+    return [self.qmui_rawImage resizableImageWithCapInsets:capInsets];
+}
+
+- (UIImage *)resizableImageWithCapInsets:(UIEdgeInsets)capInsets resizingMode:(UIImageResizingMode)resizingMode {
+    return [self.qmui_rawImage resizableImageWithCapInsets:capInsets resizingMode:resizingMode];
+}
+
+- (UIEdgeInsets)capInsets {
+    return [self.qmui_rawImage capInsets];
+}
+
+- (UIImageResizingMode)resizingMode {
+    return [self.qmui_rawImage resizingMode];
+}
+
+- (UIImage *)imageWithAlignmentRectInsets:(UIEdgeInsets)alignmentInsets {
+    return [self.qmui_rawImage imageWithAlignmentRectInsets:alignmentInsets];
+}
+
+- (UIImage *)imageWithRenderingMode:(UIImageRenderingMode)renderingMode {
+    return [self.qmui_rawImage imageWithRenderingMode:renderingMode];
+}
+
+- (UIImageRenderingMode)renderingMode {
+    return self.qmui_rawImage.renderingMode;
+}
+
+- (UIGraphicsImageRendererFormat *)imageRendererFormat {
+    return self.qmui_rawImage.imageRendererFormat;
+}
+
+- (UITraitCollection *)traitCollection {
+    return self.qmui_rawImage.traitCollection;
+}
+
+- (UIImageAsset *)imageAsset {
+    return self.qmui_rawImage.imageAsset;
+}
+
+- (UIImage *)imageFlippedForRightToLeftLayoutDirection {
+    return self.qmui_rawImage.imageFlippedForRightToLeftLayoutDirection;
+}
+
+- (BOOL)flipsForRightToLeftLayoutDirection {
+    return self.qmui_rawImage.flipsForRightToLeftLayoutDirection;
+}
+
+- (UIImage *)imageWithHorizontallyFlippedOrientation {
+    return self.qmui_rawImage.imageWithHorizontallyFlippedOrientation;
+}
+
+- (CGFloat)baselineOffsetFromBottom {
+    return self.qmui_rawImage.baselineOffsetFromBottom;
+}
+
+- (BOOL)hasBaseline {
+    return self.qmui_rawImage.hasBaseline;
+}
+
+- (UIImage *)imageWithBaselineOffsetFromBottom:(CGFloat)baselineOffset {
+    return [self.qmui_rawImage imageWithBaselineOffsetFromBottom:baselineOffset];
+}
+
+- (UIImage *)imageWithoutBaseline {
+    return self.qmui_rawImage.imageWithoutBaseline;
+}
+
+- (UIImageConfiguration *)configuration {
+    return self.qmui_rawImage.configuration;
+}
+
+- (UIImage *)imageWithConfiguration:(UIImageConfiguration *)configuration {
+    return [self.qmui_rawImage imageWithConfiguration:configuration];
+}
+
+- (UIImageSymbolConfiguration *)symbolConfiguration {
+    return self.qmui_rawImage.symbolConfiguration;
+}
+
+- (UIImage *)imageByApplyingSymbolConfiguration:(UIImageSymbolConfiguration *)configuration {
+    return [self.qmui_rawImage imageByApplyingSymbolConfiguration:configuration];
+}
+
+- (UIImage *)imageWithTintColor:(UIColor *)color {
+    return [self.qmui_rawImage imageWithTintColor:color];
+}
+
+- (UIImage *)imageWithTintColor:(UIColor *)color renderingMode:(UIImageRenderingMode)renderingMode {
+    return [self.qmui_rawImage imageWithTintColor:color renderingMode:renderingMode];
+}
+
 #pragma mark - <QMUIDynamicImageProtocol>
 
 - (UIImage *)qmui_rawImage {
@@ -157,7 +324,7 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 
 + (UIImage *)qmui_imageWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIImage * _Nonnull (^)(__kindof QMUIThemeManager * _Nonnull, __kindof NSObject<NSCopying> * _Nullable, __kindof NSObject * _Nullable))provider {
     QMUIThemeImage *image = [[QMUIThemeImage alloc] init];
-    image.cachedRawImages = [[NSCache alloc] init];
+    image.cachedRawImages = [[QMUIThemeImageCache alloc] init];
     image.managerName = name;
     image.themeProvider = provider;
     return (UIImage *)image;
