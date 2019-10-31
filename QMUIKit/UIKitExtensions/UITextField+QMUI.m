@@ -19,16 +19,6 @@
 
 @implementation UITextField (QMUI)
 
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        ExtendImplementationOfNonVoidMethodWithSingleArgument([UITextField class], @selector(initWithFrame:), CGRect, UITextField *, ^UITextField *(UITextField *selfObject, CGRect firstArgv, UITextField *originReturnValue) {
-            if (QMUICMIActivated) selfObject.keyboardAppearance = KeyboardAppearance;
-            return originReturnValue;
-        });
-    });
-}
-
 - (NSRange)qmui_selectedRange {
     NSInteger location = [self offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];
     NSInteger length = [self offsetFromPosition:self.selectedTextRange.start toPosition:self.selectedTextRange.end];

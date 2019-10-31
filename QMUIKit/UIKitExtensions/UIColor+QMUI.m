@@ -291,6 +291,10 @@ NSString *const QMUICGColorOriginalColorBindKey = @"QMUICGColorOriginalColorBind
     return NO;
 }
 
+- (BOOL)qmui_isQMUIDynamicColor {
+    return NO;
+}
+
 - (UIColor *)qmui_rawColor {
     if (self.qmui_isDynamicColor) {
 #ifdef IOS13_SDK_ALLOWED

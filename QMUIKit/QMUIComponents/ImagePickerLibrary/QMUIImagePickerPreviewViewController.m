@@ -109,10 +109,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
         self.checkboxButton.selected = [self.selectedImageAssetArray containsObject:imageAsset];
     }
     
-    BeginIgnoreDeprecatedWarning
-    [[UIApplication sharedApplication] setStatusBarHidden:YES];
-    EndIgnoreDeprecatedWarning
-    
     if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
         UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomizeNavigationBarTransitionIfHideable)] &&
@@ -125,10 +121,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    
-    BeginIgnoreDeprecatedWarning
-    [[UIApplication sharedApplication] setStatusBarHidden:NO];
-    EndIgnoreDeprecatedWarning
     
     if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
         UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;

@@ -80,6 +80,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 @property(nonatomic, strong, readonly) UILabel *subtitleLabel;
 @property(nonatomic, copy) NSString *subtitle;
 
+/// 当 tintColor 发生变化时是否要自动把 titleLabel、subtitleLabel、loadingView 的颜色也更新为 tintColor 的色值，默认为 YES，如果你自己修改了 titleLabel、subtitleLabel、loadingView 的颜色，需要把这个值置为 NO
+@property(nonatomic, assign) BOOL adjustsSubviewsTintColorAutomatically UI_APPEARANCE_SELECTOR;
+
 /// 水平布局下的标题字体，默认为 NavBarTitleFont
 @property(nonatomic, strong) UIFont *horizontalTitleFont UI_APPEARANCE_SELECTOR;
 

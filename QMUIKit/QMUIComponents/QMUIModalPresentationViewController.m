@@ -282,10 +282,10 @@ static QMUIModalPresentationViewController *appearance;
         
         if (self.shownInWindowMode) {
             // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/90
-            if ([[UIApplication sharedApplication] keyWindow] == self.containerWindow) {
+            if (UIApplication.sharedApplication.keyWindow == self.containerWindow) {
                 if (self.previousKeyWindow.hidden) {
                     // 保护了这个 issue 记录的情况，避免主 window 丢失 keyWindow https://github.com/Tencent/QMUI_iOS/issues/315
-                    [[UIApplication sharedApplication].delegate.window makeKeyWindow];
+                    [UIApplication.sharedApplication.delegate.window makeKeyWindow];
                 } else {
                     [self.previousKeyWindow makeKeyWindow];
                 }
@@ -479,7 +479,7 @@ static QMUIModalPresentationViewController *appearance;
     // makeKeyAndVisible 导致的 viewWillAppear: 必定 animated 是 NO 的，所以这里用额外的变量保存这个 animated 的值
     self.appearAnimated = animated;
     self.appearCompletionBlock = completion;
-    self.previousKeyWindow = [UIApplication sharedApplication].keyWindow;
+    self.previousKeyWindow = UIApplication.sharedApplication.keyWindow;
     if (!self.containerWindow) {
         self.containerWindow = [[QMUIModalPresentationWindow alloc] init];
         self.containerWindow.qmui_capturesStatusBarAppearance = NO;// modalPrensetationViewController.contentViewController 默认无权管理状态栏的样式，如需修改状态栏，请业务自己将这个属性改为 YES
@@ -645,7 +645,7 @@ static QMUIModalPresentationViewController *appearance;
 @implementation QMUIModalPresentationViewController (Manager)
 
 + (BOOL)isAnyModalPresentationViewControllerVisible {
-    for (UIWindow *window in [[UIApplication sharedApplication] windows]) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         if ([window isKindOfClass:[QMUIModalPresentationWindow class]] && !window.hidden) {
             return YES;
         }
@@ -657,7 +657,7 @@ static QMUIModalPresentationViewController *appearance;
     
     BOOL hideAllFinally = YES;
     
-    for (UIWindow *window in [[UIApplication sharedApplication] windows]) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         if (![window isKindOfClass:[QMUIModalPresentationWindow class]]) {
             continue;
         }
@@ -706,13 +706,19 @@ static QMUIModalPresentationViewController *appearance;
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    if (self.rootViewController) {
-        // https://github.com/Tencent/QMUI_iOS/issues/375
-        UIView *rootView = self.rootViewController.view;
-        if (CGRectGetMinY(rootView.frame) > 0 && ![UIApplication sharedApplication].statusBarHidden && StatusBarHeight > CGRectGetMinY(rootView.frame)) {
-            rootView.frame = self.bounds;
+    // 避免来电状态时只 modal 的遮罩只盖住一部分的状态栏
+    // 但在 iOS 13 及以后，来电状态下状态栏的高度不会再变化了
+    // https://github.com/Tencent/QMUI_iOS/issues/375
+    if (@available(iOS 13.0, *)) {
+    } else {
+        if (self.rootViewController) {
+            UIView *rootView = self.rootViewController.view;
+            if (CGRectGetMinY(rootView.frame) > 0 && !UIApplication.sharedApplication.statusBarHidden && StatusBarHeight > CGRectGetMinY(rootView.frame)) {
+                rootView.frame = self.bounds;
+            }
         }
     }
+
 }
 
 @end

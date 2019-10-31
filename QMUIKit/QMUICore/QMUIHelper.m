@@ -24,11 +24,19 @@
 #import <math.h>
 #import <sys/utsname.h>
 
+NSString *const kQMUIResourcesBundleName = @"QMUIResources";
+
 @implementation QMUIHelper (Bundle)
 
 + (UIImage *)imageWithName:(NSString *)name {
-    NSBundle *bundle = [NSBundle bundleForClass:self.class];
-    return [UIImage imageNamed:name inBundle:bundle compatibleWithTraitCollection:nil];
+    static NSBundle *resourceBundle = nil;
+    if (!resourceBundle) {
+        NSBundle *mainBundle = [NSBundle bundleForClass:self];
+        NSString *resourcePath = [mainBundle pathForResource:kQMUIResourcesBundleName ofType:@"bundle"];
+        resourceBundle = [NSBundle bundleWithPath:resourcePath] ?: mainBundle;
+    }
+    UIImage *image = [UIImage imageNamed:name inBundle:resourceBundle compatibleWithTraitCollection:nil];
+    return image;
 }
 
 @end
@@ -39,7 +47,7 @@
 + (NSNumber *)preferredContentSizeLevel {
     NSNumber *index = nil;
     if ([UIApplication instancesRespondToSelector:@selector(preferredContentSizeCategory)]) {
-        NSString *contentSizeCategory = [[UIApplication sharedApplication] preferredContentSizeCategory];
+        NSString *contentSizeCategory = UIApplication.sharedApplication.preferredContentSizeCategory;
         if ([contentSizeCategory isEqualToString:UIContentSizeCategoryExtraSmall]) {
             index = [NSNumber numberWithInt:0];
         } else if ([contentSizeCategory isEqualToString:UIContentSizeCategorySmall]) {
@@ -578,7 +586,7 @@ static CGFloat preferredLayoutWidth = -1;
                                         @([self screenSizeFor58Inch].width),
                                         @([self screenSizeFor40Inch].width)];
         preferredLayoutWidth = SCREEN_WIDTH;
-        UIWindow *window = [UIApplication sharedApplication].delegate.window ?: [[UIWindow alloc] init];// iOS 9 及以上的系统，新 init 出来的 window 自动被设置为当前 App 的宽度
+        UIWindow *window = UIApplication.sharedApplication.delegate.window ?: [[UIWindow alloc] init];// iOS 9 及以上的系统，新 init 出来的 window 自动被设置为当前 App 的宽度
         CGFloat windowWidth = CGRectGetWidth(window.bounds);
         for (NSInteger i = 0; i < widths.count; i++) {
             if (windowWidth <= widths[i].qmui_CGFloatValue) {
@@ -599,7 +607,7 @@ static CGFloat preferredLayoutWidth = -1;
         return UIEdgeInsetsMake(0, 0, 20, 0);
     }
     
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
     
     switch (orientation) {
         case UIInterfaceOrientationPortrait:
@@ -668,13 +676,13 @@ static NSInteger isHighPerformanceDevice = -1;
 @implementation QMUIHelper (UIApplication)
 
 + (void)dimmedApplicationWindow {
-    UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
+    UIWindow *window = UIApplication.sharedApplication.delegate.window;
     window.tintAdjustmentMode = UIViewTintAdjustmentModeDimmed;
     [window tintColorDidChange];
 }
 
 + (void)resetDimmedApplicationWindow {
-    UIWindow *window = [[[UIApplication sharedApplication] delegate] window];
+    UIWindow *window = UIApplication.sharedApplication.delegate.window;
     window.tintAdjustmentMode = UIViewTintAdjustmentModeNormal;
     [window tintColorDidChange];
 }

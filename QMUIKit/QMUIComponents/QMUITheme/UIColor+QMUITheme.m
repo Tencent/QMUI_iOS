@@ -22,6 +22,43 @@
 
 @implementation QMUIThemeColor
 
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // 随着 iOS 版本的迭代，需要不断检查 UIDynamicColor 对比 UIColor 多出来的方法是哪些，然后在 QMUIThemeColor 里补齐，否则可能出现”unrecognized selector sent to instance“的 crash
+        // https://github.com/Tencent/QMUI_iOS/issues/791
+#if defined(DEBUG) && defined(IOS13_SDK_ALLOWED)
+        if (@available(iOS 13.0, *)) {
+            Class dynamicColorClass = NSClassFromString(@"UIDynamicColor");
+            NSMutableSet<NSString *> *unrecognizedSelectors = NSMutableSet.new;
+            NSDictionary<NSString *, NSMutableSet<NSString *> *> *methods = @{
+                NSStringFromClass(UIColor.class): NSMutableSet.new,
+                NSStringFromClass(dynamicColorClass): NSMutableSet.new,
+                NSStringFromClass(self): NSMutableSet.new
+            };
+            [methods enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull classString, NSMutableSet<NSString *> * _Nonnull methods, BOOL * _Nonnull stop) {
+                [NSObject qmui_enumrateInstanceMethodsOfClass:NSClassFromString(classString) includingInherited:NO usingBlock:^(Method  _Nonnull method, SEL  _Nonnull selector) {
+                    [methods addObject:NSStringFromSelector(selector)];
+                }];
+            }];
+            [methods[NSStringFromClass(UIColor.class)] enumerateObjectsUsingBlock:^(NSString * _Nonnull selectorString, BOOL * _Nonnull stop) {
+                if ([methods[NSStringFromClass(dynamicColorClass)] containsObject:selectorString]) {
+                    [methods[NSStringFromClass(dynamicColorClass)] removeObject:selectorString];
+                }
+            }];
+            [methods[NSStringFromClass(dynamicColorClass)] enumerateObjectsUsingBlock:^(NSString * _Nonnull selectorString, BOOL * _Nonnull stop) {
+                if (![methods[NSStringFromClass(self)] containsObject:selectorString]) {
+                    [unrecognizedSelectors addObject:selectorString];
+                }
+            }];
+            if (unrecognizedSelectors.count > 0) {
+                QMUILogWarn(NSStringFromClass(self), @"%@ 还需要实现以下方法：%@", NSStringFromClass(self), unrecognizedSelectors);
+            }
+        }
+#endif
+    });
+}
+
 #pragma mark - Override
 
 - (void)set {
@@ -87,6 +124,14 @@
     return [NSString stringWithFormat:@"%@, qmui_rawColor = %@", [super description], self.qmui_rawColor];
 }
 
+- (UIColor *)_highContrastDynamicColor {
+    return self;
+}
+
+- (UIColor *)_resolvedColorWithTraitCollection:(UITraitCollection *)traitCollection {
+    return self.qmui_rawColor;
+}
+
 #pragma mark - <QMUIDynamicColorProtocol>
 
 @dynamic qmui_isDynamicColor;
@@ -98,7 +143,13 @@
     return result;
 }
 
+- (BOOL)qmui_isQMUIDynamicColor {
+    return YES;
+}
 
+// _isDynamic 是系统私有的方法，实现它有两个作用：
+// 1. 在某些方法里（例如 UIView.backgroundColor），系统会判断当前的 color 是否为 _isDynamic，如果是，则返回 color 本身，如果否，则返回 color 的 CGColor，因此如果 QMUIThemeColor 不实现 _isDynamic 的话，`a.backgroundColor = b.backgroundColor`这种写法就会出错，因为从 `b.backgroundColor` 获取到的 color 已经是用 CGColor 重新创建的系统 UIColor，而非 QMUIThemeColor 了。
+// 2. 当 iOS 13 系统设置里的 Dark Mode 发生切换时，系统会自动刷新带有 _isDynamic 方法的 color 对象，当然这个对 QMUI 而言作用不大，因为 QMUIThemeManager 有自己一套刷新逻辑，且很少有人会用 QMUIThemeColor 但却只依赖于 iOS 13 系统来刷新界面。
 // 注意，QMUIThemeColor 是 UIColor 的直接子类，只有这种关系才能这样直接定义并重写，不能在 UIColor Category 里定义，否则可能污染 UIDynamicColor 里的 _isDynamic 的实现
 - (BOOL)_isDynamic {
     return !!self.themeProvider;

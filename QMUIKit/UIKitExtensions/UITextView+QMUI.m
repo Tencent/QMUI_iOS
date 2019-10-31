@@ -18,16 +18,6 @@
 
 @implementation UITextView (QMUI)
 
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        ExtendImplementationOfNonVoidMethodWithSingleArgument([UITextView class], @selector(initWithFrame:), CGRect, UITextView *, ^UITextView *(UITextView *selfObject, CGRect firstArgv, UITextView *originReturnValue) {
-            if (QMUICMIActivated) selfObject.keyboardAppearance = KeyboardAppearance;
-            return originReturnValue;
-        });
-    });
-}
-
 - (NSRange)qmui_convertNSRangeFromUITextRange:(UITextRange *)textRange {
     NSInteger location = [self offsetFromPosition:self.beginningOfDocument toPosition:textRange.start];
     NSInteger length = [self offsetFromPosition:textRange.start toPosition:textRange.end];

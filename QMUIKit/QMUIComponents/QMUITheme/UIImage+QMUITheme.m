@@ -168,10 +168,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
     return self.qmui_rawImage.scale;
 }
 
-- (BOOL)isSymbolImage {
-    return self.qmui_rawImage.isSymbolImage;
-}
-
 - (NSArray<UIImage *> *)images {
     return self.qmui_rawImage.images;
 }
@@ -256,6 +252,12 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
     return self.qmui_rawImage.imageWithHorizontallyFlippedOrientation;
 }
 
+#ifdef IOS13_SDK_ALLOWED
+
+- (BOOL)isSymbolImage {
+    return self.qmui_rawImage.isSymbolImage;
+}
+
 - (CGFloat)baselineOffsetFromBottom {
     return self.qmui_rawImage.baselineOffsetFromBottom;
 }
@@ -295,6 +297,8 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 - (UIImage *)imageWithTintColor:(UIColor *)color renderingMode:(UIImageRenderingMode)renderingMode {
     return [self.qmui_rawImage imageWithTintColor:color renderingMode:renderingMode];
 }
+
+#endif
 
 #pragma mark - <QMUIDynamicImageProtocol>
 

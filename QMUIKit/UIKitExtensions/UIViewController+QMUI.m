@@ -475,7 +475,7 @@ static char kAssociatedObjectKey_dataLoaded;
             }
             
             
-            UIInterfaceOrientation statusBarOrientation = [[UIApplication sharedApplication] statusBarOrientation];
+            UIInterfaceOrientation statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
             UIDeviceOrientation deviceOrientationBeforeChangingByHelper = [QMUIHelper sharedInstance].orientationBeforeChangingByHelper;
             BOOL shouldConsiderBeforeChanging = deviceOrientationBeforeChangingByHelper != UIDeviceOrientationUnknown;
             UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
@@ -541,7 +541,7 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
 @implementation QMUIHelper (ViewController)
 
 + (nullable UIViewController *)visibleViewController {
-    UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+    UIViewController *rootViewController = UIApplication.sharedApplication.delegate.window.rootViewController;
     UIViewController *visibleViewController = [rootViewController qmui_visibleViewControllerIfExist];
     return visibleViewController;
 }

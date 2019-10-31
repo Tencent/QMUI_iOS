@@ -60,11 +60,6 @@
     return self;
 }
 
-// 解决 iOS 8 以后的 cell 中 separatorInset 受 layoutMargins 影响的问题
-- (UIEdgeInsets)layoutMargins {
-    return UIEdgeInsetsZero;
-}
-
 - (void)layoutSubviews {
     [super layoutSubviews];
     

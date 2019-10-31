@@ -20,7 +20,7 @@
 extern const NSInteger QMUITipsAutomaticallyHideToastSeconds;
 
 /// 默认的 parentView
-#define DefaultTipsParentView [[[UIApplication sharedApplication] delegate] window]
+#define DefaultTipsParentView (UIApplication.sharedApplication.delegate.window)
 
 /**
  * 简单封装了 QMUIToastView，支持弹出纯文本、loading、succeed、error、info 等五种 tips。如果这些接口还满足不了业务的需求，可以通过 QMUITips 的分类自行添加接口。

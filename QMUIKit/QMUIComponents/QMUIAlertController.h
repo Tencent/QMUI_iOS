@@ -278,6 +278,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 @property(nonatomic, assign) BOOL isExtendBottomLayout UI_APPEARANCE_SELECTOR;
 
 /// 在显示 alert 之前先降下键盘，默认为 YES。系统的 UIAlertController 也会在显示时降下键盘，但它能在消失后把键盘自动升起，并且这个过程不会触发 becomeFirstResponder/resignFirstResponder，QMUIAlertController 暂时做不到这样的效果，只负责降下，不负责恢复。
+/// iOS 10 及以上，一个 UIWindow 显示出来时默认就会降下键盘，所以这个属性只在 iOS 9 里有效，iOS 10 及以上即便设置为 NO 也没有效果。
 @property(nonatomic, assign) BOOL dismissKeyboardAutomatically;
 
 @end

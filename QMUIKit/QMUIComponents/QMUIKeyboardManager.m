@@ -393,10 +393,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (UIResponder *)firstResponderInWindows {
-    UIResponder *responder = [[UIApplication sharedApplication].keyWindow qmui_findFirstResponder];
+    UIResponder *responder = [UIApplication.sharedApplication.keyWindow qmui_findFirstResponder];
     if (!responder) {
-        for (UIWindow *window in [UIApplication sharedApplication].windows) {
-            if (window != [UIApplication sharedApplication].keyWindow) {
+        for (UIWindow *window in UIApplication.sharedApplication.windows) {
+            if (window != UIApplication.sharedApplication.keyWindow) {
                 responder = [window qmui_findFirstResponder];
                 if (responder) {
                     return responder;
@@ -422,7 +422,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (self.ignoreApplicationState) {
         return YES;
     }
-    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive) {
+    if (UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
         return YES;
     }
     return NO;
@@ -627,8 +627,17 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (BOOL)shouldReceiveShowNotification {
-    // 这里有 BUG，如果点击了 webview 导致键盘下降，这个时候运行 shouldReceiveHideNotification 就会判断错误，所以如果发现是 nil 则值不变
-    self.currentResponder = [self firstResponderInWindows] ?: self.currentResponder;
+   
+    UIResponder *firstResponder = [self firstResponderInWindows];
+    if (self.currentResponder) {
+         // 这里有 BUG，如果点击了 webview 导致键盘下降，这个时候运行 shouldReceiveHideNotification 就会判断错误，所以如果发现是 nil 或是 WKContentView 则值不变
+        if (firstResponder && ![firstResponder isKindOfClass:NSClassFromString(@"WKContentView")]) {
+            self.currentResponder = firstResponder;
+        }
+    } else {
+        self.currentResponder = firstResponder;
+    }
+
     if (self.targetResponderValues.count <= 0) {
         return YES;
     } else {
@@ -712,7 +721,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         self.keyboardMoveBeginRect = endFrame;
         
         if (self.currentResponder) {
-            UIWindow *mainWindow = [UIApplication sharedApplication].keyWindow ?: [[UIApplication sharedApplication] windows].firstObject;
+            UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
             if (mainWindow) {
                 CGRect keyboardRect = keyboardMoveUserInfo.endFrame;
                 CGFloat distanceFromBottom = [QMUIKeyboardManager distanceFromMinYToBottomInView:mainWindow keyboardRect:keyboardRect];
@@ -772,7 +781,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 
 + (UIWindow *)keyboardWindow {
     
-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         if ([self getKeyboardViewFromWindow:window]) {
             return window;
         }
@@ -780,7 +789,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     
     NSMutableArray *kbWindows = nil;
     
-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         NSString *windowName = NSStringFromClass(window.class);
         if ([windowName isEqualToString:[NSString stringWithFormat:@"UI%@%@", @"Remote", @"KeyboardWindow"]]) {
             // UIRemoteKeyboardWindow（iOS9 以下 UITextEffectsWindow）
@@ -802,7 +811,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         return rect;
     }
     
-    UIWindow *mainWindow = [UIApplication sharedApplication].keyWindow ?: [UIApplication sharedApplication].windows.firstObject;
+    UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
     if (!mainWindow) {
         if (view) {
             [view convertRect:rect fromView:nil];
@@ -841,7 +850,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 + (UIView *)keyboardView {
-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         UIView *view = [self getKeyboardViewFromWindow:window];
         if (view) {
             return view;

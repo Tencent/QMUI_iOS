@@ -382,7 +382,7 @@
         QMUICommonViewController *viewController = (QMUICommonViewController *)self.popupWindow.rootViewController;
         viewController.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
         
-        self.previousKeyWindow = [UIApplication sharedApplication].keyWindow;
+        self.previousKeyWindow = UIApplication.sharedApplication.keyWindow;
         [self.popupWindow makeKeyAndVisible];
         
         isShowingByWindowMode = YES;
@@ -458,7 +458,7 @@
 - (void)hideCompletionWithWindowMode:(BOOL)windowMode completion:(void (^)(BOOL))completion {
     if (windowMode) {
         // 恢复 keyWindow 之前做一下检查，避免类似问题 https://github.com/Tencent/QMUI_iOS/issues/90
-        if ([[UIApplication sharedApplication] keyWindow] == self.popupWindow) {
+        if (UIApplication.sharedApplication.keyWindow == self.popupWindow) {
             [self.previousKeyWindow makeKeyWindow];
         }
         

@@ -124,8 +124,6 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
         OverrideImplementation([UISearchBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UISearchBar *selfObject, CGRect frame) {
                 
-                if (QMUICMIActivated) selfObject.keyboardAppearance = KeyboardAppearance;
-                
                 frame = [selfObject qmui_adjustedSearchBarFrameByOriginalFrame:frame];
                 
                 // call super
@@ -225,22 +223,13 @@ static char kAssociatedObjectKey_cancelButtonFont;
     }
     
     // 搜索框的字号及 placeholder 的字号
-    UIFont *font = SearchBarFont;
-    if (font) {
-        self.qmui_font = font;
-    }
+    self.qmui_font = SearchBarFont;
 
     // 搜索框的文字颜色
-    UIColor *textColor = SearchBarTextColor;
-    if (textColor) {
-        self.qmui_textColor = textColor;
-    }
+    self.qmui_textColor = SearchBarTextColor;
 
     // placeholder 的文字颜色
-    UIColor *placeholderColor = SearchBarPlaceholderColor;
-    if (placeholderColor) {
-        self.qmui_placeholderColor = placeholderColor;
-    }
+    self.qmui_placeholderColor = SearchBarPlaceholderColor;
 
     self.placeholder = @"搜索";
     self.autocorrectionType = UITextAutocorrectionTypeNo;
@@ -379,7 +368,13 @@ static char kAssociatedObjectKey_cancelButtonFont;
 - (CGRect)qmui_adjustedSearchTextFieldFrameByOriginalFrame:(CGRect)frame {
     if (self.qmui_shouldFixLayoutWhenUsedAsTableHeaderView) {
         if (self.qmui_searchController.isBeingPresented) {
-            CGFloat visibleHeight = [UIApplication sharedApplication].statusBarHidden ? 56 : 50;
+            BOOL statusBarHidden = NO;
+            if (@available(iOS 13.0, *)) {
+                statusBarHidden = self.window.windowScene.statusBarManager.statusBarHidden;
+            } else {
+                statusBarHidden = UIApplication.sharedApplication.statusBarHidden;
+            }
+            CGFloat visibleHeight = statusBarHidden ? 56 : 50;
             frame.origin.y = (visibleHeight - self.qmui_textField.qmui_height) / 2;
         } else if (self.qmui_searchController.isBeingDismissed) {
             frame.origin.y = (56 - self.qmui_textField.qmui_height) / 2;

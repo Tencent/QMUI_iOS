@@ -169,6 +169,9 @@ extern NSString *const QMUICGColorOriginalColorBindKey;
 /// 标志当前 UIColor 对象是否为动态颜色（由 [UIColor qmui_colorWithThemeProvider:] 创建的颜色，或者 iOS 13 下由 [UIColor colorWithDynamicProvider:]、[UIColor initWithDynamicProvider:] 创建的颜色）
 @property(nonatomic, assign, readonly) BOOL qmui_isDynamicColor;
 
+/// 标志当前 UIColor 对象是否为 QMUIThemeColor
+@property(nonatomic, assign, readonly) BOOL qmui_isQMUIDynamicColor;
+
 @optional
 /// 这方法其实是 iOS 13 新增的 UIDynamicColor 里的私有方法，只要任意 UIColor 的类实现这个方法并返回 YES，就能自动响应 iOS 13 下的 UIUserInterfaceStyle 的切换，这里在 protocol 里声明是为了方便 .m 里调用（否则会因为不存在的 selector 而无法编译）
 @property(nonatomic, assign, readonly) BOOL _isDynamic;

@@ -24,7 +24,7 @@
  *
  *  Inherent your tabBarController from this, so you can enjoy:
  *  1. a tabBar with styles defined in configuration templates
- *. 2. a tabBar that manages supported interface orientations
+ *  2. a tabBar that manages supported interface orientations
  *
  */
 @interface QMUITabBarViewController : UITabBarController

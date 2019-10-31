@@ -5,16 +5,15 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  *****/
-
 //
-//  QMUIViewController.h
-//  qmui
+//  UITextInputTraits+QMUI.h
+//  QMUIKit
 //
-//  Created by QMUI Team on 15/4/13.
+//  Created by MoLice on 2019/O/16.
 //
 
-#import "QMUICommonViewController.h"
+#import <UIKit/UIKit.h>
 
-@interface QMUIViewController : QMUICommonViewController
+@interface NSObject (QMUITextInput)
 
 @end

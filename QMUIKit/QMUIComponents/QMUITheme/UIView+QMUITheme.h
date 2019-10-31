@@ -38,7 +38,10 @@ NS_ASSUME_NONNULL_BEGIN
  @param identifier 当前主题的标志，可自行修改参数类型为目标类型
  @param theme 当前主题对象，可自行修改参数类型为目标类型
  */
-- (void)qmui_themeDidChangeByManager:(QMUIThemeManager *)manager identifier:(__kindof NSObject<NSCopying> *)identifier theme:(__kindof NSObject *)theme NS_REQUIRES_SUPER;
+- (void)qmui_themeDidChangeByManager:(nullable QMUIThemeManager *)manager identifier:(nullable __kindof NSObject<NSCopying> *)identifier theme:(nullable __kindof NSObject *)theme NS_REQUIRES_SUPER;
+
+@property(nonatomic, copy, nullable) void (^qmui_themeDidChangeBlock)(void);
+
 @end
 
 NS_ASSUME_NONNULL_END

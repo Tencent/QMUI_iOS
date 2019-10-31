@@ -81,7 +81,7 @@ static BOOL kHasAddedMenuControllerNotification = NO;
     if (kMenuControllerWindow && !kMenuControllerWindow.hidden) {
         return kMenuControllerWindow;
     }
-    [[UIApplication sharedApplication].windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
+    [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *windowString = [NSString stringWithFormat:@"UI%@%@", @"Text", @"EffectsWindow"];
         if ([window isKindOfClass:NSClassFromString(windowString)] && !window.hidden) {
             [window.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull subview, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -98,8 +98,8 @@ static BOOL kHasAddedMenuControllerNotification = NO;
 
 - (UIWindow *)windowForFirstResponder {
     __block UIWindow *resultWindow = nil;
-    [[UIApplication sharedApplication].windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (window != [UIApplication sharedApplication].delegate.window) {
+    [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (window != UIApplication.sharedApplication.delegate.window) {
             UIResponder *responder = [self findFirstResponderInView:window];
             if (responder) {
                 resultWindow = window;

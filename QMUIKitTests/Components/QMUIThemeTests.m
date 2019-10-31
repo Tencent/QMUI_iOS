@@ -65,7 +65,7 @@
     XCTAssertFalse(color.CGColor == nil);
     
     XCTAssertNoThrow([color copy]);
-    XCTAssertTrue(((UIColor *)[color copy]).qmui_isDynamicColor);
+    XCTAssertTrue(((UIColor *)[color copy]).qmui_isQMUIDynamicColor);
     
     XCTAssertNoThrow([color isEqual:nil]);
     XCTAssertTrue([color isEqual:color]);

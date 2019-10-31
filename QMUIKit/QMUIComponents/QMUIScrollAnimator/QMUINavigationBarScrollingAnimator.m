@@ -80,9 +80,9 @@
                     // 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请自行通过系统提供的 - preferredStatusBarStyle 方法来实现，statusbarStyleBlock 无效
                     BeginIgnoreDeprecatedWarning
                     if (style >= UIStatusBarStyleLightContent) {
-                        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
+                        [UIApplication.sharedApplication setStatusBarStyle:UIStatusBarStyleLightContent];
                     } else {
-                        [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleDefault];
+                        [UIApplication.sharedApplication setStatusBarStyle:UIStatusBarStyleDefault];
                     }
                     EndIgnoreDeprecatedWarning
                 }

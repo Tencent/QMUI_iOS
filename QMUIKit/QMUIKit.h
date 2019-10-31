@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.0.2";
+static NSString * const QMUI_VERSION = @"4.0.3";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -573,6 +573,10 @@ static NSString * const QMUI_VERSION = @"4.0.2";
 
 #if __has_include("UITextField+QMUI.h")
 #import "UITextField+QMUI.h"
+#endif
+
+#if __has_include("UITextInputTraits+QMUI.h")
+#import "UITextInputTraits+QMUI.h"
 #endif
 
 #if __has_include("UITextView+QMUI.h")

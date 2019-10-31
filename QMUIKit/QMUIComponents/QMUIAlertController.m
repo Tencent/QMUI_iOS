@@ -897,8 +897,12 @@ static QMUIAlertController *alertControllerAppearance;
     if (self.alertTextFields.count > 0) {
         [self.alertTextFields.firstObject becomeFirstResponder];
     } else {
-        if (self.dismissKeyboardAutomatically && [QMUIKeyboardManager isKeyboardVisible]) {
-            [[UIApplication sharedApplication] sendAction:@selector(resignFirstResponder) to:nil from:nil forEvent:nil];
+        // iOS 10 及以上的版本在显示 window 时都会自动降下当前 App 的键盘，所以只有 iOS 9 及以下才需要手动处理
+        if (@available(iOS 10.0, *)) {
+        } else {
+            if (self.dismissKeyboardAutomatically && [QMUIKeyboardManager isKeyboardVisible]) {
+                [UIApplication.sharedApplication sendAction:@selector(resignFirstResponder) to:nil from:nil forEvent:nil];
+            }
         }
     }
     if (_needsUpdateAction) {

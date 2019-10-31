@@ -732,7 +732,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 - (NSArray <UIViewController *>*)appearanceUpdatingViewControllersOfClass:(Class)class {
     NSMutableArray *viewControllers = [NSMutableArray array];
-    [[UIApplication sharedApplication].windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
+    [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
         if (window.rootViewController) {
             [viewControllers addObjectsFromArray:[window.rootViewController qmui_existingViewControllersOfClass:class]];
         }

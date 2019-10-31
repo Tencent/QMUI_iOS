@@ -291,7 +291,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 
 @end
 
-/// 专用于QMUIModalPresentationViewController的UIWindow，这样才能在`[[UIApplication sharedApplication] windows]`里方便地区分出来
+/// 专用于QMUIModalPresentationViewController的UIWindow，这样才能在`UIApplication.sharedApplication.windows`里方便地区分出来
 @interface QMUIModalPresentationWindow : UIWindow
 
 @end

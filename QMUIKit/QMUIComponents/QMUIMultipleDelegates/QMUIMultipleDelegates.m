@@ -104,6 +104,7 @@
         BOOL delegateCanRespondToSelector = [delegate isKindOfClass:self.class] ? [delegate respondsToSelector:aSelector] : class_respondsToSelector(((NSObject *)delegate).class, aSelector);
         
         // 判断 qmui_delegatesSelf 是为了解决这个 issue：https://github.com/Tencent/QMUI_iOS/issues/346
+        // 不支持 self.delegate = self 的写法，会引发死循环，有这种需求的场景建议在 self 内部创建一个对象专门用于 delegate 的响应，参考 _QMUITextViewDelegator。
         BOOL isDelegateSelf = ((NSObject *)delegate).qmui_delegatesSelf;
         if (delegateCanRespondToSelector && !isDelegateSelf) {
             return YES;

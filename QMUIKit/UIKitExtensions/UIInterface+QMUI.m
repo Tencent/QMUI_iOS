@@ -115,7 +115,7 @@ QMUISynthesizeNSIntegerProperty(orientationBeforeChangingByHelper, setOrientatio
 }
 
 + (CGAffineTransform)transformForCurrentInterfaceOrientation {
-    return [QMUIHelper transformWithInterfaceOrientation:[[UIApplication sharedApplication] statusBarOrientation]];
+    return [QMUIHelper transformWithInterfaceOrientation:UIApplication.sharedApplication.statusBarOrientation];
 }
 
 + (CGAffineTransform)transformWithInterfaceOrientation:(UIInterfaceOrientation)orientation {

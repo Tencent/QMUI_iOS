@@ -40,10 +40,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets   dialogViewMargins UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        maximumContentViewWidth UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIColor        *backgroundColor UI_APPEARANCE_SELECTOR;
+
+/// 标题的 tintColor，当没有设置 titleLabelTextColor 和 subTitleLabelTextColor 的情况下，标题和副标题的颜色均会使用 titleTintColor，当 titleLabelTextColor 和 subTitleLabelTextColor 其中任何一个被设置了值时，则 titleTintColor 作为候选项使用（也即谁为 nil 才会用 titleTintColor 顶替，不为 nil 则不会用到 titleTintColor）。
+/// 默认为 nil
 @property(nullable, nonatomic, strong) UIColor        *titleTintColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIFont         *titleLabelFont UI_APPEARANCE_SELECTOR;
+
+/// 主标题的文字颜色，当为 nil 时则会使用 titleView 的 tintColor 作为文字颜色
 @property(nullable, nonatomic, strong) UIColor        *titleLabelTextColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIFont         *subTitleLabelFont UI_APPEARANCE_SELECTOR;
+
+/// 副标题的文字颜色，当为 nil 时则会使用 titleView 的 tintColor 作为文字颜色
+/// @note 副标题可通过 dialog.titleView.subtitle 来设置
 @property(nullable, nonatomic, strong) UIColor        *subTitleLabelTextColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIColor        *headerSeparatorColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        headerViewHeight UI_APPEARANCE_SELECTOR;

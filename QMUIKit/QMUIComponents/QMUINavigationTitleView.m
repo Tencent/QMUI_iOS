@@ -128,6 +128,8 @@
         self.verticalSubtitleFont = appearance.verticalSubtitleFont;
         self.accessoryViewOffset = appearance.accessoryViewOffset;
         self.subAccessoryViewOffset = appearance.subAccessoryViewOffset;
+        
+        self.adjustsSubviewsTintColorAutomatically = YES;
         self.tintColor = QMUICMIActivated ? NavBarTitleColor : [UINavigationBar appearance].titleTextAttributes[NSForegroundColorAttributeName];
     }
     return self;
@@ -649,10 +651,12 @@
 - (void)tintColorDidChange {
     [super tintColorDidChange];
     
-    UIColor *color = self.tintColor;
-    self.titleLabel.textColor = color;
-    self.subtitleLabel.textColor = color;
-    self.loadingView.color = color;
+    if (self.adjustsSubviewsTintColorAutomatically) {
+        UIColor *color = self.tintColor;
+        self.titleLabel.textColor = color;
+        self.subtitleLabel.textColor = color;
+        self.loadingView.color = color;
+    }
 }
 
 #pragma mark - Events
@@ -688,6 +692,7 @@
 
 + (void)setDefaultAppearance {
     QMUINavigationTitleView *appearance = [QMUINavigationTitleView appearance];
+    appearance.adjustsSubviewsTintColorAutomatically = YES;
     appearance.maximumWidth = CGFLOAT_MAX;
     appearance.loadingViewSize = CGSizeMake(18, 18);
     appearance.loadingViewMarginRight = 3;

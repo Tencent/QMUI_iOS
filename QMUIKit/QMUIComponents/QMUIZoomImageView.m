@@ -258,7 +258,12 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 - (CGFloat)minimumZoomScale {
-    if (!self.image && !self.livePhoto && !self.videoPlayerItem) {
+    BOOL isLivePhoto = NO;
+    if (@available(iOS 9.1, *)) {
+        isLivePhoto = !!self.livePhoto;
+    }
+
+    if (!self.image && !isLivePhoto && !self.videoPlayerItem) {
         return 1;
     }
     
@@ -266,8 +271,10 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     CGSize mediaSize = CGSizeZero;
     if (self.image) {
         mediaSize = self.image.size;
-    } else if (self.livePhoto) {
-        mediaSize = self.livePhoto.size;
+    } else if (isLivePhoto) {
+        if (@available(iOS 9.1, *)) {
+            mediaSize = self.livePhoto.size;
+        }
     } else if (self.videoPlayerItem) {
         mediaSize = self.videoSize;
     }
@@ -391,9 +398,13 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (BOOL)enabledZoomImageView {
     BOOL enabledZoom = YES;
+    BOOL isLivePhoto = NO;
+    if (@available(iOS 9.1, *)) {
+        isLivePhoto = !!self.livePhoto;
+    }
     if ([self.delegate respondsToSelector:@selector(enabledZoomViewInZoomImageView:)]) {
         enabledZoom = [self.delegate enabledZoomViewInZoomImageView:self];
-    } else if (!self.image && !self.livePhoto && !self.videoPlayerItem) {
+    } else if (!self.image && !isLivePhoto && !self.videoPlayerItem) {
         enabledZoom = NO;
     }
     return enabledZoom;

@@ -27,6 +27,8 @@
  *  [self qmui_registerDelegateSelector:@selector(abcDelegate)];
  *  self.abcDelegate = delegateA;
  *  self.abcDelegate = delegateB;
+ *
+ *  @warning 不支持 self.delegate = self 的写法，会引发死循环，有这种需求的场景建议在 self 内部创建一个对象专门用于 delegate 的响应，参考 _QMUITextViewDelegator。
  */
 @interface NSObject (QMUIMultipleDelegates)
 

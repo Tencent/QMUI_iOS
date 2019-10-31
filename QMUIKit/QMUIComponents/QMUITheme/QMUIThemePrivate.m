@@ -152,7 +152,7 @@
                                        
                                        // UITextField 支持富文本，因此不能重新设置 textColor 那些属性，会令原有的富文本信息丢失，所以这里直接把文字重新赋值进去即可
                                        // 注意，UITextField 在未聚焦时，切换主题时系统能自动刷新文字颜色，但在聚焦时系统不会自动刷新颜色，所以需要在这里手动刷新
-                                       NSStringFromClass(UITextField.class):                        @[NSStringFromSelector(@selector(attributedText)),],
+//                                       NSStringFromClass(UITextField.class):                        @[NSStringFromSelector(@selector(attributedText)),],
                                        
                                        // 以下的 class 的更新依赖于 UIView (QMUITheme) 内的 setNeedsDisplay，这里不专门调用 setter
 //                                       NSStringFromClass(UILabel.class):                            @[NSStringFromSelector(@selector(textColor)),
@@ -192,7 +192,7 @@
                 return ^(UIView *selfObject, UIColor *tintColor) {
                     
                     // iOS 12 及以下，-[UIView setTintColor:] 被调用时，如果参数的 tintColor 与当前的 tintColor 指针相同，则不会触发 tintColorDidChange，但这对于 dynamic color 而言是不满足需求的（同一个 dynamic color 实例在任何时候返回的 rawColor 都有可能发生变化），所以这里主动为其做一次 copy 操作，规避指针地址判断的问题
-                    if (tintColor.qmui_isDynamicColor && tintColor == selfObject.tintColor) tintColor = tintColor.copy;
+                    if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.tintColor) tintColor = tintColor.copy;
                     
                     // call super
                     void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -205,7 +205,7 @@
         OverrideImplementation([UIView class], @selector(setBackgroundColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^void(UIView *selfObject, UIColor *color) {
                 
-                if ([selfObject.backgroundColor isKindOfClass:[QMUIThemeColor class]] || [color isKindOfClass:[QMUIThemeColor class]]) {
+                if (selfObject.backgroundColor.qmui_isQMUIDynamicColor || color.qmui_isQMUIDynamicColor) {
                     // -[UIView setBackgroundColor:] 会同步修改 layer 的 backgroundColor，但它内部又有一个判断条件即：如果参入传入的 color.CGColor 和当前的 self.layr.backgroundColor 一样，就不会重新设置，而如果 layer.backgroundColor 如果关联了 QMUI 的动态色，忽略这个设置，就会导致前后不一致的问题，这里要强制把 layer.backgroundColor 清空，让每次都调用 -[CALayer setBackgroundColor:] 方法
                     selfObject.layer.backgroundColor = nil;
                 }
@@ -232,7 +232,7 @@
             OverrideImplementation([UISwitch class], @selector(setOnTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UISwitch *selfObject, UIColor *tintColor) {
                     
-                    if (tintColor.qmui_isDynamicColor && tintColor == selfObject.onTintColor) tintColor = tintColor.copy;
+                    if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.onTintColor) tintColor = tintColor.copy;
                     
                     // call super
                     void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -244,7 +244,7 @@
             OverrideImplementation([UISwitch class], @selector(setThumbTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UISwitch *selfObject, UIColor *tintColor) {
                     
-                    if (tintColor.qmui_isDynamicColor && tintColor == selfObject.thumbTintColor) tintColor = tintColor.copy;
+                    if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.thumbTintColor) tintColor = tintColor.copy;
                     
                     // call super
                     void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -268,7 +268,7 @@
         OverrideImplementation([UISlider class], @selector(setMinimumTrackTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UISlider *selfObject, UIColor *tintColor) {
                 
-                if (tintColor.qmui_isDynamicColor && tintColor == selfObject.minimumTrackTintColor) tintColor = tintColor.copy;
+                if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.minimumTrackTintColor) tintColor = tintColor.copy;
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -280,7 +280,7 @@
         OverrideImplementation([UISlider class], @selector(setMaximumTrackTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UISlider *selfObject, UIColor *tintColor) {
                 
-                if (tintColor.qmui_isDynamicColor && tintColor == selfObject.maximumTrackTintColor) tintColor = tintColor.copy;
+                if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.maximumTrackTintColor) tintColor = tintColor.copy;
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -292,7 +292,7 @@
         OverrideImplementation([UISlider class], @selector(setThumbTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UISlider *selfObject, UIColor *tintColor) {
                 
-                if (tintColor.qmui_isDynamicColor && tintColor == selfObject.thumbTintColor) tintColor = tintColor.copy;
+                if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.thumbTintColor) tintColor = tintColor.copy;
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -313,7 +313,7 @@
         OverrideImplementation([UIProgressView class], @selector(setProgressTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIProgressView *selfObject, UIColor *tintColor) {
                 
-                if (tintColor.qmui_isDynamicColor && tintColor == selfObject.progressTintColor) tintColor = tintColor.copy;
+                if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.progressTintColor) tintColor = tintColor.copy;
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -325,7 +325,7 @@
         OverrideImplementation([UIProgressView class], @selector(setTrackTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIProgressView *selfObject, UIColor *tintColor) {
                 
-                if (tintColor.qmui_isDynamicColor && tintColor == selfObject.trackTintColor) tintColor = tintColor.copy;
+                if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.trackTintColor) tintColor = tintColor.copy;
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -348,7 +348,7 @@
             //  iOS 12 及以下，-[UITableViewCell setBackgroundColor:] 被调用时，如果参数的 backgroundColor 与当前的 backgroundColor 指针相同，则不会真正去执行颜色设置的逻辑，但这对于 dynamic color 而言是不满足需求的（同一个 dynamic color 实例在任何时候返回的 rawColor 都有可能发生变化），所以这里主动为其做一次 copy 操作，规避指针地址判断的问题
             OverrideImplementation([UITableViewCell class], @selector(setBackgroundColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UITableViewCell *selfObject, UIColor *backgroundColor) {
-                     if (backgroundColor.qmui_isDynamicColor && backgroundColor == selfObject.backgroundColor) backgroundColor = backgroundColor.copy;
+                     if (backgroundColor.qmui_isQMUIDynamicColor && backgroundColor == selfObject.backgroundColor) backgroundColor = backgroundColor.copy;
                     
                     // call super
                     void (*originSelectorIMP)(id, SEL, UIColor *);
@@ -398,7 +398,7 @@
                         __block BOOL attributedTextContainsDynamicColor = NO;
                         if (selfObject.attributedText) {
                             [selfObject.attributedText enumerateAttribute:NSForegroundColorAttributeName inRange:NSMakeRange(0, selfObject.attributedText.length) options:0 usingBlock:^(UIColor *color, NSRange range, BOOL * _Nonnull stop) {
-                                if (color.qmui_isDynamicColor) {
+                                if (color.qmui_isQMUIDynamicColor) {
                                     attributedTextContainsDynamicColor = YES;
                                     *stop = YES;
                                 }
@@ -413,6 +413,30 @@
                 });
             }
         }
+    });
+}
+
+@end
+
+@implementation UITextField (QMUIThemeCompatibility)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        // 当 UITextField 没聚焦时系统会自动更新文字颜色（即便不手动调用 setNeedsDisplay），但聚焦的时候调用 setNeedsDisplay 也无法自动更新，因此做了这个兼容
+        // https://github.com/Tencent/QMUI_iOS/issues/777
+        ExtendImplementationOfVoidMethodWithoutArguments([UITextField class], @selector(setNeedsDisplay), ^(UITextView *selfObject) {
+            if (selfObject.isFirstResponder) {
+                UIView *fieldEditor = [selfObject qmui_valueForKey:@"_fieldEditor"];
+                if (fieldEditor) {
+                    UIView *contentView = [fieldEditor qmui_valueForKey:@"_contentView"];
+                    if (contentView) {
+                        [contentView setNeedsDisplay];
+                    }
+                }
+            }
+        });
     });
 }
 
@@ -570,6 +594,17 @@ QMUISynthesizeIdStrongProperty(qcl_originalShadowColor, setQcl_originalShadowCol
             };
         });
         
+        OverrideImplementation([UISearchBar class], @selector(setBarTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UISearchBar *selfObject, UIColor *barTintColor) {
+                
+                if (barTintColor.qmui_isQMUIDynamicColor && barTintColor == selfObject.barTintColor) barTintColor = barTintColor.copy;
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIColor *);
+                originSelectorIMP = (void (*)(id, SEL, UIColor *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, barTintColor);
+            };
+        });
     });
 }
 

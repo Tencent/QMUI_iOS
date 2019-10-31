@@ -44,7 +44,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
             dialogViewControllerAppearance.dialogViewMargins = UIEdgeInsetsMake(20, 20, 20, 20); // 在 -didInitialize 里会适配 iPhone X 的 safeAreaInsets
             dialogViewControllerAppearance.maximumContentViewWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(dialogViewControllerAppearance.dialogViewMargins);
             dialogViewControllerAppearance.backgroundColor = UIColorWhite;
-            dialogViewControllerAppearance.titleTintColor = UIColorBlack;
+            dialogViewControllerAppearance.titleTintColor = nil;
             dialogViewControllerAppearance.titleLabelFont = UIFontMake(16);
             dialogViewControllerAppearance.titleLabelTextColor = UIColorMake(53, 60, 70);
             dialogViewControllerAppearance.subTitleLabelFont = UIFontMake(12);
@@ -153,7 +153,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 - (void)setTitleTintColor:(UIColor *)titleTintColor {
     _titleTintColor = titleTintColor;
-    self.titleView.tintColor = titleTintColor;
+    [self updateTitleViewColor];
 }
 
 - (void)setTitleLabelFont:(UIFont *)titleLabelFont {
@@ -164,7 +164,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 - (void)setTitleLabelTextColor:(UIColor *)titleLabelTextColor {
     _titleLabelTextColor = titleLabelTextColor;
-    self.titleView.titleLabel.textColor = titleLabelTextColor;
+    [self updateTitleViewColor];
 }
 
 - (void)setSubTitleLabelFont:(UIFont *)subTitleLabelFont {
@@ -175,7 +175,17 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 - (void)setSubTitleLabelTextColor:(UIColor *)subTitleLabelTextColor {
     _subTitleLabelTextColor = subTitleLabelTextColor;
-    self.titleView.subtitleLabel.textColor = subTitleLabelTextColor;
+    [self updateTitleViewColor];
+}
+
+- (void)updateTitleViewColor {
+    self.titleView.adjustsSubviewsTintColorAutomatically = !self.titleLabelTextColor && !self.subTitleLabelTextColor;
+    if (self.titleView.adjustsSubviewsTintColorAutomatically) {
+        self.titleView.tintColor = self.titleTintColor;// call tintColorDidChange
+    } else {
+        self.titleView.titleLabel.textColor = self.titleLabelTextColor ?: (self.titleTintColor ?: self.titleView.tintColor);
+        self.titleView.subtitleLabel.textColor = self.subTitleLabelTextColor ?: (self.titleTintColor ?: self.titleView.tintColor);
+    }
 }
 
 - (void)setHeaderSeparatorColor:(UIColor *)headerSeparatorColor {

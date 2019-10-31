@@ -83,7 +83,7 @@
 #define FillButtonColorGray             [QMUICMI fillButtonColorGray]              // QMUIFillButtonColorGray的颜色
 #define FillButtonColorWhite            [QMUICMI fillButtonColorWhite]             // QMUIFillButtonColorWhite的颜色
 
-#pragma mark - TextField & TextView
+#pragma mark - TextInput
 #define TextFieldTintColor              [QMUICMI textFieldTintColor]               // 全局UITextField、UITextView的tintColor
 #define TextFieldTextInsets             [QMUICMI textFieldTextInsets]              // QMUITextField的内边距
 #define KeyboardAppearance              [QMUICMI keyboardAppearance]
