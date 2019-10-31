@@ -599,6 +599,12 @@ static BOOL QMUI_hasAppliedInitialTemplate;
             NSMutableDictionary<NSAttributedStringKey, id> *attributes = itemAppearance.normal.titleTextAttributes.mutableCopy;
             attributes[NSFontAttributeName] = tabBarItemTitleFont;
             itemAppearance.normal.titleTextAttributes = attributes.copy;
+            
+            NSMutableDictionary<NSAttributedStringKey, id> *selAttributes = itemAppearance.selected.titleTextAttributes.mutableCopy;
+            selAttributes[NSFontAttributeName] = tabBarItemTitleFont;
+            itemAppearance.selected.titleTextAttributes = selAttributes.copy;
+            itemAppearance.selected.titleTextAttributes = selAttributes.copy;
+            
         }];
         [self updateTabBarAppearance];
     } else {
