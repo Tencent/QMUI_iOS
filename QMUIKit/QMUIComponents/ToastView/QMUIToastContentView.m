@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIToastContentView.m
 //  qmui
 //
-//  Created by zhoonchen on 2016/12/11.
-//  Copyright © 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2016/12/11.
 //
 
 #import "QMUIToastContentView.h"
@@ -11,18 +18,12 @@
 #import "UIView+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
 
-#define DefaultTextLabelFont UIFontBoldMake(16)
-#define DefaultDetailTextLabelFont UIFontBoldMake(12)
-#define DefaultLabelColor UIColorWhite
-
 @implementation QMUIToastContentView
 
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        
         self.layer.allowsGroupOpacity = NO;
-        
         [self initSubviews];
     }
     return self;
@@ -32,17 +33,11 @@
     
     _textLabel = [[UILabel alloc] init];
     self.textLabel.numberOfLines = 0;
-    self.textLabel.textAlignment = NSTextAlignmentCenter;
-    self.textLabel.textColor = DefaultLabelColor;
-    self.textLabel.font = DefaultTextLabelFont;
     self.textLabel.opaque = NO;
     [self addSubview:self.textLabel];
     
     _detailTextLabel = [[UILabel alloc] init];
     self.detailTextLabel.numberOfLines = 0;
-    self.detailTextLabel.textAlignment = NSTextAlignmentCenter;
-    self.detailTextLabel.textColor = DefaultLabelColor;
-    self.detailTextLabel.font = DefaultDetailTextLabelFont;
     self.detailTextLabel.opaque = NO;
     [self addSubview:self.detailTextLabel];
 }
@@ -76,7 +71,10 @@
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
-    
+    return [self sizeThatFits:size shouldConsiderMinimumSize:YES];
+}
+
+- (CGSize)sizeThatFits:(CGSize)size shouldConsiderMinimumSize:(BOOL)shouldConsiderMinimumSize {
     BOOL hasCustomView = !!self.customView;
     BOOL hasTextLabel = self.textLabel.text.length > 0;
     BOOL hasDetailTextLabel = self.detailTextLabel.text.length > 0;
@@ -88,31 +86,31 @@
     CGFloat maxContentHeight = size.height - UIEdgeInsetsGetVerticalValue(self.insets);
     
     if (hasCustomView) {
-        width = fmax(width, CGRectGetWidth(self.customView.bounds));
-        height += (CGRectGetHeight(self.customView.bounds) + ((hasTextLabel || hasDetailTextLabel) ? self.customViewMarginBottom : 0));
+        width = MIN(maxContentWidth, MAX(width, CGRectGetWidth(self.customView.frame)));
+        height += (CGRectGetHeight(self.customView.frame) + ((hasTextLabel || hasDetailTextLabel) ? self.customViewMarginBottom : 0));
     }
     
     if (hasTextLabel) {
         CGSize textLabelSize = [self.textLabel sizeThatFits:CGSizeMake(maxContentWidth, maxContentHeight)];
-        width = fmax(width, textLabelSize.width);
+        width = MIN(maxContentWidth, MAX(width, textLabelSize.width));
         height += (textLabelSize.height + (hasDetailTextLabel ? self.textLabelMarginBottom : 0));
     }
     
     if (hasDetailTextLabel) {
         CGSize detailTextLabelSize = [self.detailTextLabel sizeThatFits:CGSizeMake(maxContentWidth, maxContentHeight)];
-        width = fmax(width, detailTextLabelSize.width);
+        width = MIN(maxContentWidth, MAX(width, detailTextLabelSize.width));
         height += (detailTextLabelSize.height + self.detailTextLabelMarginBottom);
     }
     
     width += UIEdgeInsetsGetHorizontalValue(self.insets);
     height += UIEdgeInsetsGetVerticalValue(self.insets);
     
-    if (!CGSizeEqualToSize(self.minimumSize, CGSizeZero)) {
-        width = fmax(width, self.minimumSize.width);
-        height = fmax(height, self.minimumSize.height);
+    if (shouldConsiderMinimumSize) {
+        width = MAX(width, self.minimumSize.width);
+        height = MAX(height, self.minimumSize.height);
     }
     
-    return CGSizeMake(fmin(size.width, width), fmin(size.height, height));
+    return CGSizeMake(width, height);
 }
 
 - (void)layoutSubviews {
@@ -122,56 +120,46 @@
     BOOL hasTextLabel = self.textLabel.text.length > 0;
     BOOL hasDetailTextLabel = self.detailTextLabel.text.length > 0;
     
-    CGFloat contentWidth = CGRectGetWidth(self.bounds);
-    CGFloat maxContentWidth = contentWidth - UIEdgeInsetsGetHorizontalValue(self.insets);
-    
-    CGFloat minY = self.insets.top;
-    
+    CGFloat contentLimitWidth = self.qmui_width - UIEdgeInsetsGetHorizontalValue(self.insets);
+    CGSize contentSize = [self sizeThatFits:self.bounds.size shouldConsiderMinimumSize:NO];
+    CGFloat minY = self.insets.top + CGFloatGetCenter(self.qmui_height - UIEdgeInsetsGetVerticalValue(self.insets), contentSize.height - UIEdgeInsetsGetVerticalValue(self.insets));
     if (hasCustomView) {
-        if (!hasTextLabel && !hasDetailTextLabel) {
-            // 处理有minimumSize的情况
-            minY = CGFloatGetCenter(CGRectGetHeight(self.bounds), CGRectGetHeight(self.customView.bounds));
-        }
-        self.customView.frame = CGRectFlatMake(CGFloatGetCenter(contentWidth, CGRectGetWidth(self.customView.bounds)), minY, CGRectGetWidth(self.customView.bounds), CGRectGetHeight(self.customView.bounds));
-        minY = CGRectGetMaxY(self.customView.frame) + self.customViewMarginBottom;
+        self.customView.qmui_left = self.insets.left + CGFloatGetCenter(contentLimitWidth, self.customView.qmui_width);
+        self.customView.qmui_top = minY;
+        minY = self.customView.qmui_bottom + self.customViewMarginBottom;
     }
-    
     if (hasTextLabel) {
-        CGSize textLabelSize = [self.textLabel sizeThatFits:CGSizeMake(maxContentWidth, CGFLOAT_MAX)];
-        if (!hasCustomView && !hasDetailTextLabel) {
-            // 处理有minimumSize的情况
-            minY = CGFloatGetCenter(CGRectGetHeight(self.bounds), textLabelSize.height);
-        }
-        self.textLabel.frame = CGRectFlatMake(CGFloatGetCenter(contentWidth, maxContentWidth), minY, maxContentWidth, textLabelSize.height);
-        minY = CGRectGetMaxY(self.textLabel.frame) + self.textLabelMarginBottom;
+        CGSize textLabelSize = [self.textLabel sizeThatFits:CGSizeMake(contentLimitWidth, CGFLOAT_MAX)];
+        self.textLabel.qmui_left = self.insets.left;
+        self.textLabel.qmui_top = minY;
+        self.textLabel.qmui_width = contentLimitWidth;
+        self.textLabel.qmui_height = textLabelSize.height;
+        minY = self.textLabel.qmui_bottom + self.textLabelMarginBottom;
     }
-    
     if (hasDetailTextLabel) {
-        // 暂时没考虑剩余高度不够用的情况
-        CGSize detailTextLabelSize = [self.detailTextLabel sizeThatFits:CGSizeMake(maxContentWidth, CGFLOAT_MAX)];
-        if (!hasCustomView && !hasTextLabel) {
-            // 处理有minimumSize的情况
-            minY = CGFloatGetCenter(CGRectGetHeight(self.bounds), detailTextLabelSize.height);
-        }
-        self.detailTextLabel.frame = CGRectFlatMake(CGFloatGetCenter(contentWidth, maxContentWidth), minY, maxContentWidth, detailTextLabelSize.height);
+        CGSize detailTextLabelSize = [self.detailTextLabel sizeThatFits:CGSizeMake(contentLimitWidth, CGFLOAT_MAX)];
+        self.detailTextLabel.qmui_left = self.insets.left;
+        self.detailTextLabel.qmui_top = minY;
+        self.detailTextLabel.qmui_width = contentLimitWidth;
+        self.detailTextLabel.qmui_height = detailTextLabelSize.height;
     }
 }
 
 - (void)tintColorDidChange {
+    [super tintColorDidChange];
     
     if (self.customView) {
         [self updateCustomViewTintColor];
     }
     
-    NSMutableDictionary *textLabelAttributes = [[NSMutableDictionary alloc] initWithDictionary:self.textLabelAttributes];
-    textLabelAttributes[NSForegroundColorAttributeName] = self.tintColor;
-    self.textLabelAttributes = textLabelAttributes;
-    self.textLabelText = self.textLabelText;
+    // 如果通过 attributes 设置了文字颜色，则不再响应 tintColor
+    if (!self.textLabelAttributes[NSForegroundColorAttributeName]) {
+        self.textLabel.textColor = self.tintColor;
+    }
     
-    NSMutableDictionary *detailTextLabelAttributes = [[NSMutableDictionary alloc] initWithDictionary:self.detailTextLabelAttributes];
-    detailTextLabelAttributes[NSForegroundColorAttributeName] = self.tintColor;
-    self.detailTextLabelAttributes = detailTextLabelAttributes;
-    self.detailTextLabelText = self.detailTextLabelText;
+    if (!self.detailTextLabelAttributes[NSForegroundColorAttributeName]) {
+        self.detailTextLabel.textColor = self.tintColor;
+    }
 }
 
 - (void)updateCustomViewTintColor {
@@ -179,10 +167,6 @@
         return;
     }
     self.customView.tintColor = self.tintColor;
-    if ([self.customView isKindOfClass:[UIImageView class]]) {
-        UIImageView *customView = (UIImageView *)self.customView;
-        customView.image = [customView.image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    }
     if ([self.customView isKindOfClass:[UIActivityIndicatorView class]]) {
         UIActivityIndicatorView *customView = (UIActivityIndicatorView *)self.customView;
         customView.color = self.tintColor;
@@ -255,8 +239,8 @@
     appearance.customViewMarginBottom = 8;
     appearance.textLabelMarginBottom = 4;
     appearance.detailTextLabelMarginBottom = 0;
-    appearance.textLabelAttributes = @{NSFontAttributeName: DefaultTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight: 22]};
-    appearance.detailTextLabelAttributes = @{NSFontAttributeName: DefaultDetailTextLabelFont, NSForegroundColorAttributeName: DefaultLabelColor, NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight: 18]};
+    appearance.textLabelAttributes = @{NSFontAttributeName: UIFontBoldMake(16), NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:22 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]};
+    appearance.detailTextLabelAttributes = @{NSFontAttributeName: UIFontBoldMake(12), NSParagraphStyleAttributeName: [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:18 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]};
 }
 
 @end

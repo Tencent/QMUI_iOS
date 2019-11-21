@@ -1,14 +1,22 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  UIColor+QMUI.m
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
-//  Copyright (c) 2015年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import "UIColor+QMUI.h"
 #import "QMUICore.h"
 #import "NSString+QMUI.h"
+#import "NSObject+QMUI.h"
 
 @implementation UIColor (QMUI)
 
@@ -16,20 +24,20 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         // 使用 [UIColor colorWithRed:green:blue:alpha:] 或 [UIColor colorWithHue:saturation:brightness:alpha:] 方法创建的颜色是 UIDeviceRGBColor 类型的而不是 UIColor 类型的
-        ExchangeImplementations([UIColor colorWithRed:1 green:1 blue:1 alpha:1].class, @selector(description), @selector(qmui_description));
+        ExtendImplementationOfNonVoidMethodWithoutArguments([[UIColor colorWithRed:1 green:1 blue:1 alpha:1] class], @selector(description), NSString *, ^NSString *(UIColor *selfObject, NSString *originReturnValue) {
+            NSInteger red = selfObject.qmui_red * 255;
+            NSInteger green = selfObject.qmui_green * 255;
+            NSInteger blue = selfObject.qmui_blue * 255;
+            CGFloat alpha = selfObject.qmui_alpha;
+            NSString *description = ([NSString stringWithFormat:@"%@, RGBA(%@, %@, %@, %.2f), %@", originReturnValue, @(red), @(green), @(blue), alpha, [selfObject qmui_hexString]]);
+            return description;
+        });
     });
 }
 
-- (NSString *)qmui_description {
-    NSInteger red = self.qmui_red * 255;
-    NSInteger green = self.qmui_green * 255;
-    NSInteger blue = self.qmui_blue * 255;
-    CGFloat alpha = self.qmui_alpha;
-    NSString *description = [NSString stringWithFormat:@"%@, RGBA(%@, %@, %@, %.2f), %@", [self qmui_description], @(red), @(green), @(blue), alpha, [self qmui_hexString]];
-    return description;
-}
-
-+ (UIColor *)qmui_colorWithHexString: (NSString *) hexString {
++ (UIColor *)qmui_colorWithHexString:(NSString *)hexString {
+    if (hexString.length <= 0) return nil;
+    
     NSString *colorString = [[hexString stringByReplacingOccurrencesOfString: @"#" withString: @""] uppercaseString];
     CGFloat alpha, red, blue, green;
     switch ([colorString length]) {
@@ -57,8 +65,10 @@
             green = [self colorComponentFrom: colorString start: 4 length: 2];
             blue  = [self colorComponentFrom: colorString start: 6 length: 2];
             break;
-        default:
-            [NSException raise:@"Invalid color value" format: @"Color value %@ is invalid.  It should be a hex value of the form #RBG, #ARGB, #RRGGBB, or #AARRGGBB", hexString];
+        default: {
+            NSAssert(NO, @"Color value %@ is invalid. It should be a hex value of the form #RBG, #ARGB, #RRGGBB, or #AARRGGBB", hexString);
+            return nil;
+        }
             break;
     }
     return [UIColor colorWithRed: red green: green blue: blue alpha: alpha];
@@ -170,13 +180,14 @@
 }
 
 - (BOOL)qmui_colorIsDark {
-    CGFloat red = 0.0, green = 0.0, blue = 0.0, alpha = 0.0;
-    [self getRed:&red green:&green blue:&blue alpha:&alpha];
-    
-    float referenceValue = 0.411;
-    float colorDelta = ((red * 0.299) + (green * 0.587) + (blue * 0.114));
-    
-    return 1.0 - colorDelta > referenceValue;
+    CGFloat red = 0.0, green = 0.0, blue = 0.0;
+    if ([self getRed:&red green:&green blue:&blue alpha:0]) {
+        float referenceValue = 0.411;
+        float colorDelta = ((red * 0.299) + (green * 0.587) + (blue * 0.114));
+        
+        return 1.0 - colorDelta > referenceValue;
+    }
+    return YES;
 }
 
 - (UIColor *)qmui_inverseColor {
@@ -244,6 +255,58 @@
     CGFloat green = ( arc4random() % 255 / 255.0 );
     CGFloat blue = ( arc4random() % 255 / 255.0 );
     return [UIColor colorWithRed:red green:green blue:blue alpha:1.0];
+}
+
+@end
+
+
+NSString *const QMUICGColorOriginalColorBindKey = @"QMUICGColorOriginalColorBindKey";
+
+@implementation UIColor (QMUI_DynamicColor)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+#ifdef IOS13_SDK_ALLOWED
+        if (@available(iOS 13.0, *)) {
+            ExtendImplementationOfNonVoidMethodWithoutArguments([UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull trait) {
+                return [UIColor clearColor];
+            }].class, @selector(CGColor), CGColorRef, ^CGColorRef(UIColor *selfObject, CGColorRef originReturnValue) {
+                if (selfObject.qmui_isDynamicColor) {
+                    UIColor *color = [UIColor colorWithCGColor:originReturnValue];
+                    originReturnValue = color.CGColor;
+                    [(__bridge id)(originReturnValue) qmui_bindObject:selfObject forKey:QMUICGColorOriginalColorBindKey];
+                }
+                return originReturnValue;
+            });
+        }
+#endif
+    });
+}
+
+- (BOOL)qmui_isDynamicColor {
+    if ([self respondsToSelector:@selector(_isDynamic)]) {
+        return self._isDynamic;
+    }
+    return NO;
+}
+
+- (BOOL)qmui_isQMUIDynamicColor {
+    return NO;
+}
+
+- (UIColor *)qmui_rawColor {
+    if (self.qmui_isDynamicColor) {
+#ifdef IOS13_SDK_ALLOWED
+        if (@available(iOS 13.0, *)) {
+            if ([self respondsToSelector:@selector(resolvedColorWithTraitCollection:)]) {
+                UIColor *color = [self resolvedColorWithTraitCollection:UITraitCollection.currentTraitCollection];
+                return color.qmui_rawColor;
+            }
+        }
+#endif
+    }
+    return self;
 }
 
 @end

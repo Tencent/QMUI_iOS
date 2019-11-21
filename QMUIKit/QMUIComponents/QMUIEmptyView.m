@@ -1,15 +1,24 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIEmptyView.m
 //  qmui
 //
-//  Created by 李凯 on 2016/10/9.
-//  Copyright © 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2016/10/9.
 //
 
 #import "QMUIEmptyView.h"
 #import "QMUICore.h"
 #import "UIControl+QMUI.h"
 #import "NSParagraphStyle+QMUI.h"
+#import "UIView+QMUI.h"
+#import "QMUIButton.h"
 
 @interface QMUIEmptyView ()
 
@@ -22,19 +31,19 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     // 系统默认会在view即将被add到window上时才设置这些值，这个时机有点晚了，因为我们可能在add到window之前就进行sizeThatFits计算或对view进行截图等操作，因此这里提前到init时就去做
     QMUIEmptyView *appearance = [QMUIEmptyView appearance];
     _imageViewInsets = appearance.imageViewInsets;
@@ -57,7 +66,7 @@
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     self.scrollView.scrollsToTop = NO;
-    self.scrollView.contentInset = UIEdgeInsetsMake(0, 10, 0, 10); // 避免 label 直接撑满到屏幕两边，不好看
+    self.scrollView.contentInset = UIEdgeInsetsMake(0, 16, 0, 16);
     [self addSubview:self.scrollView];
     
     _contentView = [[UIView alloc] init];
@@ -81,8 +90,9 @@
     self.detailTextLabel.numberOfLines = 0;
     [self.contentView addSubview:self.detailTextLabel];
     
-    _actionButton = [[UIButton alloc] init];
+    _actionButton = [[QMUIButton alloc] init];
     self.actionButton.qmui_outsideEdge = UIEdgeInsetsMake(-20, -20, -20, -20);
+    self.actionButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     [self.contentView addSubview:self.actionButton];
 }
 
@@ -116,16 +126,12 @@
     }
     
     if (!self.textLabel.hidden) {
-        CGFloat labelWidth = CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.textLabelInsets);
-        CGSize labelSize = [self.textLabel sizeThatFits:CGSizeMake(labelWidth, CGFLOAT_MAX)];
-        self.textLabel.frame = CGRectFlatMake(self.textLabelInsets.left, originY + self.textLabelInsets.top, labelWidth, labelSize.height);
+        self.textLabel.frame = CGRectFlatMake(self.textLabelInsets.left, originY + self.textLabelInsets.top, CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.textLabelInsets), QMUIViewSelfSizingHeight);
         originY = CGRectGetMaxY(self.textLabel.frame) + self.textLabelInsets.bottom;
     }
     
     if (!self.detailTextLabel.hidden) {
-        CGFloat labelWidth = CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.detailTextLabelInsets);
-        CGSize labelSize = [self.detailTextLabel sizeThatFits:CGSizeMake(labelWidth, CGFLOAT_MAX)];
-        self.detailTextLabel.frame = CGRectFlatMake(self.detailTextLabelInsets.left, originY + self.detailTextLabelInsets.top, labelWidth, labelSize.height);
+        self.detailTextLabel.frame = CGRectFlatMake(self.detailTextLabelInsets.left, originY + self.detailTextLabelInsets.top, CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.detailTextLabelInsets), QMUIViewSelfSizingHeight);
         originY = CGRectGetMaxY(self.detailTextLabel.frame) + self.detailTextLabelInsets.bottom;
     }
     
@@ -272,6 +278,8 @@
 - (void)setActionButtonTitleColor:(UIColor *)actionButtonTitleColor {
     _actionButtonTitleColor = actionButtonTitleColor;
     [self.actionButton setTitleColor:actionButtonTitleColor forState:UIControlStateNormal];
+    [self.actionButton setTitleColor:[actionButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
+    [self.actionButton setTitleColor:[actionButtonTitleColor colorWithAlphaComponent:ButtonDisabledAlpha] forState:UIControlStateDisabled];
 }
 
 @end
@@ -294,7 +302,7 @@
     appearance.imageViewInsets = UIEdgeInsetsMake(0, 0, 36, 0);
     appearance.loadingViewInsets = UIEdgeInsetsMake(0, 0, 36, 0);
     appearance.textLabelInsets = UIEdgeInsetsMake(0, 0, 10, 0);
-    appearance.detailTextLabelInsets = UIEdgeInsetsMake(0, 0, 10, 0);
+    appearance.detailTextLabelInsets = UIEdgeInsetsMake(0, 0, 14, 0);
     appearance.actionButtonInsets = UIEdgeInsetsZero;
     appearance.verticalOffset = -30;
     

@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUITextField.h
 //  qmui
 //
-//  Created by MoLice on 16-11-03
-//  Copyright (c) 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 16-11-03
 //
 
 #import <UIKit/UIKit.h>
@@ -49,6 +56,11 @@
  *  默认为 TextFieldTextInsets
  */
 @property(nonatomic, assign) UIEdgeInsets textInsets;
+
+/**
+ clearButton 在默认位置上的偏移
+ */
+@property(nonatomic, assign) UIOffset clearButtonPositionAdjustment UI_APPEARANCE_SELECTOR;
 
 /**
  *  当通过 `setText:`、`setAttributedText:`等方式修改文字时，是否应该自动触发 UIControlEventEditingChanged 事件及 UITextFieldTextDidChangeNotification 通知。

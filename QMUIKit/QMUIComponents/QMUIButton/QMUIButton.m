@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIButton.m
 //  qmui
 //
-//  Created by MoLice on 14-7-7.
-//  Copyright (c) 2014年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 14-7-7.
 //
 
 #import "QMUIButton.h"
@@ -22,7 +29,7 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        [self didInitialized];
+        [self didInitialize];
         
         self.tintColor = ButtonTintColor;
         if (!self.adjustsTitleTintColorAutomatically) {
@@ -37,12 +44,12 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.adjustsTitleTintColorAutomatically = NO;
     self.adjustsImageTintColorAutomatically = NO;
     
@@ -62,8 +69,8 @@
         size = CGSizeMax;
     }
     
-    BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
-    BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
+    BOOL isImageViewShowing = !!self.currentImage;
+    BOOL isTitleLabelShowing = !!self.currentTitle || self.currentAttributedTitle;
     CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
     CGSize titleTotalSize = CGSizeZero;// 包含 titleEdgeInsets 那些空间
     CGFloat spacingBetweenImageAndTitle = flat(isImageViewShowing && isTitleLabelShowing ? self.spacingBetweenImageAndTitle : 0);// 如果图片或文字某一者没显示，则这个 spacing 不考虑进布局
@@ -77,7 +84,7 @@
             // 图片和文字上下排版时，宽度以文字或图片的最大宽度为最终宽度
             if (isImageViewShowing) {
                 CGFloat imageLimitWidth = contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
-                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)];// 假设图片高度必定完整显示
+                CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)] : self.currentImage.size;
                 imageSize.width = fmin(imageSize.width, imageLimitWidth);
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
@@ -102,7 +109,7 @@
             
             if (isImageViewShowing) {
                 CGFloat imageLimitHeight = contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
-                CGSize imageSize = [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)];// 假设图片宽度必定完整显示，高度不超过按钮内容
+                CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)] : self.currentImage.size;
                 imageSize.height = fmin(imageSize.height, imageLimitHeight);
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
@@ -134,8 +141,8 @@
         return;
     }
     
-    BOOL isImageViewShowing = self.imageView && !self.imageView.hidden;
-    BOOL isTitleLabelShowing = self.titleLabel && !self.titleLabel.hidden;
+    BOOL isImageViewShowing = !!self.currentImage;
+    BOOL isTitleLabelShowing = !!self.currentTitle || !!self.currentAttributedTitle;
     CGSize imageLimitSize = CGSizeZero;
     CGSize titleLimitSize = CGSizeZero;
     CGSize imageTotalSize = CGSizeZero;// 包含 imageEdgeInsets 那些空间
@@ -149,7 +156,7 @@
     // 图片的布局原则都是尽量完整展示，所以不管 imagePosition 的值是什么，这个计算过程都是相同的
     if (isImageViewShowing) {
         imageLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
-        CGSize imageSize = [self.imageView sizeThatFits:imageLimitSize];
+        CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:imageLimitSize] : self.currentImage.size;
         imageSize.width = fmin(imageLimitSize.width, imageSize.width);
         imageSize.height = fmin(imageLimitSize.height, imageSize.height);
         imageFrame = CGRectMakeWithSize(imageSize);
@@ -266,8 +273,12 @@
             }
         }
         
-        self.imageView.frame = CGRectFlatted(imageFrame);
-        self.titleLabel.frame = CGRectFlatted(titleFrame);
+        if (isImageViewShowing) {
+            self.imageView.frame = CGRectFlatted(imageFrame);
+        }
+        if (isTitleLabelShowing) {
+            self.titleLabel.frame = CGRectFlatted(titleFrame);
+        }
         
     } else if (self.imagePosition == QMUIButtonImagePositionLeft || self.imagePosition == QMUIButtonImagePositionRight) {
         
@@ -395,8 +406,12 @@
             }
         }
         
-        self.imageView.frame = CGRectFlatted(imageFrame);
-        self.titleLabel.frame = CGRectFlatted(titleFrame);
+        if (isImageViewShowing) {
+            self.imageView.frame = CGRectFlatted(imageFrame);
+        }
+        if (isTitleLabelShowing) {
+            self.titleLabel.frame = CGRectFlatted(titleFrame);
+        }
     }
 }
 
@@ -449,9 +464,7 @@
         if (highlighted) {
             self.alpha = ButtonHighlightedAlpha;
         } else {
-            [UIView animateWithDuration:0.25f animations:^{
-                self.alpha = 1;
-            }];
+            self.alpha = 1;
         }
     }
 }
@@ -461,9 +474,7 @@
     if (!enabled && self.adjustsButtonWhenDisabled) {
         self.alpha = ButtonDisabledAlpha;
     } else {
-        [UIView animateWithDuration:0.25f animations:^{
-            self.alpha = 1;
-        }];
+        self.alpha = 1;
     }
 }
 
@@ -513,17 +524,11 @@
     if (self.currentImage) {
         NSArray<NSNumber *> *states = @[@(UIControlStateNormal), @(UIControlStateHighlighted), @(UIControlStateSelected), @(UIControlStateSelected|UIControlStateHighlighted), @(UIControlStateDisabled)];
         
-        // 实际上对于 UIButton 而言如果设置了 UIControlStateNormal 的 image，则其他所有 state 下的 image 默认都会返回 normal 这张图，所以这个判断只对 UIControlStateNormal 做就行了
-        UIImage *normalImage = [self imageForState:UIControlStateNormal];
-        if (!normalImage) return;
-        
         for (NSNumber *number in states) {
-            if (number.unsignedIntegerValue > UIControlStateNormal && [self qmui_hasCustomizedButtonPropWithType:QMUICustomizeButtonPropTypeImage forState:number.unsignedIntegerValue]) {
-                // 这个 state 自定义过 image，就不用处理
-                continue;
-            }
-            
             UIImage *image = [self imageForState:number.unsignedIntegerValue];
+            if (!image) {
+                return;
+            }
             
             if (self.adjustsImageTintColorAutomatically) {
                 // 这里的 setImage: 操作不需要使用 renderingMode 对 image 重新处理，而是放到重写的 setImage:forState 里去做就行了
@@ -540,6 +545,7 @@
     if (self.adjustsImageTintColorAutomatically) {
         image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     }
+    
     [super setImage:image forState:state];
 }
 
@@ -554,15 +560,12 @@
 }
 
 - (void)setTintColorAdjustsTitleAndImage:(UIColor *)tintColorAdjustsTitleAndImage {
+    _tintColorAdjustsTitleAndImage = tintColorAdjustsTitleAndImage;
     if (tintColorAdjustsTitleAndImage) {
         self.tintColor = tintColorAdjustsTitleAndImage;
         self.adjustsTitleTintColorAutomatically = YES;
         self.adjustsImageTintColorAutomatically = YES;
     }
-}
-
-- (UIColor *)tintColorAdjustsTitleAndImage {
-    return self.tintColor;
 }
 
 @end

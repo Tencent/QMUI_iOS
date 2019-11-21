@@ -1,15 +1,24 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIDialogViewController.h
 //  WeRead
 //
-//  Created by MoLice on 16/7/8.
-//  Copyright © 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 16/7/8.
 //
 
 #import <UIKit/UIKit.h>
 #import "QMUICommonViewController.h"
 #import "QMUIModalPresentationViewController.h"
 #import "QMUITableView.h"
+
+NS_ASSUME_NONNULL_BEGIN
 
 @class QMUIButton;
 @class QMUILabel;
@@ -25,48 +34,111 @@
  * @see QMUIDialogSelectionViewController
  * @see QMUIDialogTextFieldViewController
  */
-@interface QMUIDialogViewController : QMUICommonViewController<QMUIModalPresentationContentViewControllerProtocol>
+@interface QMUIDialogViewController : QMUICommonViewController<QMUIModalPresentationContentViewControllerProtocol, QMUIModalPresentationComponentProtocol>
 
 @property(nonatomic, assign) CGFloat        cornerRadius UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) UIEdgeInsets   dialogViewMargins UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        maximumContentViewWidth UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *backgroundColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *titleTintColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIFont         *titleLabelFont UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *titleLabelTextColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIFont         *subTitleLabelFont UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *subTitleLabelTextColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *headerSeparatorColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, assign) CGFloat        headerViewHeight UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *headerViewBackgroundColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, assign) UIEdgeInsets   contentViewMargins UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *footerSeparatorColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, assign) CGFloat        footerViewHeight UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *footerViewBackgroundColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *buttonBackgroundColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) UIColor        *buttonHighlightedBackgroundColor UI_APPEARANCE_SELECTOR;
-@property(nonatomic, strong) NSDictionary<NSString *, id> *buttonTitleAttributes UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIColor        *backgroundColor UI_APPEARANCE_SELECTOR;
 
-@property(nonatomic, strong, readonly) UIView *headerView;
-@property(nonatomic, strong, readonly) CALayer *headerViewSeparatorLayer;
+/// 标题的 tintColor，当没有设置 titleLabelTextColor 和 subTitleLabelTextColor 的情况下，标题和副标题的颜色均会使用 titleTintColor，当 titleLabelTextColor 和 subTitleLabelTextColor 其中任何一个被设置了值时，则 titleTintColor 作为候选项使用（也即谁为 nil 才会用 titleTintColor 顶替，不为 nil 则不会用到 titleTintColor）。
+/// 默认为 nil
+@property(nullable, nonatomic, strong) UIColor        *titleTintColor UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIFont         *titleLabelFont UI_APPEARANCE_SELECTOR;
+
+/// 主标题的文字颜色，当为 nil 时则会使用 titleView 的 tintColor 作为文字颜色
+@property(nullable, nonatomic, strong) UIColor        *titleLabelTextColor UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIFont         *subTitleLabelFont UI_APPEARANCE_SELECTOR;
+
+/// 副标题的文字颜色，当为 nil 时则会使用 titleView 的 tintColor 作为文字颜色
+/// @note 副标题可通过 dialog.titleView.subtitle 来设置
+@property(nullable, nonatomic, strong) UIColor        *subTitleLabelTextColor UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIColor        *headerSeparatorColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) CGFloat        headerViewHeight UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIColor        *headerViewBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) UIEdgeInsets   contentViewMargins UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIColor        *contentViewBackgroundColor UI_APPEARANCE_SELECTOR;// 对自定义 contentView 无效
+@property(nullable, nonatomic, strong) UIColor        *footerSeparatorColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) CGFloat        footerViewHeight UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIColor        *footerViewBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIColor        *buttonBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) UIColor        *buttonHighlightedBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *buttonTitleAttributes UI_APPEARANCE_SELECTOR;
+
+@property(nullable, nonatomic, strong, readonly) UIView *headerView;
+@property(nullable, nonatomic, strong, readonly) CALayer *headerViewSeparatorLayer;
 
 /// dialog的主体内容部分，默认是一个空的白色UIView，建议设置为自己的UIView
 /// dialog会通过询问contentView的sizeThatFits得到当前内容的大小
-@property(nonatomic, strong) UIView *contentView;
+@property(nullable, nonatomic, strong) UIView *contentView;
 
-@property(nonatomic, strong, readonly) UIView *footerView;
-@property(nonatomic, strong, readonly) CALayer *footerViewSeparatorLayer;
+@property(nullable, nonatomic, strong, readonly) UIView *footerView;
+@property(nullable, nonatomic, strong, readonly) CALayer *footerViewSeparatorLayer;
 
-@property(nonatomic, strong, readonly) QMUIButton *cancelButton;
-@property(nonatomic, strong, readonly) QMUIButton *submitButton;
-@property(nonatomic, strong, readonly) CALayer *buttonSeparatorLayer;
+@property(nullable, nonatomic, strong, readonly) QMUIButton *cancelButton;
+@property(nullable, nonatomic, strong, readonly) QMUIButton *submitButton;
+@property(nullable, nonatomic, strong, readonly) CALayer *buttonSeparatorLayer;
 
-- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block;
-- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block;
+/**
+ 添加位于左下角的取消按钮，取消按钮点击时默认会自动 hide 弹窗，无需自己在 block 里调用 hide。
+ 
+ 同一时间只能存在一个取消按钮，所以每次添加都会移除上一个取消按钮。
+
+ @param buttonText 按钮文字
+ @param block 按钮点击后的事件。取消按钮会自动 hide 弹窗，无需在 block 里调用 hide
+ */
+- (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^ _Nullable)(__kindof QMUIDialogViewController *aDialogViewController))block;
+
+/**
+ 移除当前的取消按钮
+ */
+- (void)removeCancelButton;
+
+/**
+ 添加位于右下角的提交按钮
+ 
+ 同一时间只能存在一个提交按钮，所以每次添加都会移除上一个提交按钮
+
+ @param buttonText 按钮文字
+ @param block 按钮点击后的事件，如果需要在点击后关闭浮层，需要在 block 里自行调用 hide
+ */
+- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^ _Nullable)(__kindof QMUIDialogViewController *aDialogViewController))block;
+
+/**
+ 移除提交按钮
+ */
+- (void)removeSubmitButton;
+
+/**
+ 用于展示 dialog 的 modalPresentationViewController
+ */
+@property(nullable, nonatomic, strong) QMUIModalPresentationViewController *modalPresentationViewController;
+
+/**
+ 以动画形式显示弹窗，等同于 [self showWithAnimated:YES completion:nil]
+ */
 - (void)show;
-- (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+
+/**
+ 显示弹窗
+
+ @param animated 是否用动画的形式
+ @param completion 弹窗显示出来后的回调
+ */
+- (void)showWithAnimated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
+
+/**
+ 以动画形式隐藏弹窗，等同于 [self hideWithAnimated:YES completion:nil]
+ */
 - (void)hide;
-- (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+
+/**
+ 隐藏弹窗
+
+ @param animated 是否用动画的形式
+ @param completion 弹窗隐藏后的回调
+ */
+- (void)hideWithAnimated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
 
 @end
 
@@ -85,24 +157,27 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
  */
 @interface QMUIDialogSelectionViewController : QMUIDialogViewController<QMUITableViewDelegate, QMUITableViewDataSource>
 
-@property(nonatomic, strong, readonly) QMUITableView *tableView;
+/// 每一行的高度，如果使用了 heightForItemBlock 则该属性不生效，默认值为配置表里的 TableViewCellNormalHeight
+@property(nonatomic, assign) CGFloat rowHeight UI_APPEARANCE_SELECTOR;
 
-@property(nonatomic, copy) NSArray <NSString *> *items;
+@property(nullable, nonatomic, strong, readonly) QMUITableView *tableView;
+
+@property(nullable, nonatomic, copy) NSArray <NSString *> *items;
 
 /// 表示单选模式下已选中的item序号，默认为QMUIDialogSelectionViewControllerSelectedItemIndexNone。此属性与 `selectedItemIndexes` 互斥。
 @property(nonatomic, assign) NSInteger selectedItemIndex;
 
 /// 表示多选模式下已选中的item序号，默认为nil。此属性与 `selectedItemIndex` 互斥。
-@property(nonatomic, strong) NSMutableSet <NSNumber *> *selectedItemIndexes;
+@property(nullable, nonatomic, strong) NSMutableSet <NSNumber *> *selectedItemIndexes;
 
 /// 控制是否允许多选，默认为NO。
 @property(nonatomic, assign) BOOL allowsMultipleSelection;
 
-@property(nonatomic, copy) void (^cellForItemBlock)(QMUIDialogSelectionViewController *dialogViewController, QMUITableViewCell *cell, NSUInteger itemIndex);
-@property(nonatomic, copy) CGFloat (^heightForItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) BOOL (^canSelectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) void (^didSelectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
-@property(nonatomic, copy) void (^didDeselectItemBlock)(QMUIDialogSelectionViewController *dialogViewController, NSUInteger itemIndex);
+@property(nullable, nonatomic, copy) void (^cellForItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, __kindof QMUITableViewCell *cell, NSUInteger itemIndex);
+@property(nullable, nonatomic, copy) CGFloat (^heightForItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nullable, nonatomic, copy) BOOL (^canSelectItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nullable, nonatomic, copy) void (^didSelectItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
+@property(nullable, nonatomic, copy) void (^didDeselectItemBlock)(__kindof QMUIDialogSelectionViewController *aDialogViewController, NSUInteger itemIndex);
 
 @end
 
@@ -112,24 +187,42 @@ extern const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone;
  */
 @interface QMUIDialogTextFieldViewController : QMUIDialogViewController
 
-/// 输入框的标题
-@property(nonatomic, copy) NSString *textFieldTitle;
+@property(nullable, nonatomic, strong) UIFont *textFieldLabelFont UI_APPEARANCE_SELECTOR;
 
-/// 输入框Label
-@property(nonatomic, strong, readonly) QMUILabel *textFieldLabel;
+@property(nullable, nonatomic, strong) UIColor *textFieldLabelTextColor UI_APPEARANCE_SELECTOR;
 
-/// 输入框底部分隔线
-@property(nonatomic, strong, readonly) CALayer *textFieldSeparatorLayer;
+@property(nullable, nonatomic, strong) UIFont *textFieldFont UI_APPEARANCE_SELECTOR;
 
-/// 输入框
-@property(nonatomic, strong, readonly) QMUITextField *textField;
+@property(nullable, nonatomic, strong) UIColor *textFieldTextColor UI_APPEARANCE_SELECTOR;
+
+@property(nullable, nonatomic, strong) UIColor *textFieldSeparatorColor UI_APPEARANCE_SELECTOR;
+
+/// 输入框上方文字的间距，如果不存在文字则不使用这个间距
+@property(nonatomic, assign) UIEdgeInsets textFieldLabelMargins UI_APPEARANCE_SELECTOR;
+
+/// 输入框本身的间距，注意输入框内部自带 textInsets，所以可能文字实际的显示位置会比这个间距更往内部一点
+@property(nonatomic, assign) UIEdgeInsets textFieldMargins UI_APPEARANCE_SELECTOR;
+
+/// 输入框的高度
+@property(nonatomic, assign) CGFloat textFieldHeight UI_APPEARANCE_SELECTOR;
+
+/// 输入框底部分隔线基于默认布局的偏移，注意分隔线默认的布局为：宽度是输入框宽度减去输入框左右的 textInsets，y 紧贴输入框底部。如果 textFieldSeparatorLayer.hidden = YES 则布局时不考虑这个间距
+@property(nonatomic, assign) UIEdgeInsets textFieldSeparatorInsets UI_APPEARANCE_SELECTOR;
+
+- (void)addTextFieldWithTitle:(nullable NSString *)textFieldTitle configurationHandler:(void (^ _Nullable)(QMUILabel *titleLabel, QMUITextField *textField, CALayer *separatorLayer))configurationHandler;
+
+@property(nullable, nonatomic, copy, readonly) NSArray<QMUILabel *> *textFieldTitleLabels;
+@property(nullable, nonatomic, copy, readonly) NSArray<QMUITextField *> *textFields;
+@property(nullable, nonatomic, copy, readonly) NSArray<CALayer *> *textFieldSeparatorLayers;
 
 /// 是否应该自动管理输入框的键盘 Return 事件，默认为 YES，YES 表示当点击 Return 按钮时，视为点击了 dialog 的 submit 按钮。你也可以通过 UITextFieldDelegate 自己管理，此时请将此属性置为 NO。
 @property(nonatomic, assign) BOOL shouldManageTextFieldsReturnEventAutomatically;
 
-/// 是否自动控制提交按钮的enabled状态，默认为YES，则当输入框内容为空时禁用提交按钮
+/// 是否自动控制提交按钮的enabled状态，默认为YES，则当任一输入框内容为空时禁用提交按钮
 @property(nonatomic, assign) BOOL enablesSubmitButtonAutomatically;
 
-@property(nonatomic, copy) BOOL (^shouldEnableSubmitButtonBlock)(QMUIDialogTextFieldViewController *dialogViewController);
+@property(nullable, nonatomic, copy) BOOL (^shouldEnableSubmitButtonBlock)(__kindof QMUIDialogTextFieldViewController *aDialogViewController);
 
 @end
+
+NS_ASSUME_NONNULL_END

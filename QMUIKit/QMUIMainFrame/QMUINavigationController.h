@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUINavigationController.h
 //  qmui
 //
 //  Created by QMUI Team on 14-6-24.
-//  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
@@ -14,7 +21,7 @@
 /**
  *  初始化时调用的方法，会在 initWithNibName:bundle: 和 initWithCoder: 这两个指定的初始化方法中被调用，所以子类如果需要同时支持两个初始化方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个初始化方法即可。
  */
-- (void)didInitialized NS_REQUIRES_SUPER;
+- (void)didInitialize NS_REQUIRES_SUPER;
 
 @end
 
@@ -30,23 +37,6 @@
  */
 - (void)didShowViewController:(nonnull UIViewController *)viewController animated:(BOOL)animated NS_REQUIRES_SUPER;
 
-@end
-
-
-@interface UIViewController (QMUINavigationController)
-
-/// 判断当前 viewController 是否处于手势返回中，仅对当前手势返回涉及到的前后两个 viewController 有效
-@property(nonatomic, assign, readonly) BOOL qmui_navigationControllerPoppingInteracted;
-
-/// 基本与上一个属性 qmui_navigationControllerPoppingInteracted 相同，只不过 qmui_navigationControllerPoppingInteracted 是在 began 时就为 YES，而这个属性仅在 changed 时才为 YES。
-/// @note viewController 会在走完 viewWillAppear: 之后才将这个值置为 YES。
-@property(nonatomic, assign, readonly) BOOL qmui_navigationControllerPopGestureRecognizerChanging;
-
-/// 当前 viewController 是否正在被手势返回 pop
-@property(nonatomic, assign, readonly) BOOL qmui_poppingByInteractivePopGestureRecognizer;
-
-/// 当前 viewController 是否是手势返回中，背后的那个界面
-@property(nonatomic, assign, readonly) BOOL qmui_willAppearByInteractivePopGestureRecognizer;
 @end
 
 
@@ -103,20 +93,22 @@
 
 @optional
 
-/// 是否需要将状态栏改为浅色文字，对于 QMUICommonViewController 子类，返回值默认为宏 StatusbarStyleLightInitially 的值，对于 UIViewController，不实现该方法则视为返回 NO。
-/// @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请使用系统提供的 - preferredStatusBarStyle 方法
-- (BOOL)shouldSetStatusBarStyleLight;
-
-/// 设置titleView的tintColor
+/// 设置 titleView 的 tintColor
 - (nullable UIColor *)titleViewTintColor;
 
-/// 设置导航栏的背景图，默认为NavBarBackgroundImage
+/// 设置导航栏的背景图，默认为 NavBarBackgroundImage
 - (nullable UIImage *)navigationBarBackgroundImage;
 
-/// 设置导航栏底部的分隔线图片，默认为NavBarShadowImage，必须在navigationBar设置了背景图后才有效
+/// 设置导航栏底部的分隔线图片，默认为 NavBarShadowImage，必须在 navigationBar 设置了背景图后才有效（系统限制如此）
 - (nullable UIImage *)navigationBarShadowImage;
 
-/// 设置当前导航栏的UIBarButtonItem的tintColor，默认为NavBarTintColor
+/// 设置当前导航栏的 barTintColor，默认为 NavBarBarTintColor
+- (nullable UIColor *)navigationBarBarTintColor;
+
+/// 设置当前导航栏的 barStyle，默认为 NavBarStyle
+- (UIBarStyle)navigationBarStyle;
+
+/// 设置当前导航栏的 UIBarButtonItem 的 tintColor，默认为NavBarTintColor
 - (nullable UIColor *)navigationBarTintColor;
 
 /// 设置系统返回按钮title，如果返回nil则使用系统默认的返回按钮标题
@@ -134,36 +126,21 @@
 - (BOOL)preferredNavigationBarHidden;
 
 /**
- *  当切换界面时，如果不同界面导航栏的显示状态不同，可以通过 shouldCustomizeNavigationBarTransitionIfHideable 设置是否需要接管导航栏的显示和隐藏。从而不需要在各自的界面的 viewWillappear 和 viewWillDisappear 里面去管理导航栏的状态。
+ *  当切换界面时，如果不同界面导航栏的显隐状态不同，可以通过 shouldCustomizeNavigationBarTransitionIfHideable 设置是否需要接管导航栏的显示和隐藏。从而不需要在各自的界面的 viewWillAppear 和 viewWillDisappear 里面去管理导航栏的状态。
  *  @see UINavigationController+NavigationBarTransition.h
  *  @see preferredNavigationBarHidden
  */
 - (BOOL)shouldCustomizeNavigationBarTransitionIfHideable;
 
 /**
- *  设置当前导航栏是否需要使用自定义的 push/pop transition 效果，默认返回NO。<br/>
- *  因为系统的UINavigationController只有一个navBar，所以会导致在切换controller的时候，如果两个controller的navBar状态不一致（包括backgroundImage、shadowImage、barTintColor等等），就会导致在刚要切换的瞬间，navBar的状态都立马变成下一个controller所设置的样式了，为了解决这种情况，QMUI给出了一个方案，有四个方法可以决定你在转场的时候要不要使用自定义的navBar来模仿真实的navBar。具体方法如下：
+ *  设置导航栏转场的时候是否需要使用自定义的 push / pop transition 效果。<br/>
+ *  如果前后两个界面 controller 返回的 key 不一致，那么则说明需要自定义。<br/>
+ *  不实现这个方法，或者实现了但返回 nil，都视为希望使用默认样式。<br/>
+ *  @warning 四个老接口 shouldCustomNavigationBarTransitionxxx 已经废弃不建议使用，不过还是会支持，建议都是用新接口
  *  @see UINavigationController+NavigationBarTransition.h
+ *  @see 配置表有开关 AutomaticCustomNavigationBarTransitionStyle 支持自动判断样式，无需实现这个方法
  */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPushAppearing;
-
-/**
- *  同上
- *  @see UINavigationController+NavigationBarTransition.h
- */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPushDisappearing;
-
-/**
- *  同上
- *  @see UINavigationController+NavigationBarTransition.h
- */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPopAppearing;
-
-/**
- *  同上
- *  @see UINavigationController+NavigationBarTransition.h
- */
-- (BOOL)shouldCustomNavigationBarTransitionWhenPopDisappearing;
+- (nullable NSString *)customNavigationBarTransitionKey;
 
 /**
  *  自定义navBar效果过程中UINavigationController的containerView的背景色

@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  UITableView+QMUIStaticCell.m
 //  qmui
 //
-//  Created by MoLice on 2017/6/20.
-//  Copyright © 2017年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2017/6/20.
 //
 
 #import "UITableView+QMUIStaticCell.h"
@@ -11,6 +18,7 @@
 #import "QMUIStaticTableViewCellDataSource.h"
 #import <objc/runtime.h>
 #import "QMUILog.h"
+#import "QMUIMultipleDelegates.h"
 
 @interface QMUIStaticTableViewCellDataSource ()
 
@@ -22,8 +30,65 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([UITableView class], @selector(setDataSource:), @selector(staticCell_setDataSource:));
-        ExchangeImplementations([UITableView class], @selector(setDelegate:), @selector(staticCell_setDelegate:));
+        
+        OverrideImplementation([UITableView class], @selector(setDataSource:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITableView *selfObject, id<UITableViewDataSource> dataSource) {
+                if (dataSource && selfObject.qmui_staticCellDataSource) {
+                    void (^addSelectorBlock)(id<UITableViewDataSource>) = ^void(id<UITableViewDataSource> aDataSource) {
+                        // 这些 addMethod 的操作必须要在系统的 setDataSource 执行前就执行，否则 tableView 可能会认为不存在这些 method
+                        // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
+                        [selfObject addSelector:@selector(numberOfSectionsInTableView:) withImplementation:(IMP)staticCell_numberOfSections types:"l@:@" forObject:aDataSource];
+                        [selfObject addSelector:@selector(tableView:numberOfRowsInSection:) withImplementation:(IMP)staticCell_numberOfRows types:"l@:@l" forObject:aDataSource];
+                        [selfObject addSelector:@selector(tableView:cellForRowAtIndexPath:) withImplementation:(IMP)staticCell_cellForRow types:"@@:@@" forObject:aDataSource];
+                    };
+                    if ([dataSource isKindOfClass:[QMUIMultipleDelegates class]]) {
+                        NSPointerArray *delegates = [((QMUIMultipleDelegates *)dataSource).delegates copy];
+                        for (id delegate in delegates) {
+                            if ([delegate conformsToProtocol:@protocol(UITableViewDataSource)]) {
+                                addSelectorBlock((id<UITableViewDataSource>)delegate);
+                            }
+                        }
+                    } else {
+                        addSelectorBlock((id<UITableViewDataSource>)dataSource);
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, id<UITableViewDataSource>);
+                originSelectorIMP = (void (*)(id, SEL, id<UITableViewDataSource>))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, dataSource);
+            };
+        });
+        
+        OverrideImplementation([UITableView class], @selector(setDelegate:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITableView *selfObject, id<UITableViewDelegate> delegate) {
+                
+                if (delegate && selfObject.qmui_staticCellDataSource) {
+                    void (^addSelectorBlock)(id<UITableViewDelegate>) = ^void(id<UITableViewDelegate> aDelegate) {
+                        // 这些 addMethod 的操作必须要在系统的 setDelegate 执行前就执行，否则 tableView 可能会认为不存在这些 method
+                        // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
+                        [selfObject addSelector:@selector(tableView:heightForRowAtIndexPath:) withImplementation:(IMP)staticCell_heightForRow types:"d@:@@" forObject:aDelegate];
+                        [selfObject addSelector:@selector(tableView:didSelectRowAtIndexPath:) withImplementation:(IMP)staticCell_didSelectRow types:"v@:@@" forObject:aDelegate];
+                        [selfObject addSelector:@selector(tableView:accessoryButtonTappedForRowWithIndexPath:) withImplementation:(IMP)staticCell_accessoryButtonTapped types:"v@:@@" forObject:aDelegate];
+                    };
+                    if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+                        NSPointerArray *delegates = [((QMUIMultipleDelegates *)delegate).delegates copy];
+                        for (id d in delegates) {
+                            if ([d conformsToProtocol:@protocol(UITableViewDelegate)]) {
+                                addSelectorBlock((id<UITableViewDelegate>)d);
+                            }
+                        }
+                    } else {
+                        addSelectorBlock((id<UITableViewDelegate>)delegate);
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, id<UITableViewDelegate>);
+                originSelectorIMP = (void (*)(id, SEL, id<UITableViewDelegate>))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, delegate);
+            };
+        });
     });
 }
 
@@ -69,18 +134,6 @@ id staticCell_cellForRow (id current_self, SEL current_cmd, UITableView *tableVi
     return cell;
 }
 
-- (void)staticCell_setDataSource:(id<UITableViewDataSource>)dataSource {
-    if (dataSource && self.qmui_staticCellDataSource) {
-        // 这些 addMethod 的操作必须要在系统的 setDataSource 执行前就执行，否则 tableView 可能会认为不存在这些 method
-        // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
-        [self addSelector:@selector(numberOfSectionsInTableView:) withImplementation:(IMP)staticCell_numberOfSections types:"l@:@" forObject:dataSource];
-        [self addSelector:@selector(tableView:numberOfRowsInSection:) withImplementation:(IMP)staticCell_numberOfRows types:"l@:@l" forObject:dataSource];
-        [self addSelector:@selector(tableView:cellForRowAtIndexPath:) withImplementation:(IMP)staticCell_cellForRow types:"@@:@@" forObject:dataSource];
-    }
-    
-    [self staticCell_setDataSource:dataSource];
-}
-
 #pragma mark - Delegate
 
 CGFloat staticCell_heightForRow (id current_self, SEL current_cmd, UITableView *tableView, NSIndexPath *indexPath) {
@@ -93,18 +146,6 @@ void staticCell_didSelectRow (id current_self, SEL current_cmd, UITableView *tab
 
 void staticCell_accessoryButtonTapped (id current_self, SEL current_cmd, UITableView *tableView, NSIndexPath *indexPath) {
     [tableView.qmui_staticCellDataSource accessoryButtonTappedForRowWithIndexPath:indexPath];
-}
-
-- (void)staticCell_setDelegate:(id<UITableViewDelegate>)delegate {
-    if (delegate && self.qmui_staticCellDataSource) {
-        // 这些 addMethod 的操作必须要在系统的 setDataSource 执行前就执行，否则 tableView 可能会认为不存在这些 method
-        // 并且 addMethod 操作执行一次之后，直到 App 进程被杀死前都会生效，所以多次进入这段代码可能就会提示添加方法失败，请不用在意
-        [self addSelector:@selector(tableView:heightForRowAtIndexPath:) withImplementation:(IMP)staticCell_heightForRow types:"d@:@@" forObject:delegate];
-        [self addSelector:@selector(tableView:didSelectRowAtIndexPath:) withImplementation:(IMP)staticCell_didSelectRow types:"v@:@@" forObject:delegate];
-        [self addSelector:@selector(tableView:accessoryButtonTappedForRowWithIndexPath:) withImplementation:(IMP)staticCell_accessoryButtonTapped types:"v@:@@" forObject:delegate];
-    }
-    
-    [self staticCell_setDelegate:delegate];
 }
 
 @end

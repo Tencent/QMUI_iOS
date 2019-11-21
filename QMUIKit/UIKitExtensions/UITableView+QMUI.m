@@ -1,14 +1,24 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  UITableView+QMUI.m
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
-//  Copyright (c) 2015年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 15/7/20.
 //
 
+#import "UIView+QMUI.h"
 #import "UITableView+QMUI.h"
 #import "QMUICore.h"
 #import "UIScrollView+QMUI.h"
+#import "QMUILog.h"
+#import "NSObject+QMUI.h"
 
 const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 
@@ -17,32 +27,107 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(initWithFrame:style:), @selector(qmui_initWithFrame:style:));
-        ExchangeImplementations([self class], @selector(sizeThatFits:), @selector(qmui_sizeThatFits:));
+        
+        ExtendImplementationOfNonVoidMethodWithTwoArguments([UITableView class], @selector(initWithFrame:style:), CGRect, UITableViewStyle, UITableView *, ^UITableView *(UITableView *selfObject, CGRect frame, UITableViewStyle style, UITableView *originReturnValue) {
+            // iOS 11 之后 estimatedRowHeight 如果值为 UITableViewAutomaticDimension，estimate 效果也会生效（iOS 11 以前要 > 0 才会生效）。
+            // 而当使用 estimate 效果时，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地控制 QMUITableView（及其子类） 和 UITableView（不包含子类，例如 UIPickerTableView）的 estimatedRowHeight 效果的开关 https://github.com/Tencent/QMUI_iOS/issues/313
+            if ([selfObject isKindOfClass:NSClassFromString(@"QMUITableView")] || [NSStringFromClass(selfObject.class) isEqualToString:@"UITableView"]) {
+                if (TableViewEstimatedHeightEnabled) {
+                    selfObject.estimatedRowHeight = TableViewCellNormalHeight;
+                    selfObject.estimatedSectionHeaderHeight = TableViewCellNormalHeight;
+                    selfObject.estimatedSectionFooterHeight = TableViewCellNormalHeight;
+                } else {
+                    selfObject.estimatedRowHeight = 0;
+                    selfObject.estimatedSectionHeaderHeight = 0;
+                    selfObject.estimatedSectionFooterHeight = 0;
+                }
+            }
+            return originReturnValue;
+        });
+        
+        OverrideImplementation([UITableView class], @selector(sizeThatFits:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^CGSize(UITableView *selfObject, CGSize size) {
+                [selfObject alertEstimatedHeightUsageIfDetected];
+                
+                // call super
+                CGSize (*originSelectorIMP)(id, SEL, CGSize);
+                originSelectorIMP = (CGSize (*)(id, SEL, CGSize))originalIMPProvider();
+                CGSize result = originSelectorIMP(selfObject, originCMD, size);
+                
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UITableView class], @selector(scrollToRowAtIndexPath:atScrollPosition:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITableView *selfObject, NSIndexPath *indexPath, UITableViewScrollPosition scrollPosition, BOOL animated) {
+                
+                if (!indexPath) {
+                    return;
+                }
+                
+                BOOL isIndexPathLegal = YES;
+                NSInteger numberOfSections = [selfObject numberOfSections];
+                if (indexPath.section >= numberOfSections) {
+                    isIndexPathLegal = NO;
+                } else if (indexPath.row != NSNotFound) {
+                    NSInteger rows = [selfObject numberOfRowsInSection:indexPath.section];
+                    isIndexPathLegal = indexPath.row < rows;
+                }
+                if (!isIndexPathLegal) {
+                    QMUILogWarn(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", selfObject, indexPath, [NSThread callStackSymbols]);
+                    if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
+                        NSAssert(NO, @"出现不合法的indexPath");
+                    }
+                    return;
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSIndexPath *, UITableViewScrollPosition, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, NSIndexPath *, UITableViewScrollPosition, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, indexPath, scrollPosition, animated);
+            };
+        });
+        
+        // 修复 iOS 13.0 UIButton 作为 cell.accessoryView 时布局错误的问题
+        // https://github.com/Tencent/QMUI_iOS/issues/693
+        if (@available(iOS 13.0, *)) {
+            if (@available(iOS 13.1, *)) {
+            } else {
+                ExtendImplementationOfVoidMethodWithoutArguments([UITableViewCell class], @selector(layoutSubviews), ^(UITableViewCell *selfObject) {
+                    if ([selfObject.accessoryView isKindOfClass:[UIButton class]]) {
+                        CGFloat defaultRightMargin = 15 + SafeAreaInsetsConstantForDeviceWithNotch.right;
+                        selfObject.accessoryView.qmui_left = selfObject.qmui_width - defaultRightMargin - selfObject.accessoryView.qmui_width;
+                        selfObject.accessoryView.qmui_top = CGRectGetMinYVerticallyCenterInParentRect(selfObject.frame, selfObject.accessoryView.frame);;
+                        selfObject.contentView.qmui_right = selfObject.accessoryView.qmui_left;
+                    }
+                });
+            }
+        }
     });
 }
 
-- (instancetype)qmui_initWithFrame:(CGRect)frame style:(UITableViewStyle)style {
-    [self qmui_initWithFrame:frame style:style];
-    
-    // iOS 11 之后 estimatedRowHeight 如果值为 UITableViewAutomaticDimension，estimate 效果也会生效（iOS 11 以前要 > 0 才会生效）。
-    // 而当使用 estimate 效果时，会导致 contentSize 之类的计算不准确，所以这里给一个途径让项目可以方便地统一控制所有 UITableView（包括系统默认的）的 estimatedRowHeight 效果的开关
-    if (TableViewEstimatedHeightEnabled) {
-        self.estimatedRowHeight = TableViewCellNormalHeight;
-        self.estimatedSectionHeaderHeight = TableViewCellNormalHeight;
-        self.estimatedSectionFooterHeight = TableViewCellNormalHeight;
-    } else {
-        self.estimatedRowHeight = 0;
-        self.estimatedSectionHeaderHeight = 0;
-        self.estimatedSectionFooterHeight = 0;
+// 防止 release 版本滚动到不合法的 indexPath 会 crash
+- (void)qmui_scrollToRowAtIndexPath:(NSIndexPath *)indexPath atScrollPosition:(UITableViewScrollPosition)scrollPosition animated:(BOOL)animated {
+    if (!indexPath) {
+        return;
     }
-    return self;
-}
-
-- (CGSize)qmui_sizeThatFits:(CGSize)size {
-    [self alertEstimatedHeightUsageIfDetected];
-    CGSize result = [self qmui_sizeThatFits:size];
-    return result;
+    
+    BOOL isIndexPathLegal = YES;
+    NSInteger numberOfSections = [self numberOfSections];
+    if (indexPath.section >= numberOfSections) {
+        isIndexPathLegal = NO;
+    } else if (indexPath.row != NSNotFound) {
+        NSInteger rows = [self numberOfRowsInSection:indexPath.section];
+        isIndexPathLegal = indexPath.row < rows;
+    }
+    if (!isIndexPathLegal) {
+        QMUILogWarn(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", self, indexPath, [NSThread callStackSymbols]);
+        if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
+            NSAssert(NO, @"出现不合法的indexPath");
+        }
+    } else {
+        [self qmui_scrollToRowAtIndexPath:indexPath atScrollPosition:scrollPosition animated:animated];
+    }
 }
 
 - (void)qmui_styledAsQMUITableView {
@@ -204,6 +289,9 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     }
     
     CGRect rectForRow = [self rectForRowAtIndexPath:indexPath];
+    if (CGRectEqualToRect(rectForRow, CGRectZero)) {
+        return;
+    }
     
     // 如果要滚到的row在列表尾部，则这个row是不可能滚到顶部的（因为列表尾部已经不够空间了），所以要判断一下
     BOOL canScrollRowToTop = CGRectGetMaxY(rectForRow) + CGRectGetHeight(self.frame) - (offsetY + CGRectGetHeight(rectForRow)) <= self.contentSize.height;
@@ -261,7 +349,19 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 }
 
 - (void)QMUISymbolicUsingTableViewEstimatedHeightMakeWarning {
-    NSLog(@"UITableView 的 estimatedRow(SectionHeader / SectionFooter)Height 属性会影响 contentSize、sizeThatFits:、rectForXxx 等方法的计算，导致计算结果不准确，建议重新考虑是否要使用 estimated。可添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
+    QMUILog(@"UITableView 的 estimatedRow(SectionHeader / SectionFooter)Height 属性会影响 contentSize、sizeThatFits:、rectForXxx 等方法的计算，导致计算结果不准确，建议重新考虑是否要使用 estimated。可添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
+}
+
+- (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion {
+    if (@available(iOS 11.0, *)) {
+        [self performBatchUpdates:updates completion:completion];
+    } else {
+        if (!updates && completion) {
+            completion(YES);// 私有方法对 updates 为空的情况，不会调用 completion，但 iOS 11 新增的方法是可以的，所以这里对齐新版本的行为
+        } else {
+            [self qmui_performSelector:NSSelectorFromString([NSString stringWithFormat:@"_%@BatchUpdates:%@:", @"perform", @"completion"]) withArguments:&updates, &completion, nil];
+        }
+    }
 }
 
 @end

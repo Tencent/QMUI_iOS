@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIAsset.m
 //  qmui
 //
-//  Created by Kayo Lee on 15/6/30.
-//  Copyright (c) 2015年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 15/6/30.
 //
 
 #import "QMUIAsset.h"
@@ -35,7 +42,7 @@ static NSString * const kAssetInfoSize = @"size";
         switch (phAsset.mediaType) {
             case PHAssetMediaTypeImage:
                 _assetType = QMUIAssetTypeImage;
-                if ([[phAsset valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
+                if ([[phAsset qmui_valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
                     _assetSubType = QMUIAssetSubTypeGIF;
                 } else {
                     if (@available(iOS 9.1, *)) {
@@ -73,19 +80,16 @@ static NSString * const kAssetInfoSize = @"size";
     phImageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     phImageRequestOptions.networkAccessAllowed = YES;
     phImageRequestOptions.synchronous = YES;
-    [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset
-                                                                          targetSize:PHImageManagerMaximumSize
-                                                                         contentMode:PHImageContentModeDefault
-                                                                             options:phImageRequestOptions
-                                                                       resultHandler:^(UIImage *result, NSDictionary *info) {
-                                                                           resultImage = result;
-                                                                       }];
+    [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageDataForAsset:_phAsset options:phImageRequestOptions resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
+        resultImage = [UIImage imageWithData:imageData];
+    }];
     return resultImage;
 }
 
 - (UIImage *)thumbnailWithSize:(CGSize)size {
     __block UIImage *resultImage;
     PHImageRequestOptions *phImageRequestOptions = [[PHImageRequestOptions alloc] init];
+    phImageRequestOptions.networkAccessAllowed = YES;
     phImageRequestOptions.resizeMode = PHImageRequestOptionsResizeModeFast;
         // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset
@@ -117,9 +121,9 @@ static NSString * const kAssetInfoSize = @"size";
     PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
     imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
     imageRequestOptions.progressHandler = phProgressHandler;
-    return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
+    return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageDataForAsset:_phAsset options:imageRequestOptions resultHandler:^(NSData * _Nullable imageData, NSString * _Nullable dataUTI, UIImageOrientation orientation, NSDictionary * _Nullable info) {
         if (completion) {
-            completion(result, info);
+            completion([UIImage imageWithData:imageData], info);
         }
     }];
 }
@@ -127,6 +131,7 @@ static NSString * const kAssetInfoSize = @"size";
 - (NSInteger)requestThumbnailImageWithSize:(CGSize)size completion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion {
     PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
     imageRequestOptions.resizeMode = PHImageRequestOptionsResizeModeFast;
+    imageRequestOptions.networkAccessAllowed = YES;
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:CGSizeMake(size.width * ScreenScale, size.height * ScreenScale) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
           if (completion) {
@@ -139,7 +144,7 @@ static NSString * const kAssetInfoSize = @"size";
     PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
     imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
     imageRequestOptions.progressHandler = phProgressHandler;
-    return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:CGSizeMake(SCREEN_WIDTH, SCREEN_HEIGHT) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
+    return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
         if (completion) {
             completion(result, info);
         }
@@ -200,13 +205,7 @@ static NSString * const kAssetInfoSize = @"size";
                 BOOL isGIF = self.assetSubType == QMUIAssetSubTypeGIF;
                 BOOL isHEIC = [dataUTI isEqualToString:@"public.heic"];
                 NSDictionary<NSString *, id> *originInfo = phAssetInfo[kAssetInfoOriginInfo];
-                /**
-                 *  这里不在主线程执行，若用户在该 block 中操作 UI 时会产生一些问题，
-                 *  为了避免这种情况，这里该 block 主动放到主线程执行。
-                 */
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(phAssetInfo[kAssetInfoImageData], originInfo, isGIF, isHEIC);
-                });
+                completion(phAssetInfo[kAssetInfoImageData], originInfo, isGIF, isHEIC);
             }
         }];
     } else {
@@ -251,7 +250,9 @@ static NSString * const kAssetInfoSize = @"size";
         return;
     }
     if (self.assetType == QMUIAssetTypeVideo) {
-        [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestAVAssetForVideo:_phAsset options:NULL resultHandler:^(AVAsset * _Nullable asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
+        PHVideoRequestOptions *videoRequestOptions = [[PHVideoRequestOptions alloc] init];
+        videoRequestOptions.networkAccessAllowed = YES;
+        [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestAVAssetForVideo:_phAsset options:videoRequestOptions resultHandler:^(AVAsset * _Nullable asset, AVAudioMix * _Nullable audioMix, NSDictionary * _Nullable info) {
             if ([asset isKindOfClass:[AVURLAsset class]]) {
                 NSMutableDictionary *tempInfo = [[NSMutableDictionary alloc] init];
                 if (info) {

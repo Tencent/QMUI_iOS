@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUITextField.m
 //  qmui
 //
-//  Created by MoLice on 16-11-03
-//  Copyright (c) 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 16-11-03
 //
 
 #import "QMUITextField.h"
@@ -31,7 +38,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
-        [self didInitialized];
+        [self didInitialize];
         self.tintColor = TextFieldTintColor;
     }
     return self;
@@ -39,12 +46,12 @@
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.qmui_multipleDelegatesEnabled = YES;
     self.delegator = [[_QMUITextFieldDelegator alloc] init];
     self.delegator.textField = self;
@@ -81,25 +88,10 @@
     self.attributedPlaceholder = [[NSAttributedString alloc] initWithString:self.placeholder attributes:@{NSForegroundColorAttributeName: self.placeholderColor}];
 }
 
-#pragma mark - TextInsets
-
-- (CGRect)textRectForBounds:(CGRect)bounds {
-    bounds = CGRectInsetEdges(bounds, self.textInsets);
-    CGRect resultRect = [super textRectForBounds:bounds];
-    return resultRect;
-}
-
-- (CGRect)editingRectForBounds:(CGRect)bounds {
-    bounds = CGRectInsetEdges(bounds, self.textInsets);
-    return [super editingRectForBounds:bounds];
-}
-
-#pragma mark - TextPosition
-
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/QMUI/QMUI_iOS/issues/64
+    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/Tencent/QMUI_iOS/issues/64
     if (@available(iOS 10.0, *)) {
         UIScrollView *scrollView = self.subviews.firstObject;
         if (![scrollView isKindOfClass:[UIScrollView class]]) {
@@ -141,6 +133,25 @@
     return self.shouldCountingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
 }
 
+#pragma mark - Positioning Overrides
+
+- (CGRect)textRectForBounds:(CGRect)bounds {
+    bounds = CGRectInsetEdges(bounds, self.textInsets);
+    CGRect resultRect = [super textRectForBounds:bounds];
+    return resultRect;
+}
+
+- (CGRect)editingRectForBounds:(CGRect)bounds {
+    bounds = CGRectInsetEdges(bounds, self.textInsets);
+    return [super editingRectForBounds:bounds];
+}
+
+- (CGRect)clearButtonRectForBounds:(CGRect)bounds {
+    CGRect result = [super clearButtonRectForBounds:bounds];
+    result = CGRectOffset(result, self.clearButtonPositionAdjustment.horizontal, self.clearButtonPositionAdjustment.vertical);
+    return result;
+}
+
 @end
 
 @implementation _QMUITextFieldDelegator
@@ -151,9 +162,18 @@
     if (textField.maximumTextLength < NSUIntegerMax) {
         
         // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 这里不会限制，而是放在 didChange 那里限制。
-        BOOL isDeleting = range.length > 0 && string.length <= 0;
-        if (isDeleting || textField.markedTextRange) {
+        if (textField.markedTextRange) {
             return YES;
+        }
+        
+        BOOL isDeleting = range.length > 0 && string.length <= 0;
+        if (isDeleting) {
+            if (NSMaxRange(range) > textField.text.length) {
+                // https://github.com/Tencent/QMUI_iOS/issues/377
+                return NO;
+            } else {
+                return YES;
+            }
         }
         
         NSUInteger rangeLength = textField.shouldCountingNonASCIICharacterAsTwo ? [textField.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
@@ -200,7 +220,7 @@
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     
-    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/QMUI/QMUI_iOS/issues/64
+    // 以下代码修复系统的 UITextField 在 iOS 10 下的 bug：https://github.com/Tencent/QMUI_iOS/issues/64
     
     if (scrollView != self.textField.subviews.firstObject) {
         return;

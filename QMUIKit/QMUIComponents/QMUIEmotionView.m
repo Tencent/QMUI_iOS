@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIEmotionView.m
 //  qmui
 //
-//  Created by MoLice on 16/9/6.
-//  Copyright © 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 16/9/6.
 //
 
 #import "QMUIEmotionView.h"
@@ -110,7 +117,7 @@
     [super layoutSubviews];
     // 删除按钮必定布局到最后一个表情的位置，且与表情上下左右居中
     [self.deleteButton sizeToFit];
-    self.deleteButton.frame = CGRectSetXY(self.deleteButton.frame, flat(CGRectGetWidth(self.bounds) - self.padding.right - CGRectGetWidth(self.deleteButton.frame) - (self.emotionSize.width - CGRectGetWidth(self.deleteButton.frame)) / 2.0), flat(CGRectGetHeight(self.bounds) - self.padding.bottom - CGRectGetHeight(self.deleteButton.frame) - (self.emotionSize.height - CGRectGetHeight(self.deleteButton.frame)) / 2.0));
+    self.deleteButton.frame = CGRectSetXY(self.deleteButton.frame, CGRectGetWidth(self.bounds) - self.padding.right - CGRectGetWidth(self.deleteButton.frame) - (self.emotionSize.width - CGRectGetWidth(self.deleteButton.frame)) / 2.0, CGRectGetHeight(self.bounds) - self.padding.bottom - CGRectGetHeight(self.deleteButton.frame) - (self.emotionSize.height - CGRectGetHeight(self.deleteButton.frame)) / 2.0);
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -373,7 +380,7 @@
 
 + (void)setDefaultAppearance {
     QMUIEmotionView *appearance = [QMUIEmotionView appearance];
-    appearance.backgroundColor = UIColorWhite;
+    appearance.backgroundColor = UIColorForBackground;
     appearance.deleteButtonImage = [QMUIHelper imageWithName:@"QMUI_emotion_delete"];
     appearance.paddingInPage = UIEdgeInsetsMake(18, 18, 65, 18);
     appearance.numberOfRowsPerPage = 4;
@@ -386,7 +393,7 @@
     appearance.sendButtonMargins = UIEdgeInsetsMake(0, 0, 16, 16);
     appearance.pageControlMarginBottom = 22;
     
-    UIPageControl *pageControlAppearance = [UIPageControl appearanceWhenContainedIn:[QMUIEmotionView class], nil];
+    UIPageControl *pageControlAppearance = [UIPageControl appearanceWhenContainedInInstancesOfClasses:@[[QMUIEmotionView class]]];
     pageControlAppearance.pageIndicatorTintColor = UIColorMake(210, 210, 210);
     pageControlAppearance.currentPageIndicatorTintColor = UIColorMake(162, 162, 162);
 }

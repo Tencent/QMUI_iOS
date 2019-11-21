@@ -1,9 +1,16 @@
-;//
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
+//
 //  QMUIDialogViewController.m
 //  WeRead
 //
-//  Created by MoLice on 16/7/8.
-//  Copyright © 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 16/7/8.
 //
 
 #import "QMUIDialogViewController.h"
@@ -16,6 +23,7 @@
 #import "CALayer+QMUI.h"
 #import "UITableView+QMUI.h"
 #import "NSString+QMUI.h"
+#import "UIScrollView+QMUI.h"
 
 @implementation QMUIDialogViewController (UIAppearance)
 
@@ -27,16 +35,16 @@
 }
 
 static QMUIDialogViewController *dialogViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!dialogViewControllerAppearance) {
             dialogViewControllerAppearance = [[QMUIDialogViewController alloc] init];
             dialogViewControllerAppearance.cornerRadius = 6;
-            dialogViewControllerAppearance.dialogViewMargins = UIEdgeInsetsMake(20, 20, 20, 20); // 在实例的 didInitialized 里会适配 iPhone X 的 safeAreaInsets
+            dialogViewControllerAppearance.dialogViewMargins = UIEdgeInsetsMake(20, 20, 20, 20); // 在 -didInitialize 里会适配 iPhone X 的 safeAreaInsets
             dialogViewControllerAppearance.maximumContentViewWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(dialogViewControllerAppearance.dialogViewMargins);
-            dialogViewControllerAppearance.backgroundColor = UIColorClear;
-            dialogViewControllerAppearance.titleTintColor = UIColorBlack;
+            dialogViewControllerAppearance.backgroundColor = UIColorWhite;
+            dialogViewControllerAppearance.titleTintColor = nil;
             dialogViewControllerAppearance.titleLabelFont = UIFontMake(16);
             dialogViewControllerAppearance.titleLabelTextColor = UIColorMake(53, 60, 70);
             dialogViewControllerAppearance.subTitleLabelFont = UIFontMake(12);
@@ -46,12 +54,13 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
             dialogViewControllerAppearance.headerViewHeight = 48;
             dialogViewControllerAppearance.headerViewBackgroundColor = UIColorMake(244, 245, 247);
             dialogViewControllerAppearance.contentViewMargins = UIEdgeInsetsZero;
+            dialogViewControllerAppearance.contentViewBackgroundColor = nil;
             dialogViewControllerAppearance.footerSeparatorColor = UIColorMake(222, 224, 226);
             dialogViewControllerAppearance.footerViewHeight = 48;
-            dialogViewControllerAppearance.footerViewBackgroundColor = UIColorWhite;
+            dialogViewControllerAppearance.footerViewBackgroundColor = nil;
             
             dialogViewControllerAppearance.buttonBackgroundColor = nil;
-            dialogViewControllerAppearance.buttonTitleAttributes = @{NSForegroundColorAttributeName: UIColorBlue, NSKernAttributeName: @2};
+            dialogViewControllerAppearance.buttonTitleAttributes = @{NSForegroundColorAttributeName: UIColorBlue};
             dialogViewControllerAppearance.buttonHighlightedBackgroundColor = [UIColorBlue colorWithAlphaComponent:.25];
         }
     });
@@ -69,11 +78,11 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 @implementation QMUIDialogViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
     if (dialogViewControllerAppearance) {
         self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
-        self.dialogViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].dialogViewMargins, IPhoneXSafeAreaInsets);
+        self.dialogViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].dialogViewMargins, SafeAreaInsetsConstantForDeviceWithNotch);
         self.maximumContentViewWidth = [QMUIDialogViewController appearance].maximumContentViewWidth;
         self.backgroundColor = [QMUIDialogViewController appearance].backgroundColor;
         self.titleTintColor = [QMUIDialogViewController appearance].titleTintColor;
@@ -85,6 +94,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         self.headerViewHeight = [QMUIDialogViewController appearance].headerViewHeight;
         self.headerViewBackgroundColor = [QMUIDialogViewController appearance].headerViewBackgroundColor;
         self.contentViewMargins = [QMUIDialogViewController appearance].contentViewMargins;
+        self.contentViewBackgroundColor = [QMUIDialogViewController appearance].contentViewBackgroundColor;
         self.footerSeparatorColor = [QMUIDialogViewController appearance].footerSeparatorColor;
         self.footerViewHeight = [QMUIDialogViewController appearance].footerViewHeight;
         self.footerViewBackgroundColor = [QMUIDialogViewController appearance].footerViewBackgroundColor;
@@ -92,23 +102,58 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
         self.buttonTitleAttributes = [QMUIDialogViewController appearance].buttonTitleAttributes;
         self.buttonHighlightedBackgroundColor = [QMUIDialogViewController appearance].buttonHighlightedBackgroundColor;
     }
+    
+    _contentView = [[UIView alloc] init]; // 特地不使用setter，从而不要影响self.hasCustomContentView的默认值
+    self.contentView.backgroundColor = self.contentViewBackgroundColor;
+    
+    _headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, self.headerViewHeight)];
+    self.headerView.backgroundColor = self.headerViewBackgroundColor;
+    
+    // 使用自带的QMUINavigationTitleView，支持loading、subTitle
+    [self.headerView addSubview:self.titleView];
+    
+    // 加上分隔线
+    _headerViewSeparatorLayer = [CALayer layer];
+    [self.headerViewSeparatorLayer qmui_removeDefaultAnimations];
+    self.headerViewSeparatorLayer.backgroundColor = self.headerSeparatorColor.CGColor;
+    [self.headerView.layer addSublayer:self.headerViewSeparatorLayer];
+    
+    _footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, self.footerViewHeight)];
+    self.footerView.backgroundColor = self.footerViewBackgroundColor;
+    self.footerView.hidden = YES;
+    
+    _footerViewSeparatorLayer = [CALayer layer];
+    [self.footerViewSeparatorLayer qmui_removeDefaultAnimations];
+    self.footerViewSeparatorLayer.backgroundColor = self.footerSeparatorColor.CGColor;
+    [self.footerView.layer addSublayer:self.footerViewSeparatorLayer];
+    
+    _buttonSeparatorLayer = [CALayer layer];
+    [self.buttonSeparatorLayer qmui_removeDefaultAnimations];
+    self.buttonSeparatorLayer.backgroundColor = self.footerViewSeparatorLayer.backgroundColor;
+    self.buttonSeparatorLayer.hidden = YES;
+    [self.footerView.layer addSublayer:self.buttonSeparatorLayer];
+    
+    self.modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
+    self.modalPresentationViewController.modal = YES;
 }
 
 - (void)setCornerRadius:(CGFloat)cornerRadius {
     _cornerRadius = cornerRadius;
-    if ([self isViewLoaded ]) {
+    if ([self isViewLoaded]) {
         self.view.layer.cornerRadius = cornerRadius;
     }
 }
 
 - (void)setBackgroundColor:(UIColor *)backgroundColor {
     _backgroundColor = backgroundColor;
-    self.view.backgroundColor = backgroundColor;
+    if ([self isViewLoaded]) {
+        self.view.backgroundColor = backgroundColor;
+    }
 }
 
 - (void)setTitleTintColor:(UIColor *)titleTintColor {
     _titleTintColor = titleTintColor;
-    self.titleView.tintColor = titleTintColor;
+    [self updateTitleViewColor];
 }
 
 - (void)setTitleLabelFont:(UIFont *)titleLabelFont {
@@ -119,7 +164,7 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 - (void)setTitleLabelTextColor:(UIColor *)titleLabelTextColor {
     _titleLabelTextColor = titleLabelTextColor;
-    self.titleView.titleLabel.textColor = titleLabelTextColor;
+    [self updateTitleViewColor];
 }
 
 - (void)setSubTitleLabelFont:(UIFont *)subTitleLabelFont {
@@ -130,34 +175,49 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 
 - (void)setSubTitleLabelTextColor:(UIColor *)subTitleLabelTextColor {
     _subTitleLabelTextColor = subTitleLabelTextColor;
-    self.titleView.subtitleLabel.textColor = subTitleLabelTextColor;
+    [self updateTitleViewColor];
+}
+
+- (void)updateTitleViewColor {
+    self.titleView.adjustsSubviewsTintColorAutomatically = !self.titleLabelTextColor && !self.subTitleLabelTextColor;
+    if (self.titleView.adjustsSubviewsTintColorAutomatically) {
+        self.titleView.tintColor = self.titleTintColor;// call tintColorDidChange
+    } else {
+        self.titleView.titleLabel.textColor = self.titleLabelTextColor ?: (self.titleTintColor ?: self.titleView.tintColor);
+        self.titleView.subtitleLabel.textColor = self.subTitleLabelTextColor ?: (self.titleTintColor ?: self.titleView.tintColor);
+    }
 }
 
 - (void)setHeaderSeparatorColor:(UIColor *)headerSeparatorColor {
     _headerSeparatorColor = headerSeparatorColor;
-    if (self.headerViewSeparatorLayer) {
-        self.headerViewSeparatorLayer.backgroundColor = headerSeparatorColor.CGColor;
-    }
+    self.headerViewSeparatorLayer.backgroundColor = headerSeparatorColor.CGColor;
 }
 
 - (void)setFooterSeparatorColor:(UIColor *)footerSeparatorColor {
     _footerSeparatorColor = footerSeparatorColor;
-    if (self.footerViewSeparatorLayer) {
-        self.footerViewSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
-    }
-    if (self.buttonSeparatorLayer) {
-        self.buttonSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
-    }
+    self.footerViewSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
+    self.buttonSeparatorLayer.backgroundColor = footerSeparatorColor.CGColor;
 }
 
 - (void)setHeaderViewHeight:(CGFloat)headerViewHeight {
     _headerViewHeight = headerViewHeight;
+    [self.modalPresentationViewController updateLayout];
 }
 
 - (void)setHeaderViewBackgroundColor:(UIColor *)headerViewBackgroundColor {
     _headerViewBackgroundColor = headerViewBackgroundColor;
-    if ([self isViewLoaded]) {
-        self.headerView.backgroundColor = headerViewBackgroundColor;
+    self.headerView.backgroundColor = headerViewBackgroundColor;
+}
+
+- (void)setContentViewMargins:(UIEdgeInsets)contentViewMargins {
+    _contentViewMargins = contentViewMargins;
+    [self.modalPresentationViewController updateLayout];
+}
+
+- (void)setContentViewBackgroundColor:(UIColor *)contentViewBackgroundColor {
+    _contentViewBackgroundColor = contentViewBackgroundColor;
+    if (!self.hasCustomContentView) {
+        self.contentView.backgroundColor = contentViewBackgroundColor;
     }
 }
 
@@ -201,52 +261,23 @@ static QMUIDialogViewController *dialogViewControllerAppearance;
 }
 
 BeginIgnoreClangWarning(-Wobjc-missing-super-calls)
-- (void)setNavigationItemsIsInEditMode:(BOOL)isInEditMode animated:(BOOL)animated {
+- (void)setupNavigationItems {
     // 不继承父类的实现，从而避免把 self.titleView 放到 navigationItem 上
-//    [super setNavigationItemsIsInEditMode:isInEditMode animated:animated];
+    //    [super setupNavigationItems];
 }
 EndIgnoreClangWarning
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    // subview都在[super viewDidLoad]里添加，所以在添加完subview后再强制把headerView和footerView拉到最前面，以保证分隔线不会被subview盖住
-    [self.view bringSubviewToFront:self.headerView];
-    [self.view bringSubviewToFront:self.footerView];
-    
-    self.view.backgroundColor = UIColorClear; // 减少 Color Blended Layers
-    self.view.layer.cornerRadius = self.cornerRadius;
-    self.view.layer.masksToBounds = YES;
-}
-
-- (void)initSubviews {
-    [super initSubviews];
-    
-    if (self.hasCustomContentView) {
-        if (!self.contentView.superview) {
-            [self.view insertSubview:self.contentView atIndex:0];
-        }
-    } else {
-        _contentView = [[UIView alloc] init]; // 特地不使用setter，从而不要影响self.hasCustomContentView的默认值
-        self.contentView.backgroundColor = UIColorWhite;
-        [self.view addSubview:self.contentView];
-    }
-    
-    _headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), self.headerViewHeight)];
-    self.headerView.backgroundColor = self.headerViewBackgroundColor;
-    
-    // 使用自带的QMUINavigationTitleView，支持loading、subTitle
-    [self.headerView addSubview:self.titleView];
-    
-    // 加上分隔线
-    _headerViewSeparatorLayer = [CALayer layer];
-    [self.headerViewSeparatorLayer qmui_removeDefaultAnimations];
-    self.headerViewSeparatorLayer.backgroundColor = self.headerSeparatorColor.CGColor;
-    [self.headerView.layer addSublayer:self.headerViewSeparatorLayer];
-    
+    // subviews 的初始化都放到 didInitialize 里，以保证初始化完 dialog 就能被外界访问到。但真正加到 self.view 上还是等到 viewDidLoad 时
+    [self.view addSubview:self.contentView];
     [self.view addSubview:self.headerView];
+    [self.view addSubview:self.footerView];
     
-    [self initFooterViewIfNeeded];
+    self.view.clipsToBounds = YES;
+    self.view.backgroundColor = self.backgroundColor;
+    self.view.layer.cornerRadius = self.cornerRadius;
 }
 
 - (void)setContentView:(UIView *)contentView {
@@ -272,7 +303,7 @@ EndIgnoreClangWarning
     CGFloat headerViewPaddingHorizontal = 16;
     CGFloat headerViewContentWidth = CGRectGetWidth(self.headerView.bounds) - headerViewPaddingHorizontal * 2;
     CGSize titleViewSize = [self.titleView sizeThatFits:CGSizeMake(headerViewContentWidth, CGFLOAT_MAX)];
-    CGFloat titleViewWidth = fmin(titleViewSize.width, headerViewContentWidth);
+    CGFloat titleViewWidth = MIN(titleViewSize.width, headerViewContentWidth);
     self.titleView.frame = CGRectMake(CGFloatGetCenter(CGRectGetWidth(self.headerView.bounds), titleViewWidth), CGFloatGetCenter(CGRectGetHeight(self.headerView.bounds), titleViewSize.height), titleViewWidth, titleViewSize.height);
     
     if (isFooterViewShowing) {
@@ -298,61 +329,51 @@ EndIgnoreClangWarning
     self.contentView.frame = CGRectMake(self.contentViewMargins.left, contentViewMinY, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentViewMargins), contentViewHeight);
 }
 
-- (void)initFooterViewIfNeeded {
-    if (!self.footerView) {
-        _footerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), self.footerViewHeight)];
-        self.footerView.backgroundColor = self.footerViewBackgroundColor;
-        self.footerView.hidden = YES;
-        
-        _footerViewSeparatorLayer = [CALayer layer];
-        [self.footerViewSeparatorLayer qmui_removeDefaultAnimations];
-        self.footerViewSeparatorLayer.backgroundColor = self.footerSeparatorColor.CGColor;
-        [self.footerView.layer addSublayer:self.footerViewSeparatorLayer];
-        
-        _buttonSeparatorLayer = [CALayer layer];
-        [self.buttonSeparatorLayer qmui_removeDefaultAnimations];
-        self.buttonSeparatorLayer.backgroundColor = self.footerViewSeparatorLayer.backgroundColor;
-        self.buttonSeparatorLayer.hidden = YES;
-        [self.footerView.layer addSublayer:self.buttonSeparatorLayer];
-        
-        [self.view addSubview:self.footerView];
-    }
-}
-
 - (void)addCancelButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *))block {
-    if (_cancelButton) {
-        [_cancelButton removeFromSuperview];
-    }
+    [self removeCancelButton];
     
     _cancelButton = [self generateButtonWithText:buttonText];
     [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self initFooterViewIfNeeded];
     self.footerView.hidden = NO;
     [self.footerView addSubview:self.cancelButton];
     
     self.cancelButtonBlock = block;
 }
 
-- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block {
-    if (_submitButton) {
-        [_submitButton removeFromSuperview];
+- (void)removeCancelButton {
+    [_cancelButton removeFromSuperview];
+    self.cancelButtonBlock = nil;
+    _cancelButton = nil;
+    if (!self.cancelButton && !self.submitButton) {
+        self.footerView.hidden = YES;
     }
+}
+
+- (void)addSubmitButtonWithText:(NSString *)buttonText block:(void (^)(__kindof QMUIDialogViewController *dialogViewController))block {
+    [self removeSubmitButton];
     
     _submitButton = [self generateButtonWithText:buttonText];
     [self.submitButton addTarget:self action:@selector(handleSubmitButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     
-    [self initFooterViewIfNeeded];
     self.footerView.hidden = NO;
     [self.footerView addSubview:self.submitButton];
     
     self.submitButtonBlock = block;
 }
 
+- (void)removeSubmitButton {
+    [_submitButton removeFromSuperview];
+    self.submitButtonBlock = nil;
+    _submitButton = nil;
+    if (!self.cancelButton && !self.submitButton) {
+        self.footerView.hidden = YES;
+    }
+}
+
 - (QMUIButton *)generateButtonWithText:(NSString *)buttonText {
     QMUIButton *button = [[QMUIButton alloc] init];
     button.titleLabel.font = UIFontBoldMake((IS_320WIDTH_SCREEN) ? 14 : 15);
-    button.adjustsTitleTintColorAutomatically = YES;
     button.backgroundColor = self.buttonBackgroundColor;
     button.highlightedBackgroundColor = self.buttonHighlightedBackgroundColor;
     [button setAttributedTitle:[[NSAttributedString alloc] initWithString:buttonText attributes:self.buttonTitleAttributes] forState:UIControlStateNormal];
@@ -360,18 +381,16 @@ EndIgnoreClangWarning
 }
 
 - (void)handleCancelButtonEvent:(QMUIButton *)cancelButton {
-    [self hideWithAnimated:YES completion:^(BOOL finished) {
-        if (self.cancelButtonBlock) {
-            self.cancelButtonBlock(self);
-        }
-    }];
+    [self hideWithAnimated:YES completion:nil];
+    if (self.cancelButtonBlock) {
+        self.cancelButtonBlock(self);
+    }
 }
 
 - (void)handleSubmitButtonEvent:(QMUIButton *)submitButton {
     if (self.submitButtonBlock) {
-        // 把自己传过去，方便在block里调用self时不会导致内存泄露
-        __weak QMUIDialogViewController *weakSelf = self;
-        self.submitButtonBlock(weakSelf);
+        // 把自己传过去，通过参数来引用 self，避免在 block 里直接引用 dialog 导致内存泄漏
+        self.submitButtonBlock(self);
     }
 }
 
@@ -380,12 +399,10 @@ EndIgnoreClangWarning
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    QMUIModalPresentationViewController *modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
-    modalPresentationViewController.contentViewMargins = self.dialogViewMargins;
-    modalPresentationViewController.maximumContentViewWidth = self.maximumContentViewWidth;
-    modalPresentationViewController.contentViewController = self;
-    modalPresentationViewController.modal = YES;
-    [modalPresentationViewController showWithAnimated:YES completion:completion];
+    self.modalPresentationViewController.contentViewMargins = self.dialogViewMargins;
+    self.modalPresentationViewController.maximumContentViewWidth = self.maximumContentViewWidth;
+    self.modalPresentationViewController.contentViewController = self;
+    [self.modalPresentationViewController showWithAnimated:YES completion:completion];
 }
 
 - (void)hide {
@@ -393,16 +410,17 @@ EndIgnoreClangWarning
 }
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    [self.qmui_modalPresentationViewController hideWithAnimated:animated completion:^(BOOL finished) {
+    [self.modalPresentationViewController hideWithAnimated:animated completion:^(BOOL finished) {
         if (completion) {
             completion(finished);
         }
+        self.modalPresentationViewController.contentViewController = nil;
     }];
 }
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
+- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     if (!self.hasCustomContentView) {
         return limitSize;
     }
@@ -415,8 +433,37 @@ EndIgnoreClangWarning
     CGSize contentViewLimitSize = CGSizeMake(limitSize.width, limitSize.height - self.headerViewHeight - contentViewVerticalMargin - footerHeight);
     CGSize contentViewSize = [self.contentView sizeThatFits:contentViewLimitSize];
     
-    CGSize finalSize = CGSizeMake(fmin(limitSize.width, contentViewSize.width), fmin(limitSize.height, self.headerViewHeight + contentViewSize.height + contentViewVerticalMargin + footerHeight));
+    CGSize finalSize = CGSizeMake(MIN(limitSize.width, contentViewSize.width), MIN(limitSize.height, self.headerViewHeight + contentViewSize.height + contentViewVerticalMargin + footerHeight));
     return finalSize;
+}
+
+#pragma mark - <QMUIModalPresentationComponentProtocol>
+
+- (void)hideModalPresentationComponent {
+    [self hideWithAnimated:NO completion:nil];
+}
+
+@end
+
+@implementation QMUIDialogSelectionViewController (UIAppearance)
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [self appearance];
+    });
+}
+
+static QMUIDialogSelectionViewController *dialogSelectionViewControllerAppearance;
++ (nonnull instancetype)appearance {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (!dialogSelectionViewControllerAppearance) {
+            dialogSelectionViewControllerAppearance = [[QMUIDialogSelectionViewController alloc] init];
+            dialogSelectionViewControllerAppearance.rowHeight = TableViewCellNormalHeight;
+        }
+    });
+    return dialogSelectionViewControllerAppearance;
 }
 
 @end
@@ -430,36 +477,33 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 @implementation QMUIDialogSelectionViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
+    
+    if (dialogSelectionViewControllerAppearance) {
+        self.rowHeight = [QMUIDialogSelectionViewController appearance].rowHeight;
+    }
     
     self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
     self.selectedItemIndexes = [[NSMutableSet alloc] init];
-    BeginIgnoreAvailabilityWarning
-    [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
-}
-
-- (void)initSubviews {
-    [super initSubviews];
+    
     self.tableView = [[QMUITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.alwaysBounceVertical = NO;
+    if (@available(iOS 11, *)) {
+        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    } else {
+        self.automaticallyAdjustsScrollViewInsets = NO;
+    }
     
     // 因为要根据 tableView sizeThatFits: 算出 dialog 的高度，所以禁用 estimated 特性，不然算出来结果不准确
     self.tableView.estimatedRowHeight = 0;
     self.tableView.estimatedSectionHeaderHeight = 0;
     self.tableView.estimatedSectionFooterHeight = 0;
     
-    [self.view addSubview:self.tableView];
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    CGFloat tableViewMinY = CGRectGetMaxY(self.headerView.frame) + self.contentViewMargins.top;
-    CGFloat tableViewHeight = CGRectGetHeight(self.view.bounds) - tableViewMinY - (!self.footerView.hidden ? (CGRectGetHeight(self.footerView.bounds) + self.contentViewMargins.bottom) : 0);
-    self.tableView.frame = CGRectMake(self.contentViewMargins.left, tableViewMinY, CGRectGetWidth(self.view.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentViewMargins), tableViewHeight);
+    self.contentView = self.tableView;
+    self.tableView.backgroundColor = self.contentViewBackgroundColor;// QMUIDialogSelectionViewController 使用了 customContentView，所以默认不会自动应用到 self.contentViewBackgroundColor，这里手动应用一次
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -470,20 +514,40 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
 }
 
-- (void)setSelectedItemIndex:(NSInteger)selectedItemIndex {
-    _selectedItemIndex = selectedItemIndex;
-    [self.selectedItemIndexes removeAllObjects];
+- (void)setContentViewBackgroundColor:(UIColor *)contentViewBackgroundColor {
+    [super setContentViewBackgroundColor:contentViewBackgroundColor];
+    self.tableView.backgroundColor = contentViewBackgroundColor;
 }
 
-- (void)setselectedItemIndexes:(NSMutableSet<NSNumber *> *)selectedItemIndexes {
-    _selectedItemIndexes = selectedItemIndexes;
+- (void)setItems:(NSArray<NSString *> *)items {
+    _items = [items copy];
+    [self.tableView reloadData];
+    if (self.modalPresentationViewController.visible) {
+        [self.modalPresentationViewController updateLayout];
+    }
+}
+
+- (void)setSelectedItemIndex:(NSInteger)selectedItemIndex {
+    [self.selectedItemIndexes removeAllObjects];
+    _selectedItemIndex = selectedItemIndex;
+}
+
+- (void)setSelectedItemIndexes:(NSMutableSet<NSNumber *> *)selectedItemIndexes {
     self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
+    _selectedItemIndexes = selectedItemIndexes;
 }
 
 - (void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection {
     _allowsMultipleSelection = allowsMultipleSelection;
     self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
 }
+
+- (void)setRowHeight:(CGFloat)rowHeight {
+    _rowHeight = rowHeight;
+    [self.tableView setNeedsLayout];
+}
+
+#pragma mark - <QMUITableViewDataSource, QMUITableViewDelegate>
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
     return self.items.count;
@@ -493,7 +557,8 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     static NSString *identifier = @"cell";
     QMUITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:identifier];
     if (!cell) {
-        cell = [[QMUITableViewCell alloc] initForTableView:self.tableView withStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier];
+        cell = [[QMUITableViewCell alloc] initForTableView:tableView withStyle:UITableViewCellStyleSubtitle reuseIdentifier:identifier];
+        cell.backgroundColor = nil;// 使用 tableView 的背景色即可
     }
     cell.textLabel.text = self.items[indexPath.row];
     
@@ -525,7 +590,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     if (self.heightForItemBlock) {
         return self.heightForItemBlock(self, indexPath.row);
     }
-    return TableViewCellNormalHeight;
+    return self.rowHeight;
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -586,118 +651,281 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
 }
 
-#pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
+@end
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
-    CGFloat contentViewVerticalMargin = UIEdgeInsetsGetVerticalValue(self.contentViewMargins);
-    CGFloat footerHeight = !self.footerView.hidden ? CGRectGetHeight(self.footerView.frame) : 0;
-    CGFloat tableViewLimitHeight = limitSize.height - CGRectGetHeight(self.headerView.frame) - footerHeight - contentViewVerticalMargin;
-    CGSize tableViewSize = [self.tableView sizeThatFits:CGSizeMake(limitSize.width, tableViewLimitHeight)];
-    CGFloat finalTableViewHeight = fmin(tableViewSize.height, tableViewLimitHeight);
-    return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + finalTableViewHeight + contentViewVerticalMargin + footerHeight);
+@implementation QMUIDialogTextFieldViewController (UIAppearance)
+
++ (void)initialize {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [self appearance];
+    });
+}
+
+static QMUIDialogTextFieldViewController *dialogTextFieldViewControllerAppearance;
++ (nonnull instancetype)appearance {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (!dialogTextFieldViewControllerAppearance) {
+            dialogTextFieldViewControllerAppearance = [[QMUIDialogTextFieldViewController alloc] init];
+            dialogTextFieldViewControllerAppearance.textFieldLabelFont = UIFontBoldMake(12);
+            dialogTextFieldViewControllerAppearance.textFieldLabelTextColor = UIColorGrayDarken;
+            dialogTextFieldViewControllerAppearance.textFieldFont = UIFontMake(17);
+            dialogTextFieldViewControllerAppearance.textFieldTextColor = UIColorBlack;
+            dialogTextFieldViewControllerAppearance.textFieldSeparatorColor = UIColorSeparator;
+            dialogTextFieldViewControllerAppearance.textFieldLabelMargins = UIEdgeInsetsMake(16, 22, -2, 22);
+            dialogTextFieldViewControllerAppearance.textFieldMargins = UIEdgeInsetsMake(16, 16, 10, 16);
+            dialogTextFieldViewControllerAppearance.textFieldHeight = 25;
+            dialogTextFieldViewControllerAppearance.textFieldSeparatorInsets = UIEdgeInsetsMake(0, 0, 16, 0);
+        }
+    });
+    return dialogTextFieldViewControllerAppearance;
 }
 
 @end
 
 @interface QMUIDialogTextFieldViewController ()<QMUITextFieldDelegate>
 
-@property(nonatomic, strong, readwrite) QMUILabel *textFieldLabel;
-@property(nonatomic, strong, readwrite) CALayer *textFieldSeparatorLayer;
-@property(nonatomic, strong, readwrite) QMUITextField *textField;
-
+@property(nonatomic, strong) UIScrollView *scrollView;
+@property(nonatomic, strong) NSMutableArray<QMUILabel *> *mutableTitleLabels;
+@property(nonatomic, strong) NSMutableArray<QMUITextField *> *mutableTextFields;
+@property(nonatomic, strong) NSMutableArray<CALayer *> *mutableSeparatorLayers;
 @end
 
 @implementation QMUIDialogTextFieldViewController
 
-- (void)didInitialized {
-    [super didInitialized];
+- (void)didInitialize {
+    [super didInitialize];
+    
+    if (dialogTextFieldViewControllerAppearance) {
+        self.textFieldLabelFont = [QMUIDialogTextFieldViewController appearance].textFieldLabelFont;
+        self.textFieldLabelTextColor = [QMUIDialogTextFieldViewController appearance].textFieldLabelTextColor;
+        self.textFieldFont = [QMUIDialogTextFieldViewController appearance].textFieldFont;
+        self.textFieldTextColor = [QMUIDialogTextFieldViewController appearance].textFieldTextColor;
+        self.textFieldSeparatorColor = [QMUIDialogTextFieldViewController appearance].textFieldSeparatorColor;
+        self.textFieldLabelMargins = [QMUIDialogTextFieldViewController appearance].textFieldLabelMargins;
+        self.textFieldMargins = [QMUIDialogTextFieldViewController appearance].textFieldMargins;
+        self.textFieldHeight = [QMUIDialogTextFieldViewController appearance].textFieldHeight;
+        self.textFieldSeparatorInsets = [QMUIDialogTextFieldViewController appearance].textFieldSeparatorInsets;
+    }
+    
+    self.mutableTitleLabels = [[NSMutableArray alloc] init];
+    self.mutableTextFields = [[NSMutableArray alloc] init];
+    self.mutableSeparatorLayers = [[NSMutableArray alloc] init];
+    
     self.shouldManageTextFieldsReturnEventAutomatically = YES;
     self.enablesSubmitButtonAutomatically = YES;
-    BeginIgnoreAvailabilityWarning
-    [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
+    
+    self.scrollView = [[UIScrollView alloc] init];
+    self.scrollView.scrollsToTop = NO;
+    self.scrollView.clipsToBounds = YES;
+    if (@available(iOS 11, *)) {
+        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    } else {
+        self.automaticallyAdjustsScrollViewInsets = NO;
+    }
+    self.contentView = self.scrollView;
+    self.scrollView.backgroundColor = self.contentViewBackgroundColor;
 }
 
-- (void)initSubviews {
-    [super initSubviews];
+- (void)addTextFieldWithTitle:(NSString *)textFieldTitle configurationHandler:(void (^)(QMUILabel *titleLabel, QMUITextField *textField, CALayer *separatorLayer))configurationHandler {
+    QMUILabel *label = [self generateTextFieldTitleLabel];
+    label.text = textFieldTitle;
+    if (textFieldTitle.length <= 0) {
+        label.hidden = YES;
+    }
+    [self.mutableTitleLabels addObject:label];
     
-    self.textField = [[QMUITextField alloc] init];
-    self.textField.delegate = self;
-    self.textField.backgroundColor = UIColorWhite;
-    self.textField.textInsets = UIEdgeInsetsMake(self.textField.textInsets.top, 16, self.textField.textInsets.bottom, 16);
-    self.textField.returnKeyType = UIReturnKeyDone;
-    self.textField.enablesReturnKeyAutomatically = self.enablesSubmitButtonAutomatically;
-    [self.textField addTarget:self action:@selector(handleTextFieldTextDidChangeEvent:) forControlEvents:UIControlEventEditingChanged];
-    [self.view addSubview:self.textField];
+    QMUITextField *textField = [self generateTextField];
+    [self.mutableTextFields addObject:textField];
     
-    self.textFieldLabel = [[QMUILabel alloc] init];
-    self.textFieldLabel.font = UIFontBoldMake(12);
-    self.textFieldLabel.contentEdgeInsets = UIEdgeInsetsMake(11, 16, 8, 16);
-    self.textFieldLabel.text = @"";
-    self.textFieldLabel.hidden = YES;
-    [self.view addSubview:self.textFieldLabel];
+    CALayer *separatorLayer = [self generateTextFieldSeparatorLayer];
+    [self.mutableSeparatorLayers addObject:separatorLayer];
     
-    self.textFieldSeparatorLayer = [CALayer layer];
-    [self.textFieldSeparatorLayer qmui_removeDefaultAnimations];
-    self.textFieldSeparatorLayer.backgroundColor = UIColorSeparator.CGColor;
-    [self.view.layer addSublayer:self.textFieldSeparatorLayer];
+    if (configurationHandler) {
+        configurationHandler(label, textField, separatorLayer);
+    }
+}
+
+- (QMUILabel *)generateTextFieldTitleLabel {
+    QMUILabel *textFieldLabel = [[QMUILabel alloc] init];
+    textFieldLabel.font = self.textFieldLabelFont;
+    textFieldLabel.textColor = self.textFieldLabelTextColor;
+    [self.contentView addSubview:textFieldLabel];
+    return textFieldLabel;
+}
+
+- (QMUITextField *)generateTextField {
+    QMUITextField *textField = [[QMUITextField alloc] init];
+    textField.delegate = self;
+    textField.font = self.textFieldFont;
+    textField.textColor = self.textFieldTextColor;
+    textField.backgroundColor = nil;
+    textField.returnKeyType = UIReturnKeyNext;
+    textField.clearButtonMode = UITextFieldViewModeWhileEditing;
+    textField.enablesReturnKeyAutomatically = self.enablesSubmitButtonAutomatically;
+    [textField addTarget:self action:@selector(handleTextFieldTextDidChangeEvent:) forControlEvents:UIControlEventEditingChanged];
+    [self.contentView addSubview:textField];
+    return textField;
+}
+
+- (CALayer *)generateTextFieldSeparatorLayer {
+    CALayer *textFieldSeparatorLayer = [CALayer qmui_separatorLayer];
+    textFieldSeparatorLayer.backgroundColor = self.textFieldSeparatorColor.CGColor;
+    [self.contentView.layer addSublayer:textFieldSeparatorLayer];
+    return textFieldSeparatorLayer;
 }
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
+    // 全部基于 contentView 布局即可
     
-    CGFloat minY = CGRectGetMaxY(self.headerView.frame) + self.contentViewMargins.top;
-    CGFloat horizontalMargin = UIEdgeInsetsGetHorizontalValue(self.contentViewMargins);
-    CGFloat widthLimit = CGRectGetWidth(self.view.bounds) - horizontalMargin;
-    CGFloat separatorOffsetY = 13.0;
+    NSAssert(self.mutableTitleLabels.count == self.mutableTextFields.count && self.mutableTextFields.count == self.mutableSeparatorLayers.count, @"%@ 里的标题、输入框、分隔线数量不匹配", NSStringFromClass(self.class));
     
-    if (!self.textFieldLabel.hidden) {
-        [self.textFieldLabel sizeToFit];
-        self.textFieldLabel.frame = CGRectMake(self.contentViewMargins.left, minY, widthLimit, CGRectGetHeight(self.textFieldLabel.bounds));
-        minY += CGRectGetHeight(self.textFieldLabel.bounds);
+    CGFloat minY = 0;
+    
+    for (NSInteger i = 0; i < self.mutableTitleLabels.count; i++) {
+        QMUILabel *label = self.mutableTitleLabels[i];
+        QMUITextField *textField = self.mutableTextFields[i];
+        CALayer *separatorLayer = self.mutableSeparatorLayers[i];
+        
+        if (!label.hidden) {
+            [label sizeToFit];
+            label.frame = CGRectFlatMake(self.textFieldLabelMargins.left, minY + self.textFieldLabelMargins.top, CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.textFieldLabelMargins), CGRectGetHeight(label.frame));
+            minY = CGRectGetMaxY(label.frame) + self.textFieldLabelMargins.bottom;
+        }
+        
+        textField.frame = CGRectFlatMake(self.textFieldMargins.left, minY + self.textFieldMargins.top, CGRectGetWidth(self.contentView.bounds) - UIEdgeInsetsGetHorizontalValue(self.textFieldMargins), self.textFieldHeight);
+        minY = CGRectGetMaxY(textField.frame) + self.textFieldMargins.bottom;
+        
+        // 宽度基于 textField 的宽度减去 textField.textInsets，从而保证与文字对齐
+        if (!separatorLayer.hidden) {
+            CGFloat separatorMinX = CGRectGetMinX(textField.frame) + textField.textInsets.left + self.textFieldSeparatorInsets.left;
+            CGFloat separatorWidth = CGRectGetWidth(textField.frame) - UIEdgeInsetsGetHorizontalValue(textField.textInsets) - UIEdgeInsetsGetHorizontalValue(self.textFieldSeparatorInsets);
+            separatorLayer.frame = CGRectMake(separatorMinX, minY + self.textFieldSeparatorInsets.top, separatorWidth, PixelOne);
+            minY = CGRectGetMinY(separatorLayer.frame) + self.textFieldSeparatorInsets.bottom;// 用 minY 是因为分隔线高度不占位
+        }
     }
     
-    CGFloat textFieldHeight = 0;
-    if (self.footerView.hidden) {
-        textFieldHeight = CGRectGetHeight(self.view.bounds) - self.contentViewMargins.bottom - minY;
-    } else {
-        textFieldHeight = CGRectGetMinY(self.footerView.frame) - self.contentViewMargins.bottom - minY;
-    }
-    
-    self.textField.frame = CGRectMake(self.contentViewMargins.left, minY, widthLimit, textFieldHeight);
-    self.textFieldSeparatorLayer.frame = CGRectMake(self.contentViewMargins.left + self.textField.textInsets.left, CGRectGetMaxY(self.textField.frame) - PixelOne + separatorOffsetY, widthLimit - self.textField.textInsets.left - self.textField.textInsets.right, PixelOne);
+    self.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.scrollView.bounds), minY);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.textField becomeFirstResponder];
+    [self.mutableTextFields.firstObject becomeFirstResponder];
+    
+    if (self.enablesSubmitButtonAutomatically) {
+        // 触发所有输入框的 enablesReturnKeyAutomatically 属性的更新
+        self.enablesSubmitButtonAutomatically = self.enablesSubmitButtonAutomatically;
+    }
+    
+    // 最后一个输入框默认是 Done，其他输入框都是 Next
+    self.mutableTextFields.lastObject.returnKeyType = UIReturnKeyDone;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    [self.textField resignFirstResponder];
+    [self.view endEditing:YES];
 }
 
-#pragma mark - Setters
-- (void)setTextFieldTitle:(NSString *)textFieldTitle {
-    _textFieldTitle = textFieldTitle;
-    
-    if (textFieldTitle.length > 0) {
-        self.textFieldLabel.hidden = NO;
-        self.textFieldLabel.text = textFieldTitle;
-    } else {
-        self.textFieldLabel.hidden = YES;
+#pragma mark - Getters & Setters
+
+- (void)setContentViewBackgroundColor:(UIColor *)contentViewBackgroundColor {
+    [super setContentViewBackgroundColor:contentViewBackgroundColor];
+    self.scrollView.backgroundColor = contentViewBackgroundColor;
+}
+
+- (void)setTextFieldLabelFont:(UIFont *)textFieldLabelFont {
+    _textFieldLabelFont = textFieldLabelFont;
+    [self.mutableTitleLabels enumerateObjectsUsingBlock:^(QMUILabel * _Nonnull label, NSUInteger idx, BOOL * _Nonnull stop) {
+        label.font = textFieldLabelFont;
+    }];
+    if (self.mutableTitleLabels.count) {
+        [self.modalPresentationViewController updateLayout];
     }
-    
-    [self.view setNeedsLayout];
+}
+
+- (void)setTextFieldLabelTextColor:(UIColor *)textFieldLabelTextColor {
+    _textFieldLabelTextColor = textFieldLabelTextColor;
+    [self.mutableTitleLabels enumerateObjectsUsingBlock:^(QMUILabel * _Nonnull label, NSUInteger idx, BOOL * _Nonnull stop) {
+        label.textColor = textFieldLabelTextColor;
+    }];
+}
+
+- (void)setTextFieldFont:(UIFont *)textFieldFont {
+    _textFieldFont = textFieldFont;
+    [self.mutableTextFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+        textField.font = textFieldFont;
+    }];
+}
+
+- (void)setTextFieldTextColor:(UIColor *)textFieldTextColor {
+    _textFieldTextColor = textFieldTextColor;
+    [self.mutableTextFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+        textField.textColor = textFieldTextColor;
+    }];
+}
+
+- (void)setTextFieldSeparatorColor:(UIColor *)textFieldSeparatorColor {
+    _textFieldSeparatorColor = textFieldSeparatorColor;
+    [self.mutableSeparatorLayers enumerateObjectsUsingBlock:^(CALayer * _Nonnull layer, NSUInteger idx, BOOL * _Nonnull stop) {
+        layer.backgroundColor = textFieldSeparatorColor.CGColor;
+    }];
+}
+
+- (void)setTextFieldLabelMargins:(UIEdgeInsets)textFieldLabelMargins {
+    _textFieldLabelMargins = textFieldLabelMargins;
+    if (self.mutableTitleLabels.count) {
+        [self.modalPresentationViewController updateLayout];
+    }
+}
+
+- (void)setTextFieldMargins:(UIEdgeInsets)textFieldMargins {
+    _textFieldMargins = textFieldMargins;
+    if (self.textFields.count) {
+        [self.modalPresentationViewController updateLayout];
+    }
+}
+
+- (void)setTextFieldHeight:(CGFloat)textFieldHeight {
+    _textFieldHeight = textFieldHeight;
+    if (self.textFields.count) {
+        [self.modalPresentationViewController updateLayout];
+    }
+}
+
+- (void)setTextFieldSeparatorInsets:(UIEdgeInsets)textFieldSeparatorInsets {
+    _textFieldSeparatorInsets = textFieldSeparatorInsets;
+    if (self.mutableSeparatorLayers.count) {
+        [self.modalPresentationViewController updateLayout];
+    }
+}
+
+- (NSArray<QMUILabel *> *)textFieldTitleLabels {
+    return self.mutableTitleLabels.copy;
+}
+
+- (NSArray<QMUITextField *> *)textFields {
+    return self.mutableTextFields.copy;
+}
+
+- (NSArray<CALayer *> *)textFieldSeparatorLayers {
+    return self.mutableSeparatorLayers.copy;
 }
 
 #pragma mark - Submit Button Enables
 
 - (void)setEnablesSubmitButtonAutomatically:(BOOL)enablesSubmitButtonAutomatically {
     _enablesSubmitButtonAutomatically = enablesSubmitButtonAutomatically;
-    self.textField.enablesReturnKeyAutomatically = _enablesSubmitButtonAutomatically;
-    if (_enablesSubmitButtonAutomatically) {
+    [self.mutableTextFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+        // enablesSubmitButtonAutomatically 只对最后一个输入框生效
+        if (enablesSubmitButtonAutomatically && idx != self.mutableTextFields.count - 1) {
+            textField.enablesReturnKeyAutomatically = NO;
+        } else {
+            textField.enablesReturnKeyAutomatically = enablesSubmitButtonAutomatically;
+        }
+    }];
+    if (enablesSubmitButtonAutomatically) {
         [self updateSubmitButtonEnables];
     }
 }
@@ -712,15 +940,22 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     }
     
     if (self.enablesSubmitButtonAutomatically) {
-        NSInteger textLength = self.textField.text.qmui_trim.length;
-        return 0 < textLength && textLength <= self.textField.maximumTextLength;
+        __block BOOL enabled = NO;
+        [self.mutableTextFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSInteger textLength = textField.text.qmui_trim.length;
+            enabled = 0 < textLength && textLength <= textField.maximumTextLength;
+            if (!enabled) {
+                *stop = YES;
+            }
+        }];
+        return enabled;
     }
     
     return YES;
 }
 
 - (void)handleTextFieldTextDidChangeEvent:(QMUITextField *)textField {
-    if (self.textField == textField) {
+    if ([self.mutableTextFields containsObject:textField]) {
         [self updateSubmitButtonEnables];
     }
 }
@@ -732,22 +967,52 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
-    CGFloat textFieldHeight = self.textFieldLabel.hidden ? 56.0 : 25.0; // 25.0 考虑了行高导致的 offsetoffset
-    CGFloat textFieldTitleHeight = 29.0;
+- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     
-    return CGSizeMake(limitSize.width, CGRectGetHeight(self.headerView.frame) + UIEdgeInsetsGetVerticalValue(self.contentViewMargins) + (!self.textFieldLabel.hidden ? textFieldTitleHeight : 0) + textFieldHeight + (!self.footerView.hidden ?  CGRectGetHeight(self.footerView.frame) : 0));
+    CGFloat textFieldLabelHeight = 0;
+    for (QMUILabel *label in self.mutableTitleLabels) {
+        if (!label.hidden) {
+            CGFloat labelHeight = flat([label sizeThatFits:CGSizeMax].height);
+            textFieldLabelHeight += labelHeight + UIEdgeInsetsGetVerticalValue(self.textFieldLabelMargins);
+        }
+    }
+    
+    CGFloat textFieldHeight = self.mutableTextFields.count * (self.textFieldHeight + UIEdgeInsetsGetVerticalValue(self.textFieldMargins));
+    
+    CGFloat separatorHeight = 0;
+    for (CALayer *separatorLayer in self.mutableSeparatorLayers) {
+        if (!separatorLayer.hidden) {
+            separatorHeight += UIEdgeInsetsGetVerticalValue(self.textFieldSeparatorInsets);
+        }
+    }
+    
+    CGFloat contentHeight = textFieldLabelHeight + textFieldHeight + separatorHeight + UIEdgeInsetsGetVerticalValue(self.scrollView.qmui_contentInset);
+    CGFloat contentViewVerticalMargin = UIEdgeInsetsGetVerticalValue(self.contentViewMargins);
+    
+    BOOL isFooterViewShowing = self.footerView && !self.footerView.hidden;
+    CGFloat footerHeight = isFooterViewShowing ? self.footerViewHeight : 0;
+    
+    CGSize finalSize = CGSizeMake(limitSize.width, MIN(limitSize.height, self.headerViewHeight + contentHeight + contentViewVerticalMargin + footerHeight));
+    return finalSize;
 }
 
 #pragma mark - <QMUITextFieldDelegate>
 
-- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+- (BOOL)textFieldShouldReturn:(QMUITextField *)textField {
     if (!self.shouldManageTextFieldsReturnEventAutomatically) {
         return NO;
     }
     
-    if (textField != self.textField) {
+    if (![self.mutableTextFields containsObject:textField]) {
         return NO;
+    }
+    
+    if (self.mutableTextFields.count > 1) {
+        if (textField != self.mutableTextFields.lastObject && textField.returnKeyType == UIReturnKeyNext) {
+            NSUInteger index = [self.mutableTextFields indexOfObject:textField];
+            [self.mutableTextFields[index + 1] becomeFirstResponder];
+            return YES;
+        }
     }
     
     // 有 submitButton 则响应它，没有的话响应 cancel，再没有就降下键盘即可（体验与 UIAlertController 一致）
@@ -757,12 +1022,6 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
         return NO;
     }
     
-    if (self.cancelButton) {
-        [self.cancelButton sendActionsForControlEvents:UIControlEventTouchUpInside];
-        return NO;
-    }
-    
-    [self.view endEditing:YES];
     return NO;
 }
 

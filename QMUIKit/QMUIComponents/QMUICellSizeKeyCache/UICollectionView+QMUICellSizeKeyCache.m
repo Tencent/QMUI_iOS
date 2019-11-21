@@ -1,16 +1,23 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  UICollectionView+QMUICellSizeKeyCache.m
 //  QMUIKit
 //
-//  Created by MoLice on 2018/3/14.
-//  Copyright © 2018年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2018/3/14.
 //
 
 #import "UICollectionView+QMUICellSizeKeyCache.h"
 #import "QMUICore.h"
 #import "QMUICellSizeKeyCache.h"
 #import "UIScrollView+QMUI.h"
-#import <objc/runtime.h>
+#import "QMUIMultipleDelegates.h"
 
 //@interface UICollectionViewCell (QMUICellSizeKeyCache)
 //
@@ -70,14 +77,17 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        SEL selectors[] = {
-            @selector(setDelegate:)
-        };
-        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
-            SEL originalSelector = selectors[index];
-            SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
-        }
+        OverrideImplementation([UICollectionView class], @selector(setDelegate:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UICollectionView *selfObject, id<UICollectionViewDelegate> firstArgv) {
+                
+                [selfObject replaceMethodForDelegateIfNeeded:firstArgv];
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, id<UICollectionViewDelegate>);
+                originSelectorIMP = (void (*)(id, SEL, id<UICollectionViewDelegate>))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
     });
 }
 
@@ -167,24 +177,29 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
 //    return collectionViewLayout.estimatedItemSize;
 //}
 
-- (void)qmui_setDelegate:(id<UICollectionViewDelegate>)delegate {
-    [self replaceMethodForDelegateIfNeeded:delegate];
-    [self qmui_setDelegate:delegate];
-}
-
 static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
 - (void)replaceMethodForDelegateIfNeeded:(id<UICollectionViewDelegate>)delegate {
     if (self.qmui_cacheCellSizeByKeyAutomatically && delegate) {
         if (!qmui_methodsReplacedClasses) {
             qmui_methodsReplacedClasses = [NSMutableSet set];
         }
-        if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(delegate.class)]) {
-            return;
-        }
-        [qmui_methodsReplacedClasses addObject:NSStringFromClass(delegate.class)];
+        void (^addSelectorBlock)(id<UICollectionViewDelegate>) = ^void(id<UICollectionViewDelegate> aDelegate) {
+            if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(aDelegate.class)]) {
+                return;
+            }
+            [qmui_methodsReplacedClasses addObject:NSStringFromClass(aDelegate.class)];
+        };
         
-        ExchangeImplementationsInTwoClasses(delegate.class, @selector(collectionView:willDisplayCell:forItemAtIndexPath:), self.class, @selector(qmui_collectionView:willDisplayCell:forItemAtIndexPath:));
-//        ExchangeImplementationsInTwoClasses(delegate.class, @selector(collectionView:layout:sizeForItemAtIndexPath:), self.class, @selector(qmui_collectionView:layout:sizeForItemAtIndexPath:));
+        if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+            NSPointerArray *delegates = [((QMUIMultipleDelegates *)delegate).delegates copy];
+            for (id d in delegates) {
+                if ([d conformsToProtocol:@protocol(UICollectionViewDelegate)]) {
+                    addSelectorBlock((id<UICollectionViewDelegate>)d);
+                }
+            }
+        } else {
+            addSelectorBlock((id<UICollectionViewDelegate>)delegate);
+        }
     }
 }
 

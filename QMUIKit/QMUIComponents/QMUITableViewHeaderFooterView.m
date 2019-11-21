@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUITableViewHeaderFooterView.m
 //  QMUIKit
 //
-//  Created by MoLice on 2017/12/7.
-//  Copyright © 2017年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2017/12/7.
 //
 
 #import "QMUITableViewHeaderFooterView.h"
@@ -26,7 +33,7 @@
     return self;
 }
 
-- (void)updateStyleIfCan {
+- (void)updateAppearance {
     if (!self.parentTableView) return;
     if (self.type == QMUITableViewHeaderFooterViewTypeUnknow) return;
     
@@ -50,6 +57,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     if (self.accessoryView) {
+        [self.accessoryView sizeToFit];
         self.accessoryView.qmui_right = self.contentView.qmui_width - self.contentEdgeInsets.right - self.accessoryViewMargins.right;
         self.accessoryView.qmui_top = self.contentEdgeInsets.top + CGFloatGetCenter(self.contentView.qmui_height - UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets), self.accessoryView.qmui_height) + self.accessoryViewMargins.top - self.accessoryViewMargins.bottom;
     }
@@ -57,8 +65,7 @@
     [self.titleLabel sizeToFit];
     self.titleLabel.qmui_left = self.contentEdgeInsets.left;
     self.titleLabel.qmui_extendToRight = self.accessoryView ? self.accessoryView.qmui_left - self.accessoryViewMargins.left : self.contentView.qmui_width - self.contentEdgeInsets.right;
-    self.titleLabel.qmui_top = self.contentEdgeInsets.top;
-    self.titleLabel.qmui_extendToBottom = self.contentView.qmui_height - self.contentEdgeInsets.bottom;
+    self.titleLabel.qmui_top = self.contentEdgeInsets.top + CGFloatGetCenter(self.contentView.qmui_height - UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets), self.titleLabel.qmui_height);
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -89,12 +96,12 @@
 
 - (void)setParentTableView:(UITableView *)parentTableView {
     _parentTableView = parentTableView;
-    [self updateStyleIfCan];
+    [self updateAppearance];
 }
 
 - (void)setType:(QMUITableViewHeaderFooterViewType)type {
     _type = type;
-    [self updateStyleIfCan];
+    [self updateAppearance];
 }
 
 - (void)setContentEdgeInsets:(UIEdgeInsets)contentEdgeInsets {

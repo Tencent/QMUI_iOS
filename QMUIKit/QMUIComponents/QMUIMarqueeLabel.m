@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIMarqueeLabel.m
 //  qmui
 //
-//  Created by MoLice on 2017/5/31.
-//  Copyright © 2017年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2017/5/31.
 //
 
 #import "QMUIMarqueeLabel.h"
@@ -15,15 +22,20 @@
 
 @property(nonatomic, strong) CADisplayLink *displayLink;
 @property(nonatomic, assign) CGFloat offsetX;
-@property(nonatomic, assign) CGFloat textWidth;
-
-@property(nonatomic, strong) CAGradientLayer *fadeLeftLayer;
-@property(nonatomic, strong) CAGradientLayer *fadeRightLayer;
+@property(nonatomic, assign) CGSize textSize;
+@property(nonatomic, assign) CGFloat fadeStartPercent; // 渐变开始的百分比，默认为0，不建议改
+@property(nonatomic, assign) CGFloat fadeEndPercent; // 渐变结束的百分比，例如0.2，则表示 0~20% 是渐变区间
 
 @property(nonatomic, assign) BOOL isFirstDisplay;
 
+@property(nonatomic, strong) CAGradientLayer *fadeLayer;
+
 /// 绘制文本时重复绘制的次数，用于实现首尾连接的滚动效果，1 表示不首尾连接，大于 1 表示首尾连接。
 @property(nonatomic, assign) NSInteger textRepeatCount;
+
+/// 记录上一次布局时的 bounds，如果有改变，则需要重置动画
+@property(nonatomic, assign) CGRect prevBounds;
+
 @end
 
 @implementation QMUIMarqueeLabel
@@ -34,26 +46,25 @@
         self.lineBreakMode = NSLineBreakByClipping;
         self.clipsToBounds = YES;// 显示非英文字符时，滚动的时候字符会稍微露出两端，所以这里直接裁剪掉
         
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     self.speed = .5;
+    self.fadeStartPercent = 0;
+    self.fadeEndPercent = .2;
     self.pauseDurationWhenMoveToEdge = 2.5;
     self.spacingBetweenHeadToTail = 40;
     self.automaticallyValidateVisibleFrame = YES;
-    self.fadeWidth = 20;
-    self.fadeStartColor = UIColorMakeWithRGBA(255, 255, 255, 1);
-    self.fadeEndColor = UIColorMakeWithRGBA(255, 255, 255, 0);
     self.shouldFadeAtEdge = YES;
     self.textStartAfterFade = NO;
     
@@ -75,31 +86,36 @@
         [self.displayLink invalidate];
         self.displayLink = nil;
     }
-    self.offsetX = 0;
-    self.displayLink.paused = ![self shouldPlayDisplayLink];
+    
+    // 需要手动触发一下 setter，否则在 xib 赋值 text 后不生效
+    self.attributedText = self.attributedText;
+}
+
+- (void)setFadeWidthPercent:(CGFloat)fadeWidthPercent {
+    if (!betweenOrEqual(0.0, fadeWidthPercent, 1.0)) {
+        return;
+    }
+    _fadeWidthPercent = fadeWidthPercent;
+    
+    self.fadeEndPercent = fadeWidthPercent;
 }
 
 - (void)setText:(NSString *)text {
     [super setText:text];
     self.offsetX = 0;
-    self.textWidth = [self sizeThatFits:CGSizeMax].width;
+    self.textSize = [self sizeThatFits:CGSizeMax];
     self.displayLink.paused = ![self shouldPlayDisplayLink];
+    [self checkIfShouldShowGradientLayer];
+    [self setNeedsLayout];
 }
 
 - (void)setAttributedText:(NSAttributedString *)attributedText {
     [super setAttributedText:attributedText];
     self.offsetX = 0;
-    self.textWidth = [self sizeThatFits:CGSizeMax].width;
+    self.textSize = [self sizeThatFits:CGSizeMax];
     self.displayLink.paused = ![self shouldPlayDisplayLink];
-}
-
-- (void)setFrame:(CGRect)frame {
-    BOOL isSizeChanged = !CGSizeEqualToSize(frame.size, self.frame.size);
-    [super setFrame:frame];
-    if (isSizeChanged) {
-        self.offsetX = 0;
-        self.displayLink.paused = ![self shouldPlayDisplayLink];
-    }
+    [self checkIfShouldShowGradientLayer];
+    [self setNeedsLayout];
 }
 
 - (void)drawTextInRect:(CGRect)rect {
@@ -107,21 +123,22 @@
     if (self.textAlignment == NSTextAlignmentLeft) {
         textInitialX = 0;
     } else if (self.textAlignment == NSTextAlignmentCenter) {
-        textInitialX = fmax(0, CGFloatGetCenter(CGRectGetWidth(self.bounds), self.textWidth));
+        textInitialX = MAX(0, CGFloatGetCenter(CGRectGetWidth(self.bounds), self.textSize.width));
     } else if (self.textAlignment == NSTextAlignmentRight) {
-        textInitialX = fmax(0, CGRectGetWidth(self.bounds) - self.textWidth);
+        textInitialX = MAX(0, CGRectGetWidth(self.bounds) - self.textSize.width);
     }
     
     // 考虑渐变遮罩的偏移
     CGFloat textOffsetXByFade = 0;
-    BOOL shouldTextStartAfterFade = self.shouldFadeAtEdge && self.textStartAfterFade && self.textWidth > CGRectGetWidth(self.bounds);
-    if (shouldTextStartAfterFade && textInitialX < self.fadeWidth) {
-        textOffsetXByFade = self.fadeWidth;
+    BOOL shouldTextStartAfterFade = self.shouldFadeAtEdge && self.textStartAfterFade && self.textSize.width > CGRectGetWidth(self.bounds);
+    CGFloat fadeWidth = CGRectGetWidth(self.bounds) * .5 * MAX(0, self.fadeEndPercent - self.fadeStartPercent);
+    if (shouldTextStartAfterFade && textInitialX < fadeWidth) {
+        textOffsetXByFade = fadeWidth;
     }
     textInitialX += textOffsetXByFade;
     
     for (NSInteger i = 0; i < self.textRepeatCountConsiderTextWidth; i++) {
-        [self.attributedText drawInRect:CGRectMake(self.offsetX + (self.textWidth + self.spacingBetweenHeadToTail) * i + textInitialX, 0, self.textWidth, CGRectGetHeight(rect))];
+        [self.attributedText drawInRect:CGRectMake(self.offsetX + (self.textSize.width + self.spacingBetweenHeadToTail) * i + textInitialX, CGRectGetMinY(rect) + CGFloatGetCenter(CGRectGetHeight(rect), self.textSize.height), self.textSize.width, self.textSize.height)];
     }
     
     // 自定义绘制就不需要调用 super
@@ -130,18 +147,22 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    if (self.fadeLeftLayer) {
-        self.fadeLeftLayer.frame = CGRectMake(0, 0, self.fadeWidth, CGRectGetHeight(self.bounds));
-        [self.layer qmui_bringSublayerToFront:self.fadeLeftLayer];// 显示非英文字符时，UILabel 内部会额外多出一层 layer 盖住了这里的 fadeLayer，所以要手动提到最前面
+    
+    if (self.fadeLayer) {
+        self.fadeLayer.frame = self.bounds;
     }
-    if (self.fadeRightLayer) {
-        self.fadeRightLayer.frame = CGRectMake(CGRectGetWidth(self.bounds) - self.fadeWidth, 0, self.fadeWidth, CGRectGetHeight(self.bounds));
-        [self.layer qmui_bringSublayerToFront:self.fadeRightLayer];// 显示非英文字符时，UILabel 内部会额外多出一层 layer 盖住了这里的 fadeLayer，所以要手动提到最前面
+    
+    if (!CGSizeEqualToSize(self.prevBounds.size, self.bounds.size)) {
+        self.offsetX = 0;
+        self.displayLink.paused = ![self shouldPlayDisplayLink];
+        self.prevBounds = self.bounds;
+        
+        [self checkIfShouldShowGradientLayer];
     }
 }
 
 - (NSInteger)textRepeatCountConsiderTextWidth {
-    if (self.textWidth < CGRectGetWidth(self.bounds)) {
+    if (self.textSize.width < CGRectGetWidth(self.bounds)) {
         return 1;
     }
     return self.textRepeatCount;
@@ -170,7 +191,7 @@
     self.offsetX -= self.speed;
     [self setNeedsDisplay];
     
-    if (-self.offsetX >= self.textWidth + (self.textRepeatCountConsiderTextWidth > 1 ? self.spacingBetweenHeadToTail : 0)) {
+    if (-self.offsetX >= self.textSize.width + (self.textRepeatCountConsiderTextWidth > 1 ? self.spacingBetweenHeadToTail : 0)) {
         displayLink.paused = YES;
         int64_t delay = self.textRepeatCount > 1 ? self.pauseDurationWhenMoveToEdge : 0;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -181,7 +202,7 @@
 }
 
 - (BOOL)shouldPlayDisplayLink {
-    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textWidth > CGRectGetWidth(self.bounds);
+    BOOL result = self.window && CGRectGetWidth(self.bounds) > 0 && self.textSize.width > CGRectGetWidth(self.bounds);
     
     // 如果 label.frame 在 window 可视区域之外，也视为不可见，暂停掉 displayLink
     if (result && self.automaticallyValidateVisibleFrame) {
@@ -194,78 +215,28 @@
     return result;
 }
 
-- (void)setOffsetX:(CGFloat)offsetX {
-    _offsetX = offsetX;
-    [self updateFadeLayersHidden];
-}
-
 - (void)setShouldFadeAtEdge:(BOOL)shouldFadeAtEdge {
     _shouldFadeAtEdge = shouldFadeAtEdge;
-    if (shouldFadeAtEdge) {
-        [self initFadeLayersIfNeeded];
-    }
-    [self updateFadeLayersHidden];
+    
+    [self checkIfShouldShowGradientLayer];
+    [self setNeedsLayout];
 }
 
-- (void)setFadeStartColor:(UIColor *)fadeStartColor {
-    _fadeStartColor = fadeStartColor;
-    [self updateFadeLayerColors];
-}
-
-- (void)setFadeEndColor:(UIColor *)fadeEndColor {
-    _fadeEndColor = fadeEndColor;
-    [self updateFadeLayerColors];
-}
-
-- (void)updateFadeLayerColors {
-    if (self.fadeLeftLayer) {
-        if (self.fadeStartColor && self.fadeEndColor) {
-            self.fadeLeftLayer.colors = @[(id)self.fadeStartColor.CGColor,
-                                          (id)self.fadeEndColor.CGColor];
-        } else {
-            self.fadeLeftLayer.colors = nil;
+- (void)checkIfShouldShowGradientLayer {
+    BOOL shouldShowFadeLayer = self.window && self.shouldFadeAtEdge && CGRectGetWidth(self.bounds) > 0 && self.textSize.width > CGRectGetWidth(self.bounds);
+    
+    if (shouldShowFadeLayer) {
+        _fadeLayer = [CAGradientLayer layer];
+        self.fadeLayer.locations = @[@(self.fadeStartPercent), @(self.fadeEndPercent), @(1 - self.fadeEndPercent), @(1 - self.fadeStartPercent)];
+        self.fadeLayer.startPoint = CGPointMake(0, .5);
+        self.fadeLayer.endPoint = CGPointMake(1, .5);
+        self.fadeLayer.colors = @[(id)UIColorMakeWithRGBA(255, 255, 255, 0).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 1).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 1).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 0).CGColor];
+        self.layer.mask = self.fadeLayer;
+    } else {
+        if (self.layer.mask == self.fadeLayer) {
+            self.layer.mask = nil;
         }
     }
-    if (self.fadeRightLayer) {
-        if (self.fadeStartColor && self.fadeEndColor) {
-            self.fadeRightLayer.colors = @[(id)self.fadeStartColor.CGColor,
-                                           (id)self.fadeEndColor.CGColor];
-        } else {
-            self.fadeRightLayer.colors = nil;
-        }
-    }
-}
-
-- (void)updateFadeLayersHidden {
-    if (!self.fadeLeftLayer || !self.fadeRightLayer) {
-        return;
-    }
-    
-    BOOL shouldShowFadeLeftLayer = self.shouldFadeAtEdge && (self.offsetX < 0 || (self.offsetX == 0 && !self.isFirstDisplay));
-    self.fadeLeftLayer.hidden = !shouldShowFadeLeftLayer;
-    
-    BOOL shouldShowFadeRightLayer = self.shouldFadeAtEdge && (self.textWidth > CGRectGetWidth(self.bounds) && self.offsetX != self.textWidth - CGRectGetWidth(self.bounds));
-    self.fadeRightLayer.hidden = !shouldShowFadeRightLayer;
-}
-
-- (void)initFadeLayersIfNeeded {
-    if (!self.fadeLeftLayer) {
-        self.fadeLeftLayer = [CAGradientLayer layer];// 请保留自带的 hidden 动画
-        self.fadeLeftLayer.startPoint = CGPointMake(0, .5);
-        self.fadeLeftLayer.endPoint = CGPointMake(1, .5);
-        [self.layer addSublayer:self.fadeLeftLayer];
-        [self setNeedsLayout];
-    }
-    
-    if (!self.fadeRightLayer) {
-        self.fadeRightLayer = [CAGradientLayer layer];// 请保留自带的 hidden 动画
-        self.fadeRightLayer.startPoint = CGPointMake(1, .5);
-        self.fadeRightLayer.endPoint = CGPointMake(0, .5);
-        [self.layer addSublayer:self.fadeRightLayer];
-        [self setNeedsLayout];
-    }
-    
-    [self updateFadeLayerColors];
 }
 
 #pragma mark - Superclass

@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIImagePickerCollectionViewCell.m
 //  qmui
 //
-//  Created by 李浩成 on 16/8/29.
-//  Copyright © 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 16/8/29.
 //
 
 #import "QMUIImagePickerCollectionViewCell.h"
@@ -14,36 +21,33 @@
 #import "UILabel+QMUI.h"
 #import "CALayer+QMUI.h"
 #import "QMUIButton.h"
-
-// checkbox 的 margin 默认值
-const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins = {6, 0, 0, 6};
-const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMargins = {0, 8, 8, 0};
-
+#import "UIView+QMUI.h"
+#import "NSString+QMUI.h"
 
 @interface QMUIImagePickerCollectionViewCell ()
 
+@property(nonatomic, strong, readwrite) UIImageView *favoriteImageView;
 @property(nonatomic, strong, readwrite) QMUIButton *checkboxButton;
+@property(nonatomic, strong, readwrite) CAGradientLayer *bottomShadowLayer;
 
 @end
 
 
 @implementation QMUIImagePickerCollectionViewCell
 
-@synthesize videoMarkImageView = _videoMarkImageView;
 @synthesize videoDurationLabel = _videoDurationLabel;
-@synthesize videoBottomShadowLayer = _videoBottomShadowLayer;
 
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        [QMUIImagePickerCollectionViewCell appearance].favoriteImage = [QMUIHelper imageWithName:@"QMUI_pickerImage_favorite"];
+        [QMUIImagePickerCollectionViewCell appearance].favoriteImageMargins = UIEdgeInsetsMake(6, 6, 6, 6);
         [QMUIImagePickerCollectionViewCell appearance].checkboxImage = [QMUIHelper imageWithName:@"QMUI_pickerImage_checkbox"];
         [QMUIImagePickerCollectionViewCell appearance].checkboxCheckedImage = [QMUIHelper imageWithName:@"QMUI_pickerImage_checkbox_checked"];
-        [QMUIImagePickerCollectionViewCell appearance].checkboxButtonMargins = QMUIImagePickerCollectionViewCellDefaultCheckboxButtonMargins;
-        [QMUIImagePickerCollectionViewCell appearance].videoMarkImage = [QMUIHelper imageWithName:@"QMUI_pickerImage_video_mark"];
-        [QMUIImagePickerCollectionViewCell appearance].videoMarkImageViewMargins = QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMargins;
+        [QMUIImagePickerCollectionViewCell appearance].checkboxButtonMargins = UIEdgeInsetsMake(6, 6, 6, 6);
         [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelFont = UIFontMake(12);
         [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelTextColor = UIColorWhite;
-        [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelMargins = UIEdgeInsetsMake(0, 0, 6, 6);
+        [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelMargins = UIEdgeInsetsMake(5, 5, 5, 7);
     });
 }
 
@@ -51,11 +55,11 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     self = [super initWithFrame:frame];
     if (self) {
         [self initImagePickerCollectionViewCellUI];
+        self.favoriteImage = [QMUIImagePickerCollectionViewCell appearance].favoriteImage;
+        self.favoriteImageMargins = [QMUIImagePickerCollectionViewCell appearance].favoriteImageMargins;
         self.checkboxImage = [QMUIImagePickerCollectionViewCell appearance].checkboxImage;
         self.checkboxCheckedImage = [QMUIImagePickerCollectionViewCell appearance].checkboxCheckedImage;
         self.checkboxButtonMargins = [QMUIImagePickerCollectionViewCell appearance].checkboxButtonMargins;
-        self.videoMarkImage = [QMUIImagePickerCollectionViewCell appearance].videoMarkImage;
-        self.videoMarkImageViewMargins = [QMUIImagePickerCollectionViewCell appearance].videoMarkImageViewMargins;
         self.videoDurationLabelFont = [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelFont;
         self.videoDurationLabelTextColor = [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelTextColor;
         self.videoDurationLabelMargins = [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelMargins;
@@ -69,6 +73,17 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     self.contentImageView.clipsToBounds = YES;
     [self.contentView addSubview:self.contentImageView];
     
+    self.bottomShadowLayer = [CAGradientLayer layer];
+    [self.bottomShadowLayer qmui_removeDefaultAnimations];
+    self.bottomShadowLayer.colors = @[(id)UIColorMakeWithRGBA(0, 0, 0, 0).CGColor, (id)UIColorMakeWithRGBA(0, 0, 0, .6).CGColor];
+    self.bottomShadowLayer.hidden = YES;
+    [self.contentView.layer addSublayer:self.bottomShadowLayer];
+    [self setNeedsLayout];
+    
+    self.favoriteImageView = [[UIImageView alloc] init];
+    self.favoriteImageView.hidden = YES;
+    [self.contentView addSubview:self.favoriteImageView];
+    
     self.checkboxButton = [[QMUIButton alloc] init];
     self.checkboxButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
     self.checkboxButton.qmui_outsideEdge = UIEdgeInsetsMake(-6, -6, -6, -6);
@@ -76,42 +91,31 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     [self.contentView addSubview:self.checkboxButton];
 }
 
-- (void)initVideoBottomShadowLayerIfNeeded {
-    if (!_videoBottomShadowLayer) {
-        _videoBottomShadowLayer = [CAGradientLayer layer];
-        [_videoBottomShadowLayer qmui_removeDefaultAnimations];
-        _videoBottomShadowLayer.colors = @[(id)UIColorMakeWithRGBA(0, 0, 0, 0).CGColor, (id)UIColorMakeWithRGBA(0, 0, 0, .6).CGColor];
-        [self.contentView.layer addSublayer:_videoBottomShadowLayer];
-        [self setNeedsLayout];
+- (void)renderWithAsset:(QMUIAsset *)asset referenceSize:(CGSize)referenceSize {
+    self.assetIdentifier = asset.identifier;
+    
+    // 异步请求资源对应的缩略图
+    [asset requestThumbnailImageWithSize:referenceSize completion:^(UIImage *result, NSDictionary *info) {
+        if ([self.assetIdentifier isEqualToString:asset.identifier]) {
+            self.contentImageView.image = result;
+        } else {
+            self.contentImageView.image = nil;
+        }
+    }];
+    
+    if (asset.assetType == QMUIAssetTypeVideo) {
+        [self initVideoDurationLabelIfNeeded];
+        self.videoDurationLabel.text = [NSString qmui_timeStringWithMinsAndSecsFromSecs:asset.duration];
+        self.videoDurationLabel.hidden = NO;
+    } else {
+        self.videoDurationLabel.hidden = YES;
     }
-}
-
-- (void)initVideoMarkImageViewIfNeed {
-    if (_videoMarkImageView) {
-        return;
-    }
-    _videoMarkImageView = [[UIImageView alloc] init];
-    [_videoMarkImageView setImage:self.videoMarkImage];
-    [_videoMarkImageView sizeToFit];
-    [self.contentView addSubview:_videoMarkImageView];
+    
+    self.favoriteImageView.hidden = !asset.phAsset.favorite;
+    
+    self.bottomShadowLayer.hidden = !((self.videoDurationLabel && !self.videoDurationLabel.hidden) || !self.favoriteImageView.hidden);
+    
     [self setNeedsLayout];
-}
-
-- (void)initVideoDurationLabelIfNeed {
-    if (_videoDurationLabel) {
-        return;
-    }
-    _videoDurationLabel = [[UILabel alloc] init];
-    _videoDurationLabel.font = self.videoDurationLabelFont;
-    _videoDurationLabel.textColor = self.videoDurationLabelTextColor;
-    [self.contentView addSubview:_videoDurationLabel];
-    [self setNeedsLayout];
-}
-
-- (void)initVideoRelatedViewsIfNeeded {
-    [self initVideoBottomShadowLayerIfNeeded];
-    [self initVideoMarkImageViewIfNeed];
-    [self initVideoDurationLabelIfNeed];
 }
 
 - (void)layoutSubviews {
@@ -121,25 +125,38 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
         self.checkboxButton.frame = CGRectSetXY(self.checkboxButton.frame, CGRectGetWidth(self.contentView.bounds) - self.checkboxButtonMargins.right - CGRectGetWidth(self.checkboxButton.bounds), self.checkboxButtonMargins.top);
     }
     
-    if (_videoBottomShadowLayer && _videoMarkImageView && _videoDurationLabel) {
-        _videoMarkImageView.frame = CGRectSetXY(_videoMarkImageView.frame, self.videoMarkImageViewMargins.left, CGRectGetHeight(self.contentView.bounds) - CGRectGetHeight(_videoMarkImageView.bounds) - self.videoMarkImageViewMargins.bottom);
-
-        [_videoDurationLabel sizeToFit];
-        _videoDurationLabel.frame = ({
-            CGFloat minX = CGRectGetWidth(self.contentView.bounds) - self.videoDurationLabelMargins.right - CGRectGetWidth(_videoDurationLabel.bounds);
-            CGFloat minY = CGRectGetHeight(self.contentView.bounds) - self.videoDurationLabelMargins.bottom - CGRectGetHeight(_videoDurationLabel.bounds);
-            CGRectSetXY(_videoDurationLabel.frame, minX, minY);
-        });
-        
-        CGFloat videoBottomShadowLayerHeight = CGRectGetHeight(self.contentView.bounds) - CGRectGetMinY(_videoMarkImageView.frame) + self.videoMarkImageViewMargins.bottom;// 背景阴影遮罩的高度取决于（视频 icon 的高度 + 上下 margin）
-        _videoBottomShadowLayer.frame = CGRectFlatMake(0, CGRectGetHeight(self.contentView.bounds) - videoBottomShadowLayerHeight, CGRectGetWidth(self.contentView.bounds), videoBottomShadowLayerHeight);
+    CGFloat bottomShadowLayerHeight = 0;
+    
+    if (!self.favoriteImageView.hidden) {
+        self.favoriteImageView.frame = CGRectSetXY(self.favoriteImageView.frame, self.favoriteImageMargins.left, CGRectGetHeight(self.contentView.bounds) - self.favoriteImageMargins.bottom - CGRectGetHeight(self.favoriteImageView.frame));
+        bottomShadowLayerHeight = CGRectGetHeight(self.favoriteImageView.frame) + UIEdgeInsetsGetVerticalValue(self.favoriteImageMargins);
     }
+    
+    if (self.videoDurationLabel && !self.videoDurationLabel.hidden) {
+        [self.videoDurationLabel sizeToFit];
+        self.videoDurationLabel.frame = CGRectSetXY(self.videoDurationLabel.frame, CGRectGetWidth(self.contentView.bounds) - self.videoDurationLabelMargins.right - CGRectGetWidth(self.videoDurationLabel.frame), CGRectGetHeight(self.contentView.bounds) - self.videoDurationLabelMargins.bottom - CGRectGetHeight(self.videoDurationLabel.frame));
+        bottomShadowLayerHeight = MAX(bottomShadowLayerHeight, CGRectGetHeight(self.videoDurationLabel.frame) + UIEdgeInsetsGetVerticalValue(self.videoDurationLabelMargins));
+    }
+    
+    if (!self.bottomShadowLayer.hidden) {
+        self.bottomShadowLayer.frame = CGRectMake(0, CGRectGetHeight(self.contentView.bounds) - bottomShadowLayerHeight, CGRectGetWidth(self.contentView.bounds), bottomShadowLayerHeight);
+    }
+}
+
+- (void)setFavoriteImage:(UIImage *)favoriteImage {
+    if (![self.favoriteImage isEqual:favoriteImage]) {
+        self.favoriteImageView.image = favoriteImage;
+        [self.favoriteImageView sizeToFit];
+        [self setNeedsLayout];
+    }
+    _favoriteImage = favoriteImage;
 }
 
 - (void)setCheckboxImage:(UIImage *)checkboxImage {
     if (![self.checkboxImage isEqual:checkboxImage]) {
         [self.checkboxButton setImage:checkboxImage forState:UIControlStateNormal];
         [self.checkboxButton sizeToFit];
+        [self setNeedsLayout];
     }
     _checkboxImage = checkboxImage;
 }
@@ -149,22 +166,16 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
         [self.checkboxButton setImage:checkboxCheckedImage forState:UIControlStateSelected];
         [self.checkboxButton setImage:checkboxCheckedImage forState:UIControlStateSelected|UIControlStateHighlighted];
         [self.checkboxButton sizeToFit];
+        [self setNeedsLayout];
     }
     _checkboxCheckedImage = checkboxCheckedImage;
-}
-
-- (void)setVideoMarkImage:(UIImage *)videoMarkImage {
-    if (![self.videoMarkImage isEqual:videoMarkImage]) {
-        [_videoMarkImageView setImage:videoMarkImage];
-        [_videoMarkImageView sizeToFit];
-    }
-    _videoMarkImage = videoMarkImage;
 }
 
 - (void)setVideoDurationLabelFont:(UIFont *)videoDurationLabelFont {
     if (![self.videoDurationLabelFont isEqual:videoDurationLabelFont]) {
         _videoDurationLabel.font = videoDurationLabelFont;
         [_videoDurationLabel qmui_calculateHeightAfterSetAppearance];
+        [self setNeedsLayout];
     }
     _videoDurationLabelFont = videoDurationLabelFont;
 }
@@ -201,19 +212,12 @@ const UIEdgeInsets QMUIImagePickerCollectionViewCellDefaultVideoMarkImageViewMar
     }
 }
 
-- (UILabel *)videoDurationLabel {
-    [self initVideoRelatedViewsIfNeeded];
-    return _videoDurationLabel;
-}
-
-- (UIImageView *)videoMarkImageView {
-    [self initVideoRelatedViewsIfNeeded];
-    return _videoMarkImageView;
-}
-
-- (CAGradientLayer *)videoBottomShadowLayer {
-    [self initVideoRelatedViewsIfNeeded];
-    return _videoBottomShadowLayer;
+- (void)initVideoDurationLabelIfNeeded {
+    if (!self.videoDurationLabel) {
+        _videoDurationLabel = [[UILabel alloc] qmui_initWithFont:self.videoDurationLabelFont textColor:self.videoDurationLabelTextColor];
+        [self.contentView addSubview:_videoDurationLabel];
+        [self setNeedsLayout];
+    }
 }
 
 @end

@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIToastView.m
 //  qmui
 //
-//  Created by zhoonchen on 2016/12/11.
-//  Copyright © 2016年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2016/12/11.
 //
 
 #import "QMUIToastView.h"
@@ -12,6 +19,9 @@
 #import "QMUIToastContentView.h"
 #import "QMUIToastBackgroundView.h"
 #import "QMUIKeyboardManager.h"
+#import "UIView+QMUI.h"
+
+static NSMutableArray <QMUIToastView *> *kToastViews = nil;
 
 @interface QMUIToastView ()
 
@@ -25,28 +35,33 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     NSAssert(NO, @"请使用initWithView:初始化");
-    return [self initWithView:nil];
+    return [self initWithView:[[UIView alloc] init]];
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     NSAssert(NO, @"请使用initWithView:初始化");
-    return [self initWithView:nil];
+    return [self initWithView:[[UIView alloc] init]];
 }
 
-- (instancetype)initWithView:(UIView *)view {
+- (nonnull instancetype)initWithView:(nonnull UIView *)view {
     NSAssert(view, @"view不能为空");
     if (self = [super initWithFrame:view.bounds]) {
         _parentView = view;
-        [self commonInit];
+        [self didInitialize];
     }
     return self;
 }
 
 - (void)dealloc {
     [self removeNotifications];
+    if ([kToastViews containsObject:self]) {
+        [kToastViews removeObject:self];
+    }
 }
 
-- (void)commonInit {
+- (void)didInitialize {
+    
+    self.tintColor = UIColorWhite;
     
     self.toastPosition = QMUIToastViewPositionCenter;
     
@@ -59,13 +74,33 @@
     self.backgroundColor = UIColorClear;
     self.layer.allowsGroupOpacity = NO;
     
-    self.tintColor = UIColorWhite;
-    
     _maskView = [[UIView alloc] init];
     self.maskView.backgroundColor = UIColorClear;
     [self addSubview:self.maskView];
     
     [self registerNotifications];
+}
+
+- (void)didMoveToSuperview {
+    if (!kToastViews) {
+        kToastViews = [[NSMutableArray alloc] init];
+    }
+    if (self.superview) {
+        // show
+        if (![kToastViews containsObject:self]) {
+            [kToastViews addObject:self];
+        }
+    } else {
+        // hide
+        if ([kToastViews containsObject:self]) {
+            [kToastViews removeObject:self];
+        }
+    }
+}
+
+- (void)removeFromSuperview {
+    [super removeFromSuperview];
+    _parentView = nil;
 }
 
 - (QMUIToastAnimator *)defaultAnimator {
@@ -81,11 +116,6 @@
 - (UIView *)defaultContentView {
     QMUIToastContentView *contentView = [[QMUIToastContentView alloc] init];
     return contentView;
-}
-
-- (void)removeFromSuperview {
-    [super removeFromSuperview];
-    _parentView = nil;
 }
 
 - (void)setBackgroundView:(UIView *)backgroundView {
@@ -119,31 +149,36 @@
     CGFloat contentWidth = CGRectGetWidth(self.parentView.bounds);
     CGFloat contentHeight = CGRectGetHeight(self.parentView.bounds);
     
-    CGFloat limitWidth = contentWidth - UIEdgeInsetsGetHorizontalValue(self.marginInsets);
-    CGFloat limitHeight = contentHeight - UIEdgeInsetsGetVerticalValue(self.marginInsets);
+    UIEdgeInsets marginInsets = UIEdgeInsetsConcat(self.marginInsets, self.parentView.qmui_safeAreaInsets);
+    
+    CGFloat limitWidth = contentWidth - UIEdgeInsetsGetHorizontalValue(marginInsets);
+    CGFloat limitHeight = contentHeight - UIEdgeInsetsGetVerticalValue(marginInsets);
     
     if ([QMUIKeyboardManager isKeyboardVisible]) {
         // 处理键盘相关逻辑，当键盘在显示的时候，内容高度会减去键盘的高度以使 Toast 居中
         CGRect keyboardFrame = [QMUIKeyboardManager currentKeyboardFrame];
         CGRect parentViewRect = [[QMUIKeyboardManager keyboardWindow] convertRect:self.parentView.frame fromView:self.parentView.superview];
-        CGRect overlapRect = CGRectFlatted(CGRectIntersection(keyboardFrame, parentViewRect));
+        CGRect intersectionRect = CGRectIntersection(keyboardFrame, parentViewRect);
+        CGRect overlapRect = CGRectIsValidated(intersectionRect) ? CGRectFlatted(intersectionRect) : CGRectZero;
         contentHeight -= CGRectGetHeight(overlapRect);
     }
     
     if (self.contentView) {
         
         CGSize contentViewSize = [self.contentView sizeThatFits:CGSizeMake(limitWidth, limitHeight)];
-        CGFloat contentViewX = fmax(self.marginInsets.left, (contentWidth - contentViewSize.width) / 2) + self.offset.x;
-        CGFloat contentViewY = fmax(self.marginInsets.top, (contentHeight - contentViewSize.height) / 2) + self.offset.y;
+        contentViewSize.width = MIN(contentViewSize.width, limitWidth);
+        contentViewSize.height = MIN(contentViewSize.height, limitHeight);
+        CGFloat contentViewX = MAX(marginInsets.left, (contentWidth - contentViewSize.width) / 2) + self.offset.x;
+        CGFloat contentViewY = MAX(marginInsets.top, (contentHeight - contentViewSize.height) / 2) + self.offset.y;
         
         if (self.toastPosition == QMUIToastViewPositionTop) {
-            contentViewY = self.marginInsets.top + self.offset.y;
+            contentViewY = marginInsets.top + self.offset.y;
         } else if (self.toastPosition == QMUIToastViewPositionBottom) {
-            contentViewY = contentHeight - contentViewSize.height - self.marginInsets.bottom + self.offset.y;
+            contentViewY = contentHeight - contentViewSize.height - marginInsets.bottom + self.offset.y;
         }
         
         CGRect contentRect = CGRectFlatMake(contentViewX, contentViewY, contentViewSize.width, contentViewSize.height);
-        self.contentView.frame = CGRectApplyAffineTransform(contentRect, self.contentView.transform);
+        self.contentView.qmui_frameApplyTransform = contentRect;
     }
     if (self.backgroundView) {
         // backgroundView的frame跟contentView一样，contentView里面的subviews如果需要在视觉上跟backgroundView有个padding，那么就自己在自定义的contentView里面做。
@@ -205,11 +240,9 @@
 }
 
 - (void)hideAnimated:(BOOL)animated {
-    
     if (self.willHideBlock) {
         self.willHideBlock(self.parentView, animated);
     }
-    
     if (animated) {
         if (!self.toastAnimator) {
             self.toastAnimator = [self defaultAnimator];
@@ -234,6 +267,7 @@
     }
     
     [self.hideDelayTimer invalidate];
+    
     self.alpha = 0.0;
     if (self.removeFromSuperViewWhenHide) {
         [self removeFromSuperview];
@@ -290,35 +324,37 @@
 
 + (BOOL)hideAllToastInView:(UIView *)view animated:(BOOL)animated {
     NSArray *toastViews = [self allToastInView:view];
-    BOOL returnFlag = NO;
+    BOOL result = NO;
     for (QMUIToastView *toastView in toastViews) {
-        if (toastView) {
-            toastView.removeFromSuperViewWhenHide = YES;
-            [toastView hideAnimated:animated];
-            returnFlag = YES;
-        }
+        result = YES;
+        toastView.removeFromSuperViewWhenHide = YES;
+        [toastView hideAnimated:animated];
     }
-    return returnFlag;
+    return result;
 }
 
-+ (instancetype)toastInView:(UIView *)view {
-    NSEnumerator *subviewsEnum = [view.subviews reverseObjectEnumerator];
-    for (UIView *subview in subviewsEnum) {
-        if ([subview isKindOfClass:self]) {
-            return (QMUIToastView *)subview;
-        }
++ (nullable __kindof UIView *)toastInView:(UIView *)view {
+    if (kToastViews.count <= 0) {
+        return nil;
+    }
+    UIView *toastView = kToastViews.lastObject;
+    if ([toastView isKindOfClass:self]) {
+        return toastView;
     }
     return nil;
 }
 
-+ (NSArray <QMUIToastView *> *)allToastInView:(UIView *)view {
++ (nullable NSArray <QMUIToastView *> *)allToastInView:(UIView *)view {
+    if (!view) {
+        return kToastViews.count > 0 ? [kToastViews mutableCopy] : nil;
+    }
     NSMutableArray *toastViews = [[NSMutableArray alloc] init];
-    for (UIView *subview in view.subviews) {
-        if ([subview isKindOfClass:self]) {
-            [toastViews addObject:subview];
+    for (UIView *toastView in kToastViews) {
+        if (toastView.superview == view && [toastView isKindOfClass:self]) {
+            [toastViews addObject:toastView];
         }
     }
-    return toastViews;
+    return toastViews.count > 0 ? [toastViews mutableCopy] : nil;
 }
 
 @end

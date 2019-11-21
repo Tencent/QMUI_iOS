@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIMoreOperationController.m
 //  qmui
 //
-//  Created by zhoon, MoLice on 17/11/15.
-//  Copyright (c) 2017年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 17/11/15.
 //
 
 #import "QMUIMoreOperationController.h"
@@ -39,7 +46,7 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 }
 
 static QMUIMoreOperationController *moreOperationViewControllerAppearance;
-+ (instancetype)appearance {
++ (nonnull instancetype)appearance {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         [self resetAppearance];
@@ -50,9 +57,9 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 + (void)resetAppearance {
     if (!moreOperationViewControllerAppearance) {
         moreOperationViewControllerAppearance = [[QMUIMoreOperationController alloc] init];
-        moreOperationViewControllerAppearance.contentBackgroundColor = UIColorWhite;
-        moreOperationViewControllerAppearance.contentEdgeMargin = 10;
-        moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - moreOperationViewControllerAppearance.contentEdgeMargin * 2;
+        moreOperationViewControllerAppearance.contentBackgroundColor = UIColorForBackground;
+        moreOperationViewControllerAppearance.contentEdgeMargins = UIEdgeInsetsMake(0, 10, 10, 10);
+        moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(moreOperationViewControllerAppearance.contentEdgeMargins);
         moreOperationViewControllerAppearance.contentCornerRadius = 10;
         moreOperationViewControllerAppearance.contentPaddings = UIEdgeInsetsMake(10, 0, 5, 0);
         
@@ -67,7 +74,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         moreOperationViewControllerAppearance.itemMinimumMarginHorizontal = 0;
         moreOperationViewControllerAppearance.automaticallyAdjustItemMargins = YES;
         
-        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorWhite;
+        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorForBackground;
         moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
         moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
         moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(16);
@@ -96,22 +103,22 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialized];
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)didInitialized {
+- (void)didInitialize {
     if (moreOperationViewControllerAppearance) {
         self.contentBackgroundColor = [QMUIMoreOperationController appearance].contentBackgroundColor;
-        self.contentEdgeMargin = [QMUIMoreOperationController appearance].contentEdgeMargin;
+        self.contentEdgeMargins = [QMUIMoreOperationController appearance].contentEdgeMargins;
         self.contentMaximumWidth = [QMUIMoreOperationController appearance].contentMaximumWidth;
         self.contentCornerRadius = [QMUIMoreOperationController appearance].contentCornerRadius;
         self.contentPaddings = [QMUIMoreOperationController appearance].contentPaddings;
@@ -140,9 +147,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
         self.mutableItems = [[NSMutableArray alloc] init];
     }
     
-    BeginIgnoreAvailabilityWarning
     [self loadViewIfNeeded];
-    EndIgnoreAvailabilityWarning
 }
 
 - (void)viewDidLoad {
@@ -160,7 +165,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     [self.cancelButton setTitle:@"取消" forState:UIControlStateNormal];
     [self.cancelButton setTitleColor:self.cancelButtonTitleColor forState:UIControlStateNormal];
     [self.cancelButton setTitleColor:[self.cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
-    self.cancelButton.qmui_borderPosition = QMUIBorderViewPositionBottom;
+    self.cancelButton.qmui_borderPosition = QMUIViewBorderPositionBottom;
     self.cancelButton.qmui_borderColor = self.cancelButtonSeparatorColor;
     [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.cancelButton];
@@ -186,7 +191,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     __block CGFloat layoutY = CGRectGetHeight(self.view.bounds);
     
     if (!self.extendLayer.hidden) {
-        self.extendLayer.frame = CGRectMake(0, layoutY, CGRectGetWidth(self.view.bounds), IPhoneXSafeAreaInsets.bottom);
+        self.extendLayer.frame = CGRectMake(0, layoutY, CGRectGetWidth(self.view.bounds), SafeAreaInsetsConstantForDeviceWithNotch.bottom);
         if (self.view.clipsToBounds) {
             QMUILog(@"QMUIMoreOperationController", @"%@ 需要显示 extendLayer，但却被父级 clip 掉了，可能看不到", NSStringFromClass(self.class));
         }
@@ -222,7 +227,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
             columnCount = [self suitableColumnCountWithCount:columnCount];
         }
         
-        CGFloat finalItemMarginHorizontal = (scrollViewVisibleWidth - exampleItemWidth * columnCount) / columnCount;
+        CGFloat finalItemMarginHorizontal = flat((scrollViewVisibleWidth - exampleItemWidth * columnCount) / columnCount);
         
         __block CGFloat maximumItemHeight = 0;
         __block CGFloat itemViewMinX = scrollViewSafeAreaInsets.left;
@@ -240,11 +245,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (CGFloat)suitableColumnCountWithCount:(CGFloat)columnCount {
     // 根据精准的列数，找到一个合适的、能让半个 item 刚好露出来的列数。例如 3.6 会被转换成 3.5，3.2 会被转换成 2.5。
-    CGFloat result = 0;
-    if (((NSInteger)columnCount + .5) == (NSInteger)columnCount) {
-        result = ((NSInteger)columnCount - 1) + 0.5;
-    }
-    result = ((NSInteger)columnCount) + 0.5;
+    CGFloat result = round(columnCount) - .5;;
     return result;
 }
 
@@ -261,12 +262,12 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     QMUIModalPresentationViewController *modalPresentationViewController = [[QMUIModalPresentationViewController alloc] init];
     modalPresentationViewController.delegate = self;
     modalPresentationViewController.maximumContentViewWidth = self.contentMaximumWidth;
-    modalPresentationViewController.contentViewMargins = UIEdgeInsetsMake(self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin, self.contentEdgeMargin);
+    modalPresentationViewController.contentViewMargins = self.contentEdgeMargins;
     modalPresentationViewController.contentViewController = self;
     
     __weak __typeof(modalPresentationViewController)weakModalController = modalPresentationViewController;
     modalPresentationViewController.layoutBlock = ^(CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewDefaultFrame) {
-        weakModalController.contentView.frame = CGRectSetY(contentViewDefaultFrame, CGRectGetHeight(containerBounds) - weakModalController.contentViewMargins.bottom - CGRectGetHeight(contentViewDefaultFrame) - weakModalController.view.qmui_safeAreaInsets.bottom);
+        weakModalController.contentView.qmui_frameApplyTransform = CGRectSetY(contentViewDefaultFrame, CGRectGetHeight(containerBounds) - weakModalController.contentViewMargins.bottom - CGRectGetHeight(contentViewDefaultFrame) - weakModalController.view.qmui_safeAreaInsets.bottom);
     };
     modalPresentationViewController.showingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, CGRect contentViewFrame, void(^completion)(BOOL finished)) {
         
@@ -437,7 +438,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     scrollView.showsVerticalScrollIndicator = NO;
     scrollView.alwaysBounceHorizontal = YES;
     scrollView.qmui_borderColor = self.scrollViewSeparatorColor;
-    scrollView.qmui_borderPosition = (self.scrollViewSeparatorColor && index != 0) ? QMUIBorderViewPositionTop : QMUIBorderViewPositionNone;
+    scrollView.qmui_borderPosition = (self.scrollViewSeparatorColor && index != 0) ? QMUIViewBorderPositionTop : QMUIViewBorderPositionNone;
     scrollView.scrollsToTop = NO;
     if (@available(iOS 11, *)) {
         scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
@@ -450,7 +451,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 - (void)updateScrollViewsBorderStyle {
     [self.mutableScrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
         scrollView.qmui_borderColor = self.scrollViewSeparatorColor;
-        scrollView.qmui_borderPosition = idx != 0 ? QMUIBorderViewPositionTop : QMUIBorderViewPositionNone;
+        scrollView.qmui_borderPosition = idx != 0 ? QMUIViewBorderPositionTop : QMUIViewBorderPositionNone;
     }];
 }
 
@@ -571,7 +572,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (void)setCancelButtonMarginTop:(CGFloat)cancelButtonMarginTop {
     _cancelButtonMarginTop = cancelButtonMarginTop;
-    self.cancelButton.qmui_borderPosition = cancelButtonMarginTop > 0 ? QMUIBorderViewPositionNone : QMUIBorderViewPositionTop;
+    self.cancelButton.qmui_borderPosition = cancelButtonMarginTop > 0 ? QMUIViewBorderPositionNone : QMUIViewBorderPositionTop;
     [self updateCornerRadius];
     [self setViewNeedsLayoutIfLoaded];
 }
@@ -616,7 +617,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 #pragma mark - <QMUIModalPresentationContentViewControllerProtocol>
 
-- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller limitSize:(CGSize)limitSize {
+- (CGSize)preferredContentSizeInModalPresentationViewController:(QMUIModalPresentationViewController *)controller keyboardHeight:(CGFloat)keyboardHeight limitSize:(CGSize)limitSize {
     __block CGFloat contentHeight = (self.cancelButton.hidden ? 0 : self.cancelButtonHeight + self.cancelButtonMarginTop);
     [self.mutableScrollViews enumerateObjectsUsingBlock:^(UIScrollView * _Nonnull scrollView, NSUInteger idx, BOOL * _Nonnull stop) {
         NSArray<QMUIMoreOperationItemView *> *itemSection = self.mutableItems[idx];
@@ -651,6 +652,12 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
     if ([self.delegate respondsToSelector:@selector(didDismissMoreOperationController:cancelled:)]) {
         [self.delegate didDismissMoreOperationController:self cancelled:self.hideByCancel];
     }
+}
+
+#pragma mark - <QMUIModalPresentationComponentProtocol>
+
+- (void)hideModalPresentationComponent {
+    [self hideToBottom];
 }
 
 @end

@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUICommonTableViewController.m
 //  qmui
 //
 //  Created by QMUI Team on 14-6-24.
-//  Copyright (c) 2014年 QMUI Team. All rights reserved.
 //
 
 #import "QMUICommonTableViewController.h"
@@ -16,14 +23,12 @@
 #import "UICollectionView+QMUI.h"
 #import "UIView+QMUI.h"
 
-const UIEdgeInsets QMUICommonTableViewControllerInitialContentInsetNotSet = {-1, -1, -1, -1};
 NSString *const QMUICommonTableViewControllerSectionHeaderIdentifier = @"QMUISectionHeaderView";
 NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISectionFooterView";
 
 @interface QMUICommonTableViewController ()
 
 @property(nonatomic, strong, readwrite) QMUITableView *tableView;
-@property(nonatomic, assign) BOOL hasSetInitialContentInset;
 @property(nonatomic, assign) BOOL hasHideTableHeaderViewInitial;
 
 @end
@@ -33,7 +38,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 - (instancetype)initWithStyle:(UITableViewStyle)style {
     if (self = [super initWithNibName:nil bundle:nil]) {
-        [self didInitializedWithStyle:style];
+        [self didInitializeWithStyle:style];
     }
     return self;
 }
@@ -46,24 +51,27 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     return [self init];
 }
 
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        [self didInitializedWithStyle:UITableViewStylePlain];
+        [self didInitializeWithStyle:UITableViewStylePlain];
     }
     return self;
 }
 
-- (void)didInitializedWithStyle:(UITableViewStyle)style {
+- (void)didInitializeWithStyle:(UITableViewStyle)style {
     _style = style;
     self.hasHideTableHeaderViewInitial = NO;
-    self.tableViewInitialContentInset = QMUICommonTableViewControllerInitialContentInsetNotSet;
-    self.tableViewInitialScrollIndicatorInsets = QMUICommonTableViewControllerInitialContentInsetNotSet;
 }
 
 - (void)dealloc {
     // 用下划线而不是self.xxx来访问tableView，避免dealloc时self.view尚未被加载，此时调用self.tableView反而会触发loadView
     _tableView.delegate = nil;
     _tableView.dataSource = nil;
+    
+    if (@available(iOS 11.0, *)) {
+    } else {
+        [_tableView removeObserver:self forKeyPath:@"contentInset"];
+    }
 }
 
 - (NSString *)description {
@@ -111,7 +119,9 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self.tableView qmui_clearsSelection];
+    if (!self.tableView.allowsMultipleSelection) {
+        [self.tableView qmui_clearsSelection];
+    }
 }
 
 - (void)viewDidLayoutSubviews {
@@ -119,31 +129,22 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     
     [self layoutTableView];
     
-    if ([self shouldAdjustTableViewContentInsetsInitially] && !self.hasSetInitialContentInset) {
-        self.tableView.contentInset = self.tableViewInitialContentInset;
-        if ([self shouldAdjustTableViewScrollIndicatorInsetsInitially]) {
-            self.tableView.scrollIndicatorInsets = self.tableViewInitialScrollIndicatorInsets;
-        } else {
-            // 默认和tableView.contentInset一致
-            self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
-        }
-        [self.tableView qmui_scrollToTop];
-        self.hasSetInitialContentInset = YES;
-    }
-    
     [self hideTableHeaderViewInitialIfCanWithAnimated:NO force:NO];
     
     [self layoutEmptyView];
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
+    if ([keyPath isEqualToString:@"contentInset"]) {
+        [self handleTableViewContentInsetChangeEvent];
+    }
+}
 
 #pragma mark - 工具方法
 
 - (QMUITableView *)tableView {
     if (!_tableView) {
-        BeginIgnoreAvailabilityWarning
         [self loadViewIfNeeded];
-        EndIgnoreAvailabilityWarning
     }
     return _tableView;
 }
@@ -161,53 +162,22 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     [self.tableView reloadData];
 }
 
-- (void)setTableViewInitialContentInset:(UIEdgeInsets)tableViewInitialContentInset {
-    _tableViewInitialContentInset = tableViewInitialContentInset;
-    if (UIEdgeInsetsEqualToEdgeInsets(tableViewInitialContentInset, QMUICommonTableViewControllerInitialContentInsetNotSet)) {
-        if (@available(iOS 11, *)) {
-            if (self.isViewLoaded) {
-                self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentAutomatic;
-            }
-        } else {
-            self.automaticallyAdjustsScrollViewInsets = YES;
-        }
-    } else {
-        if (@available(iOS 11, *)) {
-            if (self.isViewLoaded) {
-                self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-            }
-        } else {
-            self.automaticallyAdjustsScrollViewInsets = NO;
-        }
-    }
-}
-
-- (BOOL)shouldAdjustTableViewContentInsetsInitially {
-    BOOL shouldAdjust = !UIEdgeInsetsEqualToEdgeInsets(self.tableViewInitialContentInset, QMUICommonTableViewControllerInitialContentInsetNotSet);
-    return shouldAdjust;
-}
-
-- (BOOL)shouldAdjustTableViewScrollIndicatorInsetsInitially {
-    BOOL shouldAdjust = !UIEdgeInsetsEqualToEdgeInsets(self.tableViewInitialScrollIndicatorInsets, QMUICommonTableViewControllerInitialContentInsetNotSet);
-    return shouldAdjust;
-}
-
 #pragma mark - 空列表视图 QMUIEmptyView
 
-- (void)showEmptyView {
-    if (!self.emptyView) {
-        self.emptyView = [[QMUIEmptyView alloc] init];
+- (void)handleTableViewContentInsetChangeEvent {
+    if (self.isEmptyViewShowing) {
+        [self layoutEmptyView];
     }
+}
+
+- (void)showEmptyView {
     [self.tableView addSubview:self.emptyView];
     [self layoutEmptyView];
 }
 
-- (void)hideEmptyView {
-    [self.emptyView removeFromSuperview];
-}
-
+// 注意，emptyView 的布局依赖于 tableView.contentInset，因此我们必须监听 tableView.contentInset 的变化以及时更新 emptyView 的布局
 - (BOOL)layoutEmptyView {
-    if (!self.emptyView || !self.emptyView.superview) {
+    if (!_emptyView || !_emptyView.superview) {
         return NO;
     }
     
@@ -311,6 +281,17 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     return [[UITableViewCell alloc] init];
 }
 
+/**
+ *  监听 contentInset 的变化以及时更新 emptyView 的布局，详见 layoutEmptyView 方法的注释
+ *  该 delegate 方法仅在 iOS 11 及之后存在，之前的 iOS 版本使用 KVO 的方式实现监听，详见 initTableView 方法里的相关代码
+ */
+- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView *)scrollView {
+    if (scrollView != self.tableView) {
+        return;
+    }
+    [self handleTableViewContentInsetChangeEvent];
+}
+
 @end
 
 
@@ -324,19 +305,22 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
         [self.tableView registerClass:[QMUITableViewHeaderFooterView class] forHeaderFooterViewReuseIdentifier:QMUICommonTableViewControllerSectionHeaderIdentifier];
         [self.tableView registerClass:[QMUITableViewHeaderFooterView class] forHeaderFooterViewReuseIdentifier:QMUICommonTableViewControllerSectionFooterIdentifier];
         [self.view addSubview:self.tableView];
-        
-        if (@available(iOS 11, *)) {
-            if ([self shouldAdjustTableViewContentInsetsInitially]) {
-                self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-            }
-        }
+    }
+    
+    if (@available(iOS 11, *)) {
+    } else {
+        /**
+         *  监听 contentInset 的变化以及时更新 emptyView 的布局，详见 layoutEmptyView 方法的注释
+         *  iOS 11 及之后使用 UIScrollViewDelegate 的 scrollViewDidChangeAdjustedContentInset: 来监听
+         */
+        [self.tableView addObserver:self forKeyPath:@"contentInset" options:NSKeyValueObservingOptionOld context:nil];
     }
 }
 
 - (void)layoutTableView {
     BOOL shouldChangeTableViewFrame = !CGRectEqualToRect(self.view.bounds, self.tableView.frame);
     if (shouldChangeTableViewFrame) {
-        self.tableView.frame = self.view.bounds;
+        self.tableView.qmui_frameApplyTransform = self.view.bounds;
     }
 }
 

@@ -1,13 +1,22 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  UITableView+QMUI.h
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
-//  Copyright (c) 2015年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /// cell 在当前 section 里的位置，注意判断时要用 (var & xxx) == xxx 的方式
 typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
@@ -20,7 +29,7 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
 
 /**
  *  这个分类提供额外的功能包括：
- *  1. 将给定的 UITableView 格式化为 QMUITableView 风格的样式
+ *  1. 将给定的 UITableView 格式化为 QMUITableView 风格的样式，以统一为配置表里的值
  *  2. 计算给定的某个 view 处于哪个 indexPath 的 cell 上
  *  3. 计算给定的某个 view 处于哪个 sectionHeader 上
  *  4. 获取所有可视范围内的 sectionHeader 的 index
@@ -29,8 +38,10 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
  *  7. 判断某个给定的 cell indexPath 是否处于可视范围内
  *  8. 计算给定的 cell 的 indexPath 所对应的 QMUITableViewCellPosition
  *  9. 清除当前列表的所有 selection（选中的背景灰色）
- *  10. 在将 searchBar 作为 tableHeaderView 的情况下，获取列表真实的 contentSize
- *  11. 在将 searchBar 作为 tableHeaderView 的情况下，判断列表内容是否足够多到可滚动
+ *  10. 判断列表当前内容是否足够滚动
+ *  11. 让某个 row 滚动到指定的位置（系统默认只可以将 row 滚动到 Top/Middle/Bottom）
+ *  12. 在将 searchBar 作为 tableHeaderView 的情况下，获取列表真实的 contentSize（系统为了实现列表内容不足一屏时依然可以将 searchBar 滚动到 navigationBar 下，在这种情况下会强制增大 contentSize）
+ *  13. 在将 searchBar 作为 tableHeaderView 的情况下，判断列表内容是否足够多到可滚动
  */
 @interface UITableView (QMUI)
 
@@ -83,7 +94,7 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
 /**
  * 将指定的row滚到指定的位置（row的顶边缘和指定位置重叠），并对一些特殊情况做保护（例如列表内容不够一屏、要滚动的row是最后一条等）
  * @param offsetY 目标row要滚到的y值，这个y值是相对于tableView的frame而言的
- * @param indexPath 要滚动的目标indexPath，请自行保证indexPath是合法的
+ * @param indexPath 要滚动的目标indexPath，如果该 indexPath 不合法则该方法不会有任何效果
  * @param animated 是否需要动画
  */
 - (void)qmui_scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(nonnull NSIndexPath *)indexPath animated:(BOOL)animated;
@@ -100,4 +111,14 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
  */
 - (BOOL)qmui_canScroll;
 
+/**
+ 等同于 UITableView 自 iOS 11 开始新增的同名方法，但兼容 iOS 11 以下的系统使用。
+
+ @param updates insert/delete/reload/move calls
+ @param completion completion callback
+ */
+- (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion;
+
 @end
+
+NS_ASSUME_NONNULL_END

@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  UIButton+QMUI.h
 //  qmui
 //
-//  Created by ZhoonChen on 15/7/20.
-//  Copyright (c) 2015年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 15/7/20.
 //
 
 #import <UIKit/UIKit.h>
@@ -45,6 +52,6 @@ typedef NS_ENUM(NSUInteger, QMUICustomizeButtonPropType) {
  * @note 该方法和 setTitleColor:forState: 均可设置字体颜色，如果二者冲突，则代码顺序较后的方法定义的颜色会最终生效
  * @note 如果包含了 NSKernAttributeName ，则此方法会自动帮你去掉最后一个字的 kern 效果，否则容易导致文字整体在视觉上不居中
  */
-- (void)qmui_setTitleAttributes:(NSDictionary<NSString *, id> *)attributes forState:(UIControlState)state;
+- (void)qmui_setTitleAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes forState:(UIControlState)state;
 
 @end

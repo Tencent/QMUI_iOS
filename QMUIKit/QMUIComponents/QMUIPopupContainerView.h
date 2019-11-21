@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIPopupContainerView.h
 //  qmui
 //
-//  Created by MoLice on 15/12/17.
-//  Copyright © 2015年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 15/12/17.
 //
 
 #import <UIKit/UIKit.h>
@@ -25,16 +32,16 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  * 2. 选择一种显示方式：
  * 2.1 如果要添加到某个 UIView 上，则先设置浮层 hidden = YES，然后调用 addSubview: 把浮层添加到目标 UIView 上。
  * 2.2 如果是轻量的场景用完即走，则 init 完浮层即可，无需设置 hidden，也无需调用 addSubview:，在后面第 4 步里会自动把浮层添加到 UIWindow 上显示出来。
- * 3. 在适当的时机（例如 layoutSubviews: 或 viewDidLayoutSubviews: 或在 show 之前）调用 layoutWithTargetView: 让浮层参考目标 view 布局，或者调用 layoutWithTargetRectInScreenCoordinate: 让浮层参考基于屏幕坐标系里的一个 rect 来布局。
+ * 3. 通过为 sourceBarItem/sourceView/sourceRect 三者中的一个赋值，来决定浮层布局的位置。
  * 4. 调用 showWithAnimated: 或 showWithAnimated:completion: 显示浮层。
  * 5. 调用 hideWithAnimated: 或 hideWithAnimated:completion: 隐藏浮层。
  *
  * @warning 如果使用方法 2.2，并且没有打开 automaticallyHidesWhenUserTap 属性，则记得在适当的时机（例如 viewWillDisappear:）隐藏浮层。
  *
  * 如果默认功能无法满足需求，可继承它重写一个子类，继承要点：
- * 1. 初始化时要做的事情请放在 didInitialized 里。
+ * 1. 初始化时要做的事情请放在 didInitialize 里。
  * 2. 所有 subviews 请加到 contentView 上。
- * 3. 通过重写 sizeThatFitsInContentView:，在里面返回当前 subviews 的大小，控件最终会被布局为这个大小。
+ * 3. 通过重写 sizeThatFitsInContentView:，在里面返回当前 subviews 的大小。
  * 4. 在 layoutSubviews: 里，所有 subviews 请相对于 contentView 布局。
  */
 
@@ -89,7 +96,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 @property(nonatomic, assign, readonly) QMUIPopupContainerViewLayoutDirection currentLayoutDirection;
 
 /// 最终布局时箭头距离目标边缘的距离，默认为5
-@property(nonatomic, assign) CGFloat distanceBetweenTargetRect UI_APPEARANCE_SELECTOR;
+@property(nonatomic, assign) CGFloat distanceBetweenSource UI_APPEARANCE_SELECTOR;
 
 /// 最终布局时与父节点的边缘的临界点，默认为(10, 10, 10, 10)
 @property(nonatomic, assign) UIEdgeInsets safetyMarginsOfSuperview UI_APPEARANCE_SELECTOR;
@@ -104,17 +111,16 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;
 
-/**
- *  相对于某个 view 布局（布局后箭头不一定会水平居中）
- *  @param targetView 注意如果这个 targetView 自身的布局发生变化，需要重新调用 layoutWithTargetView:，否则浮层的布局不会自动更新。
- */
-- (void)layoutWithTargetView:(UIView *)targetView;
+/// 可以是 UINavigationBar、UIToolbar 上的 UIBarButtonItem，或者 UITabBar 上的 UITabBarItem
+@property(nonatomic, weak) __kindof UIBarItem *sourceBarItem;
 
-/**
- * 相对于给定的 itemRect 布局（布局后箭头不一定会水平居中）
- * @param targetRect 注意这个 rect 应该是处于屏幕坐标系里的 rect，所以请自行做坐标系转换。
- */
-- (void)layoutWithTargetRectInScreenCoordinate:(CGRect)targetRect;
+@property(nonatomic, weak) __kindof UIView *sourceView;
+
+/// rect 需要处于 QMUIPopupContainerView 所在的坐标系内，例如如果 popup 使用 addSubview: 的方式添加到界面，则 sourceRect 应该是 superview 坐标系内的；如果 popup 使用 window 的方式展示，则 sourceRect 需要转换为 window 坐标系内。
+@property(nonatomic, assign) CGRect sourceRect;
+
+/// 立即刷新当前 popup 的布局，前提是 popup 已经被 show 过。
+- (void)updateLayout;
 
 - (void)showWithAnimated:(BOOL)animated;
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
@@ -147,8 +153,13 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 @interface QMUIPopupContainerView (UISubclassingHooks)
 
 /// 子类重写，在初始化时做一些操作
-- (void)didInitialized NS_REQUIRES_SUPER;
+- (void)didInitialize NS_REQUIRES_SUPER;
 
-/// 子类重写，告诉父类subviews的合适大小
+/**
+ 子类重写，告诉父类subviews的合适大小
+
+ @param size 浮层里除去 safetyMarginsOfSuperview、arrowSize、contentEdgeInsets 之外后，留给内容的实际大小，计算 subview 大小时均应使用这个参数来计算
+ @return 自定义内容实际占据的大小
+ */
 - (CGSize)sizeThatFitsInContentView:(CGSize)size;
 @end

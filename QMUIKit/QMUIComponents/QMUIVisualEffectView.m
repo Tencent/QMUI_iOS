@@ -1,74 +1,58 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIVisualEffectView.m
-//  qmui
+//  QMUIKit
 //
-//  Created by ZhoonChen on 14/12/1.
-//  Copyright (c) 2014年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2018/6/19.
 //
 
 #import "QMUIVisualEffectView.h"
+#import "QMUICore.h"
+#import "CALayer+QMUI.h"
+
+@interface QMUIVisualEffectView ()
+
+@property(nonatomic, strong) CALayer *foregroundLayer;
+
+@end
 
 @implementation QMUIVisualEffectView
-{
-    UIVisualEffectView *_effectView_8;  // iOS8 及以上
-    UIToolbar *_effectView_7;           // iOS7
-    UIView *_effectView_6;              // iOS6 及以下
-}
 
-- (instancetype)init {
-    self = [self initWithStyle:QMUIVisualEffectViewStyleLight];
-    if (self) {
+- (instancetype)initWithEffect:(nullable UIVisualEffect *)effect {
+    if (self = [super initWithEffect:effect]) {
+        [self didInitialize];
     }
     return self;
 }
 
-- (instancetype)initWithStyle:(QMUIVisualEffectViewStyle)style {
-    self = [super init];
-    if (self) {
-        _style = style;
-        [self initEffectViewUI];
+- (nullable instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self didInitialize];
     }
     return self;
 }
 
-- (void)initEffectViewUI {
-    if ([UIVisualEffectView class]) {
-        UIBlurEffectStyle effStyle;
-        switch (_style) {
-            case QMUIVisualEffectViewStyleExtraLight:
-                effStyle = UIBlurEffectStyleExtraLight;
-                break;
-            case QMUIVisualEffectViewStyleLight:
-                effStyle = UIBlurEffectStyleLight;
-                break;
-            case QMUIVisualEffectViewStyleDark:
-                effStyle = UIBlurEffectStyleDark;
-            default:
-                break;
-        }
-        _effectView_8 = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:effStyle]];
-        _effectView_8.clipsToBounds = YES;
-        [self addSubview:_effectView_8];
-    } else {
-        _effectView_7 = [[UIToolbar alloc] init];
-        _effectView_7.clipsToBounds = YES;
-        [self addSubview:_effectView_7];
-    }
+- (void)didInitialize {
+    self.foregroundLayer = [CALayer layer];
+    [self.foregroundLayer qmui_removeDefaultAnimations];
+    [self.contentView.layer addSublayer:self.foregroundLayer];
 }
 
-- (void)setBackgroundColor:(UIColor *)backgroundColor {
-    _effectView_6.backgroundColor = backgroundColor;
-    _effectView_7.backgroundColor = backgroundColor;
-    _effectView_8.backgroundColor = backgroundColor;
+- (void)setForegroundColor:(UIColor *)foregroundColor {
+    _foregroundColor = foregroundColor;
+    self.foregroundLayer.backgroundColor = foregroundColor.CGColor;
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    if ([UIVisualEffectView class]) {
-        _effectView_8.frame = CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds));
-    } else {
-        _effectView_7.frame = CGRectMake(0, 0, CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds));
-    }
+    self.foregroundLayer.frame = self.contentView.bounds;
 }
 
 @end

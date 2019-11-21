@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUITips.m
 //  qmui
 //
-//  Created by zhoonchen on 15/12/25.
-//  Copyright © 2015年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 15/12/25.
 //
 
 #import "QMUITips.h"
@@ -41,6 +48,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 - (void)showLoading:(NSString *)text detailText:(NSString *)detailText {
     [self showLoading:text detailText:detailText hideAfterDelay:0];
 }
+
 - (void)showLoading:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
     UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
     [indicator startAnimating];
@@ -78,7 +86,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 - (void)showSucceed:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
-    self.contentCustomView = [[UIImageView alloc] initWithImage:[QMUIHelper imageWithName:@"QMUI_tips_done"]];
+    self.contentCustomView = [[UIImageView alloc] initWithImage:[[QMUIHelper imageWithName:@"QMUI_tips_done"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     [self showTipWithText:text detailText:detailText hideAfterDelay:delay];
 }
 
@@ -95,7 +103,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 - (void)showError:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
-    self.contentCustomView = [[UIImageView alloc] initWithImage:[QMUIHelper imageWithName:@"QMUI_tips_error"]];
+    self.contentCustomView = [[UIImageView alloc] initWithImage:[[QMUIHelper imageWithName:@"QMUI_tips_error"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     [self showTipWithText:text detailText:detailText hideAfterDelay:delay];
 }
 
@@ -112,7 +120,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 - (void)showInfo:(NSString *)text detailText:(NSString *)detailText hideAfterDelay:(NSTimeInterval)delay {
-    self.contentCustomView = [[UIImageView alloc] initWithImage:[QMUIHelper imageWithName:@"QMUI_tips_info"]];
+    self.contentCustomView = [[UIImageView alloc] initWithImage:[[QMUIHelper imageWithName:@"QMUI_tips_info"] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     [self showTipWithText:text detailText:detailText hideAfterDelay:delay];
 }
 
@@ -181,7 +189,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showWithText:(NSString *)text inView:(UIView *)view {
-    return [self showWithText:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showWithText:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showWithText:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -189,7 +197,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showWithText:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showWithText:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showWithText:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showWithText:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -207,7 +215,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showSucceed:(NSString *)text inView:(UIView *)view {
-    return [self showSucceed:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showSucceed:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showSucceed:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -215,7 +223,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showSucceed:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showSucceed:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showSucceed:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showSucceed:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -233,7 +241,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showError:(NSString *)text inView:(UIView *)view {
-    return [self showError:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showError:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showError:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -241,7 +249,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showError:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showError:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showError:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showError:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -259,7 +267,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showInfo:(NSString *)text inView:(UIView *)view {
-    return [self showInfo:text detailText:nil inView:view hideAfterDelay:0];
+    return [self showInfo:text detailText:nil inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showInfo:(NSString *)text inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -267,7 +275,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showInfo:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view {
-    return [self showInfo:text detailText:detailText inView:view hideAfterDelay:0];
+    return [self showInfo:text detailText:detailText inView:view hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showInfo:(NSString *)text detailText:(NSString *)detailText inView:(UIView *)view hideAfterDelay:(NSTimeInterval)delay {
@@ -284,11 +292,11 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (void)hideAllTipsInView:(UIView *)view {
-    [self hideAllToastInView:view animated:YES];
+    [self hideAllToastInView:view animated:NO];
 }
 
 + (void)hideAllTips {
-    [self hideAllToastInView:DefaultTipsParentView animated:YES];
+    [self hideAllToastInView:nil animated:NO];
 }
 
 @end

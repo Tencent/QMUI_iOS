@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIButton.h
 //  qmui
 //
-//  Created by MoLice on 14-7-7.
-//  Copyright (c) 2014年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 14-7-7.
 //
 
 #import <UIKit/UIKit.h>
@@ -33,7 +40,7 @@ typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
 /**
  *  子类继承时重写的方法，一般不建议重写 initWithXxx
  */
-- (void)didInitialized NS_REQUIRES_SUPER;
+- (void)didInitialize NS_REQUIRES_SUPER;
 
 /**
  * 让按钮的文字颜色自动跟随tintColor调整（系统默认titleColor是不跟随的）<br/>
@@ -49,7 +56,6 @@ typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
 
 /**
  *  等价于 adjustsTitleTintColorAutomatically = YES & adjustsImageTintColorAutomatically = YES & tintColor = xxx
- *  @note 一般只使用这个属性的 setter，而 getter 永远返回 self.tintColor
  *  @warning 不支持传 nil
  */
 @property(nonatomic, strong) IBInspectable UIColor *tintColorAdjustsTitleAndImage;
@@ -89,7 +95,7 @@ typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
 /**
  * 设置按钮里图标和文字之间的间隔，会自动响应 imagePosition 的变化而变化，默认为0。<br/>
  * 系统默认实现需要同时设置 titleEdgeInsets 和 imageEdgeInsets，同时还需考虑 contentEdgeInsets 的增加（否则不会影响布局，可能会让图标或文字溢出或挤压），使用该属性可以避免以上情况。<br/>
- * @warning 会与 imageEdgeInsets、 imageEdgeInsets、 contentEdgeInsets 共同作用。
+ * @warning 会与 imageEdgeInsets、 titleEdgeInsets、 contentEdgeInsets 共同作用。
  */
 @property(nonatomic, assign) IBInspectable CGFloat spacingBetweenImageAndTitle;
 

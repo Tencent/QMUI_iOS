@@ -1,6 +1,23 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 /// Automatically created by script in Build Phases
 
 #import <UIKit/UIKit.h>
+
+#ifndef QMUIKit_h
+#define QMUIKit_h
+
+static NSString * const QMUI_VERSION = @"4.0.3";
+
+#if __has_include("CAAnimation+QMUI.h")
+#import "CAAnimation+QMUI.h"
+#endif
 
 #if __has_include("CALayer+QMUI.h")
 #import "CALayer+QMUI.h"
@@ -12,6 +29,14 @@
 
 #if __has_include("NSAttributedString+QMUI.h")
 #import "NSAttributedString+QMUI.h"
+#endif
+
+#if __has_include("NSCharacterSet+QMUI.h")
+#import "NSCharacterSet+QMUI.h"
+#endif
+
+#if __has_include("NSMethodSignature+QMUI.h")
+#import "NSMethodSignature+QMUI.h"
 #endif
 
 #if __has_include("NSNumber+QMUI.h")
@@ -38,12 +63,20 @@
 #import "NSString+QMUI.h"
 #endif
 
+#if __has_include("NSURL+QMUI.h")
+#import "NSURL+QMUI.h"
+#endif
+
 #if __has_include("QMUIAlbumViewController.h")
 #import "QMUIAlbumViewController.h"
 #endif
 
 #if __has_include("QMUIAlertController.h")
 #import "QMUIAlertController.h"
+#endif
+
+#if __has_include("QMUIAnimationHelper.h")
+#import "QMUIAnimationHelper.h"
 #endif
 
 #if __has_include("QMUIAsset.h")
@@ -98,12 +131,32 @@
 #import "QMUIConfigurationMacros.h"
 #endif
 
+#if __has_include("QMUIConsole.h")
+#import "QMUIConsole.h"
+#endif
+
+#if __has_include("QMUIConsoleToolbar.h")
+#import "QMUIConsoleToolbar.h"
+#endif
+
+#if __has_include("QMUIConsoleViewController.h")
+#import "QMUIConsoleViewController.h"
+#endif
+
 #if __has_include("QMUICore.h")
 #import "QMUICore.h"
 #endif
 
 #if __has_include("QMUIDialogViewController.h")
 #import "QMUIDialogViewController.h"
+#endif
+
+#if __has_include("QMUIDisplayLinkAnimation.h")
+#import "QMUIDisplayLinkAnimation.h"
+#endif
+
+#if __has_include("QMUIEasings.h")
+#import "QMUIEasings.h"
 #endif
 
 #if __has_include("QMUIEmotionInputManager.h")
@@ -162,8 +215,16 @@
 #import "QMUIImagePreviewViewController.h"
 #endif
 
+#if __has_include("QMUIImagePreviewViewTransitionAnimator.h")
+#import "QMUIImagePreviewViewTransitionAnimator.h"
+#endif
+
 #if __has_include("QMUIKeyboardManager.h")
 #import "QMUIKeyboardManager.h"
+#endif
+
+#if __has_include("QMUILab.h")
+#import "QMUILab.h"
 #endif
 
 #if __has_include("QMUILabel.h")
@@ -172,6 +233,10 @@
 
 #if __has_include("QMUILinkButton.h")
 #import "QMUILinkButton.h"
+#endif
+
+#if __has_include("QMUILog+QMUIConsole.h")
+#import "QMUILog+QMUIConsole.h"
 #endif
 
 #if __has_include("QMUILog.h")
@@ -188,6 +253,10 @@
 
 #if __has_include("QMUILogNameManager.h")
 #import "QMUILogNameManager.h"
+#endif
+
+#if __has_include("QMUILogger+QMUIConfigurationTemplate.h")
+#import "QMUILogger+QMUIConfigurationTemplate.h"
 #endif
 
 #if __has_include("QMUILogger.h")
@@ -208,6 +277,14 @@
 
 #if __has_include("QMUIMultipleDelegates.h")
 #import "QMUIMultipleDelegates.h"
+#endif
+
+#if __has_include("QMUINavigationBarScrollingAnimator.h")
+#import "QMUINavigationBarScrollingAnimator.h"
+#endif
+
+#if __has_include("QMUINavigationBarScrollingSnapAnimator.h")
+#import "QMUINavigationBarScrollingSnapAnimator.h"
 #endif
 
 #if __has_include("QMUINavigationButton.h")
@@ -234,8 +311,28 @@
 #import "QMUIPopupContainerView.h"
 #endif
 
+#if __has_include("QMUIPopupMenuBaseItem.h")
+#import "QMUIPopupMenuBaseItem.h"
+#endif
+
+#if __has_include("QMUIPopupMenuButtonItem.h")
+#import "QMUIPopupMenuButtonItem.h"
+#endif
+
+#if __has_include("QMUIPopupMenuItemProtocol.h")
+#import "QMUIPopupMenuItemProtocol.h"
+#endif
+
 #if __has_include("QMUIPopupMenuView.h")
 #import "QMUIPopupMenuView.h"
+#endif
+
+#if __has_include("QMUIRuntime.h")
+#import "QMUIRuntime.h"
+#endif
+
+#if __has_include("QMUIScrollAnimator.h")
+#import "QMUIScrollAnimator.h"
 #endif
 
 #if __has_include("QMUISearchBar.h")
@@ -294,6 +391,18 @@
 #import "QMUITextView.h"
 #endif
 
+#if __has_include("QMUITheme.h")
+#import "QMUITheme.h"
+#endif
+
+#if __has_include("QMUIThemeManager.h")
+#import "QMUIThemeManager.h"
+#endif
+
+#if __has_include("QMUIThemeManagerCenter.h")
+#import "QMUIThemeManagerCenter.h"
+#endif
+
 #if __has_include("QMUITips.h")
 #import "QMUITips.h"
 #endif
@@ -322,6 +431,14 @@
 #import "QMUIVisualEffectView.h"
 #endif
 
+#if __has_include("QMUIWeakObjectContainer.h")
+#import "QMUIWeakObjectContainer.h"
+#endif
+
+#if __has_include("QMUIWindowSizeMonitor.h")
+#import "QMUIWindowSizeMonitor.h"
+#endif
+
 #if __has_include("QMUIZoomImageView.h")
 #import "QMUIZoomImageView.h"
 #endif
@@ -332,6 +449,10 @@
 
 #if __has_include("UIBarItem+QMUI.h")
 #import "UIBarItem+QMUI.h"
+#endif
+
+#if __has_include("UIBarItem+QMUIBadge.h")
+#import "UIBarItem+QMUIBadge.h"
 #endif
 
 #if __has_include("UIBezierPath+QMUI.h")
@@ -354,6 +475,10 @@
 #import "UIColor+QMUI.h"
 #endif
 
+#if __has_include("UIColor+QMUITheme.h")
+#import "UIColor+QMUITheme.h"
+#endif
+
 #if __has_include("UIControl+QMUI.h")
 #import "UIControl+QMUI.h"
 #endif
@@ -370,12 +495,28 @@
 #import "UIImage+QMUI.h"
 #endif
 
+#if __has_include("UIImage+QMUITheme.h")
+#import "UIImage+QMUITheme.h"
+#endif
+
 #if __has_include("UIImageView+QMUI.h")
 #import "UIImageView+QMUI.h"
 #endif
 
+#if __has_include("UIInterface+QMUI.h")
+#import "UIInterface+QMUI.h"
+#endif
+
 #if __has_include("UILabel+QMUI.h")
 #import "UILabel+QMUI.h"
+#endif
+
+#if __has_include("UIMenuController+QMUI.h")
+#import "UIMenuController+QMUI.h"
+#endif
+
+#if __has_include("UINavigationBar+QMUI.h")
+#import "UINavigationBar+QMUI.h"
 #endif
 
 #if __has_include("UINavigationBar+Transition.h")
@@ -398,6 +539,14 @@
 #import "UISearchBar+QMUI.h"
 #endif
 
+#if __has_include("UISearchController+QMUI.h")
+#import "UISearchController+QMUI.h"
+#endif
+
+#if __has_include("UISwitch+QMUI.h")
+#import "UISwitch+QMUI.h"
+#endif
+
 #if __has_include("UITabBar+QMUI.h")
 #import "UITabBar+QMUI.h"
 #endif
@@ -418,22 +567,48 @@
 #import "UITableView+QMUIStaticCell.h"
 #endif
 
+#if __has_include("UITableViewCell+QMUI.h")
+#import "UITableViewCell+QMUI.h"
+#endif
+
 #if __has_include("UITextField+QMUI.h")
 #import "UITextField+QMUI.h"
+#endif
+
+#if __has_include("UITextInputTraits+QMUI.h")
+#import "UITextInputTraits+QMUI.h"
 #endif
 
 #if __has_include("UITextView+QMUI.h")
 #import "UITextView+QMUI.h"
 #endif
 
+#if __has_include("UITraitCollection+QMUI.h")
+#import "UITraitCollection+QMUI.h"
+#endif
+
 #if __has_include("UIView+QMUI.h")
 #import "UIView+QMUI.h"
+#endif
+
+#if __has_include("UIView+QMUITheme.h")
+#import "UIView+QMUITheme.h"
 #endif
 
 #if __has_include("UIViewController+QMUI.h")
 #import "UIViewController+QMUI.h"
 #endif
 
+#if __has_include("UIViewController+QMUITheme.h")
+#import "UIViewController+QMUITheme.h"
+#endif
+
+#if __has_include("UIVisualEffect+QMUITheme.h")
+#import "UIVisualEffect+QMUITheme.h"
+#endif
+
 #if __has_include("UIWindow+QMUI.h")
 #import "UIWindow+QMUI.h"
 #endif
+
+#endif /* QMUIKit_h */

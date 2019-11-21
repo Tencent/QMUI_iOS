@@ -1,9 +1,16 @@
+/*****
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ *****/
+
 //
 //  QMUIKeyboardManager.h
 //  qmui
 //
-//  Created by zhoonchen on 2017/3/23.
-//  Copyright © 2017年 QMUI Team. All rights reserved.
+//  Created by QMUI Team on 2017/3/23.
 //
 
 #import <Foundation/Foundation.h>
@@ -13,6 +20,7 @@
 @class QMUIKeyboardUserInfo;
 
 /// 注意：由于某些Bug（例如 iOS 8 的 iPad 修改切换键盘类型，delegate 回调键盘高度值错误），QMUIKeyboardManager 不再支持 iPad 的浮动键盘了 - 更新于 2017.12.8 ///
+/// 注意：QMUI 已经废弃 iOS8 了，所以浮动键盘又可以支持了
 
 /**
  *  `QMUIKeyboardManager` 提供了方便管理键盘事件的方案，使用的场景是需要跟随键盘的显示或者隐藏来更改界面的 UI，例如输入框跟随在键盘的顶部。
@@ -45,6 +53,11 @@
 @property(nonatomic, assign) BOOL delegateEnabled;
 
 /**
+ *  是否忽视 `applicationState` 状态的影响。默认为 NO，也即只有 `UIApplicationStateActive` 才会响应通知，如果设置为 YES，则任何 state 都会响应通知。
+ */
+@property(nonatomic, assign) BOOL ignoreApplicationState;
+
+/**
  *  添加触发键盘事件的 UIResponder，一般是 UITextView 或者 UITextField ，不添加 targetResponder 的话，则默认接受任何 UIResponder 产生的键盘通知。
  *  添加成功将会返回YES，否则返回NO。
  */
@@ -68,7 +81,7 @@
 + (CGRect)convertKeyboardRect:(CGRect)rect toView:(UIView *)view;
 
 /**
- *  获取键盘到顶部到相对于view底部的距离，这个值在某些情况下会等于endFrame.size.height或者visiableKeyboardHeight，不过在iPad浮动键盘的时候就包括了底部的空隙。所以建议使用这个方法。
+ *  获取键盘到顶部到相对于view底部的距离，这个值在某些情况下会等于endFrame.size.height或者visibleKeyboardHeight，不过在iPad浮动键盘的时候就包括了底部的空隙。所以建议使用这个方法。
  */
 + (CGFloat)distanceFromMinYToBottomInView:(UIView *)view keyboardRect:(CGRect)rect;
 
@@ -107,7 +120,7 @@
 /**
  *  当前键盘高度键盘的可见高度
  */
-+ (CGFloat)visiableKeyboardHeight;
++ (CGFloat)visibleKeyboardHeight;
 
 @end
 
@@ -219,9 +232,6 @@
 
 @interface UIResponder (KeyboardManager)
 
-/// 系统自己的isFirstResponder有延迟，这里手动记录UIResponder是否isFirstResponder，QMUIKeyboardManager内部自己使用
-@property(nonatomic, assign) BOOL keyboardManager_isFirstResponder;
-
 /// 持有KeyboardManager对象
 @property(nonatomic, strong) QMUIKeyboardManager *qmui_keyboardManager;
 
@@ -238,8 +248,6 @@
 @property(nonatomic, copy) void (^qmui_keyboardDidHideNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 @property(nonatomic, copy) void (^qmui_keyboardDidChangeFrameNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 
-// @property(nonatomic, strong, readonly) QMUIKeyboardManager *qmui_keyboardManager;
-
 @end
 
 @interface UITextView (QMUI_KeyboardManager)
@@ -252,7 +260,5 @@
 @property(nonatomic, copy) void (^qmui_keyboardDidShowNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 @property(nonatomic, copy) void (^qmui_keyboardDidHideNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
 @property(nonatomic, copy) void (^qmui_keyboardDidChangeFrameNotificationBlock)(QMUIKeyboardUserInfo *keyboardUserInfo);
-
-// @property(nonatomic, strong, readonly) QMUIKeyboardManager *qmui_keyboardManager;
 
 @end
