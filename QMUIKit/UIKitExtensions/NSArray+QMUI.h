@@ -39,4 +39,10 @@
  *  过滤数组元素，将 block 返回 YES 的 item 重新组装成一个数组返回
  */
 - (NSArray<ObjectType> *)qmui_filterWithBlock:(BOOL (^)(ObjectType item))block;
+
+/**
+*  转换数组元素，将每个 item 都经过 block 转换成一遍 返回转换后的新数组
+*/
+- (NSArray *)qmui_mapWithBlock:(id (^)(ObjectType item))block;
+
 @end
