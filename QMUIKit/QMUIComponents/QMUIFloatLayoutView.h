@@ -43,7 +43,7 @@ extern const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize;
 /**
  *  item 之间的间距，默认为 UIEdgeInsetsZero。
  * 
- *  @warning 上、下、左、右四个边缘的 item 布局时不会考虑 itemMargins.left/bottom/left/right。
+ *  @warning 上、下、左、右四个边缘的 item 布局时不会考虑 itemMargins.top/bottom/left/right。
  */
 @property(nonatomic, assign) UIEdgeInsets itemMargins;
 @end

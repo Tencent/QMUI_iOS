@@ -64,36 +64,33 @@ const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize = {-1, -1};
     CGFloat currentRowMaxY = itemViewOrigin.y;
     CGSize maximumItemSize = CGSizeEqualToSize(self.maximumItemSize, QMUIFloatLayoutViewAutomaticalMaximumItemSize) ? CGSizeMake(size.width - UIEdgeInsetsGetHorizontalValue(self.padding), size.height - UIEdgeInsetsGetVerticalValue(self.padding)) : self.maximumItemSize;
     
-    for (NSInteger i = 0, l = visibleItemViews.count; i < l; i ++) {
+    for (NSInteger i = 0, l = visibleItemViews.count; i < l; i++) {
         UIView *itemView = visibleItemViews[i];
         
+        CGRect itemViewFrame;
         CGSize itemViewSize = [itemView sizeThatFits:maximumItemSize];
-        itemViewSize.width = fmax(self.minimumItemSize.width, itemViewSize.width);
-        itemViewSize.height = fmax(self.minimumItemSize.height, itemViewSize.height);
-        itemViewSize.width = fmin(maximumItemSize.width, itemViewSize.width);
-        itemViewSize.height = fmin(maximumItemSize.height, itemViewSize.height);
+        itemViewSize.width = MIN(maximumItemSize.width, MAX(self.minimumItemSize.width, itemViewSize.width));
+        itemViewSize.height = MIN(maximumItemSize.height, MAX(self.minimumItemSize.height, itemViewSize.height));
         
+        NSInteger line = -1;
         BOOL shouldBreakline = i == 0 ? YES : ValueSwitchAlignLeftOrRight(itemViewOrigin.x + self.itemMargins.left + itemViewSize.width + self.padding.right > size.width,
                                                            itemViewOrigin.x - self.itemMargins.right - itemViewSize.width - self.padding.left < 0);
         if (shouldBreakline) {
+            line++;
+            currentRowMaxY += line > 0 ? self.itemMargins.top : 0;
             // 换行，每一行第一个 item 是不考虑 itemMargins 的
-            if (shouldLayout) {
-                itemView.frame = CGRectMake(ValueSwitchAlignLeftOrRight(self.padding.left, size.width - self.padding.right - itemViewSize.width), currentRowMaxY + self.itemMargins.top, itemViewSize.width, itemViewSize.height);
-            }
-            
-            itemViewOrigin.x = ValueSwitchAlignLeftOrRight(self.padding.left + itemViewSize.width + self.itemMargins.right, size.width - self.padding.right - itemViewSize.width - self.itemMargins.left);
-            itemViewOrigin.y = currentRowMaxY;
+            itemViewFrame = CGRectMake(ValueSwitchAlignLeftOrRight(self.padding.left, size.width - self.padding.right - itemViewSize.width), currentRowMaxY, itemViewSize.width, itemViewSize.height);
+            itemViewOrigin.y = CGRectGetMinY(itemViewFrame);
         } else {
             // 当前行放得下
-            if (shouldLayout) {
-                itemView.frame = CGRectMake(ValueSwitchAlignLeftOrRight(itemViewOrigin.x + self.itemMargins.left, itemViewOrigin.x - self.itemMargins.right - itemViewSize.width), itemViewOrigin.y + self.itemMargins.top, itemViewSize.width, itemViewSize.height);
-            }
-            
-            itemViewOrigin.x = ValueSwitchAlignLeftOrRight(itemViewOrigin.x + UIEdgeInsetsGetHorizontalValue(self.itemMargins) + itemViewSize.width,
-                                                           itemViewOrigin.x - itemViewSize.width - UIEdgeInsetsGetHorizontalValue(self.itemMargins));
+            itemViewFrame = CGRectMake(ValueSwitchAlignLeftOrRight(itemViewOrigin.x + self.itemMargins.left, itemViewOrigin.x - self.itemMargins.right - itemViewSize.width), itemViewOrigin.y, itemViewSize.width, itemViewSize.height);
         }
+        itemViewOrigin.x = ValueSwitchAlignLeftOrRight(CGRectGetMaxX(itemViewFrame) + self.itemMargins.right, CGRectGetMinX(itemViewFrame) - self.itemMargins.left);
+        currentRowMaxY = MAX(currentRowMaxY, CGRectGetMaxY(itemViewFrame) + self.itemMargins.bottom);
         
-        currentRowMaxY = fmax(currentRowMaxY, itemViewOrigin.y + UIEdgeInsetsGetVerticalValue(self.itemMargins) + itemViewSize.height);
+        if (shouldLayout) {
+            itemView.frame = itemViewFrame;
+        }
     }
     
     // 最后一行不需要考虑 itemMarins.bottom，所以这里减掉
