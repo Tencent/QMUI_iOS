@@ -84,4 +84,16 @@
     return [result copy];
 }
 
+- (NSArray *)qmui_mapWithBlock:(id (^)(id item))block {
+    if (!block) {
+        return self;
+    }
+
+    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity:self.count];
+    for (NSInteger i = 0; i < self.count; i++) {
+        [result addObject:block(self[i])];
+    }
+    return [result copy];
+}
+
 @end
