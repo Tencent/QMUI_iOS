@@ -282,7 +282,7 @@
 @implementation NSString (QMUI_StringFormat)
 
 + (instancetype)qmui_stringWithNSInteger:(NSInteger)integerValue {
-    return [NSString stringWithFormat:@"%@", @(integerValue)];
+    return @(integerValue).stringValue;
 }
 
 + (instancetype)qmui_stringWithCGFloat:(CGFloat)floatValue {
