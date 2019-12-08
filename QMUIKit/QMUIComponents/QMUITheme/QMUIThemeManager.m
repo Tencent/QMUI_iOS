@@ -161,8 +161,6 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
             [window.rootViewController qmui_themeDidChangeByManager:self identifier:self.currentThemeIdentifier theme:self.currentTheme];
             if (window.rootViewController.isViewLoaded) {
                 [window.rootViewController.view _qmui_themeDidChangeByManager:self identifier:self.currentThemeIdentifier theme:self.currentTheme shouldEnumeratorSubviews:YES];
-//                window.rootViewController.view.qmui_currentThemeIdentifier = self.currentThemeIdentifier;
-//                window.rootViewController.view.qmui_currentTheme = self.currentTheme;
             }
         }
     }];

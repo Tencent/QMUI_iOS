@@ -111,7 +111,7 @@
 /// 设置当前导航栏的 UIBarButtonItem 的 tintColor，默认为NavBarTintColor
 - (nullable UIColor *)navigationBarTintColor;
 
-/// 设置系统返回按钮title，如果返回nil则使用系统默认的返回按钮标题
+/// 设置系统返回按钮title，如果返回nil则使用系统默认的返回按钮标题。当实现了这个方法时，会无视配置表 NeedsBackBarButtonItemTitle 的值
 - (nullable NSString *)backBarButtonItemTitleWithPreviousViewController:(nullable UIViewController *)viewController;
 
 @end

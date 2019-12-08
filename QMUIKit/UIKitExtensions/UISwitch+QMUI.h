@@ -18,6 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UISwitch (QMUI)
 
+/// 用于设置 UISwitch 关闭时的背景色（除了圆点外的其他颜色）
+@property(nonatomic, strong) UIColor *qmui_offTintColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

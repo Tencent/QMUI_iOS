@@ -35,16 +35,29 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
         
         ExtendImplementationOfVoidMethodWithSingleArgument([UISearchBar class], @selector(setPlaceholder:), NSString *, (^(UISearchBar *selfObject, NSString *placeholder) {
             if (selfObject.qmui_placeholderColor || selfObject.qmui_font) {
-                NSMutableDictionary<NSString *, id> *attributes = [[NSMutableDictionary alloc] init];
+                NSMutableAttributedString *string = selfObject.qmui_textField.attributedPlaceholder.mutableCopy;
                 if (selfObject.qmui_placeholderColor) {
-                    attributes[NSForegroundColorAttributeName] = selfObject.qmui_placeholderColor;
+                    [string addAttribute:NSForegroundColorAttributeName value:selfObject.qmui_placeholderColor range:NSMakeRange(0, string.length)];
                 }
                 if (selfObject.qmui_font) {
-                    attributes[NSFontAttributeName] = selfObject.qmui_font;
+                    [string addAttribute:NSFontAttributeName value:selfObject.qmui_font range:NSMakeRange(0, string.length)];
                 }
-                selfObject.qmui_textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:attributes];
+                // 默认移除文字阴影
+                [string removeAttribute:NSShadowAttributeName range:NSMakeRange(0, string.length)];
+                selfObject.qmui_textField.attributedPlaceholder = string.copy;
             }
         }));
+        
+        // iOS 13 下，UISearchBar 内的 UITextField 的 _placeholderLabel 会在 didMoveToWindow 时被重新设置 textColor，导致我们在 searchBar 添加到界面之前设置的 placeholderColor 失效，所以在这里重新设置一遍
+        // https://github.com/Tencent/QMUI_iOS/issues/830
+        if (@available(iOS 13.0, *)) {
+            ExtendImplementationOfVoidMethodWithoutArguments([UISearchBar class], @selector(didMoveToWindow), ^(UISearchBar *selfObject) {
+                if (selfObject.qmui_placeholderColor) {
+                    selfObject.placeholder = selfObject.placeholder;
+                }
+            });
+        }
+
         if (@available(iOS 13.0, *)) {
             // -[_UISearchBarLayout applyLayout] 是 iOS 13 系统新增的方法，该方法可能会在 -[UISearchBar layoutSubviews] 后调用，作进一步的布局调整。
             Class _UISearchBarLayoutClass = NSClassFromString([NSString stringWithFormat:@"_%@%@",@"UISearchBar", @"Layout"]);

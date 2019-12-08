@@ -59,13 +59,7 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
                         if (@available(iOS 13.0, *)) {
                             // iOS 13 通过 appearance 的方式修改，具体请查看 QMUIConfiguration.m
                         } else {
-                            UIImage *image = item.image;
-                            if (image.renderingMode != UIImageRenderingModeAlwaysOriginal) {
-                                if (TabBarItemImageColor) {
-                                    image = [[image qmui_imageWithTintColor:TabBarItemImageColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];// 如果不强制指定 original，系统总是会以 template 的方式渲染，并且颜色也是系统默认的灰色，无法改变
-                                    item.image = image;
-                                }
-                            }
+                            [item qmui_updateTintColorForiOS12AndEarlier:TabBarItemImageColor];
                         }
                     }
                 }];

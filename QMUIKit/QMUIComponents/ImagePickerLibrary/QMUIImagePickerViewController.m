@@ -249,7 +249,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (self.shouldShowDefaultLoadingView) {
         [self showEmptyViewWithLoading];
     }
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [assetsGroup enumerateAssetsWithOptions:albumSortType usingBlock:^(QMUIAsset *resultAsset) {
             // 这里需要对 UI 进行操作，因此放回主线程处理
             dispatch_async(dispatch_get_main_queue(), ^{

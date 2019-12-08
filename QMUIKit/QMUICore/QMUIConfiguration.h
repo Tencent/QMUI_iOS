@@ -98,6 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - UISwitch
 @property(nonatomic, strong, nullable) UIColor  *switchOnTintColor;
+@property(nonatomic, strong, nullable) UIColor  *switchOffTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchThumbTintColor;
 @property(nonatomic, strong, nullable) UIImage  *switchOnImage;
@@ -267,4 +268,9 @@ NS_ASSUME_NONNULL_END
 + (instancetype _Nullable )sharedInstance;
 - (void)applyInitialTemplate;
 
+@end
+
+@interface UITabBarItem (QMUIConfiguration)
+
+- (void)qmui_updateTintColorForiOS12AndEarlier:(nullable UIColor *)tintColor;
 @end

@@ -81,6 +81,7 @@
     
     #pragma mark - UISwitch
     QMUICMI.switchOnTintColor = nil;                                            // SwitchOnTintColor : UISwitch 打开时的背景色（除了圆点外的其他颜色）
+    QMUICMI.switchOffTintColor = nil;                                           // switchOffTintColor : UISwitch 关闭时的背景色（除了圆点外的其他颜色）
     QMUICMI.switchTintColor = nil;                                              // SwitchTintColor : UISwitch 关闭时的周围边框颜色
     QMUICMI.switchThumbTintColor = nil;                                         // SwitchThumbTintColor : UISwitch 中间的操控圆点的颜色
     

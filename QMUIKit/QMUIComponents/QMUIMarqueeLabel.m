@@ -232,6 +232,7 @@
         self.fadeLayer.endPoint = CGPointMake(1, .5);
         self.fadeLayer.colors = @[(id)UIColorMakeWithRGBA(255, 255, 255, 0).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 1).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 1).CGColor, (id)UIColorMakeWithRGBA(255, 255, 255, 0).CGColor];
         self.layer.mask = self.fadeLayer;
+        [self setNeedsLayout];// fadeLayer 作为 layer.mask，它依赖于在 layoutSubviews 里正确布局，否则会因为错误的 size 而导致 label 看不见
     } else {
         if (self.layer.mask == self.fadeLayer) {
             self.layer.mask = nil;

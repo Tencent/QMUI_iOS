@@ -12,7 +12,7 @@
 //  Created by 陈志宏 on 2019/7/21.
 //
 
-#import <UIKit/UIkit.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

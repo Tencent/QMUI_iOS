@@ -73,9 +73,7 @@
                                                                                               NSStringFromSelector(@selector(sectionIndexBackgroundColor)),
                                                                                               NSStringFromSelector(@selector(sectionIndexTrackingBackgroundColor)),
                                                                                               NSStringFromSelector(@selector(separatorColor)),],
-                                       NSStringFromClass(UITableViewCell.class):            @[NSStringFromSelector(@selector(textColor)),
-                                                                                              NSStringFromSelector(@selector(selectedTextColor)),
-                                                                                              NSStringFromSelector(@selector(qmui_selectedBackgroundColor)),],
+                                       NSStringFromClass(UITableViewCell.class):            @[NSStringFromSelector(@selector(qmui_selectedBackgroundColor)),],
                                        NSStringFromClass(UINavigationBar.class):            @[NSStringFromSelector(@selector(barTintColor)),],
                                        NSStringFromClass(UIToolbar.class):                  @[NSStringFromSelector(@selector(barTintColor)),],
                                        NSStringFromClass(UITabBar.class):                   ({

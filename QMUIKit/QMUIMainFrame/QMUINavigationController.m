@@ -278,6 +278,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         }
     }];
     
+    // setViewControllers 不会触发 pushViewController，所以这里也要更新一下返回按钮的文字
+    [viewControllers enumerateObjectsUsingBlock:^(UIViewController * _Nonnull viewController, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self updateBackItemTitleWithCurrentViewController:viewController nextViewController:idx + 1 < viewControllers.count ? viewControllers[idx + 1] : nil];
+    }];
+    
     [super setViewControllers:viewControllers animated:animated];
     
     // did pop
@@ -311,19 +316,8 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         QMUILogWarn(NSStringFromClass(self.class), @"push 的时候 navigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
     }
     
-    UIViewController *currentViewController = self.topViewController;
-    if (currentViewController) {
-        if (!NeedsBackBarButtonItemTitle) {
-            // 会自动从 UIBarButtonItem.title 取值作为下一个界面的返回按钮的文字
-            currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
-        } else {
-            UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController;
-            if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
-                NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
-                currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL];
-            }
-        }
-    }
+    // 在 push 前先设置好返回按钮的文字
+    [self updateBackItemTitleWithCurrentViewController:self.topViewController nextViewController:viewController];
     
     [super pushViewController:viewController animated:animated];
     
@@ -331,6 +325,22 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     // https://github.com/Tencent/QMUI_iOS/issues/426
     if (![self.viewControllers containsObject:viewController]) {
         self.isViewControllerTransiting = NO;
+    }
+}
+
+- (void)updateBackItemTitleWithCurrentViewController:(UIViewController *)currentViewController nextViewController:(UIViewController *)nextViewController {
+    if (currentViewController) {
+        // 全局屏蔽返回按钮的文字
+        if (QMUICMIActivated && !NeedsBackBarButtonItemTitle) {
+            currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
+        }
+        
+        // 如果某个 viewController 显式声明了返回按钮的文字，则无视配置表 NeedsBackBarButtonItemTitle 的值，且该 viewController 的前一个 viewController 会负责设置该 viewController 的返回按钮文字
+        UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)nextViewController;
+        if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+            NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
+            currentViewController.navigationItem.backBarButtonItem = title ? [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] : nil;
+        }
     }
 }
 

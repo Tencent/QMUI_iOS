@@ -683,9 +683,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 #endif
     [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
         [tabBarController.tabBar.items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
-            if (item == tabBarController.tabBar.selectedItem) return;
-            if (item.image.renderingMode == UIImageRenderingModeAlwaysOriginal) return;
-            item.image = [item.image qmui_imageWithTintColor:tabBarItemImageColor];
+            // 不需要过滤，否则选中时的那个 item 未选中时的图片无法被更新
+//            if (item == tabBarController.tabBar.selectedItem) return;
+            [item qmui_updateTintColorForiOS12AndEarlier:tabBarItemImageColor];
         }];
     }];
 #ifdef IOS13_SDK_ALLOWED
@@ -738,6 +738,60 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         }
     }];
     return viewControllers;
+}
+
+@end
+
+const NSInteger QMUIImageOriginalRenderingModeDefault = -1;
+
+@interface UIImage (QMUIConfiguration)
+
+@property(nonatomic, assign) UIImageRenderingMode qmui_originalRenderingMode;
+@property(nonatomic, assign) BOOL qimgconf_hasSetOriginalRenderingMode;
+@end
+
+@implementation UITabBarItem (QMUIConfiguration)
+
+// iOS 12 及以下的 UITabBarItem.image 有个问题是，如果不强制指定 original，系统总是会以 template 的方式渲染未选中时的图片，并且颜色也是系统默认的灰色，无法改变
+// 为了让未选中时的图片颜色能跟随配置表变化，这里对 renderingMode 为非 Original 的图片会强制转换成配置表的颜色，并将 renderMode 修改为 AlwaysOriginal 以保证图片颜色不会被系统覆盖
+// 相关 issue：
+// https://github.com/Tencent/QMUI_iOS/issues/736
+// https://github.com/Tencent/QMUI_iOS/issues/813
+- (void)qmui_updateTintColorForiOS12AndEarlier:(UIColor *)tintColor {
+    if (@available(iOS 13.0, *)) return;
+    if (!tintColor) return;
+    
+    UIImage *image = self.image;
+    UIImageRenderingMode renderingMode = image.renderingMode;
+    UIImageRenderingMode originalRenderingMode = image.qmui_originalRenderingMode;
+    if (originalRenderingMode == QMUIImageOriginalRenderingModeDefault) {
+        if (renderingMode != UIImageRenderingModeAlwaysOriginal) {
+            image = [[image qmui_imageWithTintColor:TabBarItemImageColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+            image.qmui_originalRenderingMode = renderingMode;
+            self.image = image;
+        }
+    } else if (originalRenderingMode != UIImageRenderingModeAlwaysOriginal && renderingMode == UIImageRenderingModeAlwaysOriginal) {
+        image = [[image qmui_imageWithTintColor:TabBarItemImageColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        image.qmui_originalRenderingMode = originalRenderingMode;
+        self.image = image;
+    }
+}
+
+@end
+
+@implementation UIImage (QMUIConfiguration)
+
+QMUISynthesizeBOOLProperty(qimgconf_hasSetOriginalRenderingMode, setQimgconf_hasSetOriginalRenderingMode)
+
+static char kAssociatedObjectKey_originalRenderingMode;
+- (void)setQmui_originalRenderingMode:(UIImageRenderingMode)qmui_originalRenderingMode {
+    self.qimgconf_hasSetOriginalRenderingMode = YES;
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_originalRenderingMode, @(qmui_originalRenderingMode), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (UIImageRenderingMode)qmui_originalRenderingMode {
+    if (!self.qimgconf_hasSetOriginalRenderingMode) return QMUIImageOriginalRenderingModeDefault;
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_originalRenderingMode)) integerValue];
 }
 
 @end

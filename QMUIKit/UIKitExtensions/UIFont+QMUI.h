@@ -25,9 +25,9 @@
 #define UIDynamicFontLightMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightLight italic:NO]
 
 typedef NS_ENUM(NSUInteger, QMUIFontWeight) {
-    QMUIFontWeightLight,
-    QMUIFontWeightNormal,
-    QMUIFontWeightBold
+    QMUIFontWeightLight,    // 对应 UIFontWeightLight
+    QMUIFontWeightNormal,   // 对应 UIFontWeightRegular
+    QMUIFontWeightBold      // 对应 UIFontWeightSemibold
 };
 
 @interface UIFont (QMUI)
