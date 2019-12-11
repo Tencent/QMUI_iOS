@@ -83,29 +83,25 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     // Automatically look for templates and apply them
     // @see https://github.com/Tencent/QMUI_iOS/issues/264
     Protocol *protocol = @protocol(QMUIConfigurationTemplateProtocol);
-    int numberOfClasses = objc_getClassList(NULL, 0);
-    if (numberOfClasses > 0) {
-        Class *classes = (__unsafe_unretained Class *)malloc(sizeof(Class) * numberOfClasses);
-        numberOfClasses = objc_getClassList(classes, numberOfClasses);
-        for (int i = 0; i < numberOfClasses; i++) {
-            Class class = classes[i];
-            // 这里用 containsString 是考虑到 Swift 里 className 由“项目前缀+class 名”组成，如果用 hasPrefix 就无法判断了
-            // Use `containsString` instead of `hasPrefix` because class names in Swift have project prefix prepended
-            if ([NSStringFromClass(class) containsString:@"QMUIConfigurationTemplate"] && [class conformsToProtocol:protocol]) {
-                if ([class instancesRespondToSelector:@selector(shouldApplyTemplateAutomatically)]) {
-                    id<QMUIConfigurationTemplateProtocol> template = [[class alloc] init];
-                    if ([template shouldApplyTemplateAutomatically]) {
-                        QMUI_hasAppliedInitialTemplate = YES;
-                        [template applyConfigurationTemplate];
-                        _active = YES;// 标志配置表已生效
-                        // 只应用第一个 shouldApplyTemplateAutomatically 的主题
-                        // Only apply the first template returned
-                        break;
-                    }
+    classref_t *classes = nil;
+    int numberOfClasses = qmui_getProjectClassList(&classes);
+    for (NSInteger i = 0; i < numberOfClasses; i++) {
+        Class class = (__bridge Class)classes[i];
+        // 这里用 containsString 是考虑到 Swift 里 className 由“项目前缀+class 名”组成，如果用 hasPrefix 就无法判断了
+        // Use `containsString` instead of `hasPrefix` because class names in Swift have project prefix prepended
+        if ([NSStringFromClass(class) containsString:@"QMUIConfigurationTemplate"] && [class conformsToProtocol:protocol]) {
+            if ([class instancesRespondToSelector:@selector(shouldApplyTemplateAutomatically)]) {
+                id<QMUIConfigurationTemplateProtocol> template = [[class alloc] init];
+                if ([template shouldApplyTemplateAutomatically]) {
+                    QMUI_hasAppliedInitialTemplate = YES;
+                    [template applyConfigurationTemplate];
+                    _active = YES;// 标志配置表已生效
+                    // 只应用第一个 shouldApplyTemplateAutomatically 的主题
+                    // Only apply the first template returned
+                    break;
                 }
             }
         }
-        free(classes);
     }
     
     if (IS_DEBUG && self.sendAnalyticsToQMUITeam) {

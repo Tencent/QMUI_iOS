@@ -318,3 +318,23 @@ _QMUIGetIvarValueGenerator(Selector, SEL)
 CG_INLINE id getObjectIvarValue(id object, Ivar ivar) {
     return object_getIvar(object, ivar);
 }
+
+
+#pragma mark - Mach-O
+
+typedef struct classref *classref_t;
+
+/**
+ 获取业务项目的所有 class
+ @param classes 传入 classref_t 变量的指针，会填充结果到里面，然后可以用下标访问。如果只是为了得到总数，可传入 NULL。
+ @return class 的总数
+ 
+ 例如：
+ 
+ @code
+ classref_t *classes = nil;
+ int count = qmui_getProjectClassList(&classes);
+ Class class = (__bridge Class)classes[0];
+ @endcode
+ */
+FOUNDATION_EXPORT int qmui_getProjectClassList(classref_t **classes);
