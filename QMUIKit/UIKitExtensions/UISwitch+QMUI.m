@@ -21,9 +21,13 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         ExtendImplementationOfNonVoidMethodWithSingleArgument([UISwitch class], @selector(initWithFrame:), CGRect, UISwitch *, ^UISwitch *(UISwitch *selfObject, CGRect firstArgv, UISwitch *originReturnValue) {
-            if (QMUICMIActivated && SwitchTintColor) {
-                selfObject.tintColor = SwitchTintColor;
-                selfObject.qmui_offTintColor = SwitchOffTintColor;
+            if (QMUICMIActivated) {
+                if (SwitchTintColor) {
+                    selfObject.tintColor = SwitchTintColor;
+                }
+                if (SwitchOffTintColor) {
+                    selfObject.qmui_offTintColor = SwitchOffTintColor;
+                }
             }
             return originReturnValue;
         });
