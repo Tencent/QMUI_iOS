@@ -83,10 +83,16 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     // Automatically look for templates and apply them
     // @see https://github.com/Tencent/QMUI_iOS/issues/264
     Protocol *protocol = @protocol(QMUIConfigurationTemplateProtocol);
-    classref_t *classes = nil;
-    int numberOfClasses = qmui_getProjectClassList(&classes);
+    classref_t *classesref = nil;
+    Class *classes = nil;
+    int numberOfClasses = qmui_getProjectClassList(&classesref);
+    if (numberOfClasses <= 0) {
+        numberOfClasses = objc_getClassList(NULL, 0);
+        classes = (__unsafe_unretained Class *)malloc(sizeof(Class) * numberOfClasses);
+        objc_getClassList(classes, numberOfClasses);
+    }
     for (NSInteger i = 0; i < numberOfClasses; i++) {
-        Class class = (__bridge Class)classes[i];
+        Class class = classesref ? (__bridge Class)classesref[i] : classes[i];
         // 这里用 containsString 是考虑到 Swift 里 className 由“项目前缀+class 名”组成，如果用 hasPrefix 就无法判断了
         // Use `containsString` instead of `hasPrefix` because class names in Swift have project prefix prepended
         if ([NSStringFromClass(class) containsString:@"QMUIConfigurationTemplate"] && [class conformsToProtocol:protocol]) {
@@ -106,21 +112,25 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     
     if (IS_DEBUG && self.sendAnalyticsToQMUITeam) {
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:[NSOperationQueue new] usingBlock:^(NSNotification * _Nonnull note) {
-            [self sendAnalytics];
+            // 这里根据是否能成功获取到 classesref 来统计信息，以供后续确认对 classesref 为 nil 的保护是否真的必要
+            [self sendAnalyticsWithQuery:classes ? @"findByObjc=true" : nil];
         }];
     }
+    
+    if (classes) free(classes);
     
     QMUI_hasAppliedInitialTemplate = YES;
 }
 
-- (void)sendAnalytics {
+- (void)sendAnalyticsWithQuery:(NSString *)query {
     NSString *identifier = [NSBundle mainBundle].bundleIdentifier.qmui_stringByEncodingUserInputQuery;
     NSString *displayName = ((NSString *)([NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"] ?: [NSBundle mainBundle].infoDictionary[@"CFBundleName"])).qmui_stringByEncodingUserInputQuery;
     NSString *QMUIVersion = QMUI_VERSION.qmui_stringByEncodingUserInputQuery;// 如果不以 framework 方式引入 QMUI 的话，是无法通过 CFBundleShortVersionString 获取到 QMUI 所在的 bundle 的版本号的，所以这里改为用脚本生成的变量来获取
-    NSString *appInfo = [NSString stringWithFormat:@"appId=%@&appName=%@&version=%@&platform=iOS", identifier, displayName, QMUIVersion];
+    NSString *queryString = [NSString stringWithFormat:@"appId=%@&appName=%@&version=%@&platform=iOS", identifier, displayName, QMUIVersion];
+    if (query.length > 0) queryString = [NSString stringWithFormat:@"%@&%@", queryString, query];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://qmuiteam.com/analytics/usageReport"]];
     request.HTTPMethod = @"POST";
-    request.HTTPBody = [appInfo dataUsingEncoding:NSUTF8StringEncoding];
+    request.HTTPBody = [queryString dataUsingEncoding:NSUTF8StringEncoding];
     NSURLSession *session = [NSURLSession sharedSession];
     [[session dataTaskWithRequest:request] resume];
 }
