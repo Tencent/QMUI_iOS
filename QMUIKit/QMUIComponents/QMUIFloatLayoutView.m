@@ -63,7 +63,7 @@ const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize = {-1, -1};
     CGPoint itemViewOrigin = CGPointMake(ValueSwitchAlignLeftOrRight(self.padding.left, size.width - self.padding.right), self.padding.top);
     CGFloat currentRowMaxY = itemViewOrigin.y;
     CGSize maximumItemSize = CGSizeEqualToSize(self.maximumItemSize, QMUIFloatLayoutViewAutomaticalMaximumItemSize) ? CGSizeMake(size.width - UIEdgeInsetsGetHorizontalValue(self.padding), size.height - UIEdgeInsetsGetVerticalValue(self.padding)) : self.maximumItemSize;
-    
+    NSInteger line = -1;
     for (NSInteger i = 0, l = visibleItemViews.count; i < l; i++) {
         UIView *itemView = visibleItemViews[i];
         
@@ -72,7 +72,6 @@ const CGSize QMUIFloatLayoutViewAutomaticalMaximumItemSize = {-1, -1};
         itemViewSize.width = MIN(maximumItemSize.width, MAX(self.minimumItemSize.width, itemViewSize.width));
         itemViewSize.height = MIN(maximumItemSize.height, MAX(self.minimumItemSize.height, itemViewSize.height));
         
-        NSInteger line = -1;
         BOOL shouldBreakline = i == 0 ? YES : ValueSwitchAlignLeftOrRight(itemViewOrigin.x + self.itemMargins.left + itemViewSize.width + self.padding.right > size.width,
                                                            itemViewOrigin.x - self.itemMargins.right - itemViewSize.width - self.padding.left < 0);
         if (shouldBreakline) {
