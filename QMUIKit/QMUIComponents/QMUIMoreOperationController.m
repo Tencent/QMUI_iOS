@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -21,6 +21,7 @@
 #import "NSArray+QMUI.h"
 #import "UIScrollView+QMUI.h"
 #import "QMUILog.h"
+#import "QMUIAppearance.h"
 
 static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 
@@ -38,51 +39,44 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 
 @implementation QMUIMoreOperationController (UIAppearance)
 
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
+}
+
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        [self appearance];
+        [self initAppearance];
     });
 }
 
-static QMUIMoreOperationController *moreOperationViewControllerAppearance;
-+ (nonnull instancetype)appearance {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self resetAppearance];
-    });
-    return moreOperationViewControllerAppearance;
-}
-
-+ (void)resetAppearance {
-    if (!moreOperationViewControllerAppearance) {
-        moreOperationViewControllerAppearance = [[QMUIMoreOperationController alloc] init];
-        moreOperationViewControllerAppearance.contentBackgroundColor = UIColorForBackground;
-        moreOperationViewControllerAppearance.contentEdgeMargins = UIEdgeInsetsMake(0, 10, 10, 10);
-        moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(moreOperationViewControllerAppearance.contentEdgeMargins);
-        moreOperationViewControllerAppearance.contentCornerRadius = 10;
-        moreOperationViewControllerAppearance.contentPaddings = UIEdgeInsetsMake(10, 0, 5, 0);
-        
-        moreOperationViewControllerAppearance.scrollViewSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
-        moreOperationViewControllerAppearance.scrollViewContentInsets = UIEdgeInsetsMake(14, 8, 14, 8);
-        
-        moreOperationViewControllerAppearance.itemBackgroundColor = UIColorClear;
-        moreOperationViewControllerAppearance.itemTitleColor = UIColorGrayDarken;
-        moreOperationViewControllerAppearance.itemTitleFont = UIFontMake(11);
-        moreOperationViewControllerAppearance.itemPaddingHorizontal = 16;
-        moreOperationViewControllerAppearance.itemTitleMarginTop = 9;
-        moreOperationViewControllerAppearance.itemMinimumMarginHorizontal = 0;
-        moreOperationViewControllerAppearance.automaticallyAdjustItemMargins = YES;
-        
-        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorForBackground;
-        moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
-        moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
-        moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(16);
-        moreOperationViewControllerAppearance.cancelButtonHeight = 56.0;
-        moreOperationViewControllerAppearance.cancelButtonMarginTop = 0;
-        
-        moreOperationViewControllerAppearance.isExtendBottomLayout = NO;
-    }
++ (void)initAppearance {
+    QMUIMoreOperationController *moreOperationViewControllerAppearance = QMUIMoreOperationController.appearance;
+    moreOperationViewControllerAppearance.contentBackgroundColor = UIColorForBackground;
+    moreOperationViewControllerAppearance.contentEdgeMargins = UIEdgeInsetsMake(0, 10, 10, 10);
+    moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(moreOperationViewControllerAppearance.contentEdgeMargins);
+    moreOperationViewControllerAppearance.contentCornerRadius = 10;
+    moreOperationViewControllerAppearance.contentPaddings = UIEdgeInsetsMake(10, 0, 5, 0);
+    
+    moreOperationViewControllerAppearance.scrollViewSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
+    moreOperationViewControllerAppearance.scrollViewContentInsets = UIEdgeInsetsMake(14, 8, 14, 8);
+    
+    moreOperationViewControllerAppearance.itemBackgroundColor = UIColorClear;
+    moreOperationViewControllerAppearance.itemTitleColor = UIColorGrayDarken;
+    moreOperationViewControllerAppearance.itemTitleFont = UIFontMake(11);
+    moreOperationViewControllerAppearance.itemPaddingHorizontal = 16;
+    moreOperationViewControllerAppearance.itemTitleMarginTop = 9;
+    moreOperationViewControllerAppearance.itemMinimumMarginHorizontal = 0;
+    moreOperationViewControllerAppearance.automaticallyAdjustItemMargins = YES;
+    
+    moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorForBackground;
+    moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
+    moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
+    moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(16);
+    moreOperationViewControllerAppearance.cancelButtonHeight = 56.0;
+    moreOperationViewControllerAppearance.cancelButtonMarginTop = 0;
+    
+    moreOperationViewControllerAppearance.isExtendBottomLayout = NO;
 }
 
 @end
@@ -116,36 +110,10 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 }
 
 - (void)didInitialize {
-    if (moreOperationViewControllerAppearance) {
-        self.contentBackgroundColor = [QMUIMoreOperationController appearance].contentBackgroundColor;
-        self.contentEdgeMargins = [QMUIMoreOperationController appearance].contentEdgeMargins;
-        self.contentMaximumWidth = [QMUIMoreOperationController appearance].contentMaximumWidth;
-        self.contentCornerRadius = [QMUIMoreOperationController appearance].contentCornerRadius;
-        self.contentPaddings = [QMUIMoreOperationController appearance].contentPaddings;
-        
-        self.scrollViewSeparatorColor = [QMUIMoreOperationController appearance].scrollViewSeparatorColor;
-        self.scrollViewContentInsets = [QMUIMoreOperationController appearance].scrollViewContentInsets;
-        
-        self.itemBackgroundColor = [QMUIMoreOperationController appearance].itemBackgroundColor;
-        self.itemTitleColor = [QMUIMoreOperationController appearance].itemTitleColor;
-        self.itemTitleFont = [QMUIMoreOperationController appearance].itemTitleFont;
-        self.itemPaddingHorizontal = [QMUIMoreOperationController appearance].itemPaddingHorizontal;
-        self.itemTitleMarginTop = [QMUIMoreOperationController appearance].itemTitleMarginTop;
-        self.itemMinimumMarginHorizontal = [QMUIMoreOperationController appearance].itemMinimumMarginHorizontal;
-        self.automaticallyAdjustItemMargins = [QMUIMoreOperationController appearance].automaticallyAdjustItemMargins;
-        
-        self.cancelButtonBackgroundColor = [QMUIMoreOperationController appearance].cancelButtonBackgroundColor;
-        self.cancelButtonTitleColor = [QMUIMoreOperationController appearance].cancelButtonTitleColor;
-        self.cancelButtonSeparatorColor = [QMUIMoreOperationController appearance].cancelButtonSeparatorColor;
-        self.cancelButtonFont = [QMUIMoreOperationController appearance].cancelButtonFont;
-        self.cancelButtonHeight = [QMUIMoreOperationController appearance].cancelButtonHeight;
-        self.cancelButtonMarginTop = [QMUIMoreOperationController appearance].cancelButtonMarginTop;
-        
-        self.isExtendBottomLayout = [QMUIMoreOperationController appearance].isExtendBottomLayout;
-        
-        self.mutableScrollViews = [[NSMutableArray alloc] init];
-        self.mutableItems = [[NSMutableArray alloc] init];
-    }
+    [self qmui_applyAppearance];
+    
+    self.mutableScrollViews = [[NSMutableArray alloc] init];
+    self.mutableItems = [[NSMutableArray alloc] init];
     
     [self loadViewIfNeeded];
 }

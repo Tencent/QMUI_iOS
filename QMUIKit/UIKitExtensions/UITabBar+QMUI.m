@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -18,6 +18,7 @@
 #import "UITabBarItem+QMUI.h"
 #import "UIBarItem+QMUI.h"
 #import "UIImage+QMUI.h"
+#import "UIView+QMUI.h"
 
 NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 
@@ -172,6 +173,34 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
                     }
                 };
             });
+        }
+        
+        // iOS 11 全面屏设备里，在有 UITabBar 的情况下，如果一个 UIViewController 里有个占满全屏的 UIScrollView，则当 UIScrollView 滚到底部后进入下一级界面再返回，可看到 UIScrollView 滚动位置发生了跳动，这是因为切换界面过程中 UITabBar 做动画引发 safeAreaInsets 的变化，从而引发 UIScrollView 的 contentInset、contentOffset 变化。这里通过 additionalSafeAreaInsets 抵消该 safeAreaInsets 变化的差值，从而让 UIViewController.view 的所有 subview 感知不到这个过程中 safeAreaInsets 的变化，从而规避该 bug。
+        // https://github.com/Tencent/QMUI_iOS/issues/934
+        if (@available(iOS 11.0, *)) {
+            if (IS_NOTCHED_SCREEN && QMUICMIActivated && ShouldFixTabBarSafeAreaInsetsBugForNotchedScreen) {
+                ExtendImplementationOfVoidMethodWithoutArguments([UIViewController class], @selector(viewSafeAreaInsetsDidChange), ^(UIViewController *selfObject) {
+                    if (selfObject.tabBarController
+                        && selfObject.tabBarController.tabBar
+                        && !selfObject.tabBarController.tabBar.hidden
+                        && !selfObject.hidesBottomBarWhenPushed
+                        && selfObject.navigationController
+                        && selfObject.edgesForExtendedLayout & UIRectEdgeBottom) {
+                        UITabBar *tabBar = selfObject.tabBarController.tabBar;
+                        CGFloat bottom = selfObject.view.safeAreaInsets.bottom;
+                        CGFloat tabBarHeight = CGRectGetHeight(tabBar.frame);
+                        if (bottom != tabBarHeight) {
+                            UIEdgeInsets insets = selfObject.additionalSafeAreaInsets;
+                            if (bottom == tabBarHeight - tabBar.safeAreaInsets.bottom) {
+                                insets.bottom = tabBarHeight - bottom;
+                            } else {
+                                insets.bottom = 0;
+                            }
+                            selfObject.additionalSafeAreaInsets = insets;
+                        }
+                    }
+                });
+            }
         }
 
         

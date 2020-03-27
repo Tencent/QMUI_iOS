@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -30,11 +30,9 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  2. 自带空界面控件 `QMUIEmptyView`，支持显示loading、空文案、操作按钮
  *
- *  3. 自动在 `dealloc` 时移除所有注册到 `NSNotificationCenter` 里的监听，避免野指针 crash
+ *  3. 统一约定的常用接口，例如初始化 subview、设置顶部 `navigationItem`、底部 `toolbarItem`、响应系统的动态字体大小变化、...，从而保证相同类型的代码集中到同一个方法内，避免多人交叉维护时代码分散难以查找
  *
- *  4. 统一约定的常用接口，例如初始化 subview、设置顶部 `navigationItem`、底部 `toolbarItem`、响应系统的动态字体大小变化、...，从而保证相同类型的代码集中到同一个方法内，避免多人交叉维护时代码分散难以查找
- *
- *  5. 配合 `QMUINavigationController` 使用时，可以得到 `willPopInNavigationControllerWithAnimated:`、`didPopInNavigationControllerWithAnimated:` 这两个时机
+ *  4. 配合 `QMUINavigationController` 使用时，可以得到 `willPopInNavigationControllerWithAnimated:`、`didPopInNavigationControllerWithAnimated:` 这两个时机
  *
  *  @see QMUINavigationTitleView
  *  @see QMUIEmptyView

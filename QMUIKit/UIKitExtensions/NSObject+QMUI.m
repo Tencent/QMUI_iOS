@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -251,6 +251,10 @@
     free(methods);
 }
 
+@end
+
+@implementation NSObject (QMUI_KeyValueCoding)
+
 - (id)qmui_valueForKey:(NSString *)key {
     if (@available(iOS 13.0, *)) {
         if ([self isKindOfClass:[UIView class]] && QMUICMIActivated && !IgnoreKVCAccessProhibited) {
@@ -274,6 +278,55 @@
     }
     
     [self setValue:value forKey:key];
+}
+
+- (BOOL)qmui_canGetValueForKey:(NSString *)key {
+    NSArray<NSString *> *getters = @[
+        [NSString stringWithFormat:@"get%@", key.qmui_capitalizedString],   // get<Key>
+        key,
+        [NSString stringWithFormat:@"is%@", key.qmui_capitalizedString],    // is<Key>
+        [NSString stringWithFormat:@"_%@", key]                             // _<key>
+    ];
+    for (NSString *selectorString in getters) {
+        if ([self respondsToSelector:NSSelectorFromString(selectorString)]) return YES;
+    }
+    
+    if (![self.class accessInstanceVariablesDirectly]) return NO;
+    
+    return [self _qmui_hasSpecifiedIvarWithKey:key];
+}
+
+- (BOOL)qmui_canSetValueForKey:(NSString *)key {
+    NSArray<NSString *> *setter = @[
+        [NSString stringWithFormat:@"set%@:", key.qmui_capitalizedString],   // set<Key>:
+        [NSString stringWithFormat:@"_set%@", key.qmui_capitalizedString]   // _set<Key>
+    ];
+    for (NSString *selectorString in setter) {
+        if ([self respondsToSelector:NSSelectorFromString(selectorString)]) return YES;
+    }
+    
+    if (![self.class accessInstanceVariablesDirectly]) return NO;
+    
+    return [self _qmui_hasSpecifiedIvarWithKey:key];
+}
+
+- (BOOL)_qmui_hasSpecifiedIvarWithKey:(NSString *)key {
+    __block BOOL result = NO;
+    NSArray<NSString *> *ivars = @[
+        [NSString stringWithFormat:@"_%@", key],
+        [NSString stringWithFormat:@"_is%@", key.qmui_capitalizedString],
+        key,
+        [NSString stringWithFormat:@"is%@", key.qmui_capitalizedString]
+    ];
+    [NSObject qmui_enumrateIvarsOfClass:self.class includingInherited:YES usingBlock:^(Ivar  _Nonnull ivar, NSString * _Nonnull ivarDescription) {
+        if (!result) {
+            NSString *ivarName = [NSString stringWithFormat:@"%s", ivar_getName(ivar)];
+            if ([ivars containsObject:ivarName]) {
+                result = YES;
+            }
+        }
+    }];
+    return result;
 }
 
 @end

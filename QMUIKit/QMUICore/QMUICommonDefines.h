@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -617,14 +617,10 @@ CGRectGetMinXHorizontallyCenter(CGRect referenceRect, CGRect layoutingRect) {
     return CGRectGetMinX(referenceRect) + CGRectGetMinXHorizontallyCenterInParentRect(referenceRect, layoutingRect);
 }
 
-/// 为给定的rect往内部缩小insets的大小
+/// 为给定的rect往内部缩小insets的大小（系统那个方法的命名太难联想了，所以定义了一个新函数）
 CG_INLINE CGRect
 CGRectInsetEdges(CGRect rect, UIEdgeInsets insets) {
-    rect.origin.x += insets.left;
-    rect.origin.y += insets.top;
-    rect.size.width -= UIEdgeInsetsGetHorizontalValue(insets);
-    rect.size.height -= UIEdgeInsetsGetVerticalValue(insets);
-    return rect;
+    return UIEdgeInsetsInsetRect(rect, insets);
 }
 
 /// 传入size，返回一个x/y为0的CGRect

@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -38,6 +38,10 @@ NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNot
 
 QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleStateDidChangeBlock)
 QMUISynthesizeBOOLProperty(qmui_hasFixedTabBarInsets, setQmui_hasFixedTabBarInsets)
+QMUISynthesizeIdCopyProperty(qmui_prefersStatusBarHiddenBlock, setQmui_prefersStatusBarHiddenBlock)
+QMUISynthesizeIdCopyProperty(qmui_preferredStatusBarStyleBlock, setQmui_preferredStatusBarStyleBlock)
+QMUISynthesizeIdCopyProperty(qmui_preferredStatusBarUpdateAnimationBlock, setQmui_preferredStatusBarUpdateAnimationBlock)
+QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_prefersHomeIndicatorAutoHiddenBlock)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -92,6 +96,83 @@ QMUISynthesizeBOOLProperty(qmui_hasFixedTabBarInsets, setQmui_hasFixedTabBarInse
                     [[NSNotificationCenter defaultCenter] addObserver:selfObject selector:@selector(adjustsAdditionalSafeAreaInsetsForOpaqueTabBarWithNotification:) name:QMUITabBarStyleChangedNotification object:nil];
                 }
                 return originReturnValue;
+            });
+        }
+        
+        if (@available(iOS 11.0, *)) {
+            // iOS 11 及以后不 override prefersStatusBarHidden 而是通过私有方法来实现，是因为系统会先通过 +[UIViewController doesOverrideViewControllerMethod:inBaseClass:] 方法来判断当前的 UIViewController 有没有重写 prefersStatusBarHidden 方法，有的话才会去调用 prefersStatusBarHidden，而如果我们用 swizzle 的方式去重写 prefersStatusBarHidden，系统依然会认为你没有重写该方法，于是不会调用，于是 block 无效。对于 iOS 10 及以前的系统没有这种逻辑，所以没问题。
+            // 特别的，只有 hidden 操作有这种逻辑，而 style、animation 等操作不管在哪个 iOS 版本里都是没有这种逻辑的
+            OverrideImplementation([UIViewController class], NSSelectorFromString(@"_preferredStatusBarVisibility"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^NSInteger(UIViewController *selfObject) {
+                    // 为了保证重写 prefersStatusBarHidden 的优先级比 block 高，这里要判断一下 qmui_hasOverrideUIKitMethod 的值
+                    if (![selfObject qmui_hasOverrideUIKitMethod:@selector(prefersStatusBarHidden)] && selfObject.qmui_prefersStatusBarHiddenBlock) {
+                        return selfObject.qmui_prefersStatusBarHiddenBlock() ? 1 : 2;// 系统返回的 1 表示隐藏，2 表示显示，0 不清楚含义
+                    }
+
+                    // call super
+                    NSInteger (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (NSInteger (*)(id, SEL))originalIMPProvider();
+                    NSInteger result = originSelectorIMP(selfObject, originCMD);
+                    return result;
+                };
+            });
+        } else {
+            OverrideImplementation([UIViewController class], @selector(prefersStatusBarHidden), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^BOOL(UIViewController *selfObject) {
+                    if (selfObject.qmui_prefersStatusBarHiddenBlock) {
+                        return selfObject.qmui_prefersStatusBarHiddenBlock();
+                    }
+
+                    // call super
+                    BOOL (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                    BOOL result = originSelectorIMP(selfObject, originCMD);
+                    return result;
+                };
+            });
+        }
+        
+        OverrideImplementation([UIViewController class], @selector(preferredStatusBarStyle), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIStatusBarStyle(UIViewController *selfObject) {
+                if (selfObject.qmui_preferredStatusBarStyleBlock) {
+                    return selfObject.qmui_preferredStatusBarStyleBlock();
+                }
+                
+                // call super
+                UIStatusBarStyle (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (UIStatusBarStyle (*)(id, SEL))originalIMPProvider();
+                UIStatusBarStyle result = originSelectorIMP(selfObject, originCMD);
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UIViewController class], @selector(preferredStatusBarUpdateAnimation), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIStatusBarAnimation(UIViewController *selfObject) {
+                if (selfObject.qmui_preferredStatusBarUpdateAnimationBlock) {
+                    return selfObject.qmui_preferredStatusBarUpdateAnimationBlock();
+                }
+                
+                // call super
+                UIStatusBarAnimation (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (UIStatusBarAnimation (*)(id, SEL))originalIMPProvider();
+                UIStatusBarAnimation result = originSelectorIMP(selfObject, originCMD);
+                return result;
+            };
+        });
+        
+        if (@available(iOS 11.0, *)) {
+            OverrideImplementation([UIViewController class], @selector(prefersHomeIndicatorAutoHidden), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^BOOL(UIViewController *selfObject) {
+                    if (selfObject.qmui_prefersHomeIndicatorAutoHiddenBlock) {
+                        return selfObject.qmui_prefersHomeIndicatorAutoHiddenBlock();
+                    }
+                    
+                    // call super
+                    BOOL (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                    BOOL result = originSelectorIMP(selfObject, originCMD);
+                    return result;
+                };
             });
         }
     });

@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -155,6 +155,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (void)qmui_enumerateProtocolMethods:(Protocol *)protocol usingBlock:(void (^)(SEL selector))block;
 
+@end
+
+@interface NSObject (QMUI_KeyValueCoding)
+
 /**
  iOS 13 下系统禁止通过 KVC 访问私有 API，因此提供这种方式在遇到 access prohibited 的异常时可以取代 valueForKey: 使用。
  
@@ -186,6 +190,20 @@ NS_ASSUME_NONNULL_BEGIN
  @return key 对应的 value，如果该 key 原本是非对象的值，会被用 NSNumber、NSValue 包裹后返回
  */
 - (void)qmui_setValue:(nullable id)value forKey:(NSString *)key;
+
+/**
+ 检查给定的 key 是否可以用于当前对象的 valueForKey: 调用。
+ 
+ @note 这是针对 valueForKey: 内部查找 key 的逻辑的精简版，去掉了一些不常用的，如果按精简版查找不到，会返回 NO（但按完整版可能是能查找到的），避免抛出异常。文档描述的查找方法完整版请查看 https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/KeyValueCoding/SearchImplementation.html
+ */
+- (BOOL)qmui_canGetValueForKey:(NSString *)key;
+
+/**
+检查给定的 key 是否可以用于当前对象的 setValue:forKey: 调用。
+
+@note 对于 setter 而言这就是完整版的检查流程，可核对文档 https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/KeyValueCoding/SearchImplementation.html
+*/
+- (BOOL)qmui_canSetValueForKey:(NSString *)key;
 
 @end
 

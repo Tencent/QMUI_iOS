@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -145,7 +145,12 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nullable, nonatomic, strong) IBOutlet UIView *dimmingView;
 
 /**
- *  由于点击遮罩导致浮层被隐藏时的回调（区分于`hideWithAnimated:completion:`里的completion，这里是特地用于点击遮罩的情况）
+ *  由于点击遮罩导致浮层即将被隐藏的回调
+ */
+@property(nullable, nonatomic, copy) void (^willHideByDimmingViewTappedBlock)(void);
+
+/**
+ *  由于点击遮罩导致浮层被隐藏后的回调（区分于`hideWithAnimated:completion:`里的completion，这里是特地用于点击遮罩的情况）
  */
 @property(nullable, nonatomic, copy) void (^didHideByDimmingViewTappedBlock)(void);
 
@@ -300,7 +305,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @interface UIViewController (QMUIModalPresentationViewController)
 
 /**
- *  获取弹出当前 vieController 的 QMUIModalPresentationViewController，注意需要 modalPresentationViewController show 之后这个属性才会被赋值。
+ *  获取弹出当前 vieController 的 QMUIModalPresentationViewController
  */
 @property(nullable, nonatomic, weak, readonly) QMUIModalPresentationViewController *qmui_modalPresentationViewController;
 @end

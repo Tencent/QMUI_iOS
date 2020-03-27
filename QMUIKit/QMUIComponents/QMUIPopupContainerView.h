@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -18,11 +18,13 @@
 
 typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
     QMUIPopupContainerViewLayoutDirectionAbove,
-    QMUIPopupContainerViewLayoutDirectionBelow
+    QMUIPopupContainerViewLayoutDirectionBelow,
+    QMUIPopupContainerViewLayoutDirectionLeft,
+    QMUIPopupContainerViewLayoutDirectionRight
 };
 
 /**
- * 带箭头的小tips浮层，自带 imageView 和 textLabel，可展示简单的图文信息。
+ * 带箭头的小tips浮层，自带 imageView 和 textLabel，可展示简单的图文信息，支持 UIViewContentModeTop/UIViewContentModeBottom/UIViewContentModeCenter 三种布局方式。
  * QMUIPopupContainerView 支持以两种方式显示在界面上：
  * 1. 添加到某个 UIView 上（适合于 viewController 切换时浮层跟着一起切换的场景），这种场景只能手动隐藏浮层。
  * 2. 在 QMUIPopupContainerView 自带的 UIWindow 里显示（适合于用完就消失的场景，不要涉及界面切换），这种场景支持点击空白地方自动隐藏浮层。
@@ -44,10 +46,10 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  * 3. 通过重写 sizeThatFitsInContentView:，在里面返回当前 subviews 的大小。
  * 4. 在 layoutSubviews: 里，所有 subviews 请相对于 contentView 布局。
  */
-
 @interface QMUIPopupContainerView : UIControl {
     CAShapeLayer    *_backgroundLayer;
     CGFloat         _arrowMinX;
+    CGFloat         _arrowMinY;
 }
 
 @property(nonatomic, assign) BOOL debug;

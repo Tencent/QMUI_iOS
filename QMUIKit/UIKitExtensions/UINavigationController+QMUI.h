@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取<b>rootViewController</b>
 @property(nullable, nonatomic, readonly) UIViewController *qmui_rootViewController;
 
+/// QMUI 会修改 UINavigationController.interactivePopGestureRecognizer.delegate 的值，因此提供一个属性用于获取系统原始的值
+@property(nullable, nonatomic, weak, readonly) id<UIGestureRecognizerDelegate> qmui_interactivePopGestureRecognizerDelegate;
+
 - (void)qmui_pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^_Nullable)(void))completion;
 - (UIViewController *)qmui_popViewControllerAnimated:(BOOL)animated completion:(void (^_Nullable)(void))completion;
 - (NSArray<UIViewController *> *)qmui_popToViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^_Nullable)(void))completion;
@@ -48,16 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @optional
 
-/// 是否需要拦截系统返回按钮的事件，只有当这里返回YES的时候，才会询问方法：`canPopViewController`
-/// @warning 此接口已经被废弃，请使用 `shouldPopViewControllerByBackButtonOrPopGesture`
-- (BOOL)shouldHoldBackButtonEvent DEPRECATED_MSG_ATTRIBUTE("从 4.0.0-beta 开始已废弃，请使用 shouldPopViewControllerByBackButtonOrPopGesture 代替");
-
-/// 是否可以`popViewController`，可以在这个返回里面做一些业务的判断，比如点击返回按钮的时候，如果输入框里面的文本没有满足条件的则可以弹 Alert 并且返回 NO
-/// @warning 此接口已经被废弃，请使用 `shouldPopViewControllerByBackButtonOrPopGesture`
-- (BOOL)canPopViewController DEPRECATED_MSG_ATTRIBUTE("从 4.0.0-beta 开始已废弃，请使用 shouldPopViewControllerByBackButtonOrPopGesture 代替");
-
 /**
- * 点击系统返回按钮或者手势返回的时候是否要相应界面返回（手动调用代码pop排除）。支持参数判断是点击系统返回按钮还是通过手势触发，`shouldHoldBackButtonEvent` 和 `canPopViewController` 即将被废弃，可能会在某个版本删除代码停止支持，请尽快更换新的接口。
+ * 点击系统返回按钮或者手势返回的时候是否要相应界面返回（手动调用代码pop排除）。支持参数判断是点击系统返回按钮还是通过手势触发
  * 一般使用的场景是：可以在这个返回里面做一些业务的判断，比如点击返回按钮的时候，如果输入框里面的文本没有满足条件的则可以弹 Alert 并且返回 NO 来阻止用户退出界面导致不合法的数据或者数据丢失。
  */
 - (BOOL)shouldPopViewControllerByBackButtonOrPopGesture:(BOOL)byPopGesture;

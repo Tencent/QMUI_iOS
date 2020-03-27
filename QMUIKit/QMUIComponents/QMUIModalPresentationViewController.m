@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -19,6 +19,7 @@
 #import "UIView+QMUI.h"
 #import "QMUIKeyboardManager.h"
 #import "UIWindow+QMUI.h"
+#import "QMUIAppearance.h"
 
 @interface UIViewController ()
 
@@ -27,29 +28,22 @@
 
 @implementation QMUIModalPresentationViewController (UIAppearance)
 
-static QMUIModalPresentationViewController *appearance;
-+ (nonnull instancetype)appearance {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self initDefaultAppearance];
-    });
-    return appearance;
-}
-
-+ (void)initDefaultAppearance {
-    if (!appearance) {
-        appearance = [[self alloc] init];
-    }
-    appearance.animationStyle = QMUIModalPresentationAnimationStyleFade;
-    appearance.contentViewMargins = UIEdgeInsetsMake(20, 20, 20, 20);
-    appearance.maximumContentViewWidth = CGFLOAT_MAX;
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
 }
 
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        [self appearance];
+        [self initAppearance];
     });
+}
+
++ (void)initAppearance {
+    QMUIModalPresentationViewController *appearance = QMUIModalPresentationViewController.appearance;
+    appearance.animationStyle = QMUIModalPresentationAnimationStyleFade;
+    appearance.contentViewMargins = UIEdgeInsetsMake(20, 20, 20, 20);
+    appearance.maximumContentViewWidth = CGFLOAT_MAX;
 }
 
 @end
@@ -99,27 +93,22 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (void)didInitialize {
-    if (appearance) {
-        self.animationStyle = appearance.animationStyle;
-        self.contentViewMargins = appearance.contentViewMargins;
-        self.maximumContentViewWidth = appearance.maximumContentViewWidth;
-        self.onlyRespondsToKeyboardEventFromDescendantViews = YES;
-        self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
-        self.modalPresentationStyle = UIModalPresentationCustom;
-        
-        // 这一段是给以 present 方式显示的浮层用的，其他方式显示的浮层，会在 supportedInterfaceOrientations 里实时获取支持的设备方向
-        UIViewController *visibleViewController = [QMUIHelper visibleViewController];
-        if (visibleViewController) {
-            self.supportedOrientationMask = visibleViewController.supportedInterfaceOrientations;
-        } else {
-            self.supportedOrientationMask = SupportedOrientationMask;
-        }
-        
-        if (self != appearance) {
-            self.keyboardManager = [[QMUIKeyboardManager alloc] initWithDelegate:self];
-            [self initDefaultDimmingViewWithoutAddToView];
-        }
+    [self qmui_applyAppearance];
+    
+    self.onlyRespondsToKeyboardEventFromDescendantViews = YES;
+    self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    self.modalPresentationStyle = UIModalPresentationCustom;
+    
+    // 这一段是给以 present 方式显示的浮层用的，其他方式显示的浮层，会在 supportedInterfaceOrientations 里实时获取支持的设备方向
+    UIViewController *visibleViewController = [QMUIHelper visibleViewController];
+    if (visibleViewController) {
+        self.supportedOrientationMask = visibleViewController.supportedInterfaceOrientations;
+    } else {
+        self.supportedOrientationMask = SupportedOrientationMask;
     }
+    
+    self.keyboardManager = [[QMUIKeyboardManager alloc] initWithDelegate:self];
+    [self initDefaultDimmingViewWithoutAddToView];
 }
 
 - (void)awakeFromNib {
@@ -170,7 +159,6 @@ static QMUIModalPresentationViewController *appearance;
     self.keyboardManager.delegateEnabled = YES;
     
     if (self.contentViewController) {
-        self.contentViewController.qmui_modalPresentationViewController = self;
         [self.contentViewController beginAppearanceTransition:YES animated:animated];
     }
     
@@ -320,11 +308,6 @@ static QMUIModalPresentationViewController *appearance;
             self.disappearCompletionBlock = nil;
         }
         
-        if (self.contentViewController) {
-            self.contentViewController.qmui_modalPresentationViewController = nil;
-            self.contentViewController = nil;
-        }
-        
         self.disappearAnimated = NO;
     };
     
@@ -409,14 +392,20 @@ static QMUIModalPresentationViewController *appearance;
             if (weakSelf.didHideByDimmingViewTappedBlock) {
                 weakSelf.didHideByDimmingViewTappedBlock();
             }
-        }];
+        } sender:tapGestureRecognizer];
     } else if (self.shownInPresentedMode) {
+        if (self.willHideByDimmingViewTappedBlock) {
+            self.willHideByDimmingViewTappedBlock();
+        }
         [self dismissViewControllerAnimated:YES completion:^{
             if (self.didHideByDimmingViewTappedBlock) {
                 self.didHideByDimmingViewTappedBlock();
             }
         }];
     } else if (self.shownInSubviewMode) {
+        if (self.willHideByDimmingViewTappedBlock) {
+            self.willHideByDimmingViewTappedBlock();
+        }
         __weak __typeof(self)weakSelf = self;
         [self hideInView:self.view.superview animated:YES completion:^(BOOL finished) {
             if (weakSelf.didHideByDimmingViewTappedBlock) {
@@ -429,6 +418,10 @@ static QMUIModalPresentationViewController *appearance;
 #pragma mark - ContentView
 
 - (void)setContentViewController:(UIViewController<QMUIModalPresentationContentViewControllerProtocol> *)contentViewController {
+    if (![contentViewController isEqual:_contentViewController]) {
+        _contentViewController.qmui_modalPresentationViewController = nil;
+    }
+    contentViewController.qmui_modalPresentationViewController = self;
     _contentViewController = contentViewController;
     self.contentView = contentViewController.view;
 }
@@ -482,9 +475,9 @@ static QMUIModalPresentationViewController *appearance;
     self.previousKeyWindow = UIApplication.sharedApplication.keyWindow;
     if (!self.containerWindow) {
         self.containerWindow = [[QMUIModalPresentationWindow alloc] init];
-        self.containerWindow.qmui_capturesStatusBarAppearance = NO;// modalPrensetationViewController.contentViewController 默认无权管理状态栏的样式，如需修改状态栏，请业务自己将这个属性改为 YES
         self.containerWindow.windowLevel = UIWindowLevelQMUIAlertView;
         self.containerWindow.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
+        [self updateContainerWindowStatusBarCapture];
     }
     self.containerWindow.rootViewController = self;
     [self.containerWindow makeKeyAndVisible];
@@ -524,6 +517,10 @@ static QMUIModalPresentationViewController *appearance;
 }
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    [self hideWithAnimated:animated completion:completion sender:nil];
+}
+
+- (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion sender:(id)sender {
     self.disappearAnimated = animated;
     self.disappearCompletionBlock = completion;
     
@@ -533,6 +530,12 @@ static QMUIModalPresentationViewController *appearance;
     }
     if (!shouldHide) {
         return;
+    }
+    
+    if (sender == self.dimmingViewTapGestureRecognizer) {
+        if (self.willHideByDimmingViewTappedBlock) {
+            self.willHideByDimmingViewTappedBlock();
+        }
     }
     
     // window模式下，通过手动触发viewWillDisappear:来做界面消失的逻辑
@@ -619,18 +622,38 @@ static QMUIModalPresentationViewController *appearance;
     return self.supportedOrientationMask;
 }
 
-- (UIViewController *)childViewControllerForStatusBarStyle {
-    if (self.shownInPresentedMode) {
-        return self.contentViewController;
-    }
-    return [super childViewControllerForStatusBarStyle];
+- (void)setQmui_prefersStatusBarHiddenBlock:(BOOL (^)(void))qmui_prefersStatusBarHiddenBlock {
+    [super setQmui_prefersStatusBarHiddenBlock:qmui_prefersStatusBarHiddenBlock];
+    [self updateContainerWindowStatusBarCapture];
 }
 
+- (void)setQmui_preferredStatusBarStyleBlock:(UIStatusBarStyle (^)(void))qmui_preferredStatusBarStyleBlock {
+    [super setQmui_preferredStatusBarStyleBlock:qmui_preferredStatusBarStyleBlock];
+    [self updateContainerWindowStatusBarCapture];
+}
+
+- (void)updateContainerWindowStatusBarCapture {
+    if (!self.containerWindow) return;
+    // 当以 window 的方式显示浮层时，状态栏交给 QMUIModalPresentationViewController 控制
+    self.containerWindow.qmui_capturesStatusBarAppearance = self.qmui_prefersStatusBarHiddenBlock || self.qmui_preferredStatusBarStyleBlock;
+    if (self.containerWindow.qmui_capturesStatusBarAppearance) {
+        [self setNeedsStatusBarAppearanceUpdate];
+    }
+}
+
+// 当以 present 方式显示浮层时，状态栏允许由 contentViewController 控制，但 QMUIModalPresentationViewController 的 qmui_prefersStatusBarHiddenBlock/qmui_preferredStatusBarStyleBlock 优先级会更高
 - (UIViewController *)childViewControllerForStatusBarHidden {
-    if (self.shownInPresentedMode) {
+    if (self.shownInPresentedMode && self.contentViewController) {
         return self.contentViewController;
     }
     return [super childViewControllerForStatusBarHidden];
+}
+
+- (UIViewController *)childViewControllerForStatusBarStyle {
+    if (self.shownInPresentedMode && self.contentViewController) {
+        return self.contentViewController;
+    }
+    return [super childViewControllerForStatusBarStyle];
 }
 
 - (UIViewController *)childViewControllerForHomeIndicatorAutoHidden {

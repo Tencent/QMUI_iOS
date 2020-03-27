@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -153,7 +153,6 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// alert 内部 textField 的边框颜色，如果不需要边框，可设置为 nil
 @property(nullable, nonatomic, strong) UIColor *alertTextFieldBorderColor UI_APPEARANCE_SELECTOR;
 
-
 /// sheet距离屏幕四边的间距，默认UIEdgeInsetsMake(10, 10, 10, 10)。
 @property(nonatomic, assign) UIEdgeInsets sheetContentMargin UI_APPEARANCE_SELECTOR;
 
@@ -205,6 +204,8 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// sheet头部title和message之间的间距，默认8pt
 @property(nonatomic, assign) CGFloat sheetTitleMessageSpacing UI_APPEARANCE_SELECTOR;
 
+/// sheet 的列数，一行显示多少个 item，默认是 1。
+@property(nonatomic, assign) CGFloat sheetColumnCount UI_APPEARANCE_SELECTOR;
 
 /// 默认初始化方法
 - (nonnull instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;

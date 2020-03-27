@@ -1,6 +1,6 @@
 /*****
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -159,7 +159,9 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 - (void)contentSizeCategoryDidChanged:(NSNotification *)notification {
     [super contentSizeCategoryDidChanged:notification];
-    [self.tableView reloadData];
+    if (self.viewLoaded) {
+        [self.tableView reloadData];
+    }
 }
 
 #pragma mark - 空列表视图 QMUIEmptyView
@@ -286,7 +288,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
  *  该 delegate 方法仅在 iOS 11 及之后存在，之前的 iOS 版本使用 KVO 的方式实现监听，详见 initTableView 方法里的相关代码
  */
 - (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView *)scrollView {
-    if (scrollView != self.tableView) {
+    if (self.viewLoaded && scrollView != self.tableView) {
         return;
     }
     [self handleTableViewContentInsetChangeEvent];
