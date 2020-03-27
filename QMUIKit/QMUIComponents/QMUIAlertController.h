@@ -204,8 +204,8 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// sheet头部title和message之间的间距，默认8pt
 @property(nonatomic, assign) CGFloat sheetTitleMessageSpacing UI_APPEARANCE_SELECTOR;
 
-/// sheet 的列数，一行显示多少个 item，默认是 1。
-@property(nonatomic, assign) CGFloat sheetColumnCount UI_APPEARANCE_SELECTOR;
+/// sheet 的列数，一行显示多少个 button，默认是 1。
+@property(nonatomic, assign) CGFloat sheetButtonColumnCount UI_APPEARANCE_SELECTOR;
 
 /// 默认初始化方法
 - (nonnull instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;

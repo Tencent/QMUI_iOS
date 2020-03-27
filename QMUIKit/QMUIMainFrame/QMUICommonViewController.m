@@ -62,16 +62,18 @@
     self.titleView.title = self.title;// 从 storyboard 初始化的话，可能带有 self.title 的值
     self.navigationItem.titleView = self.titleView;
     
-    self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
-    
     // 不管navigationBar的backgroundImage如何设置，都让布局撑到屏幕顶部，方便布局的统一
     self.extendedLayoutIncludesOpaqueBars = YES;
     
     self.supportedOrientationMask = SupportedOrientationMask;
     
-    self.qmui_preferredStatusBarStyleBlock = ^UIStatusBarStyle{
-        return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
-    };
+    if (QMUICMIActivated) {
+        self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
+        self.qmui_preferredStatusBarStyleBlock = ^UIStatusBarStyle{
+            return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+        };
+    }
+    
     if (@available(iOS 11.0, *)) {
         self.qmui_prefersHomeIndicatorAutoHiddenBlock = ^BOOL{
             return NO;

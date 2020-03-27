@@ -162,7 +162,7 @@ static NSUInteger alertControllerCount = 0;
     alertControllerAppearance.sheetButtonHighlightBackgroundColor = UIColorMake(232, 232, 232);
     alertControllerAppearance.sheetHeaderInsets = UIEdgeInsetsMake(16, 16, 16, 16);
     alertControllerAppearance.sheetTitleMessageSpacing = 8;
-    alertControllerAppearance.sheetColumnCount = 1;
+    alertControllerAppearance.sheetButtonColumnCount = 1;
     alertControllerAppearance.isExtendBottomLayout = NO;
 }
 
@@ -681,13 +681,13 @@ static NSUInteger alertControllerCount = 0;
         // 按钮的布局
         self.buttonScrollView.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.containerView.bounds), 0);
         NSArray<QMUIAlertAction *> *newOrderActions = [self orderedAlertActions:self.alertActions];
-        if (self.sheetColumnCount > 1) {
+        if (self.sheetButtonColumnCount > 1) {
             // 如果是多列，则为了布局，补齐 item 个数
             NSMutableArray<QMUIAlertAction *> *fixedActions = [newOrderActions mutableCopy];
             [fixedActions removeObject:self.cancelAction];
             
-            if (fmodf(fixedActions.count, self.sheetColumnCount) != 0) {
-                NSInteger increment = self.sheetColumnCount - fmodf(fixedActions.count, self.sheetColumnCount);
+            if (fmodf(fixedActions.count, self.sheetButtonColumnCount) != 0) {
+                NSInteger increment = self.sheetButtonColumnCount - fmodf(fixedActions.count, self.sheetButtonColumnCount);
                 for (NSInteger i = 0; i < increment; i++) {
                     QMUIAlertAction *action = [[QMUIAlertAction alloc] init];
                     action.title = @"";
@@ -702,7 +702,7 @@ static NSUInteger alertControllerCount = 0;
             }
         }
         
-        CGFloat columnCount = self.sheetColumnCount;
+        CGFloat columnCount = self.sheetButtonColumnCount;
         CGFloat alertActionsWidth = CGRectGetWidth(self.buttonScrollView.bounds) / columnCount;
         CGFloat alertActionsLayoutX = 0;
         CGFloat alertActionsLayoutY = 0;
