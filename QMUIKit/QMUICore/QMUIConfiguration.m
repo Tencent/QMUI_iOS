@@ -311,20 +311,19 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 }
 
 - (void)configureNavBarShadowImage {
-    UIImage *shadowImage = nil;
-    if (self.navBarShadowImageColor) {
-        shadowImage = self.navBarShadowImage;
+    UIImage *shadowImage = self.navBarShadowImage;
+    if (shadowImage || self.navBarShadowImageColor) {
         if (shadowImage) {
-            if (shadowImage.renderingMode != UIImageRenderingModeAlwaysOriginal) {
+            if (self.navBarShadowImageColor && shadowImage.renderingMode != UIImageRenderingModeAlwaysOriginal) {
                 shadowImage = [shadowImage qmui_imageWithTintColor:self.navBarShadowImageColor];
             }
         } else {
             shadowImage = [UIImage qmui_imageWithColor:self.navBarShadowImageColor size:CGSizeMake(4, PixelOne) cornerRadius:0];
         }
+        
+        // 反向更新 NavBarShadowImage，以保证业务代码直接使用 NavBarShadowImage 宏能得到正确的图片
+        _navBarShadowImage = shadowImage;
     }
-    
-    // 反向更新 NavBarShadowImage，以保证业务代码直接使用 NavBarShadowImage 宏能得到正确的图片
-    _navBarShadowImage = shadowImage;
     
     UINavigationBar.appearance.shadowImage = shadowImage;
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {

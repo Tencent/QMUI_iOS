@@ -338,11 +338,9 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         
         // 导航栏底部的分隔线
         if ([vc respondsToSelector:@selector(navigationBarShadowImage)]) {
-            UIImage *shadowImage = [vc navigationBarShadowImage];
-            [viewController.navigationController.navigationBar setShadowImage:shadowImage];
+            viewController.navigationController.navigationBar.shadowImage = [vc navigationBarShadowImage];
         } else if (QMUICMIActivated) {
-            // 分隔线的实际控制权在 NavBarShadowImageColor 上，但这里又不适合重新使用 NavBarShadowImageColor 再生成一遍 image，而配置表的值最终都是设置到 appearance 上，所以这里用 appearance 来获取值，而不是直接读取 NavBarShadowImage
-            [viewController.navigationController.navigationBar setShadowImage:UINavigationBar.appearance.shadowImage];
+            viewController.navigationController.navigationBar.shadowImage = NavBarShadowImage;
         }
         
         // 导航栏上控件的主题色

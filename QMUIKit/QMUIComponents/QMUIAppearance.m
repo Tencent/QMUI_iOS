@@ -48,13 +48,18 @@ BeginIgnoreClangWarning(-Wincomplete-implementation)
 
 @implementation NSObject (QMUIAppearnace)
 
+/**
+ 关于 appearance 要考虑这几点：
+ 1. 是否产生内存泄漏
+ 2. 父类的 appearance 能否在子类里生效
+ 3. 如果某个 property 在 ClassA 里声明为 UI_APPEARANCE_SELECTOR，则在子类 Class B : Class A 里获取该 property 的值将为 nil，这是正常的，系统默认行为如此，系统是在 应用 appearance 的时候发现子类的 property 值为 nil 时才会从父类里读取值，在这个阶段才完成继承效果。
+ */
 - (void)qmui_applyAppearance {
     if ([self.class respondsToSelector:@selector(appearance)]) {
-        NSArray<NSInvocation *> *invocations = [self.class.appearance valueForKey:@"_appearanceInvocations"];
-        [invocations enumerateObjectsUsingBlock:^(NSInvocation * _Nonnull invocation, NSUInteger idx, BOOL * _Nonnull stop) {
-            invocation.target = [QMUIWeakObjectContainer containerWithObject:self];
-            [invocation invoke];
-        }];
+        BeginIgnorePerformSelectorLeaksWarning
+        SEL selector = NSSelectorFromString([NSString stringWithFormat:@"_%@:%@:", @"applyInvocationsTo", @"window"]);
+        [NSClassFromString(@"_UIAppearance") performSelector:selector withObject:self withObject:nil];
+        EndIgnorePerformSelectorLeaksWarning
     }
 }
 

@@ -74,26 +74,8 @@
 
 - (void)didInitialize {
     [super didInitialize];
-    self.cornerRadius = [QMUIDialogViewController appearance].cornerRadius;
-    self.dialogViewMargins = UIEdgeInsetsConcat([QMUIDialogViewController appearance].dialogViewMargins, SafeAreaInsetsConstantForDeviceWithNotch);
-    self.maximumContentViewWidth = [QMUIDialogViewController appearance].maximumContentViewWidth;
-    self.backgroundColor = [QMUIDialogViewController appearance].backgroundColor;
-    self.titleTintColor = [QMUIDialogViewController appearance].titleTintColor;
-    self.titleLabelFont = [QMUIDialogViewController appearance].titleLabelFont;
-    self.titleLabelTextColor = [QMUIDialogViewController appearance].titleLabelTextColor;
-    self.subTitleLabelFont = [QMUIDialogViewController appearance].subTitleLabelFont;
-    self.subTitleLabelTextColor = [QMUIDialogViewController appearance].subTitleLabelTextColor;
-    self.headerSeparatorColor = [QMUIDialogViewController appearance].headerSeparatorColor;
-    self.headerViewHeight = [QMUIDialogViewController appearance].headerViewHeight;
-    self.headerViewBackgroundColor = [QMUIDialogViewController appearance].headerViewBackgroundColor;
-    self.contentViewMargins = [QMUIDialogViewController appearance].contentViewMargins;
-    self.contentViewBackgroundColor = [QMUIDialogViewController appearance].contentViewBackgroundColor;
-    self.footerSeparatorColor = [QMUIDialogViewController appearance].footerSeparatorColor;
-    self.footerViewHeight = [QMUIDialogViewController appearance].footerViewHeight;
-    self.footerViewBackgroundColor = [QMUIDialogViewController appearance].footerViewBackgroundColor;
-    self.buttonBackgroundColor = [QMUIDialogViewController appearance].buttonBackgroundColor;
-    self.buttonTitleAttributes = [QMUIDialogViewController appearance].buttonTitleAttributes;
-    self.buttonHighlightedBackgroundColor = [QMUIDialogViewController appearance].buttonHighlightedBackgroundColor;
+    
+    [self qmui_applyAppearance];
     
     _contentView = [[UIView alloc] init]; // 特地不使用setter，从而不要影响self.hasCustomContentView的默认值
     self.contentView.backgroundColor = self.contentViewBackgroundColor;
@@ -464,8 +446,6 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 - (void)didInitialize {
     [super didInitialize];
     
-    [self qmui_applyAppearance];
-    
     self.selectedItemIndex = QMUIDialogSelectionViewControllerSelectedItemIndexNone;
     self.selectedItemIndexes = [[NSMutableSet alloc] init];
     
@@ -671,8 +651,6 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
 
 - (void)didInitialize {
     [super didInitialize];
-    
-    [self qmui_applyAppearance];
     
     self.mutableTitleLabels = [[NSMutableArray alloc] init];
     self.mutableTextFields = [[NSMutableArray alloc] init];

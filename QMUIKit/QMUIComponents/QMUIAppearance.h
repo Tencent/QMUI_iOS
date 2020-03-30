@@ -29,9 +29,9 @@ UIKit 仅提供了对 UIView 默认的 UIAppearance 支持，如果你是一个�
  
 4. 在恰当的时机为目标类的 appearance 赋初始值，QMUI 通常在类的 +initialize 方法里赋值。
  
-5. 在类初始化实例的时候（例如 init 方法里）调用 -qmui_applyQMUIAppearance 为实例赋初始值。
+5. 在类初始化实例的时候（例如 init 方法里）调用 -qmui_applyQMUIAppearance 为实例赋初始值，注意如果你的父类已经调用过的话，子类不需要再重复调用。
 
-@note 特别的，如果你正在为一个 UIView 子类支持 UIAppearance，不需要用到 QMUIAppearance，直接将属性、方法加上 UI_APPEARANCE_SELECTOR 标记即可，也不需要通过 -qmui_applyAppearance 的方式赋初始值，系统都已经帮你处理好了，具体可查看 UIKit Documentation。
+@note 特别的，如果你正在为一个 UIView 子类支持 UIAppearance，不需要用到 QMUIAppearance，直接将属性、方法加上 UI_APPEARANCE_SELECTOR 标记即可，也不需要通过 -qmui_applyAppearance 的方式赋初始值（除非你希望这个赋值时机提前，系统默认时机是在 didMoveToWindow 时），系统都已经帮你处理好了，具体可查看 UIKit Documentation。
 */
 @interface QMUIAppearance : NSObject
 

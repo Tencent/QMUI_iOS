@@ -136,7 +136,7 @@
 - (void)didInitialize {
     [super didInitialize];
     _shouldShowDefaultLoadingView = YES;
-    self.albumTableViewCellHeight = [QMUIAlbumViewController appearance].albumTableViewCellHeight;
+    [self qmui_applyAppearance];
 }
 
 - (void)setupNavigationItems {

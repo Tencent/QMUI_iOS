@@ -130,7 +130,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         
         // 用 CGBitmapContextCreateImage 方式创建出来的图片，CGImageAlphaInfo 总是为 CGImageAlphaInfoNone，导致 qmui_opaque 与原图不一致，所以这里再做多一步
         grayImage = [UIImage qmui_imageWithSize:grayImage.size opaque:NO scale:grayImage.scale actions:^(CGContextRef contextRef) {
-            [grayImage drawInRect:imageRect];
+            [grayImage drawInRect:CGRectMakeWithSize(grayImage.size)];
         }];
     }
     

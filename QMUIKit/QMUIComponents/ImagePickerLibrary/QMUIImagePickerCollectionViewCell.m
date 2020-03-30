@@ -23,6 +23,7 @@
 #import "QMUIButton.h"
 #import "UIView+QMUI.h"
 #import "NSString+QMUI.h"
+#import "QMUIAppearance.h"
 
 @interface QMUIImagePickerCollectionViewCell ()
 
@@ -55,14 +56,7 @@
     self = [super initWithFrame:frame];
     if (self) {
         [self initImagePickerCollectionViewCellUI];
-        self.favoriteImage = [QMUIImagePickerCollectionViewCell appearance].favoriteImage;
-        self.favoriteImageMargins = [QMUIImagePickerCollectionViewCell appearance].favoriteImageMargins;
-        self.checkboxImage = [QMUIImagePickerCollectionViewCell appearance].checkboxImage;
-        self.checkboxCheckedImage = [QMUIImagePickerCollectionViewCell appearance].checkboxCheckedImage;
-        self.checkboxButtonMargins = [QMUIImagePickerCollectionViewCell appearance].checkboxButtonMargins;
-        self.videoDurationLabelFont = [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelFont;
-        self.videoDurationLabelTextColor = [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelTextColor;
-        self.videoDurationLabelMargins = [QMUIImagePickerCollectionViewCell appearance].videoDurationLabelMargins;
+        [self qmui_applyAppearance];
     }
     return self;
 }
