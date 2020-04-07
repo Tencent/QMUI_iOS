@@ -569,7 +569,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
                     // change insets
                     if (navBar) {
                         NSDirectionalEdgeInsets value = originResult;
-                        value.leading = value.trailing - (navBar.qmui_customizingBackBarButtonItem ? 8 : 0);
+                        value.leading -= (navBar.qmui_customizingBackBarButtonItem ? 8 : 0);
                         return value;
                     }
                     
