@@ -34,7 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property(nonatomic, assign) UIEdgeInsets textLabelEdgeInsets;
 
-/// 调整 detailTextLabel 的位置偏移，默认为 UIEdgeInsetsZero。
+/**
+*  调整 detailTextLabel 的位置偏移，默认为 UIEdgeInsetsZero。
+*  @warning 目前只对 UITableViewCellStyleDefault 和 UITableViewCellStyleSubtitle 类型的 cell 开放
+*/
 @property(nonatomic, assign) UIEdgeInsets detailTextLabelEdgeInsets;
 
 /**
