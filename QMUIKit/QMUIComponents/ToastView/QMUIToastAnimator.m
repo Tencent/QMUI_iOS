@@ -50,6 +50,7 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
 }
 
 - (void)showWithCompletion:(void (^)(BOOL finished))completion {
+    self.isShowing = YES;
     switch (self.animationType) {
         case QMUIToastAnimationTypeZoom:{
             [self zoomAnimation:YES withCompletion:completion];
@@ -68,6 +69,7 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
 }
 
 - (void)hideWithCompletion:(void (^)(BOOL finished))completion {
+    self.isShowing = NO;
     switch (self.animationType) {
         case QMUIToastAnimationTypeZoom:{
             [self zoomAnimation:NO withCompletion:completion];
@@ -90,7 +92,6 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     CGFloat alpha = showOrHide ? 1.f : 0.f;
     CGAffineTransform small = CGAffineTransformMakeScale(0.5f, 0.5f);
     CGAffineTransform endTransform = showOrHide ? CGAffineTransformIdentity : small;
-    self.isShowing = showOrHide;
     self.isAnimating = YES;
     if (showOrHide) {
         self.toastView.backgroundView.transform = small;
@@ -115,6 +116,7 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
 -(void)slideAnimation:(BOOL)showOrHide withCompletion:(void (^)(BOOL))completion
 {
     self.basicAnimationCompletion = [completion copy];
+    self.isAnimating = YES;
     if (showOrHide) {
         [self showSlideAnimationOnView:self.toastView.backgroundView withIndentifier:@"showBackgroundView"];
         [self showSlideAnimationOnView:self.toastView.contentView withIndentifier:@"showContentView"];
@@ -127,11 +129,10 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
 -(void)fadeAnimation:(BOOL)showOrHide withCompletion:(void (^)(BOOL))completion
 {
     CGFloat alpha = showOrHide ? 1.f : 0.f;
-    self.isShowing = showOrHide;
     self.isAnimating = YES;
     [UIView animateWithDuration:0.25
                           delay:0.0
-                        options:QMUIViewAnimationOptionsCurveOut|UIViewAnimationOptionBeginFromCurrentState
+                        options:QMUIViewAnimationOptionsCurveOut | UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
         self.toastView.backgroundView.alpha = alpha;
         self.toastView.contentView.alpha = alpha;
@@ -225,6 +226,7 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
         if (self.basicAnimationCompletion) {
             self.basicAnimationCompletion(flag);
         }
+        self.isAnimating = NO;
     }
 }
 
