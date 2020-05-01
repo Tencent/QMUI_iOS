@@ -122,7 +122,7 @@ extern void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *
  *
  *  @return 返回包含所有合适相册的数组
  */
-+ (NSArray *)fetchAllAlbumsWithAlbumContentType:(QMUIAlbumContentType)contentType showEmptyAlbum:(BOOL)showEmptyAlbum showSmartAlbum:(BOOL)showSmartAlbum;
++ (NSArray <PHAssetCollection *> *)fetchAllAlbumsWithAlbumContentType:(QMUIAlbumContentType)contentType showEmptyAlbum:(BOOL)showEmptyAlbum showSmartAlbum:(BOOL)showSmartAlbum;
 
 /// 获取一个 PHAssetCollection 中创建日期最新的资源
 + (PHAsset *)fetchLatestAssetWithAssetCollection:(PHAssetCollection *)assetCollection;
