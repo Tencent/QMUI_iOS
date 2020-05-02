@@ -15,6 +15,8 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface NSArray<ObjectType> (QMUI)
 
 /**
@@ -28,7 +30,7 @@
 /**
  *  将多维数组打平成一维数组再遍历所有子元素
  */
-- (void)qmui_enumerateNestedArrayWithBlock:(void (^)(id obj, BOOL *stop))block;
+- (void)qmui_enumerateNestedArrayWithBlock:(void (NS_NOESCAPE ^)(id obj, BOOL *stop))block;
 
 /**
  *  将多维数组递归转换成 mutable 多维数组
@@ -38,11 +40,13 @@
 /**
  *  过滤数组元素，将 block 返回 YES 的 item 重新组装成一个数组返回
  */
-- (NSArray<ObjectType> *)qmui_filterWithBlock:(BOOL (^)(ObjectType item))block;
+- (NSArray<ObjectType> *)qmui_filterWithBlock:(BOOL (NS_NOESCAPE ^)(ObjectType item))block;
 
 /**
 *  转换数组元素，将每个 item 都经过 block 转换成一遍 返回转换后的新数组
 */
-- (NSArray *)qmui_mapWithBlock:(id (^)(ObjectType item))block;
+- (NSArray *)qmui_mapWithBlock:(id (NS_NOESCAPE ^)(ObjectType item))block;
 
 @end
+
+NS_ASSUME_NONNULL_END

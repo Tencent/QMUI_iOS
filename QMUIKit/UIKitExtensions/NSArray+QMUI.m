@@ -42,7 +42,7 @@
     return result.copy;
 }
 
-- (void)qmui_enumerateNestedArrayWithBlock:(void (^)(id, BOOL *))block {
+- (void)qmui_enumerateNestedArrayWithBlock:(void (NS_NOESCAPE ^)(id, BOOL *))block {
     BOOL stop = NO;
     for (NSInteger i = 0; i < self.count; i++) {
         id object = self[i];
@@ -69,7 +69,7 @@
     return mutableResult;
 }
 
-- (NSArray *)qmui_filterWithBlock:(BOOL (^)(id))block {
+- (NSArray *)qmui_filterWithBlock:(BOOL (NS_NOESCAPE ^)(id))block {
     if (!block) {
         return self;
     }
@@ -84,7 +84,7 @@
     return [result copy];
 }
 
-- (NSArray *)qmui_mapWithBlock:(id (^)(id item))block {
+- (NSArray *)qmui_mapWithBlock:(id (NS_NOESCAPE ^)(id item))block {
     if (!block) {
         return self;
     }
