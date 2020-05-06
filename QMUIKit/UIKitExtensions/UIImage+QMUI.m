@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UIImage+QMUI.m
@@ -65,6 +65,12 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     UIImage *imageOut = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return imageOut;
+}
+
+- (BOOL)qmui_resizable {
+    BOOL result;
+    [self qmui_performSelector:NSSelectorFromString(@"_isResizable") withPrimitiveReturnValue:&result];
+    return result;
 }
 
 - (CGSize)qmui_sizeInPixel {
@@ -152,7 +158,8 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 //        return [self imageWithTintColor:tintColor];
 //    }
 //#endif
-    return [UIImage qmui_imageWithSize:self.size opaque:self.qmui_opaque scale:self.scale actions:^(CGContextRef contextRef) {
+    BOOL opaque = self.qmui_opaque ? tintColor.qmui_alpha >= 1.0 : NO;// 如果图片不透明但 tintColor 半透明，则生成的图片也应该是半透明的
+    return [UIImage qmui_imageWithSize:self.size opaque:opaque scale:self.scale actions:^(CGContextRef contextRef) {
         CGContextTranslateCTM(contextRef, 0, self.size.height);
         CGContextScaleCTM(contextRef, 1.0, -1.0);
         CGContextSetBlendMode(contextRef, kCGBlendModeNormal);

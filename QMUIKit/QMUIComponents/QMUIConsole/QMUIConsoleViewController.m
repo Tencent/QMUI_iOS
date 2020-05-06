@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 //
 //  QMUIConsoleViewController.m
 //  QMUIKit
@@ -89,41 +89,79 @@
     self.logItems = [[NSMutableArray alloc] init];
     self.selectedLevels = [[NSMutableArray alloc] init];
     self.selectedNames = [[NSMutableArray alloc] init];
-    
-    [self loadViewIfNeeded];
+}
+
+- (UIView *)containerView {
+    if (!_containerView) {
+        _containerView = [[UIView alloc] init];
+        _containerView.backgroundColor = self.backgroundColor;
+        _containerView.hidden = YES;
+    }
+    return _containerView;
+}
+
+@synthesize textView = _textView;
+- (QMUITextView *)textView {
+    if (!_textView) {
+        _textView = [[QMUITextView alloc] init];
+        _textView.backgroundColor = [UIColor clearColor];
+        _textView.scrollsToTop = NO;
+        _textView.editable = NO;
+        if (@available(iOS 11, *)) {
+            _textView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
+    }
+    return _textView;
+}
+
+@synthesize toolbar = _toolbar;
+- (QMUIConsoleToolbar *)toolbar {
+    if (!_toolbar) {
+        _toolbar = [[QMUIConsoleToolbar alloc] init];
+        [_toolbar.levelButton addTarget:self action:@selector(handleLevelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+        [_toolbar.nameButton addTarget:self action:@selector(handleNameButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+        [_toolbar.clearButton addTarget:self action:@selector(handleClearButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+        __weak __typeof(self)weakSelf = self;
+        _toolbar.searchTextField.qmui_keyboardWillChangeFrameNotificationBlock = ^(QMUIKeyboardUserInfo *keyboardUserInfo) {
+            [weakSelf handleKeyboardWillChangeFrame:keyboardUserInfo];
+        };
+        _toolbar.searchTextField.delegate = self;
+        [_toolbar.searchTextField addTarget:self action:@selector(handleSearchTextFieldChanged:) forControlEvents:UIControlEventEditingChanged];
+        [_toolbar.searchResultPreviousButton addTarget:self action:@selector(handleSearchResultPreviousButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+        [_toolbar.searchResultNextButton addTarget:self action:@selector(handleSearchResultNextButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _toolbar;
+}
+
+@synthesize popoverButton = _popoverButton;
+- (QMUIButton *)popoverButton {
+    if (!_popoverButton) {
+        UIImage *popoverImage = [[QMUIHelper imageWithName:@"QMUI_console_logo"] qmui_imageResizedInLimitedSize:CGSizeMake(24, 24)];
+        _popoverButton = [[QMUIButton alloc] qmui_initWithSize:CGSizeMake(32, 32)];
+        [_popoverButton setImage:popoverImage forState:UIControlStateNormal];
+        _popoverButton.adjustsButtonWhenHighlighted = NO;
+        _popoverButton.backgroundColor = [[QMUIConsole appearance].backgroundColor colorWithAlphaComponent:.5];
+        _popoverButton.layer.cornerRadius = CGRectGetHeight(_popoverButton.bounds) / 2;
+        _popoverButton.clipsToBounds = YES;
+        [_popoverButton addTarget:self action:@selector(handlePopoverTouchEvent:) forControlEvents:UIControlEventTouchUpInside];
+        
+        self.popoverLongPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handlePopverLongPressGestureRecognizer:)];
+        [_popoverButton addGestureRecognizer:self.popoverLongPressGesture];
+        
+        self.popoverPanGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePopoverPanGestureRecognizer:)];
+        [self.popoverPanGesture requireGestureRecognizerToFail:self.popoverLongPressGesture];
+        [_popoverButton addGestureRecognizer:self.popoverPanGesture];
+    }
+    return _popoverButton;
 }
 
 - (void)initSubviews {
     [super initSubviews];
-    
-    self.containerView = [[UIView alloc] init];
-    self.containerView.backgroundColor = self.backgroundColor;
-    self.containerView.hidden = YES;
     [self.view addSubview:self.containerView];
-    
-    _textView = [[QMUITextView alloc] init];
-    self.textView.backgroundColor = [UIColor clearColor];
-    self.textView.scrollsToTop = NO;
-    self.textView.editable = NO;
-    if (@available(iOS 11, *)) {
-        self.textView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
     [self.containerView addSubview:self.textView];
-    
-    _toolbar = [[QMUIConsoleToolbar alloc] init];
-    [self.toolbar.levelButton addTarget:self action:@selector(handleLevelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
-    [self.toolbar.nameButton addTarget:self action:@selector(handleNameButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
-    [self.toolbar.clearButton addTarget:self action:@selector(handleClearButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
-    __weak __typeof(self)weakSelf = self;
-    self.toolbar.searchTextField.qmui_keyboardWillChangeFrameNotificationBlock = ^(QMUIKeyboardUserInfo *keyboardUserInfo) {
-        [weakSelf handleKeyboardWillChangeFrame:keyboardUserInfo];
-    };
-    self.toolbar.searchTextField.delegate = self;
-    [self.toolbar.searchTextField addTarget:self action:@selector(handleSearchTextFieldChanged:) forControlEvents:UIControlEventEditingChanged];
-    [self.toolbar.searchResultPreviousButton addTarget:self action:@selector(handleSearchResultPreviousButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
-    [self.toolbar.searchResultNextButton addTarget:self action:@selector(handleSearchResultNextButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     [self.containerView addSubview:self.toolbar];
     
+    __weak __typeof(self)weakSelf = self;
     self.levelMenu = [self generatePopupMenuView];
     self.levelMenu.willHideBlock = ^(BOOL hidesByUserTap, BOOL animated) {
         weakSelf.toolbar.levelButton.selected = weakSelf.selectedLevels.count > 0;
@@ -138,19 +176,6 @@
     
     [self updateToolbarButtonState];
     
-    UIImage *popoverImage = [[QMUIHelper imageWithName:@"QMUI_console_logo"] qmui_imageResizedInLimitedSize:CGSizeMake(24, 24)];
-    _popoverButton = [[QMUIButton alloc] qmui_initWithSize:CGSizeMake(32, 32)];
-    [self.popoverButton setImage:popoverImage forState:UIControlStateNormal];
-    self.popoverButton.adjustsButtonWhenHighlighted = NO;
-    self.popoverButton.backgroundColor = [[QMUIConsole appearance].backgroundColor colorWithAlphaComponent:.5];
-    self.popoverButton.layer.cornerRadius = CGRectGetHeight(self.popoverButton.bounds) / 2;
-    self.popoverButton.clipsToBounds = YES;
-    [self.popoverButton addTarget:self action:@selector(handlePopoverTouchEvent:) forControlEvents:UIControlEventTouchUpInside];
-    self.popoverLongPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handlePopverLongPressGestureRecognizer:)];
-    [self.popoverButton addGestureRecognizer:self.popoverLongPressGesture];
-    self.popoverPanGesture = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(handlePopoverPanGestureRecognizer:)];
-    [self.popoverPanGesture requireGestureRecognizerToFail:self.popoverLongPressGesture];
-    [self.popoverButton addGestureRecognizer:self.popoverPanGesture];
     [self.view addSubview:self.popoverButton];
 }
 

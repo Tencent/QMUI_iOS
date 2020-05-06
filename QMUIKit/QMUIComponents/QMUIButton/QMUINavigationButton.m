@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUINavigationButton.m
@@ -22,6 +22,7 @@
 #import "QMUILog.h"
 #import "UIControl+QMUI.h"
 #import "UIView+QMUI.h"
+#import "NSString+QMUI.h"
 
 typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     QMUINavigationButtonPositionNone = -1,  // 不处于navigationBar最左（右）边的按钮，则使用None。用None则不会在alignmentRectInsets里调整位置
@@ -339,9 +340,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 @interface UINavigationBar (QMUINavigationButton)
 
-/// 获取 navigationBar 内部的 contentView
-@property(nonatomic, weak, readonly) UIView *qmui_contentView;
-
 /// 判断当前的 UINavigationBar 的返回按钮是不是自定义的
 @property(nonatomic, readonly) BOOL qmui_customizingBackBarButtonItem;
 @end
@@ -549,7 +547,7 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         // Xcode11 beta2 修改私有 view 的 directionalLayoutMargins 会 crash，换个方式
         if (@available(iOS 11, *)) {
             
-            NSString *barContentViewString = [NSString stringWithFormat:@"_%@Content%@", @"UINavigationBar", @"View"];
+            NSString *barContentViewString = [NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil];
             
             OverrideImplementation(NSClassFromString(barContentViewString), @selector(directionalLayoutMargins), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^NSDirectionalEdgeInsets(UIView *selfObject) {
@@ -586,15 +584,6 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         return self.topItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem;
     }
     return NO;
-}
-
-- (UIView *)qmui_contentView {
-    for (UIView *subview in self.subviews) {
-        if ([NSStringFromClass(subview.class) containsString:@"BarContentView"]) {
-            return subview;
-        }
-    }
-    return nil;
 }
 
 @end

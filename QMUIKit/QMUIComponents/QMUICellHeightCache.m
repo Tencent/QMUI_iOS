@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUICellHeightCache.m
@@ -162,9 +162,9 @@ QMUISynthesizeIdStrongProperty(qmuiTableCache_allKeyedHeightCaches, setQmuiTable
     return cache;
 }
 
-- (void)qmui_invalidateHeightForKey:(id<NSCopying>)key {
+- (void)qmui_invalidateHeightForKey:(id<NSCopying>)aKey {
     [self.qmuiTableCache_allKeyedHeightCaches enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, QMUICellHeightCache * _Nonnull obj, BOOL * _Nonnull stop) {
-        [obj invalidateHeightForKey:key];
+        [obj invalidateHeightForKey:aKey];
     }];
 }
 
@@ -466,9 +466,9 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allKeyedHeightCaches, setQmui
     return cache;
 }
 
-- (void)qmui_invalidateHeightForKey:(id<NSCopying>)key {
+- (void)qmui_invalidateHeightForKey:(id<NSCopying>)aKey {
     [self.qmuiCollectionCache_allKeyedHeightCaches enumerateKeysAndObjectsUsingBlock:^(NSValue * _Nonnull key, QMUICellHeightCache * _Nonnull obj, BOOL * _Nonnull stop) {
-        [obj invalidateHeightForKey:key];
+        [obj invalidateHeightForKey:aKey];
     }];
 }
 

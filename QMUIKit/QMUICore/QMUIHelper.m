@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIHelper.m
@@ -186,28 +186,6 @@ QMUISynthesizeCGFloatProperty(lastKeyboardHeight, setLastKeyboardHeight)
     [[AVAudioSession sharedInstance] setCategory:category error:nil];
 }
 
-+ (UInt32)categoryForLowVersionWithCategory:(NSString *)category {
-    if ([category isEqualToString:AVAudioSessionCategoryAmbient]) {
-        return kAudioSessionCategory_AmbientSound;
-    }
-    if ([category isEqualToString:AVAudioSessionCategorySoloAmbient]) {
-        return kAudioSessionCategory_SoloAmbientSound;
-    }
-    if ([category isEqualToString:AVAudioSessionCategoryPlayback]) {
-        return kAudioSessionCategory_MediaPlayback;
-    }
-    if ([category isEqualToString:AVAudioSessionCategoryRecord]) {
-        return kAudioSessionCategory_RecordAudio;
-    }
-    if ([category isEqualToString:AVAudioSessionCategoryPlayAndRecord]) {
-        return kAudioSessionCategory_PlayAndRecord;
-    }
-    if ([category isEqualToString:AVAudioSessionCategoryAudioProcessing]) {
-        return kAudioSessionCategory_AudioProcessing;
-    }
-    return kAudioSessionCategory_AmbientSound;
-}
-
 @end
 
 
@@ -305,6 +283,7 @@ static CGFloat pixelOne = -1.0f;
             @"iPhone12,1" : @"iPhone 11",
             @"iPhone12,3" : @"iPhone 11 Pro",
             @"iPhone12,5" : @"iPhone 11 Pro Max",
+            @"iPhone12,8" : @"iPhone SE (2nd generation)",
 
             @"iPad1,1" : @"iPad 1",
             @"iPad2,1" : @"iPad 2 (WiFi)",
@@ -355,6 +334,10 @@ static CGFloat pixelOne = -1.0f;
             @"iPad8,6" : @"iPad Pro (12.9 inch, 3rd generation)",
             @"iPad8,7" : @"iPad Pro (12.9 inch, 3rd generation)",
             @"iPad8,8" : @"iPad Pro (12.9 inch, 3rd generation)",
+            @"iPad8,9" : @"iPad Pro (11 inch, 2nd generation)",
+            @"iPad8,10" : @"iPad Pro (11 inch, 2nd generation)",
+            @"iPad8,11" : @"iPad Pro (12.9 inch, 4th generation)",
+            @"iPad8,12" : @"iPad Pro (12.9 inch, 4th generation)",
             @"iPad11,1" : @"iPad mini (5th generation)",
             @"iPad11,2" : @"iPad mini (5th generation)",
             @"iPad11,3" : @"iPad Air (3rd generation)",

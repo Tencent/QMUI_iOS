@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UIViewController+QMUI.m
@@ -25,19 +25,15 @@ NSNotificationName const QMUIAppSizeWillChangeNotification = @"QMUIAppSizeWillCh
 NSString *const QMUIPrecedingAppSizeUserInfoKey = @"QMUIPrecedingAppSizeUserInfoKey";
 NSString *const QMUIFollowingAppSizeUserInfoKey = @"QMUIFollowingAppSizeUserInfoKey";
 
-NSString *const QMUITabBarStyleChangedNotification = @"QMUITabBarStyleChangedNotification";
-
 @interface UIViewController ()
 
 @property(nonatomic, strong) UINavigationBar *transitionNavigationBar;// by molice 对应 UIViewController (NavigationBarTransition) 里的 transitionNavigationBar，为了让这个属性在这里可以被访问到，有点 hack，具体请查看 https://github.com/Tencent/QMUI_iOS/issues/268
 
-@property(nonatomic, assign) BOOL qmui_hasFixedTabBarInsets;
 @end
 
 @implementation UIViewController (QMUI)
 
 QMUISynthesizeIdCopyProperty(qmui_visibleStateDidChangeBlock, setQmui_visibleStateDidChangeBlock)
-QMUISynthesizeBOOLProperty(qmui_hasFixedTabBarInsets, setQmui_hasFixedTabBarInsets)
 QMUISynthesizeIdCopyProperty(qmui_prefersStatusBarHiddenBlock, setQmui_prefersStatusBarHiddenBlock)
 QMUISynthesizeIdCopyProperty(qmui_preferredStatusBarStyleBlock, setQmui_preferredStatusBarStyleBlock)
 QMUISynthesizeIdCopyProperty(qmui_preferredStatusBarUpdateAnimationBlock, setQmui_preferredStatusBarUpdateAnimationBlock)
@@ -87,16 +83,42 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
             };
         });
         
-        // 修复 iOS 11 scrollView 无法自动适配不透明的 tabBar，导致底部 inset 错误的问题
+        // 修复 iOS 11 及以后，UIScrollView 无法自动适配不透明的 tabBar，导致底部 inset 错误的问题
         // https://github.com/Tencent/QMUI_iOS/issues/218
         if (@available(iOS 11, *)) {
-            ExtendImplementationOfNonVoidMethodWithTwoArguments([UIViewController class], @selector(initWithNibName:bundle:), NSString *, NSBundle *, UIViewController *, ^UIViewController *(UIViewController *selfObject, NSString *nibNameOrNil, NSBundle *nibBundleOrNil, UIViewController *originReturnValue) {
-                BOOL isContainerViewController = [selfObject isKindOfClass:[UINavigationController class]] || [selfObject isKindOfClass:[UITabBarController class]] || [selfObject isKindOfClass:[UISplitViewController class]];
-                if (!isContainerViewController) {
-                    [[NSNotificationCenter defaultCenter] addObserver:selfObject selector:@selector(adjustsAdditionalSafeAreaInsetsForOpaqueTabBarWithNotification:) name:QMUITabBarStyleChangedNotification object:nil];
-                }
-                return originReturnValue;
-            });
+            if (!QMUICMIActivated || ShouldFixTabBarSafeAreaInsetsBug) {
+                OverrideImplementation([UIViewController class], NSSelectorFromString([NSString stringWithFormat:@"_%@:%@:%@:",@"setContentOverlayInsets", @"andLeftMargin", @"rightMargin"]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^(UIViewController *selfObject, UIEdgeInsets insets, CGFloat leftMargin, CGFloat rightMargin) {
+
+                        UITabBarController *tabBarController = selfObject.tabBarController;
+                        UITabBar *tabBar = tabBarController.tabBar;
+                        if (tabBarController
+                            && tabBar
+                            && selfObject.navigationController.parentViewController == tabBarController
+                            && !tabBar.hidden
+                            && !selfObject.hidesBottomBarWhenPushed
+                            && selfObject.isViewLoaded) {
+                            CGRect viewRectInTabBarController = [selfObject.view convertRect:selfObject.view.bounds toView:tabBarController.view];
+
+                            if (CGRectGetHeight(viewRectInTabBarController) != CGRectGetHeight(tabBarController.view.bounds)) {
+                                // 从没带 tabBar 的界面 pop 到带 tabBar 的界面过程中，navController.view.height 会被改得小一点，导致 safeAreaInsets.bottom 出现错误的中间值，引发 UIScrollView.contentInset 的错误变化，后续就算 contentInset 恢复正确，contentOffset 也无法恢复，所以这里直接过滤掉中间的错误值
+                                // （但无法保证每个场景下这样的值都是错的，或许某些少见的场景里，navController.view.height 就是不会铺满整个 tabBarController.view.height 呢？）
+                                // https://github.com/Tencent/QMUI_iOS/issues/934
+                                return;
+                            }
+
+                            CGRect barRectInTabBarController = [tabBar convertRect:tabBar.bounds toView:tabBarController.view];
+                            CGFloat correctInsetBottom = MAX(CGRectGetMaxY(viewRectInTabBarController) - CGRectGetMinY(barRectInTabBarController), 0);
+                            insets.bottom = correctInsetBottom;
+                        }
+
+                        // call super
+                        void (*originSelectorIMP)(id, SEL, UIEdgeInsets, CGFloat, CGFloat);
+                        originSelectorIMP = (void (*)(id, SEL, UIEdgeInsets, CGFloat, CGFloat))originalIMPProvider();
+                        originSelectorIMP(selfObject, originCMD, insets, leftMargin, rightMargin);
+                    };
+                });
+            }
         }
         
         if (@available(iOS 11.0, *)) {
@@ -218,43 +240,6 @@ static char kAssociatedObjectKey_visibleState;
 
 - (QMUIViewControllerVisibleState)qmui_visibleState {
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_visibleState)) unsignedIntegerValue];
-}
-
-- (void)adjustsAdditionalSafeAreaInsetsForOpaqueTabBarWithNotification:(NSNotification *)notification {
-    if (@available(iOS 11, *)) {
-        
-        BOOL isCurrentTabBar = self.tabBarController && self.navigationController && self.navigationController.qmui_rootViewController == self && self.navigationController.parentViewController == self.tabBarController && (notification ? notification.object == self.tabBarController.tabBar : YES);
-        if (!isCurrentTabBar) {
-            return;
-        }
-        
-        UITabBar *tabBar = self.tabBarController.tabBar;
-        
-        // 这串判断条件来源于这个 issue：https://github.com/Tencent/QMUI_iOS/issues/218
-        BOOL isOpaqueBarAndCanExtendedLayout = !tabBar.translucent && self.extendedLayoutIncludesOpaqueBars;
-        if (!isOpaqueBarAndCanExtendedLayout) {
-            
-            // 如果前面的 isOpaqueBarAndCanExtendedLayout 为 NO，理论上并不满足 issue #218 所陈述的条件，但有可能项目一开始先设置了 translucent 为 NO，于是走了下面的主动调整 additionalSafeAreaInsets 的逻辑，后来又改为 translucent 为 YES，此时如果不把之前主动调整的 additionalSafeAreaInsets 重置回来，就会一直存在一个多余的 inset，导致底部间距错误，因此增加了 qmui_hasFixedTabBarInsets 这个属性便于做重置操作。
-            if (!self.qmui_hasFixedTabBarInsets) {
-                return;
-            }
-        }
-        
-        self.qmui_hasFixedTabBarInsets = YES;
-        
-        if (!isOpaqueBarAndCanExtendedLayout) {
-            self.additionalSafeAreaInsets = UIEdgeInsetsSetBottom(self.additionalSafeAreaInsets, 0);
-            return;
-        }
-        
-        BOOL tabBarHidden = tabBar.hidden;
-        
-        // 这里直接用 CGRectGetHeight(tabBar.frame) 来计算理论上不准确，但因为系统有这个 bug（https://github.com/Tencent/QMUI_iOS/issues/217），所以暂时用 CGRectGetHeight(tabBar.frame) 来代替
-        CGFloat bottom = tabBar.safeAreaInsets.bottom;
-        CGFloat correctSafeAreaInsetsBottom = tabBarHidden ? bottom : CGRectGetHeight(tabBar.frame);
-        CGFloat additionalSafeAreaInsetsBottom = correctSafeAreaInsetsBottom - bottom;
-        self.additionalSafeAreaInsets = UIEdgeInsetsSetBottom(self.additionalSafeAreaInsets, additionalSafeAreaInsetsBottom);
-    }
 }
 
 - (UIViewController *)qmui_previousViewController {
@@ -625,88 +610,6 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
     UIViewController *rootViewController = UIApplication.sharedApplication.delegate.window.rootViewController;
     UIViewController *visibleViewController = [rootViewController qmui_visibleViewControllerIfExist];
     return visibleViewController;
-}
-
-@end
-
-// 为了 UIViewController 适配 iOS 11 下出现不透明的 tabBar 时底部 inset 错误的问题而创建的 Category
-// https://github.com/Tencent/QMUI_iOS/issues/218
-@interface UITabBar (NavigationController)
-
-@end
-
-@implementation UITabBar (NavigationController)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (@available(iOS 11, *)) {
-            
-            OverrideImplementation([UITabBar class], @selector(setHidden:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UITabBar *selfObject, BOOL hidden) {
-                    
-                    BOOL shouldNotify = selfObject.hidden != hidden;
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, BOOL);
-                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, hidden);
-                    
-                    if (shouldNotify) {
-                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                    }
-                };
-            });
-            
-            OverrideImplementation([UITabBar class], @selector(setBackgroundImage:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UITabBar *selfObject, UIImage *backgroundImage) {
-                    
-                    BOOL shouldNotify = ![selfObject.backgroundImage isEqual:backgroundImage];
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, UIImage *);
-                    originSelectorIMP = (void (*)(id, SEL, UIImage *))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, backgroundImage);
-                    
-                    if (shouldNotify) {
-                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                    }
-                };
-            });
-            
-            OverrideImplementation([UITabBar class], @selector(setTranslucent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UITabBar *selfObject, BOOL translucent) {
-                    
-                    BOOL shouldNotify = selfObject.translucent != translucent;
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, BOOL);
-                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, translucent);
-                    
-                    if (shouldNotify) {
-                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                    }
-                };
-            });
-            
-            OverrideImplementation([UITabBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UITabBar *selfObject, CGRect frame) {
-                    
-                    BOOL shouldNotify = CGRectGetMinY(selfObject.frame) != CGRectGetMinY(frame);
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, CGRect);
-                    originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, frame);
-                    
-                    if (shouldNotify) {
-                        [[NSNotificationCenter defaultCenter] postNotificationName:QMUITabBarStyleChangedNotification object:selfObject];
-                    }
-                };
-            });
-        }
-    });
 }
 
 @end

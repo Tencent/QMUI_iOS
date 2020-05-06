@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 /// Automatically created by script in Build Phases
 
@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.1.1";
+static NSString * const QMUI_VERSION = @"4.1.2";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -21,6 +21,10 @@ static NSString * const QMUI_VERSION = @"4.1.1";
 
 #if __has_include("CALayer+QMUI.h")
 #import "CALayer+QMUI.h"
+#endif
+
+#if __has_include("CALayer+QMUIViewAnimation.h")
+#import "CALayer+QMUIViewAnimation.h"
 #endif
 
 #if __has_include("NSArray+QMUI.h")

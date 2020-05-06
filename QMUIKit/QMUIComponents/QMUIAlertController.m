@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIAlertController.m
@@ -328,9 +328,9 @@ static NSUInteger alertControllerCount = 0;
 
 - (void)updateHeaderBackgrondColor {
     if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
-        if (self.headerScrollView) { self.headerScrollView.backgroundColor = self.sheetHeaderBackgroundColor; }
+        if (_headerScrollView) { _headerScrollView.backgroundColor = self.sheetHeaderBackgroundColor; }
     } else if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
-        if (self.headerScrollView) { self.headerScrollView.backgroundColor = self.alertHeaderBackgroundColor; }
+        if (_headerScrollView) { _headerScrollView.backgroundColor = self.alertHeaderBackgroundColor; }
     }
 }
 
@@ -372,8 +372,8 @@ static NSUInteger alertControllerCount = 0;
 }
 
 - (void)updateExtendLayerAppearance {
-    if (self.extendLayer) {
-        self.extendLayer.backgroundColor = self.sheetButtonBackgroundColor.CGColor;
+    if (_extendLayer) {
+        _extendLayer.backgroundColor = self.sheetButtonBackgroundColor.CGColor;
     }
 }
 
@@ -483,35 +483,11 @@ static NSUInteger alertControllerCount = 0;
         self.alertTextFields = [[NSMutableArray alloc] init];
         self.destructiveActions = [[NSMutableArray alloc] init];
         
-        self.containerView = [[UIView alloc] init];
-        
-        self.maskView = [[UIControl alloc] init];
-        self.maskView.alpha = 0;
-        self.maskView.backgroundColor = UIColorMask;
-        [self.maskView addTarget:self action:@selector(handleMaskViewEvent:) forControlEvents:UIControlEventTouchUpInside];
-        
-        self.scrollWrapView = [[UIView alloc] init];
-        self.mainVisualEffectView = [[UIView alloc] init];
-        self.cancelButtonVisualEffectView = [[UIView alloc] init];
-        self.headerScrollView = [[UIScrollView alloc] init];
-        self.headerScrollView.scrollsToTop = NO;
-        self.buttonScrollView = [[UIScrollView alloc] init];
-        self.buttonScrollView.scrollsToTop = NO;
-        if (@available(iOS 11, *)) {
-            self.headerScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-            self.buttonScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        }
-        
-        self.extendLayer = [CALayer layer];
-        self.extendLayer.hidden = !self.isExtendBottomLayout;
-        [self.extendLayer qmui_removeDefaultAnimations];
-        
         self.title = title;
         self.message = message;
         
-        [self updateHeaderBackgrondColor];
-        [self updateExtendLayerAppearance];
-        
+        self.mainVisualEffectView = [[UIView alloc] init];
+        self.cancelButtonVisualEffectView = [[UIView alloc] init];
     }
     return self;
 }
@@ -522,6 +498,7 @@ static NSUInteger alertControllerCount = 0;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
     [self.view addSubview:self.maskView];
     [self.view addSubview:self.containerView];
     [self.containerView addSubview:self.scrollWrapView];
@@ -1159,6 +1136,65 @@ static NSUInteger alertControllerCount = 0;
     if (_shouldRespondMaskViewTouch) {
         [self hideWithAnimated:YES completion:NULL];
     }
+}
+
+#pragma mark - Getters & Setters
+
+- (UIControl *)maskView {
+    if (!_maskView) {
+        _maskView = [[UIControl alloc] init];
+        _maskView.alpha = 0;
+        _maskView.backgroundColor = UIColorMask;
+        [_maskView addTarget:self action:@selector(handleMaskViewEvent:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _maskView;
+}
+
+- (UIView *)containerView {
+    if (!_containerView) {
+        _containerView = [[UIView alloc] init];
+    }
+    return _containerView;
+}
+
+- (UIView *)scrollWrapView {
+    if (!_scrollWrapView) {
+        _scrollWrapView = [[UIView alloc] init];
+    }
+    return _scrollWrapView;
+}
+
+- (UIScrollView *)headerScrollView {
+    if (!_headerScrollView) {
+        _headerScrollView = [[UIScrollView alloc] init];
+        _headerScrollView.scrollsToTop = NO;
+        if (@available(iOS 11, *)) {
+            _headerScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
+        [self updateHeaderBackgrondColor];
+    }
+    return _headerScrollView;
+}
+
+- (UIScrollView *)buttonScrollView {
+    if (!_buttonScrollView) {
+        _buttonScrollView = [[UIScrollView alloc] init];
+        _buttonScrollView.scrollsToTop = NO;
+        if (@available(iOS 11, *)) {
+            _buttonScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
+    }
+    return _buttonScrollView;
+}
+
+- (CALayer *)extendLayer {
+    if (!_extendLayer) {
+        _extendLayer = [CALayer layer];
+        _extendLayer.hidden = !self.isExtendBottomLayout;
+        [_extendLayer qmui_removeDefaultAnimations];
+        [self updateExtendLayerAppearance];
+    }
+    return _extendLayer;
 }
 
 #pragma mark - <QMUIAlertActionDelegate>

@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIMultipleDelegates.m
@@ -17,11 +17,14 @@
 #import "NSPointerArray+QMUI.h"
 #import "NSMethodSignature+QMUI.h"
 #import "NSObject+QMUI.h"
-#import <objc/runtime.h>
+#import "QMUICore.h"
 
-@interface QMUIMultipleDelegates ()
+@interface QMUIMultipleDelegates () {
+    void *_tempReturnValue;
+}
 
 @property(nonatomic, strong, readwrite) NSPointerArray *delegates;
+@property(nonatomic, assign) SEL forwardingSelector;
 @end
 
 @implementation QMUIMultipleDelegates
@@ -38,9 +41,28 @@
     return delegates;
 }
 
+- (void)resetClassNameIfNeeded {
+    if ([self.parentObject isKindOfClass:CALayer.class] || [self.parentObject isKindOfClass:CAAnimation.class]) {
+        // CALayer 和 CAAnimation 会缓存同一个 delegate class 的 respondsToSelector: 结果，但是在 multipleDelegates 的设计下，可能存在当前的 delegate 无法响应某个 selector，而后添加了可以响应的 delegate，系统这个缓存机制仍会认为无法响应，所以每次添加新的 delegate 都要设置与之前不同的 className
+        // 这里设置一个 QMUIMultipleDelegates 的 subClass，其 className 由所有 delegate className 拼接而成。
+        NSMutableString *className = [NSMutableString stringWithString:NSStringFromClass(QMUIMultipleDelegates.class)];
+        [self.delegates.allObjects enumerateObjectsUsingBlock:^(id  _Nonnull delegate, NSUInteger idx, BOOL * _Nonnull stop) {
+            NSString *delegateClassName = NSStringFromClass(object_getClass(delegate));
+            [className appendFormat:@"_%@", delegateClassName];
+        }];
+        Class class = NSClassFromString(className);
+        if (!class) {
+            class = objc_allocateClassPair(QMUIMultipleDelegates.class, className.UTF8String, 0);
+            objc_registerClassPair(class);
+        }
+        object_setClass(self, class);
+    }
+}
+
 - (void)addDelegate:(id)delegate {
     if (![self containsDelegate:delegate] && delegate != self) {
         [self.delegates addPointer:(__bridge void *)delegate];
+        [self resetClassNameIfNeeded];
     }
 }
 
@@ -78,12 +100,35 @@
 
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
     SEL selector = anInvocation.selector;
-    NSPointerArray *delegates = [self.delegates copy];
+    
+    // RAC 那边会把相同的 invocation 传回来 QMUIMultipleDelegates，引发死循环，所以这里做了个屏蔽
+    // https://github.com/Tencent/QMUI_iOS/issues/970
+    if (self.forwardingSelector != NULL && self.forwardingSelector == selector) {
+        self.forwardingSelector = NULL;
+        const char *typeEncoding = anInvocation.methodSignature.qmui_typeEncoding;
+        if (!isVoidTypeEncoding(typeEncoding)) {
+            [anInvocation setReturnValue:&_tempReturnValue];
+        }
+        return;
+    }
+    
+    self.forwardingSelector = selector;
+    NSPointerArray *delegates = self.delegates.copy;
     for (id delegate in delegates) {
         if ([delegate respondsToSelector:selector]) {
+            
+            // 当前的 delegate 可能是 RACDelegateProxy，会影响返回值，所以 invoke 前先保存当前的返回值备用
+            const char *typeEncoding = anInvocation.methodSignature.qmui_typeEncoding;
+            if (!isVoidTypeEncoding(typeEncoding)) {
+                [anInvocation getReturnValue:&_tempReturnValue];
+            }
+            
             [anInvocation invokeWithTarget:delegate];
         }
     }
+
+    self.forwardingSelector = NULL;
+    _tempReturnValue = NULL;
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
@@ -98,12 +143,8 @@
         }
         
         // 对 QMUIMultipleDelegates 额外处理的解释在这里：https://github.com/Tencent/QMUI_iOS/issues/357
-        BOOL delegateCanRespondToSelector = [delegate isKindOfClass:self.class] ? [delegate respondsToSelector:aSelector] : class_respondsToSelector(object_getClass(delegate), aSelector);
-        
-        // 判断 qmui_delegatesSelf 是为了解决这个 issue：https://github.com/Tencent/QMUI_iOS/issues/346
-        // 不支持 self.delegate = self 的写法，会引发死循环，有这种需求的场景建议在 self 内部创建一个对象专门用于 delegate 的响应，参考 _QMUITextViewDelegator。
-        BOOL isDelegateSelf = ((NSObject *)delegate).qmui_delegatesSelf;
-        if (delegateCanRespondToSelector && !isDelegateSelf) {
+        BOOL delegateCanRespondToSelector = [delegate isKindOfClass:QMUIMultipleDelegates.class] ? [delegate respondsToSelector:aSelector] : class_respondsToSelector(object_getClass(delegate), aSelector);
+        if (delegateCanRespondToSelector) {
             return YES;
         }
     }

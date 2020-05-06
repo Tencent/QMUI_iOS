@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 //
 //  QMUIAppearance.m
 //  QMUIKit
@@ -42,11 +42,12 @@ static NSMutableDictionary *appearances;
 
 BeginIgnoreClangWarning(-Wincomplete-implementation)
 @interface NSObject (QMUIAppearance_Private)
-
+@property(nonatomic, assign) BOOL qmui_applyingAppearance;
 + (instancetype)appearance;
 @end
 
 @implementation NSObject (QMUIAppearnace)
+QMUISynthesizeBOOLProperty(qmui_applyingAppearance, setQmui_applyingAppearance)
 
 /**
  关于 appearance 要考虑这几点：
@@ -56,12 +57,45 @@ BeginIgnoreClangWarning(-Wincomplete-implementation)
  */
 - (void)qmui_applyAppearance {
     if ([self.class respondsToSelector:@selector(appearance)]) {
+        self.qmui_applyingAppearance = YES;
         BeginIgnorePerformSelectorLeaksWarning
         SEL selector = NSSelectorFromString([NSString stringWithFormat:@"_%@:%@:", @"applyInvocationsTo", @"window"]);
         [NSClassFromString(@"_UIAppearance") performSelector:selector withObject:self withObject:nil];
         EndIgnorePerformSelectorLeaksWarning
+        self.qmui_applyingAppearance = NO;
     }
 }
 
 @end
 EndIgnoreClangWarning
+
+
+@interface UIViewController (QMUIAppearance_Private)
+@end
+
+@implementation UIViewController (QMUIAppearance_Private)
+
+
++ (void)load {
+    if (@available(iOS 10.0, *)) {
+    } else {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            OverrideImplementation([UIViewController class], @selector(view), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^UIView *(UIViewController *selfObject) {
+                    if (!selfObject.isViewLoaded && selfObject.qmui_applyingAppearance) {
+                        // qmui_applyAppearance 调用的是系统的 -[_UIAppearance applyInvocationsTowindow:] ，该方法在 iOS 9 上会访问 self.view 导致 loadView 被提前调用，这可能会导致一些流程顺序出错（比如业务的 viewDidLoad 被提前触发了），这里针这种情况做一下保护
+                        return nil;
+                    }
+                    UIView *(*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (UIView * (*)(id, SEL))originalIMPProvider();
+                    UIView *result = originSelectorIMP(selfObject, originCMD);
+                    return result;
+                };
+            });
+        });
+    }
+    
+}
+
+@end

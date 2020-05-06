@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIModalPresentationViewController.m
@@ -210,7 +210,6 @@
         CGRect contentViewFrame = [self contentViewFrameForShowing];
         self.contentView.frame = contentViewFrame;
         [self.view addSubview:self.contentView];
-        self.dimmingView.alpha = 1;
         didShownCompletion(YES);
     }
 }
@@ -287,9 +286,13 @@
         if (self.shownInSubviewMode) {
             self.willHideInView = NO;
             
-            // 这句是给addSubview的形式显示的情况下使用，但会触发第二次viewWillDisappear:，所以要搭配self.hasAlreadyViewWillDisappear使用
             [self.view removeFromSuperview];
-            self.hasAlreadyViewWillDisappear = NO;
+            
+            // removeFromSuperview 在 animated:YES 时会触发第二次viewWillDisappear:，所以要搭配self.hasAlreadyViewWillDisappear使用
+            // animated:NO 不会触发
+            if (animated) {
+                self.hasAlreadyViewWillDisappear = NO;
+            }
         }
         
         [self.contentView removeFromSuperview];
@@ -469,6 +472,8 @@
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    if (self.visible) return;
+    
     // makeKeyAndVisible 导致的 viewWillAppear: 必定 animated 是 NO 的，所以这里用额外的变量保存这个 animated 的值
     self.appearAnimated = animated;
     self.appearCompletionBlock = completion;
@@ -490,6 +495,8 @@
             self.contentView.alpha = 0.0;
         } completion:^(BOOL finished) {
             if (completion) {
+                self.dimmingView.alpha = 1.0;
+                self.contentView.alpha = 1.0;
                 completion(finished);
             }
         }];
@@ -499,6 +506,7 @@
             self.contentView.transform = CGAffineTransformMakeScale(0.0, 0.0);
         } completion:^(BOOL finished) {
             if (completion) {
+                self.dimmingView.alpha = 1.0;
                 self.contentView.transform = CGAffineTransformIdentity;
                 completion(finished);
             }
@@ -509,6 +517,7 @@
             self.contentView.transform = CGAffineTransformMakeTranslation(0, CGRectGetHeight(self.view.bounds) - CGRectGetMinY(self.contentView.frame));
         } completion:^(BOOL finished) {
             if (completion) {
+                self.dimmingView.alpha = 1.0;
                 self.contentView.transform = CGAffineTransformIdentity;
                 completion(finished);
             }
@@ -521,6 +530,8 @@
 }
 
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion sender:(id)sender {
+    if (!self.visible) return;
+    
     self.disappearAnimated = animated;
     self.disappearCompletionBlock = completion;
     
@@ -545,6 +556,7 @@
 }
 
 - (void)showInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    if (self.visible) return;
     self.appearCompletionBlock = completion;
     [self loadViewIfNeeded];
     [self beginAppearanceTransition:YES animated:animated];
@@ -553,10 +565,13 @@
 }
 
 - (void)hideInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    if (!self.visible) return;
     self.willHideInView = YES;
     self.disappearCompletionBlock = completion;
     [self beginAppearanceTransition:NO animated:animated];
-    self.hasAlreadyViewWillDisappear = YES;
+    if (animated) {
+        self.hasAlreadyViewWillDisappear = YES;
+    }
     [self endAppearanceTransition];
 }
 

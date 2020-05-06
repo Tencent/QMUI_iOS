@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  NSObject+MultipleDelegates.h
@@ -40,12 +40,5 @@
 
 /// 移除某个特定的 delegate 对象，例如假设你把 delegate 同时赋值给 objA 和 objB，而你只要移除 objB，则可：[self qmui_removeDelegate:objB]。但如果你想同时移除 objA 和 objB（也即全部 delegate），则像往常一样直接 self.delegate = nil 即可。
 - (void)qmui_removeDelegate:(id)delegate;
-
-@end
-
-@interface NSObject (QMUIMultipleDelegates_Private)
-
-/// 内部使用，用于标志“xxx.delegate = xxx”的情况，具体请看 https://github.com/Tencent/QMUI_iOS/issues/346
-@property(nonatomic, assign) BOOL qmui_delegatesSelf;
 
 @end

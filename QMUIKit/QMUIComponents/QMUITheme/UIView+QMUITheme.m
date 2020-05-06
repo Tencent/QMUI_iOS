@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 //
 //  UIView+QMUITheme.m
 //  QMUIKit
@@ -16,6 +16,7 @@
 #import "QMUICore.h"
 #import "UIView+QMUI.h"
 #import "UIColor+QMUI.h"
+#import "UIImage+QMUI.h"
 #import "UIImage+QMUITheme.h"
 #import "UIVisualEffect+QMUITheme.h"
 #import "QMUIThemeManagerCenter.h"
@@ -144,6 +145,19 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
         BOOL isValidatedEffect = [value isKindOfClass:QMUIThemeVisualEffect.class] && (!manager || [((QMUIThemeVisualEffect *)value).managerName isEqual:manager.name]);
         BOOL isOtherObject = ![value isKindOfClass:UIColor.class] && ![value isKindOfClass:UIImage.class] && ![value isKindOfClass:UIVisualEffect.class];// 支持所有非 color、image、effect 的其他对象，例如 NSAttributedString
         if (isOtherObject || isValidatedColor || isValidatedImage || isValidatedEffect) {
+            
+            // 修复 iOS 12 及以下版本，QMUIThemeImage 在搭配 resizable 使用的情况下可能无法跟随主题刷新的 bug
+            // https://github.com/Tencent/QMUI_iOS/issues/971
+            if (@available(iOS 13.0, *)) {
+            } else {
+                if (isValidatedImage) {
+                    QMUIThemeImage *image = (QMUIThemeImage *)value;
+                    if (image.qmui_resizable) {
+                        value = image.copy;
+                    }
+                }
+            }
+            
             [self performSelector:setter withObject:value];
         }
         EndIgnorePerformSelectorLeaksWarning

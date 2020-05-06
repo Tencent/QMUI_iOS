@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIConfigurationMacros.h
@@ -214,11 +214,13 @@
 
 #pragma mark - UIWindowLevel
 #define UIWindowLevelQMUIAlertView                      [QMUICMI windowLevelQMUIAlertView]
+#define UIWindowLevelQMUIConsole                        [QMUICMI windowLevelQMUIConsole]
 
 #pragma mark - QMUILog
 #define ShouldPrintDefaultLog                           [QMUICMI shouldPrintDefaultLog]
 #define ShouldPrintInfoLog                              [QMUICMI shouldPrintInfoLog]
 #define ShouldPrintWarnLog                              [QMUICMI shouldPrintWarnLog]
+#define ShouldPrintQMUIWarnLogToConsole                 [QMUICMI shouldPrintQMUIWarnLogToConsole] // 是否在出现 QMUILogWarn 时自动把这些 log 以 QMUIConsole 的方式显示到设备屏幕上
 
 #pragma mark - QMUIBadge
 #define BadgeBackgroundColor                            [QMUICMI badgeBackgroundColor]
@@ -245,8 +247,8 @@
 #define NavigationBarHiddenInitially                    [QMUICMI navigationBarHiddenInitially]      // preferredNavigationBarHidden 的初始值，默认为NO
 #define ShouldFixTabBarTransitionBugInIPhoneX           [QMUICMI shouldFixTabBarTransitionBugInIPhoneX] // 是否需要自动修复 iOS 11 下，iPhone X 的设备在 push 界面时，tabBar 会瞬间往上跳的 bug
 #define ShouldFixTabBarButtonBugForAll                  [QMUICMI shouldFixTabBarButtonBugForAll] // 是否要对 iOS 12.1.2 及以后的版本也修复手势返回时 tabBarButton 布局错误的 bug(issue #410)，默认为 NO
-#define ShouldFixTabBarSafeAreaInsetsBugForNotchedScreen [QMUICMI shouldFixTabBarSafeAreaInsetsBugForNotchedScreen] // 是否要对 iOS 11 及以后的版本修复全面屏设备下 pop 界面时 UIScrollView 的 inset 会跳动导致滚动位置受影响的 bug（issue #934），默认为 NO
-#define ShouldPrintQMUIWarnLogToConsole                 [QMUICMI shouldPrintQMUIWarnLogToConsole] // 是否在出现 QMUILogWarn 时自动把这些 log 以 QMUIConsole 的方式显示到设备屏幕上
+#define ShouldFixTabBarSafeAreaInsetsBug [QMUICMI shouldFixTabBarSafeAreaInsetsBug] // 是否要对 iOS 11 及以后的版本修复当存在 UITabBar 时，UIScrollView 的 inset.bottom 可能错误的 bug（issue #218 #934），默认为 YES
+#define ShouldFixSearchBarMaskViewLayoutBug             [QMUICMI shouldFixSearchBarMaskViewLayoutBug] // 是否自动修复 UISearchController.searchBar 被当作 tableHeaderView 使用时可能出现的布局 bug(issue #950)
 #define SendAnalyticsToQMUITeam                         [QMUICMI sendAnalyticsToQMUITeam] // 是否允许在 DEBUG 模式下上报 Bundle Identifier 和 Display Name 给 QMUI 统计用
 #define DynamicPreferredValueForIPad                    [QMUICMI dynamicPreferredValueForIPad] // 当 iPad 处于 Slide Over 或 Split View 分屏模式下，宏 `PreferredValueForXXX` 是否把 iPad 视为某种屏幕宽度近似的 iPhone 来取值。
 #define IgnoreKVCAccessProhibited                       [QMUICMI ignoreKVCAccessProhibited] // 是否全局忽略 iOS 13 对 KVC 访问 UIKit 私有属性的限制

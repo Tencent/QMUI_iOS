@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UISearchBar+QMUI.m
@@ -22,6 +22,7 @@
 
 QMUISynthesizeBOOLProperty(qmui_usedAsTableHeaderView, setQmui_usedAsTableHeaderView)
 QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargins)
+QMUISynthesizeBOOLProperty(qmui_fixMaskViewLayoutBugAutomatically, setQmui_fixMaskViewLayoutBugAutomatically)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -145,6 +146,40 @@ QMUISynthesizeUIEdgeInsetsProperty(qmui_textFieldMargins, setQmui_textFieldMargi
                 originSelectorIMP(selfObject, originCMD, frame);
                 
             };
+        });
+        
+        // [UIKit Bug] 当 UISearchController.searchBar 作为 tableHeaderView 使用时，顶部可能出现 1px 的间隙导致露出背景色
+        // https://github.com/Tencent/QMUI_iOS/issues/950
+        OverrideImplementation([UISearchBar class], NSSelectorFromString(@"_setMaskBounds:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UISearchBar *selfObject, CGRect firstArgv) {
+                
+                BOOL shouldFixBug = selfObject.qmui_fixMaskViewLayoutBugAutomatically
+                && selfObject.qmui_searchController
+                && [selfObject.superview isKindOfClass:UITableView.class]
+                && ((UITableView *)selfObject.superview).tableHeaderView == selfObject;
+                if (shouldFixBug) {
+                    firstArgv = CGRectMake(CGRectGetMinX(firstArgv), CGRectGetMinY(firstArgv) - PixelOne, CGRectGetWidth(firstArgv), CGRectGetHeight(firstArgv) + PixelOne);
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGRect);
+                originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
+        
+        ExtendImplementationOfNonVoidMethodWithSingleArgument([UISearchBar class], @selector(initWithFrame:), CGRect, UISearchBar *, ^UISearchBar *(UISearchBar *selfObject, CGRect firstArgv, UISearchBar *originReturnValue) {
+            if (QMUICMIActivated && ShouldFixSearchBarMaskViewLayoutBug) {
+                originReturnValue.qmui_fixMaskViewLayoutBugAutomatically = YES;
+            }
+            return originReturnValue;
+        });
+        
+        ExtendImplementationOfNonVoidMethodWithSingleArgument([UISearchBar class], @selector(initWithCoder:), NSCoder *, UISearchBar *, ^UISearchBar *(UISearchBar *selfObject, NSCoder *firstArgv, UISearchBar *originReturnValue) {
+            if (QMUICMIActivated && ShouldFixSearchBarMaskViewLayoutBug) {
+                originReturnValue.qmui_fixMaskViewLayoutBugAutomatically = YES;
+            }
+            return originReturnValue;
         });
     });
 }

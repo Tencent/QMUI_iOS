@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIImagePreviewViewTransitionAnimator.m
@@ -177,7 +177,11 @@
     
     UIView *containerView = transitionContext.containerView;
     UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
+    [fromView setNeedsLayout];
+    [fromView layoutIfNeeded];
     UIView *toView = [transitionContext viewForKey:UITransitionContextToViewKey];
+    [toView setNeedsLayout];
+    [toView layoutIfNeeded];// present 时 toViewController 还没走到 viewDidLayoutSubviews，此时做动画可能得到不正确的布局，所以强制布局一次
     QMUIZoomImageView *zoomImageView = [self.imagePreviewViewController.imagePreviewView zoomImageViewAtIndex:self.imagePreviewViewController.imagePreviewView.currentImageIndex];
     
     toView.frame = containerView.bounds;

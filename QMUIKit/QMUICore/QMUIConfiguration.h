@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIConfiguration.h
@@ -223,12 +223,14 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UIWindowLevel
 
 @property(nonatomic, assign) CGFloat            windowLevelQMUIAlertView;
+@property(nonatomic, assign) CGFloat            windowLevelQMUIConsole;
 
 #pragma mark - QMUILog
 
 @property(nonatomic, assign) BOOL               shouldPrintDefaultLog;
 @property(nonatomic, assign) BOOL               shouldPrintInfoLog;
 @property(nonatomic, assign) BOOL               shouldPrintWarnLog;
+@property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
 
 #pragma mark - QMUIBadge
 
@@ -256,8 +258,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
 @property(nonatomic, assign) BOOL               shouldFixTabBarTransitionBugInIPhoneX;
 @property(nonatomic, assign) BOOL               shouldFixTabBarButtonBugForAll;
-@property(nonatomic, assign) BOOL               shouldFixTabBarSafeAreaInsetsBugForNotchedScreen;
-@property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
+@property(nonatomic, assign) BOOL               shouldFixTabBarSafeAreaInsetsBug;
+@property(nonatomic, assign) BOOL               shouldFixSearchBarMaskViewLayoutBug;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
 @property(nonatomic, assign) BOOL               dynamicPreferredValueForIPad;
 @property(nonatomic, assign) BOOL               ignoreKVCAccessProhibited API_AVAILABLE(ios(13.0));
