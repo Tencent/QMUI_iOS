@@ -19,12 +19,10 @@
 #import "NSObject+QMUI.h"
 #import "QMUICore.h"
 
-@interface QMUIMultipleDelegates () {
-    void *_tempReturnValue;
-}
+@interface QMUIMultipleDelegates ()
 
 @property(nonatomic, strong, readwrite) NSPointerArray *delegates;
-@property(nonatomic, assign) SEL forwardingSelector;
+@property(nonatomic, strong) NSInvocation *forwardingInvocation;
 @end
 
 @implementation QMUIMultipleDelegates
@@ -103,32 +101,27 @@
     
     // RAC 那边会把相同的 invocation 传回来 QMUIMultipleDelegates，引发死循环，所以这里做了个屏蔽
     // https://github.com/Tencent/QMUI_iOS/issues/970
-    if (self.forwardingSelector != NULL && self.forwardingSelector == selector) {
-        self.forwardingSelector = NULL;
-        const char *typeEncoding = anInvocation.methodSignature.qmui_typeEncoding;
-        if (!isVoidTypeEncoding(typeEncoding)) {
-            [anInvocation setReturnValue:&_tempReturnValue];
+    if (self.forwardingInvocation.selector != NULL && self.forwardingInvocation.selector == selector) {
+        NSUInteger returnLength = anInvocation.methodSignature.methodReturnLength;
+        if (returnLength) {
+            void *buffer = (void *)malloc(returnLength);
+            [self.forwardingInvocation getReturnValue:buffer];
+            [anInvocation setReturnValue:buffer];
+            free(buffer);
         }
         return;
     }
     
-    self.forwardingSelector = selector;
     NSPointerArray *delegates = self.delegates.copy;
     for (id delegate in delegates) {
         if ([delegate respondsToSelector:selector]) {
-            
             // 当前的 delegate 可能是 RACDelegateProxy，会影响返回值，所以 invoke 前先保存当前的返回值备用
-            const char *typeEncoding = anInvocation.methodSignature.qmui_typeEncoding;
-            if (!isVoidTypeEncoding(typeEncoding)) {
-                [anInvocation getReturnValue:&_tempReturnValue];
-            }
-            
+            self.forwardingInvocation = anInvocation;
             [anInvocation invokeWithTarget:delegate];
         }
     }
 
-    self.forwardingSelector = NULL;
-    _tempReturnValue = NULL;
+    self.forwardingInvocation = nil;
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
