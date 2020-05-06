@@ -115,7 +115,9 @@
     NSPointerArray *delegates = self.delegates.copy;
     for (id delegate in delegates) {
         if ([delegate respondsToSelector:selector]) {
-            // 当前的 delegate 可能是 RACDelegateProxy，会影响返回值，所以 invoke 前先保存当前的返回值备用
+            // 当前 delegate 的实现可能再次调用原始 delegate 的实现，如果原始 delegate 是 QMUIMultipleDelegates 就会造成死循环，所以要做 2 事：
+            // 1、检测到循环就打破
+            // 2、但是检测到循环时，新生成的 anInvocation 默认没有 returnValue，需要用上一次循环之前的结果
             self.forwardingInvocation = anInvocation;
             [anInvocation invokeWithTarget:delegate];
         }
