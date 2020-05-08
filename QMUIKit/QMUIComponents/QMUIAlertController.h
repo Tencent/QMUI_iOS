@@ -198,6 +198,9 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// sheet按钮高亮背景色，默认UIColorMake(232, 232, 232)
 @property(nullable, nonatomic, strong) UIColor *sheetButtonHighlightBackgroundColor UI_APPEARANCE_SELECTOR;
 
+/// sheet主体容器的背景色，默认空
+@property(nullable, nonatomic, strong) UIColor *sheetContainerBackgroundColor UI_APPEARANCE_SELECTOR;
+
 /// sheet头部四边insets间距
 @property(nonatomic, assign) UIEdgeInsets sheetHeaderInsets UI_APPEARANCE_SELECTOR;
 

@@ -334,6 +334,17 @@ static NSUInteger alertControllerCount = 0;
     }
 }
 
+- (void)setSheetContainerBackgroundColor:(UIColor *)sheetContainerBackgroundColor {
+    _sheetContainerBackgroundColor = sheetContainerBackgroundColor;
+    [self updateSheetContainerBackgroundColor];
+}
+
+- (void)updateSheetContainerBackgroundColor {
+    if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
+        if (_containerView) { _containerView.backgroundColor = self.sheetContainerBackgroundColor; }
+    }
+}
+
 - (void)setAlertSeparatorColor:(UIColor *)alertSeparatorColor {
     _alertSeparatorColor = alertSeparatorColor;
     [self updateSeparatorColor];
