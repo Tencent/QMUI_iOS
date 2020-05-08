@@ -346,7 +346,7 @@ betweenOrEqual(CGFloat minimumValue, CGFloat value, CGFloat maximumValue) {
  *  例如 CGFloatToFixed(0.3333, 2) 会返回 0.33，而 CGFloatToFixed(0.6666, 2) 会返回 0.67
  *
  *  @warning 参数类型为 CGFloat，也即意味着不管传进来的是 float 还是 double 最终都会被强制转换成 CGFloat 再做计算
- *  @warning 该方法无法解决浮点数精度运算的问题
+ *  @warning 该方法无法解决浮点数精度运算的问题，如需做浮点数的 == 判断，可用下方的 CGFloatEqualToFloat()
  */
 CG_INLINE CGFloat
 CGFloatToFixed(CGFloat value, NSUInteger precision) {
@@ -358,6 +358,26 @@ CGFloatToFixed(CGFloat value, NSUInteger precision) {
     CGFloat result = [toString floatValue];
     #endif
     return result;
+}
+
+/**
+ 将给定的两个 CGFloat 进行等值比较，并通过参数 precision 指定要考虑的小数点后的精度，内部会将浮点数转成整型，从而避免浮点数精度导致的 == 判断错误。
+ 例如 CGFloatEqualToFloatWithPrecision(1.000, 0.999, 0) 会返回 YES，但 1.000 == 0.999 会得到 NO。
+ */
+CG_INLINE BOOL
+CGFloatEqualToFloatWithPrecision(CGFloat value1, CGFloat value2, NSUInteger precision) {
+    NSInteger a = ((NSInteger)round(value1) * pow(10, precision));
+    NSInteger b = ((NSInteger)round(value2) * pow(10, precision));
+    return a == b;
+}
+
+/**
+ 将给定的两个 CGFloat 进行等值比较，不考虑小数点后的数值。
+ 例如 CGFloatEqualToFloat(1.000, 0.999) 会返回 YES，但 1.000 == 0.999 会得到 NO。
+ */
+CG_INLINE BOOL
+CGFloatEqualToFloat(CGFloat value1, CGFloat value2) {
+    return CGFloatEqualToFloatWithPrecision(value1, value2, 0);
 }
 
 /// 用于居中运算

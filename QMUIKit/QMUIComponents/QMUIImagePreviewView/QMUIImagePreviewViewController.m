@@ -93,8 +93,8 @@ const CGFloat QMUIImagePreviewViewControllerCornerRadiusAutomaticDimension = -1;
     return _imagePreviewView;
 }
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
+- (void)initSubviews {
+    [super initSubviews];
     self.view.backgroundColor = self.backgroundColor;
     [self.view addSubview:self.imagePreviewView];
 }

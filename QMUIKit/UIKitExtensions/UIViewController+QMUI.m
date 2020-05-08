@@ -100,11 +100,16 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
                             && selfObject.isViewLoaded) {
                             CGRect viewRectInTabBarController = [selfObject.view convertRect:selfObject.view.bounds toView:tabBarController.view];
 
-                            if (CGRectGetHeight(viewRectInTabBarController) != CGRectGetHeight(tabBarController.view.bounds)) {
-                                // 从没带 tabBar 的界面 pop 到带 tabBar 的界面过程中，navController.view.height 会被改得小一点，导致 safeAreaInsets.bottom 出现错误的中间值，引发 UIScrollView.contentInset 的错误变化，后续就算 contentInset 恢复正确，contentOffset 也无法恢复，所以这里直接过滤掉中间的错误值
-                                // （但无法保证每个场景下这样的值都是错的，或许某些少见的场景里，navController.view.height 就是不会铺满整个 tabBarController.view.height 呢？）
-                                // https://github.com/Tencent/QMUI_iOS/issues/934
-                                return;
+                            // 发现在 iOS 13.3 及以下，在 extendedLayoutIncludesOpaqueBars = YES 的情况下，理论上任何时候 vc.view 都应该撑满整个 tabBarController.view，但从没带 tabBar 的界面 pop 到带 tabBar 的界面过程中，navController.view.height 会被改得小一点，导致 safeAreaInsets.bottom 出现错误的中间值，引发 UIScrollView.contentInset 的错误变化，后续就算 contentInset 恢复正确，contentOffset 也无法恢复，所以这里直接过滤掉中间的错误值
+                            // （但无法保证每个场景下这样的值都是错的，或许某些少见的场景里，navController.view.height 就是不会铺满整个 tabBarController.view.height 呢？）
+                            // https://github.com/Tencent/QMUI_iOS/issues/934
+                            if (@available(iOS 13.4, *)) {
+                            } else {
+                                if (!tabBar.translucent
+                                    && selfObject.extendedLayoutIncludesOpaqueBars
+                                    && !CGFloatEqualToFloat(CGRectGetHeight(viewRectInTabBarController), CGRectGetHeight(tabBarController.view.bounds))) {
+                                    return;
+                                }
                             }
 
                             CGRect barRectInTabBarController = [tabBar convertRect:tabBar.bounds toView:tabBarController.view];
