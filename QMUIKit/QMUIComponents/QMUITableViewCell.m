@@ -176,6 +176,7 @@
     if (!self.defaultAccessoryButton) {
         self.defaultAccessoryButton = [[QMUIButton alloc] init];
         [self.defaultAccessoryButton addTarget:self action:@selector(handleAccessoryButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+        self.defaultAccessoryButton.accessibilityLabel = @"更多信息";
     }
 }
 
