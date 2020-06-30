@@ -102,11 +102,13 @@
         _titleLabel = [[UILabel alloc] init];
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
         self.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+        self.titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
         [self.contentView addSubview:self.titleLabel];
         
         _subtitleLabel = [[UILabel alloc] init];
         self.subtitleLabel.textAlignment = NSTextAlignmentCenter;
         self.subtitleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+        self.subtitleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
         [self.contentView addSubview:self.subtitleLabel];
         
         self.userInteractionEnabled = NO;
