@@ -92,6 +92,8 @@
         [_accessoryView removeFromSuperview];
     }
     _accessoryView = accessoryView;
+    self.isAccessibilityElement = NO;
+    self.titleLabel.accessibilityTraits |= UIAccessibilityTraitHeader;
     [self.contentView addSubview:accessoryView];
 }
 
