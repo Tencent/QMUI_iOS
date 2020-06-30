@@ -139,6 +139,24 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
     } else if (delay > 0) {
         [self hideAnimated:YES afterDelay:delay];
     }
+    
+    [self postAccessibilityAnnouncement:text detailText:detailText];
+}
+
+- (void)postAccessibilityAnnouncement:(NSString *)text detailText:(NSString *)detailText {
+    NSString *announcementString = nil;
+    if (text) {
+        announcementString = text;
+    }
+    if (detailText) {
+        announcementString = announcementString ? [text stringByAppendingFormat:@", %@", detailText] : detailText;
+    }
+    if (announcementString) {
+        // 发送一个让VoiceOver播报的Announcement，帮助视障用户获取toast内的信息，但是这个播报会被即时打断而不生效，所以在这里延时1秒发送此通知。
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, announcementString);
+        });
+    }
 }
 
 + (NSTimeInterval)smartDelaySecondsForTipsText:(NSString *)text {
