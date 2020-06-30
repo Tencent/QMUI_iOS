@@ -144,7 +144,7 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 - (void)postAccessibilityAnnouncement:(NSString *)text detailText:(NSString *)detailText {
-    NSString *announcementString;
+    NSString *announcementString = nil;
     if (text) {
         announcementString = text;
     }
