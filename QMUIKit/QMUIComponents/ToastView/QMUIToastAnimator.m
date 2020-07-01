@@ -19,13 +19,11 @@
 
 #define kSlideAnimationKey @"kSlideAnimationKey"
 
-typedef void(^kBasicAnimationCompletion)(BOOL finished);
-
 @interface QMUIToastAnimator ()<CAAnimationDelegate>
 
 @property (nonatomic, assign) BOOL isShowing;
 @property (nonatomic, assign) BOOL isAnimating;
-@property (nonatomic, copy) kBasicAnimationCompletion basicAnimationCompletion;
+@property (nonatomic, copy) void (^basicAnimationCompletion)(BOOL finished);
 
 @end
 
@@ -53,16 +51,16 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     self.isShowing = YES;
     switch (self.animationType) {
         case QMUIToastAnimationTypeZoom:{
-            [self zoomAnimation:YES withCompletion:completion];
+            [self zoomAnimationForShow:YES withCompletion:completion];
         }
             break;
         case QMUIToastAnimationTypeSlide:{
-            [self slideAnimation:YES withCompletion:completion];
+            [self slideAnimationForShow:YES withCompletion:completion];
         }
             break;
         case QMUIToastAnimationTypeFade:
         default:{
-            [self fadeAnimation:YES withCompletion:completion];
+            [self fadeAnimationForShow:YES withCompletion:completion];
         }
             break;
     }
@@ -72,32 +70,33 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     self.isShowing = NO;
     switch (self.animationType) {
         case QMUIToastAnimationTypeZoom:{
-            [self zoomAnimation:NO withCompletion:completion];
+            [self zoomAnimationForShow:NO withCompletion:completion];
         }
             break;
         case QMUIToastAnimationTypeSlide:{
-            [self slideAnimation:NO withCompletion:completion];
+            [self slideAnimationForShow:NO withCompletion:completion];
         }
             break;
         case QMUIToastAnimationTypeFade:
         default:{
-            [self fadeAnimation:NO withCompletion:completion];
+            [self fadeAnimationForShow:NO withCompletion:completion];
         }
             break;
     }
 }
 
--(void)zoomAnimation:(BOOL)showOrHide withCompletion:(void (^)(BOOL))completion
-{
-    CGFloat alpha = showOrHide ? 1.f : 0.f;
+- (void)zoomAnimationForShow:(BOOL)show withCompletion:(void (^)(BOOL))completion {
+    CGFloat alpha = show ? 1.f : 0.f;
     CGAffineTransform small = CGAffineTransformMakeScale(0.5f, 0.5f);
-    CGAffineTransform endTransform = showOrHide ? CGAffineTransformIdentity : small;
+    CGAffineTransform endTransform = show ? CGAffineTransformIdentity : small;
     self.isAnimating = YES;
-    if (showOrHide) {
+    if (show) {
         self.toastView.backgroundView.transform = small;
         self.toastView.contentView.transform = small;
     }
     [UIView animateWithDuration:0.25
+                          delay:0.0
+                        options:QMUIViewAnimationOptionsCurveOut|UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
         self.toastView.backgroundView.alpha = alpha;
         self.toastView.contentView.alpha = alpha;
@@ -113,11 +112,10 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     }];
 }
 
--(void)slideAnimation:(BOOL)showOrHide withCompletion:(void (^)(BOOL))completion
-{
+- (void)slideAnimationForShow:(BOOL)show withCompletion:(void (^)(BOOL))completion {
     self.basicAnimationCompletion = [completion copy];
     self.isAnimating = YES;
-    if (showOrHide) {
+    if (show) {
         [self showSlideAnimationOnView:self.toastView.backgroundView withIndentifier:@"showBackgroundView"];
         [self showSlideAnimationOnView:self.toastView.contentView withIndentifier:@"showContentView"];
     }else{
@@ -126,13 +124,12 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     }
 }
 
--(void)fadeAnimation:(BOOL)showOrHide withCompletion:(void (^)(BOOL))completion
-{
-    CGFloat alpha = showOrHide ? 1.f : 0.f;
+- (void)fadeAnimationForShow:(BOOL)show withCompletion:(void (^)(BOOL))completion {
+    CGFloat alpha = show ? 1.f : 0.f;
     self.isAnimating = YES;
     [UIView animateWithDuration:0.25
                           delay:0.0
-                        options:QMUIViewAnimationOptionsCurveOut | UIViewAnimationOptionBeginFromCurrentState
+                        options:QMUIViewAnimationOptionsCurveOut|UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
         self.toastView.backgroundView.alpha = alpha;
         self.toastView.contentView.alpha = alpha;
@@ -144,8 +141,7 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     }];
 }
 
--(void)showSlideAnimationOnView:(UIView *)popupView withIndentifier:(NSString *)key
-{
+- (void)showSlideAnimationOnView:(UIView *)popupView withIndentifier:(NSString *)key {
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
     animation.fromValue = [NSNumber numberWithFloat:- [[UIScreen mainScreen] bounds].size.height / 2 - popupView.frame.size.height / 2];
     animation.toValue = [NSNumber numberWithFloat:0];
@@ -159,7 +155,6 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     
     CABasicAnimation *opacityAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
     opacityAnimation.fromValue = [NSNumber numberWithFloat:0.0];
-    
     opacityAnimation.toValue = [NSNumber numberWithFloat:1];
     opacityAnimation.duration = 0.27;
     opacityAnimation.beginTime=CACurrentMediaTime() + 0.03;
@@ -181,8 +176,7 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     [popupView.layer addAnimation:rotateAnimation forKey:@"showRotateKey"];
 }
 
--(void)hideSlideAnimationOnView:(UIView *)popupView withIndentifier:(NSString *)key
-{
+- (void)hideSlideAnimationOnView:(UIView *)popupView withIndentifier:(NSString *)key {
     CABasicAnimation *animationY = [CABasicAnimation animationWithKeyPath:@"transform.translation.y"];
     animationY.fromValue = [NSNumber numberWithFloat:0];
     animationY.toValue = [NSNumber numberWithFloat:[[UIScreen mainScreen] bounds].size.height/2+popupView.frame.size.height/2];
@@ -191,7 +185,6 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     animationY.fillMode = kCAFillModeBoth;
     animationY.timingFunction = [CAMediaTimingFunction functionWithControlPoints:0.73 : -0.38 : 0.03 : 1.41];
     animationY.delegate = self;
-    
     [animationY setValue:key forKey:kSlideAnimationKey];
     [popupView.layer addAnimation:animationY forKey:@"hidePopupView"];
     
@@ -209,7 +202,6 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     
     CABasicAnimation *opacityAnimation = [CABasicAnimation animationWithKeyPath:@"opacity"];
     opacityAnimation.fromValue = [NSNumber numberWithFloat:1];
-    
     opacityAnimation.toValue = [NSNumber numberWithFloat:0];
     opacityAnimation.duration = 0.25;
     opacityAnimation.beginTime=CACurrentMediaTime() + 0.15;
@@ -220,9 +212,9 @@ typedef void(^kBasicAnimationCompletion)(BOOL finished);
     [popupView.layer addAnimation:opacityAnimation forKey:@"hideOpacityKey"];
 }
 
-- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag{
-    if([[anim valueForKey:kSlideAnimationKey] isEqual:@"showContentView"] ||
-       [[anim valueForKey:kSlideAnimationKey] isEqual:@"hideContentView"]) {
+- (void)animationDidStop:(CAAnimation *)animation finished:(BOOL)flag {
+    if([[animation valueForKey:kSlideAnimationKey] isEqual:@"showContentView"] ||
+       [[animation valueForKey:kSlideAnimationKey] isEqual:@"hideContentView"]) {
         if (self.basicAnimationCompletion) {
             self.basicAnimationCompletion(flag);
         }
