@@ -30,9 +30,6 @@
 - (BOOL)isAnimating;
 @end
 
-
-// TODO: 实现多种animation类型
-
 typedef NS_ENUM(NSInteger, QMUIToastAnimationType) {
     QMUIToastAnimationTypeFade      = 0,
     QMUIToastAnimationTypeZoom,
