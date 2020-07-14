@@ -373,6 +373,11 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     [UINavigationBar appearance].titleTextAttributes = titleTextAttributes;
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
         navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
+        if ([navigationController.topViewController isKindOfClass:NSClassFromString(@"QMUICommonViewController")]) {
+            QMUICommonViewController *commVC = (QMUICommonViewController *)navigationController.topViewController;
+            commVC.titleView.titleLabel.textColor = self.navBarTitleColor;
+            commVC.titleView.titleLabel.font = self.navBarTitleFont;
+        }
     }];
 }
 
