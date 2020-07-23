@@ -430,17 +430,17 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 //            } withProgressHandler:phProgressHandler];
             
             //FIXME:优化QMUIAsset 获取原始照片的方法（requestOriginImageWithCompletion），解决预览大图时的卡顿
-            imageAsset.requestID = [imageAsset requestOriginalImageWithCompletion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+            imageAsset.requestID = [imageAsset requestOriginalImageWithCompletion:^(UIImage *image, NSDictionary *info, BOOL isDegraded) {
                 // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
                 // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
                 dispatch_async(dispatch_get_main_queue(), ^{
                     BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
                     BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
-                    BOOL loadICloudImageFault = !result || info[PHImageErrorKey];
+                    BOOL loadICloudImageFault = !image || info[PHImageErrorKey];
                     if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
-                        imageView.image = result;
+                        imageView.image = image;
                     }
-                    BOOL downloadSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+                    BOOL downloadSucceed = (image && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
                     if (downloadSucceed) {
                         // 资源资源已经在本地或下载成功
                         [imageAsset updateDownloadStatusWithDownloadResult:YES];

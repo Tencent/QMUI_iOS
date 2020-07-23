@@ -117,7 +117,7 @@ static NSString * const kAssetInfoSize = @"size";
     return resultImage;
 }
 
-- (NSInteger)requestOriginalImageWithCompletion:(void (^)(UIImage *photo,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
+- (NSInteger)requestOriginalImageWithCompletion:(void (^)(UIImage *image,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
     CGFloat aspectRatio = _phAsset.pixelWidth / (CGFloat)_phAsset.pixelHeight;
     CGFloat pixelWidth = [UIScreen mainScreen].bounds.size.width * ScreenScale;
     // 超宽图片
