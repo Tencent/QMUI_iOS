@@ -171,10 +171,13 @@
 #define TableSectionIndexBackgroundColor                [QMUICMI tableSectionIndexBackgroundColor]           // 列表右边索引条的背景色
 #define TableSectionIndexTrackingBackgroundColor        [QMUICMI tableSectionIndexTrackingBackgroundColor]   // 列表右边索引条按下时的背景色
 #define TableViewSeparatorColor                         [QMUICMI tableViewSeparatorColor]                    // 列表分隔线颜色
+
+#define TableViewCellNormalHeight                       [QMUICMI tableViewCellNormalHeight]                  // QMUITableView 的默认 cell 高度
+#define TableViewCellTitleLabelColor                    [QMUICMI tableViewCellTitleLabelColor]               // cell的title颜色
+#define TableViewCellDetailLabelColor                   [QMUICMI tableViewCellDetailLabelColor]              // cell的detailTitle颜色
 #define TableViewCellBackgroundColor                    [QMUICMI tableViewCellBackgroundColor]               // 列表 cell 的背景色
 #define TableViewCellSelectedBackgroundColor            [QMUICMI tableViewCellSelectedBackgroundColor]       // 列表 cell 按下时的背景色
 #define TableViewCellWarningBackgroundColor             [QMUICMI tableViewCellWarningBackgroundColor]        // 列表 cell 在提醒状态下的背景色
-#define TableViewCellNormalHeight                       [QMUICMI tableViewCellNormalHeight]                  // QMUITableView 的默认 cell 高度
 
 #define TableViewCellDisclosureIndicatorImage           [QMUICMI tableViewCellDisclosureIndicatorImage]      // 列表 cell 右边的箭头图片
 #define TableViewCellCheckmarkImage                     [QMUICMI tableViewCellCheckmarkImage]                // 列表 cell 右边的打钩checkmark
@@ -193,6 +196,7 @@
 #define TableViewSectionFooterContentInset              [QMUICMI tableViewSectionFooterContentInset]
 
 #define TableViewGroupedBackgroundColor                 [QMUICMI tableViewGroupedBackgroundColor]               // Grouped 类型的 QMUITableView 的背景色
+#define TableViewGroupedSeparatorColor                  [QMUICMI tableViewGroupedSeparatorColor]                // Grouped 类型的 QMUITableView 分隔线颜色
 #define TableViewGroupedCellTitleLabelColor             [QMUICMI tableViewGroupedCellTitleLabelColor]           // Grouped 类型的列表的 QMUITableViewCell 的标题颜色
 #define TableViewGroupedCellDetailLabelColor            [QMUICMI tableViewGroupedCellDetailLabelColor]          // Grouped 类型的列表的 QMUITableViewCell 的副标题颜色
 #define TableViewGroupedCellBackgroundColor             [QMUICMI tableViewGroupedCellBackgroundColor]           // Grouped 类型的列表的 QMUITableViewCell 的背景色
@@ -209,8 +213,25 @@
 #define TableViewGroupedSectionHeaderContentInset       [QMUICMI tableViewGroupedSectionHeaderContentInset]
 #define TableViewGroupedSectionFooterContentInset       [QMUICMI tableViewGroupedSectionFooterContentInset]
 
-#define TableViewCellTitleLabelColor                    [QMUICMI tableViewCellTitleLabelColor]               // cell的title颜色
-#define TableViewCellDetailLabelColor                   [QMUICMI tableViewCellDetailLabelColor]              // cell的detailTitle颜色
+#define TableViewInsetGroupedCornerRadius               [QMUICMI tableViewInsetGroupedCornerRadius] // InsetGrouped 类型的 UITableView 内 cell 的圆角值
+#define TableViewInsetGroupedHorizontalInset            [QMUICMI tableViewInsetGroupedHorizontalInset] // InsetGrouped 类型的 UITableView 内的左右缩进值
+#define TableViewInsetGroupedBackgroundColor            [QMUICMI tableViewInsetGroupedBackgroundColor] // InsetGrouped 类型的 UITableView 的背景色
+#define TableViewInsetGroupedSeparatorColor                  [QMUICMI tableViewInsetGroupedSeparatorColor]                // InsetGrouped 类型的 QMUITableView 分隔线颜色
+#define TableViewInsetGroupedCellTitleLabelColor             [QMUICMI tableViewInsetGroupedCellTitleLabelColor]           // InsetGrouped 类型的列表的 QMUITableViewCell 的标题颜色
+#define TableViewInsetGroupedCellDetailLabelColor            [QMUICMI tableViewInsetGroupedCellDetailLabelColor]          // InsetGrouped 类型的列表的 QMUITableViewCell 的副标题颜色
+#define TableViewInsetGroupedCellBackgroundColor             [QMUICMI tableViewInsetGroupedCellBackgroundColor]           // InsetGrouped 类型的列表的 QMUITableViewCell 的背景色
+#define TableViewInsetGroupedCellSelectedBackgroundColor     [QMUICMI tableViewInsetGroupedCellSelectedBackgroundColor]   // InsetGrouped 类型的列表的 QMUITableViewCell 点击时的背景色
+#define TableViewInsetGroupedCellWarningBackgroundColor      [QMUICMI tableViewInsetGroupedCellWarningBackgroundColor]    // InsetGrouped 类型的列表的 QMUITableViewCell 在提醒状态下的背景色
+#define TableViewInsetGroupedSectionHeaderFont               [QMUICMI tableViewInsetGroupedSectionHeaderFont]
+#define TableViewInsetGroupedSectionFooterFont               [QMUICMI tableViewInsetGroupedSectionFooterFont]
+#define TableViewInsetGroupedSectionHeaderTextColor          [QMUICMI tableViewInsetGroupedSectionHeaderTextColor]
+#define TableViewInsetGroupedSectionFooterTextColor          [QMUICMI tableViewInsetGroupedSectionFooterTextColor]
+#define TableViewInsetGroupedSectionHeaderAccessoryMargins   [QMUICMI tableViewInsetGroupedSectionHeaderAccessoryMargins]
+#define TableViewInsetGroupedSectionFooterAccessoryMargins   [QMUICMI tableViewInsetGroupedSectionFooterAccessoryMargins]
+#define TableViewInsetGroupedSectionHeaderDefaultHeight      [QMUICMI tableViewInsetGroupedSectionHeaderDefaultHeight]
+#define TableViewInsetGroupedSectionFooterDefaultHeight      [QMUICMI tableViewInsetGroupedSectionFooterDefaultHeight]
+#define TableViewInsetGroupedSectionHeaderContentInset       [QMUICMI tableViewInsetGroupedSectionHeaderContentInset]
+#define TableViewInsetGroupedSectionFooterContentInset       [QMUICMI tableViewInsetGroupedSectionFooterContentInset]
 
 #pragma mark - UIWindowLevel
 #define UIWindowLevelQMUIAlertView                      [QMUICMI windowLevelQMUIAlertView]
@@ -227,11 +248,15 @@
 #define BadgeTextColor                                  [QMUICMI badgeTextColor]
 #define BadgeFont                                       [QMUICMI badgeFont]
 #define BadgeContentEdgeInsets                          [QMUICMI badgeContentEdgeInsets]
+#define BadgeOffset                                     [QMUICMI badgeOffset]
+#define BadgeOffsetLandscape                            [QMUICMI badgeOffsetLandscape]
 #define BadgeCenterOffset                               [QMUICMI badgeCenterOffset]
 #define BadgeCenterOffsetLandscape                      [QMUICMI badgeCenterOffsetLandscape]
 
 #define UpdatesIndicatorColor                           [QMUICMI updatesIndicatorColor]
 #define UpdatesIndicatorSize                            [QMUICMI updatesIndicatorSize]
+#define UpdatesIndicatorOffset                          [QMUICMI updatesIndicatorOffset]
+#define UpdatesIndicatorOffsetLandscape                 [QMUICMI updatesIndicatorOffsetLandscape]
 #define UpdatesIndicatorCenterOffset                    [QMUICMI updatesIndicatorCenterOffset]
 #define UpdatesIndicatorCenterOffsetLandscape           [QMUICMI updatesIndicatorCenterOffsetLandscape]
 

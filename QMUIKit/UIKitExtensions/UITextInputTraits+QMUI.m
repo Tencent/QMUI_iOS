@@ -18,11 +18,13 @@
 @interface NSObject ()
 
 @property(nonatomic, assign) BOOL qti_didInitialize;
+@property(nonatomic, assign) BOOL qti_setKeyboardAppearanceByQMUITheme;
 @end
 
 @implementation NSObject (QMUITextInput)
 
 QMUISynthesizeBOOLProperty(qti_didInitialize, setQti_didInitialize)
+QMUISynthesizeBOOLProperty(qti_setKeyboardAppearanceByQMUITheme, setQti_setKeyboardAppearanceByQMUITheme)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -32,6 +34,11 @@ QMUISynthesizeBOOLProperty(qti_didInitialize, setQti_didInitialize)
         [inputClasses enumerateObjectsUsingBlock:^(Class  _Nonnull inputClass, NSUInteger idx, BOOL * _Nonnull stop) {
             
             ExtendImplementationOfNonVoidMethodWithSingleArgument(inputClass, @selector(initWithFrame:), CGRect, UIView<UITextInputTraits> *, ^UIView<UITextInputTraits> *(UIView<UITextInputTraits> *selfObject, CGRect firstArgv, UIView<UITextInputTraits> *originReturnValue) {
+                if ([selfObject isKindOfClass:NSClassFromString(@"TUIEmojiSearchTextField")]) {
+                    // https://github.com/Tencent/QMUI_iOS/issues/1042 iOS 14 开始，系统的 emoji 键盘内部有一个搜索框 TUIEmojiSearchTextField，这个搜索框如果在 init 的时候设置 keyboardAppearance 会导致再次创建触发死循环，在这里过滤掉它
+                    // 另外它属于 emoji 键盘内部的 TextFied，其 keyboardAppearance 应该由业务的 UITextField、UITextView 驱动，因此 QMUI 也不应该去干预他
+                    return originReturnValue;
+                }
                 if (QMUICMIActivated) selfObject.keyboardAppearance = KeyboardAppearance;
                 selfObject.qti_didInitialize = YES;
                 return originReturnValue;
@@ -55,7 +62,7 @@ QMUISynthesizeBOOLProperty(qti_didInitialize, setQti_didInitialize)
                     
                     if (selfObject.qti_didInitialize && valueChanged) {
                         // 标志当前输入框希望有与配置表不一样的值，则在 QMUITheme 发生变化时不要替它自动切换
-                        if (QMUICMIActivated) selfObject.qmui_hasCustomizedKeyboardAppearance = YES;
+                        if (QMUICMIActivated && !selfObject.qti_setKeyboardAppearanceByQMUITheme) selfObject.qmui_hasCustomizedKeyboardAppearance = YES;
                         
                         // 是否需要立即刷新外观是不需要考虑当前是否为 isFristResponder 的，因为 reloadInputViews 内部会自行处理
                         [selfObject reloadInputViews];
@@ -71,5 +78,17 @@ QMUISynthesizeBOOLProperty(qti_didInitialize, setQti_didInitialize)
 @implementation NSObject (QMUITextInput_Private)
 
 QMUISynthesizeBOOLProperty(qmui_hasCustomizedKeyboardAppearance, setQmui_hasCustomizedKeyboardAppearance)
+
+static char kAssociatedObjectKey_keyboardAppearance;
+- (void)setQmui_keyboardAppearance:(UIKeyboardAppearance)qmui_keyboardAppearance {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_keyboardAppearance, @(qmui_keyboardAppearance), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.qti_setKeyboardAppearanceByQMUITheme = YES;
+    ((UIView<UITextInputTraits> *)self).keyboardAppearance = qmui_keyboardAppearance;
+    self.qti_setKeyboardAppearanceByQMUITheme = NO;
+}
+
+- (UIKeyboardAppearance)qmui_keyboardAppearance {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_keyboardAppearance)) integerValue];
+}
 
 @end

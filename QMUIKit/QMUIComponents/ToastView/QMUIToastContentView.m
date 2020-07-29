@@ -50,7 +50,7 @@
     _customView = customView;
     [self addSubview:self.customView];
     [self updateCustomViewTintColor];
-    [self setNeedsLayout];
+    [self.superview setNeedsLayout];
 }
 
 - (void)setTextLabelText:(NSString *)textLabelText {
@@ -58,8 +58,8 @@
     if (textLabelText) {
         self.textLabel.attributedText = [[NSAttributedString alloc] initWithString:textLabelText attributes:self.textLabelAttributes];
         self.textLabel.textAlignment = NSTextAlignmentCenter;
-        [self setNeedsLayout];
     }
+    [self.superview setNeedsLayout];
 }
 
 - (void)setDetailTextLabelText:(NSString *)detailTextLabelText {
@@ -68,6 +68,7 @@
         self.detailTextLabel.attributedText = [[NSAttributedString alloc] initWithString:detailTextLabelText attributes:self.detailTextLabelAttributes];
         self.detailTextLabel.textAlignment = NSTextAlignmentCenter;
     }
+    [self.superview setNeedsLayout];
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -177,27 +178,27 @@
 
 - (void)setInsets:(UIEdgeInsets)insets {
     _insets = insets;
-    [self setNeedsLayout];
+    [self.superview setNeedsLayout];
 }
 
 - (void)setMinimumSize:(CGSize)minimumSize {
     _minimumSize = minimumSize;
-    [self setNeedsLayout];
+    [self.superview setNeedsLayout];
 }
 
 - (void)setCustomViewMarginBottom:(CGFloat)customViewMarginBottom {
     _customViewMarginBottom = customViewMarginBottom;
-    [self setNeedsLayout];
+    [self.superview setNeedsLayout];
 }
 
 - (void)setTextLabelMarginBottom:(CGFloat)textLabelMarginBottom {
     _textLabelMarginBottom = textLabelMarginBottom;
-    [self setNeedsLayout];
+    [self.superview setNeedsLayout];
 }
 
 - (void)setDetailTextLabelMarginBottom:(CGFloat)detailTextLabelMarginBottom {
     _detailTextLabelMarginBottom = detailTextLabelMarginBottom;
-    [self setNeedsLayout];
+    [self.superview setNeedsLayout];
 }
 
 - (void)setTextLabelAttributes:(NSDictionary *)textLabelAttributes {
@@ -206,6 +207,7 @@
         // 刷新label的attributes
         self.textLabelText = self.textLabelText;
     }
+    [self.superview setNeedsLayout];
 }
 
 - (void)setDetailTextLabelAttributes:(NSDictionary *)detailTextLabelAttributes {
@@ -214,6 +216,7 @@
         // 刷新label的attributes
         self.detailTextLabelText = self.detailTextLabelText;
     }
+    [self.superview setNeedsLayout];
 }
 
 @end

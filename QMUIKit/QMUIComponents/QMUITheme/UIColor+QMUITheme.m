@@ -160,7 +160,7 @@
 @implementation UIColor (QMUITheme)
 
 + (instancetype)qmui_colorWithThemeProvider:(UIColor * _Nonnull (^)(__kindof QMUIThemeManager * _Nonnull, __kindof NSObject<NSCopying> * _Nullable, __kindof NSObject * _Nullable))provider {
-    return [UIColor qmui_colorWithThemeManagerName:QMUIThemeManagerNameDefault provider:provider];
+    return [self qmui_colorWithThemeManagerName:QMUIThemeManagerNameDefault provider:provider];
 }
 
 + (UIColor *)qmui_colorWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIColor * _Nonnull (^)(__kindof QMUIThemeManager * _Nonnull, __kindof NSObject<NSCopying> * _Nullable, __kindof NSObject * _Nullable))provider {

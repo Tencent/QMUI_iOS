@@ -208,9 +208,12 @@
 }
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+    NSAssert(index < self.length, @"index out of bounds");
+    if (index >= self.length) return @"";
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;
     NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index];
-    return [self substringFromIndex:lessValue ? NSMaxRange(range) : range.location];
+    BOOL matchedCharacterSequence = range.length > 1;
+    return [self substringFromIndex:matchedCharacterSequence && lessValue ? NSMaxRange(range) : range.location];
 }
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index {
@@ -218,9 +221,12 @@
 }
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+    NSAssert(index <= self.length, @"index out of bounds");
+    if (index == 0 || index > self.length) return @"";
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;
-    NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index];
-    return [self substringToIndex:lessValue ? range.location : NSMaxRange(range)];
+    NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index - 1];
+    BOOL matchedCharacterSequence = range.length > 1;
+    return [self substringToIndex:matchedCharacterSequence && lessValue ? range.location + 1 : NSMaxRange(range)];
 }
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index {

@@ -18,15 +18,23 @@
 #import "QMUILog.h"
 #import "QMUIWeakObjectContainer.h"
 
+@interface _QMUINavigationInteractiveGestureDelegator : NSObject <UIGestureRecognizerDelegate>
+
+@property(nonatomic, weak, readonly) UINavigationController *parentViewController;
+- (instancetype)initWithParentViewController:(UINavigationController *)parentViewController;
+@end
+
 @interface UINavigationController (QMUI_Private)
 @property(nullable, nonatomic, readwrite) UIViewController *qmui_endedTransitionTopViewController;
 @property(nullable, nonatomic, weak, readonly) id<UIGestureRecognizerDelegate> qmui_interactivePopGestureRecognizerDelegate;
+@property(nullable, nonatomic, strong) _QMUINavigationInteractiveGestureDelegator *qmui_interactiveGestureDelegator;
 @end
 
 @implementation UINavigationController (QMUI)
 
 QMUISynthesizeIdWeakProperty(qmui_endedTransitionTopViewController, setQmui_endedTransitionTopViewController)
 QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQmui_interactivePopGestureRecognizerDelegate)
+QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interactiveGestureDelegator)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -34,7 +42,8 @@ QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQm
         
         ExtendImplementationOfVoidMethodWithoutArguments([UINavigationController class], @selector(viewDidLoad), ^(UINavigationController *selfObject) {
             selfObject.qmui_interactivePopGestureRecognizerDelegate = selfObject.interactivePopGestureRecognizer.delegate;
-            selfObject.interactivePopGestureRecognizer.delegate = (id<UIGestureRecognizerDelegate>)selfObject;
+            selfObject.qmui_interactiveGestureDelegator = [[_QMUINavigationInteractiveGestureDelegator alloc] initWithParentViewController:selfObject];
+            selfObject.interactivePopGestureRecognizer.delegate = selfObject.qmui_interactiveGestureDelegator;
         });
         
         if (@available(iOS 11.0, *)) {
@@ -159,14 +168,33 @@ QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQm
     return canPopViewController;
 }
 
+- (BOOL)shouldForceEnableInteractivePopGestureRecognizer {
+    UIViewController *viewController = [self topViewController];
+    return self.viewControllers.count > 1 && self.interactivePopGestureRecognizer.enabled && [viewController respondsToSelector:@selector(forceEnableInteractivePopGestureRecognizer)] && [viewController forceEnableInteractivePopGestureRecognizer];
+}
+
+@end
+
+
+@implementation _QMUINavigationInteractiveGestureDelegator
+
+- (instancetype)initWithParentViewController:(UINavigationController *)parentViewController {
+    if (self = [super init]) {
+        _parentViewController = parentViewController;
+    }
+    return self;
+}
+
+#pragma mark - <UIGestureRecognizerDelegate>
+
 // iOS 13.4 开始会优先询问该方法，只有返回 YES 后才会继续后续的逻辑
 - (BOOL)_gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveEvent:(UIEvent *)event {
-    if (gestureRecognizer == self.interactivePopGestureRecognizer) {
-        NSObject <UIGestureRecognizerDelegate> *originGestureDelegate = self.qmui_interactivePopGestureRecognizerDelegate;
+    if (gestureRecognizer == self.parentViewController.interactivePopGestureRecognizer) {
+        NSObject <UIGestureRecognizerDelegate> *originGestureDelegate = self.parentViewController.qmui_interactivePopGestureRecognizerDelegate;
         if ([originGestureDelegate respondsToSelector:_cmd]) {
             BOOL originalValue = YES;
             [originGestureDelegate qmui_performSelector:_cmd withPrimitiveReturnValue:&originalValue arguments:&gestureRecognizer, &event, nil];
-            if (!originalValue && [self shouldForceEnableInteractivePopGestureRecognizer]) {
+            if (!originalValue && [self.parentViewController shouldForceEnableInteractivePopGestureRecognizer]) {
                 return YES;
             }
             return originalValue;
@@ -176,11 +204,11 @@ QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQm
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
-    if (gestureRecognizer == self.interactivePopGestureRecognizer) {
-        BOOL canPopViewController = [self canPopViewController:self.topViewController byPopGesture:YES];
+    if (gestureRecognizer == self.parentViewController.interactivePopGestureRecognizer) {
+        BOOL canPopViewController = [self.parentViewController canPopViewController:self.parentViewController.topViewController byPopGesture:YES];
         if (canPopViewController) {
-            if ([self.qmui_interactivePopGestureRecognizerDelegate respondsToSelector:_cmd]) {
-                return [self.qmui_interactivePopGestureRecognizerDelegate gestureRecognizerShouldBegin:gestureRecognizer];
+            if ([self.parentViewController.qmui_interactivePopGestureRecognizerDelegate respondsToSelector:_cmd]) {
+                return [self.parentViewController.qmui_interactivePopGestureRecognizerDelegate gestureRecognizerShouldBegin:gestureRecognizer];
             } else {
                 return NO;
             }
@@ -191,17 +219,12 @@ QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQm
     return YES;
 }
 
-- (BOOL)shouldForceEnableInteractivePopGestureRecognizer {
-    UIViewController *viewController = [self topViewController];
-    return self.viewControllers.count > 1 && self.interactivePopGestureRecognizer.enabled && [viewController respondsToSelector:@selector(forceEnableInteractivePopGestureRecognizer)] && [viewController forceEnableInteractivePopGestureRecognizer];
-}
-
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if (gestureRecognizer == self.interactivePopGestureRecognizer) {
-        id<UIGestureRecognizerDelegate>originGestureDelegate = self.qmui_interactivePopGestureRecognizerDelegate;
+    if (gestureRecognizer == self.parentViewController.interactivePopGestureRecognizer) {
+        id<UIGestureRecognizerDelegate>originGestureDelegate = self.parentViewController.qmui_interactivePopGestureRecognizerDelegate;
         if ([originGestureDelegate respondsToSelector:_cmd]) {
             BOOL originalValue = [originGestureDelegate gestureRecognizer:gestureRecognizer shouldReceiveTouch:touch];
-            if (!originalValue && [self shouldForceEnableInteractivePopGestureRecognizer]) {
+            if (!originalValue && [self.parentViewController shouldForceEnableInteractivePopGestureRecognizer]) {
                 return YES;
             }
             return originalValue;
@@ -211,9 +234,9 @@ QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQm
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    if (gestureRecognizer == self.interactivePopGestureRecognizer) {
-        if ([self.qmui_interactivePopGestureRecognizerDelegate respondsToSelector:_cmd]) {
-            return [self.qmui_interactivePopGestureRecognizerDelegate gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
+    if (gestureRecognizer == self.parentViewController.interactivePopGestureRecognizer) {
+        if ([self.parentViewController.qmui_interactivePopGestureRecognizerDelegate respondsToSelector:_cmd]) {
+            return [self.parentViewController.qmui_interactivePopGestureRecognizerDelegate gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
         }
     }
     return NO;
@@ -221,7 +244,7 @@ QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQm
 
 // 是否要gestureRecognizer检测失败了，才去检测otherGestureRecognizer
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-    if (gestureRecognizer == self.interactivePopGestureRecognizer) {
+    if (gestureRecognizer == self.parentViewController.interactivePopGestureRecognizer) {
         // 如果只是实现了上面几个手势的delegate，那么返回的手势和当前界面上的scrollview或者其他存在的手势会冲突，所以如果判断是返回手势，则优先响应返回手势再响应其他手势。
         // 不知道为什么，系统竟然没有实现这个delegate，那么它是怎么处理返回手势和其他手势的优先级的
         return YES;
@@ -233,5 +256,4 @@ QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQm
 
 
 @implementation UIViewController (BackBarButtonSupport)
-
 @end

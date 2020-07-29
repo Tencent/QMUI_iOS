@@ -615,8 +615,11 @@
             return;
         }
     }
-    self.keyboardHeight = [keyboardUserInfo heightInView:self.view];
-    [self updateLayout];
+    CGFloat keyboardHeight = [keyboardUserInfo heightInView:self.view];
+    if (self.keyboardHeight != keyboardHeight) {
+        self.keyboardHeight = keyboardHeight;
+        [self updateLayout];
+    }
 }
 
 #pragma mark - 屏幕旋转

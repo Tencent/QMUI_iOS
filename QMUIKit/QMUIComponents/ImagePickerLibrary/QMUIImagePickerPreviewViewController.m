@@ -27,7 +27,6 @@
 #import "QMUIAlertController.h"
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
-#import "UIControl+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIAppearance.h"
 
@@ -184,10 +183,8 @@
 - (QMUIImagePreviewMediaType)imagePreviewView:(QMUIImagePreviewView *)imagePreviewView assetTypeAtIndex:(NSUInteger)index {
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:index];
     if (imageAsset.assetType == QMUIAssetTypeImage) {
-        if (@available(iOS 9.1, *)) {
-            if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
-                return QMUIImagePreviewMediaTypeLivePhoto;
-            }
+        if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
+            return QMUIImagePreviewMediaTypeLivePhoto;
         }
         return QMUIImagePreviewMediaTypeImage;
     } else if (imageAsset.assetType == QMUIAssetTypeVideo) {
@@ -341,40 +338,36 @@
         
         // 这么写是为了消除 Xcode 的 API available warning
         BOOL isLivePhoto = NO;
-        if (@available(iOS 9.1, *)) {
-            if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
-                isLivePhoto = YES;
-                imageView.tag = -1;
-                imageAsset.requestID = [imageAsset requestLivePhotoWithCompletion:^void(PHLivePhoto *livePhoto, NSDictionary *info) {
-                    // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
-                    // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
-                        BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
-                        BOOL loadICloudImageFault = !livePhoto || info[PHImageErrorKey];
-                        if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
-                            // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
-                            // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
-                            if (@available(iOS 9.1, *)) {
-                                imageView.livePhoto = livePhoto;
-                            }
-                        }
-                        BOOL downloadSucceed = (livePhoto && !info) || (![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue]);
-                        if (downloadSucceed) {
-                            // 资源资源已经在本地或下载成功
-                            [imageAsset updateDownloadStatusWithDownloadResult:YES];
-                            self.downloadStatus = QMUIAssetDownloadStatusSucceed;
-                            imageView.cloudDownloadStatus = QMUIAssetDownloadStatusSucceed;
-                        } else if ([info objectForKey:PHLivePhotoInfoErrorKey] ) {
-                            // 下载错误
-                            [imageAsset updateDownloadStatusWithDownloadResult:NO];
-                            self.downloadStatus = QMUIAssetDownloadStatusFailed;
-                            imageView.cloudDownloadStatus = QMUIAssetDownloadStatusFailed;
-                        }
-                    });
-                } withProgressHandler:phProgressHandler];
-                imageView.tag = imageAsset.requestID;
-            }
+        if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
+            isLivePhoto = YES;
+            imageView.tag = -1;
+            imageAsset.requestID = [imageAsset requestLivePhotoWithCompletion:^void(PHLivePhoto *livePhoto, NSDictionary *info) {
+                // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
+                // 因此判断如果是新请求（无复用问题）或者是当前的请求才把获得的图片结果展示出来
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    BOOL isNewRequest = (imageView.tag == -1 && imageAsset.requestID == 0);
+                    BOOL isCurrentRequest = imageView.tag == imageAsset.requestID;
+                    BOOL loadICloudImageFault = !livePhoto || info[PHImageErrorKey];
+                    if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
+                        // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
+                        // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
+                        imageView.livePhoto = livePhoto;
+                    }
+                    BOOL downloadSucceed = (livePhoto && !info) || (![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue]);
+                    if (downloadSucceed) {
+                        // 资源资源已经在本地或下载成功
+                        [imageAsset updateDownloadStatusWithDownloadResult:YES];
+                        self.downloadStatus = QMUIAssetDownloadStatusSucceed;
+                        imageView.cloudDownloadStatus = QMUIAssetDownloadStatusSucceed;
+                    } else if ([info objectForKey:PHLivePhotoInfoErrorKey] ) {
+                        // 下载错误
+                        [imageAsset updateDownloadStatusWithDownloadResult:NO];
+                        self.downloadStatus = QMUIAssetDownloadStatusFailed;
+                        imageView.cloudDownloadStatus = QMUIAssetDownloadStatusFailed;
+                    }
+                });
+            } withProgressHandler:phProgressHandler];
+            imageView.tag = imageAsset.requestID;
         }
         
         if (isLivePhoto) {

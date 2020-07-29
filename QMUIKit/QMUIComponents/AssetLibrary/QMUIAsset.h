@@ -121,7 +121,7 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  *
  *  @return 返回请求图片的请求 id
  */
-- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *livePhoto, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler NS_AVAILABLE_IOS(9_1);
+- (NSInteger)requestLivePhotoWithCompletion:(void (^)(PHLivePhoto *livePhoto, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler;
 
 /**
  *  异步请求 AVPlayerItem，可能会有网络请求

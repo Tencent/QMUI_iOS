@@ -26,7 +26,6 @@
 
 @implementation UIControl (QMUI)
 
-QMUISynthesizeUIEdgeInsetsProperty(qmui_outsideEdge, setQmui_outsideEdge)
 QMUISynthesizeBOOLProperty(qmui_automaticallyAdjustTouchHighlightedInScrollView, setQmui_automaticallyAdjustTouchHighlightedInScrollView)
 QMUISynthesizeBOOLProperty(canSetHighlighted, setCanSetHighlighted)
 QMUISynthesizeNSIntegerProperty(touchEndCount, setTouchEndCount)
@@ -40,23 +39,6 @@ QMUISynthesizeIdCopyProperty(qmui_setHighlightedBlock, setQmui_setHighlightedBlo
             if (selfObject.qmui_setHighlightedBlock) {
                 selfObject.qmui_setHighlightedBlock(highlighted);
             }
-        });
-        
-        OverrideImplementation([UIControl class], @selector(pointInside:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^BOOL(UIControl *selfObject, CGPoint point, UIEvent *event) {
-                
-                if (event.type != UIEventTypeTouches) {
-                    // call super
-                    BOOL (*originSelectorIMP)(id, SEL, CGPoint, UIEvent *);
-                    originSelectorIMP = (BOOL (*)(id, SEL, CGPoint, UIEvent *))originalIMPProvider();
-                    BOOL result = originSelectorIMP(selfObject, originCMD, point, event);
-                    return result;
-                }
-                
-                UIEdgeInsets qmui_outsideEdge = selfObject.qmui_outsideEdge;
-                CGRect boundsInsetOutsideEdge = CGRectMake(CGRectGetMinX(selfObject.bounds) + qmui_outsideEdge.left, CGRectGetMinY(selfObject.bounds) + qmui_outsideEdge.top, CGRectGetWidth(selfObject.bounds) - UIEdgeInsetsGetHorizontalValue(qmui_outsideEdge), CGRectGetHeight(selfObject.bounds) - UIEdgeInsetsGetVerticalValue(qmui_outsideEdge));
-                return CGRectContainsPoint(boundsInsetOutsideEdge, point);
-            };
         });
         
         OverrideImplementation([UIControl class], @selector(removeTarget:action:forControlEvents:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {

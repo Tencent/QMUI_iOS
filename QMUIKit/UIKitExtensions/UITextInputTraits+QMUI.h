@@ -20,6 +20,9 @@
 
 @interface NSObject (QMUITextInput_Private)
 
+/// 内部使用，标记某次 keyboardAppearance 的改动是由于 UIView+QMUITheme 内导致的，而非用户手动修改
+@property(nonatomic, assign) UIKeyboardAppearance qmui_keyboardAppearance;
+
 /// 内部使用，用于标志业务自己修改了 keyboardAppearance 的情况
 @property(nonatomic, assign) BOOL qmui_hasCustomizedKeyboardAppearance;
 @end

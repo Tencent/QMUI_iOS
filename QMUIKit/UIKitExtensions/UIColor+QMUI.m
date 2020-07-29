@@ -17,6 +17,7 @@
 #import "QMUICore.h"
 #import "NSString+QMUI.h"
 #import "NSObject+QMUI.h"
+#import "NSArray+QMUI.h"
 
 @implementation UIColor (QMUI)
 
@@ -84,6 +85,29 @@
             [self alignColorHexStringLength:[NSString qmui_hexStringWithInteger:red]],
             [self alignColorHexStringLength:[NSString qmui_hexStringWithInteger:green]],
             [self alignColorHexStringLength:[NSString qmui_hexStringWithInteger:blue]]] lowercaseString];
+}
+
++ (UIColor *)qmui_colorWithRGBAString:(NSString *)rgbaString {
+    NSArray<NSString *> *arr = nil;
+    NSCharacterSet *characterSet = nil;
+    if ([rgbaString containsString:@","]) {
+        characterSet = [NSCharacterSet characterSetWithCharactersInString:@","];
+    } else {
+        characterSet = [NSCharacterSet characterSetWithCharactersInString:@" "];
+    }
+    arr = [[rgbaString componentsSeparatedByCharactersInSet:characterSet] qmui_filterWithBlock:^BOOL(NSString * _Nonnull item) {
+        return item.qmui_trim.length > 0;
+    }];
+    if (arr.count < 3 || arr.count > 4) return nil;
+    return UIColorMakeWithRGBA(arr[0].integerValue, arr[1].integerValue, arr[2].integerValue, (arr.count == 4 ? arr[3].floatValue : 1.0));
+}
+
+- (NSString *)qmui_RGBAString {
+    return [NSString stringWithFormat:@"%.0f,%.0f,%.0f,%.2f",
+            round(self.qmui_red * 255),
+            round(self.qmui_green * 255),
+            round(self.qmui_blue * 255),
+            self.qmui_alpha];
 }
 
 // 对于色值只有单位数的，在前面补一个0，例如“F”会补齐为“0F”

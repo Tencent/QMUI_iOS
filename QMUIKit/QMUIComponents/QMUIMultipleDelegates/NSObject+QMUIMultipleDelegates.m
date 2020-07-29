@@ -29,8 +29,6 @@
 
 QMUISynthesizeIdStrongProperty(qmuimd_delegates, setQmuimd_delegates)
 
-static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
-
 static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
 - (void)setQmui_multipleDelegatesEnabled:(BOOL)qmui_multipleDelegatesEnabled {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_qmuiMultipleDelegatesEnabled, @(qmui_multipleDelegatesEnabled), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -80,14 +78,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
         }
     }
     
-    // 避免为某个 class 重复替换同一个方法的实现
-    if (!qmui_methodsReplacedClasses) {
-        qmui_methodsReplacedClasses = [NSMutableSet set];
-    }
-    NSString *classAndMethodIdentifier = [NSString stringWithFormat:@"%@-%@", NSStringFromClass(targetClass), delegateGetterKey];
-    if (![qmui_methodsReplacedClasses containsObject:classAndMethodIdentifier]) {
-        [qmui_methodsReplacedClasses addObject:classAndMethodIdentifier];
-        
+    [QMUIHelper executeBlock:^{
         IMP originIMP = method_getImplementation(originMethod);
         void (*originSelectorIMP)(id, SEL, id);
         originSelectorIMP = (void (*)(id, SEL, id))originIMP;
@@ -122,7 +113,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
             Method newMethod = class_getInstanceMethod(targetClass, newDelegateSetter);
             method_exchangeImplementations(originMethod, newMethod);
         }
-    }
+    } oncePerIdentifier:[NSString stringWithFormat:@"MultipleDelegates %@-%@", NSStringFromClass(targetClass), NSStringFromSelector(getter)]];
     
     // 如果原来已经有 delegate，则将其加到新建的容器里
     // @see https://github.com/Tencent/QMUI_iOS/issues/378

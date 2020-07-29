@@ -81,7 +81,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  例如对于字符串“😊😞”，它的长度为4，若调用 [string qmui_substringAvoidBreakingUpCharacterSequencesToIndex:1 lessValue:NO countingNonASCIICharacterAsTwo:NO]，将返回“😊”。
  *  若调用系统的 [string substringToIndex:1]，将返回“?”。（?表示乱码，因为第一个 emoji 表情被从中间裁开了）。
  *
- *  @param index 要裁剪到哪个 index
+ *  @param index 要裁剪到哪个 index 为止（不包含该 index，策略与系统的 substringToIndex: 一致）
  *  @param lessValue 裁剪时若遇到“character sequences”，是向下取整还是向上取整。
  *  @param countingNonASCIICharacterAsTwo 是否按照 英文 1 个字符长度、中文 2 个字符长度的方式来裁剪
  *  @return 裁剪完的字符

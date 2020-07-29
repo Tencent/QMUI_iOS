@@ -179,6 +179,7 @@ static NSMutableArray <QMUIToastView *> *kToastViews = nil;
         
         CGRect contentRect = CGRectFlatMake(contentViewX, contentViewY, contentViewSize.width, contentViewSize.height);
         self.contentView.qmui_frameApplyTransform = contentRect;
+        [self.contentView setNeedsLayout];
     }
     if (self.backgroundView) {
         // backgroundView的frame跟contentView一样，contentView里面的subviews如果需要在视觉上跟backgroundView有个padding，那么就自己在自定义的contentView里面做。

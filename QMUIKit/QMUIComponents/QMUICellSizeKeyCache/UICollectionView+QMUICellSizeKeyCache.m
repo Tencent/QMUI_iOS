@@ -177,17 +177,11 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
 //    return collectionViewLayout.estimatedItemSize;
 //}
 
-static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
 - (void)replaceMethodForDelegateIfNeeded:(id<UICollectionViewDelegate>)delegate {
     if (self.qmui_cacheCellSizeByKeyAutomatically && delegate) {
-        if (!qmui_methodsReplacedClasses) {
-            qmui_methodsReplacedClasses = [NSMutableSet set];
-        }
         void (^addSelectorBlock)(id<UICollectionViewDelegate>) = ^void(id<UICollectionViewDelegate> aDelegate) {
-            if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(aDelegate.class)]) {
-                return;
-            }
-            [qmui_methodsReplacedClasses addObject:NSStringFromClass(aDelegate.class)];
+//            [QMUIHelper executeBlock:^{
+//            } oncePerIdentifier:[NSString stringWithFormat:@"QMUICellHeightKeyCache collectionView %@", NSStringFromClass(aDelegate.class)]];
         };
         
         if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {

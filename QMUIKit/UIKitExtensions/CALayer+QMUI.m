@@ -39,7 +39,7 @@ QMUISynthesizeCGFloatProperty(qmui_originCornerRadius, setQmui_originCornerRadiu
         
         ExtendImplementationOfNonVoidMethodWithoutArguments([CALayer class], @selector(init), CALayer *, ^CALayer *(CALayer *selfObject, CALayer *originReturnValue) {
             selfObject.qmui_speedBeforePause = selfObject.speed;
-            selfObject.qmui_maskedCorners = QMUILayerMinXMinYCorner|QMUILayerMaxXMinYCorner|QMUILayerMinXMaxYCorner|QMUILayerMaxXMaxYCorner;
+            selfObject.qmui_maskedCorners = QMUILayerAllCorner;
             return originReturnValue;
         });
         
@@ -180,17 +180,11 @@ static char kAssociatedObjectKey_maskedCorners;
 }
 
 - (void)qmui_sendSublayerToBack:(CALayer *)sublayer {
-    if (sublayer.superlayer == self) {
-        [sublayer removeFromSuperlayer];
-        [self insertSublayer:sublayer atIndex:0];
-    }
+    [self insertSublayer:sublayer atIndex:0];
 }
 
 - (void)qmui_bringSublayerToFront:(CALayer *)sublayer {
-    if (sublayer.superlayer == self) {
-        [sublayer removeFromSuperlayer];
-        [self insertSublayer:sublayer atIndex:(unsigned)self.sublayers.count];
-    }
+    [self insertSublayer:sublayer atIndex:(unsigned)self.sublayers.count];
 }
 
 - (void)qmui_removeDefaultAnimations {

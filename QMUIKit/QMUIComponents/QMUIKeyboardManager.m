@@ -16,6 +16,7 @@
 #import "QMUIKeyboardManager.h"
 #import "QMUICore.h"
 #import "QMUILog.h"
+#import "QMUIAppearance.h"
 
 @interface QMUIKeyboardManager ()
 
@@ -307,6 +308,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
  */
 @implementation QMUIKeyboardManager
 
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
+}
+
 - (instancetype)init {
     NSAssert(NO, @"请使用initWithDelegate:初始化");
     return [self initWithDelegate:nil];
@@ -323,6 +328,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         _delegateEnabled = YES;
         _targetResponderValues = [[NSMutableArray alloc] init];
         [self addKeyboardNotification];
+        [self qmui_applyAppearance];
     }
     return self;
 }

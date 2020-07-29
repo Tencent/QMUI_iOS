@@ -162,8 +162,10 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     return [UIImage qmui_imageWithSize:self.size opaque:opaque scale:self.scale actions:^(CGContextRef contextRef) {
         CGContextTranslateCTM(contextRef, 0, self.size.height);
         CGContextScaleCTM(contextRef, 1.0, -1.0);
-        CGContextSetBlendMode(contextRef, kCGBlendModeNormal);
-        CGContextClipToMask(contextRef, CGRectMakeWithSize(self.size), self.CGImage);
+        if (!opaque) {
+            CGContextSetBlendMode(contextRef, kCGBlendModeNormal);
+            CGContextClipToMask(contextRef, CGRectMakeWithSize(self.size), self.CGImage);
+        }
         CGContextSetFillColorWithColor(contextRef, tintColor.CGColor);
         CGContextFillRect(contextRef, CGRectMakeWithSize(self.size));
     }];

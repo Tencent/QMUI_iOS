@@ -23,7 +23,6 @@
 #import "QMUIButton.h"
 #import "QMUISlider.h"
 #import <MediaPlayer/MediaPlayer.h>
-#import "UIControl+QMUI.h"
 #import "UILabel+QMUI.h"
 #import "QMUIPieProgressView.h"
 
@@ -221,9 +220,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     }
     
     [self initLivePhotoViewIfNeeded];
-    if (@available(iOS 9.1, *)) {
-        _livePhotoView.livePhoto = livePhoto;
-    }
+    _livePhotoView.livePhoto = livePhoto;
     _livePhotoView.hidden = NO;
     
     // 更新 livePhotoView 的大小时，livePhotoView 可能已经被缩放过，所以要应用当前的缩放
@@ -233,13 +230,11 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 - (void)initLivePhotoViewIfNeeded {
-    if (@available(iOS 9.1, *)) {
-        if (_livePhotoView) {
-            return;
-        }
-        _livePhotoView = [[PHLivePhotoView alloc] init];
-        [self.scrollView addSubview:_livePhotoView];
+    if (_livePhotoView) {
+        return;
     }
+    _livePhotoView = [[PHLivePhotoView alloc] init];
+    [self.scrollView addSubview:_livePhotoView];
 }
 
 #pragma mark - Image Scale
@@ -258,10 +253,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 - (CGFloat)minimumZoomScale {
-    BOOL isLivePhoto = NO;
-    if (@available(iOS 9.1, *)) {
-        isLivePhoto = !!self.livePhoto;
-    }
+    BOOL isLivePhoto = !!self.livePhoto;
 
     if (!self.image && !isLivePhoto && !self.videoPlayerItem) {
         return 1;
@@ -272,9 +264,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     if (self.image) {
         mediaSize = self.image.size;
     } else if (isLivePhoto) {
-        if (@available(iOS 9.1, *)) {
-            mediaSize = self.livePhoto.size;
-        }
+        mediaSize = self.livePhoto.size;
     } else if (self.videoPlayerItem) {
         mediaSize = self.videoSize;
     }
@@ -398,10 +388,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (BOOL)enabledZoomImageView {
     BOOL enabledZoom = YES;
-    BOOL isLivePhoto = NO;
-    if (@available(iOS 9.1, *)) {
-        isLivePhoto = !!self.livePhoto;
-    }
+    BOOL isLivePhoto = isLivePhoto = !!self.livePhoto;
     if ([self.delegate respondsToSelector:@selector(enabledZoomViewInZoomImageView:)]) {
         enabledZoom = [self.delegate enabledZoomViewInZoomImageView:self];
     } else if (!self.image && !isLivePhoto && !self.videoPlayerItem) {
@@ -864,6 +851,8 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self.emptyView setActionButtonTitle:buttonTitle];
     [self.emptyView.actionButton removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
     [self.emptyView.actionButton addTarget:buttonTarget action:action forControlEvents:UIControlEventTouchUpInside];
+    self.emptyView.hidden = NO;
+    [self setNeedsLayout];
 }
 
 - (void)hideEmptyView {

@@ -18,6 +18,7 @@
 #import "QMUICellHeightKeyCache.h"
 #import "UIView+QMUI.h"
 #import "UIScrollView+QMUI.h"
+#import "UITableView+QMUI.h"
 #import "QMUITableViewProtocols.h"
 #import "QMUIMultipleDelegates.h"
 
@@ -78,7 +79,7 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
 }
 
 - (QMUICellHeightKeyCache *)qmui_currentCellHeightKeyCache {
-    CGFloat width = [self widthForCacheKey];
+    CGFloat width = self.qmui_validContentWidth;
     if (width <= 0) {
         return nil;
     }
@@ -88,12 +89,6 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
         self.qmui_allKeyCaches[@(width)] = cache;
     }
     return cache;
-}
-
-// 只考虑内容区域的宽度，因为 cell 的宽度就由这个来决定
-- (CGFloat)widthForCacheKey {
-    CGFloat width = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset);
-    return width;
 }
 
 - (void)qmui_tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -127,22 +122,15 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
     return UITableViewAutomaticDimension;// 表示 QMUICellHeightKeyCache 无法决定一个合适的高度，交给业务，或者交给系统默认值决定。
 }
 
-static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
 - (void)replaceMethodForDelegateIfNeeded:(id<QMUITableViewDelegate>)delegate {
     if (self.qmui_cacheCellHeightByKeyAutomatically && delegate) {
-        if (!qmui_methodsReplacedClasses) {
-            qmui_methodsReplacedClasses = [NSMutableSet set];
-        }
         
         void (^addSelectorBlock)(id<QMUITableViewDelegate>) = ^void(id<QMUITableViewDelegate> aDelegate) {
-            if ([qmui_methodsReplacedClasses containsObject:NSStringFromClass(aDelegate.class)]) {
-                return;
-            }
-            [qmui_methodsReplacedClasses addObject:NSStringFromClass(aDelegate.class)];
-            
-            [self handleWillDisplayCellMethodForDelegate:aDelegate];
-            [self handleHeightForRowMethodForDelegate:aDelegate];
-            [self handleEstimatedHeightForRowMethodForDelegate:aDelegate];
+            [QMUIHelper executeBlock:^{
+                [self handleWillDisplayCellMethodForDelegate:aDelegate];
+                [self handleHeightForRowMethodForDelegate:aDelegate];
+                [self handleEstimatedHeightForRowMethodForDelegate:aDelegate];
+            } oncePerIdentifier:[NSString stringWithFormat:@"QMUICellHeightKeyCache %@", NSStringFromClass(aDelegate.class)]];
         };
         
         if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {

@@ -16,8 +16,37 @@
 #import "UITextField+QMUI.h"
 #import "NSObject+QMUI.h"
 #import "QMUICore.h"
+#import "UIImage+QMUI.h"
 
 @implementation UITextField (QMUI)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        // iOS 12 及以下版本需要重写该方法才能替换
+        if (@available(iOS 13.0, *)) {
+        } else {
+            OverrideImplementation([UITextField class], NSSelectorFromString(@"_clearButtonImageForState:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^UIImage *(UITextField *selfObject, UIControlState firstArgv) {
+                    
+                    if (selfObject.qmui_clearButtonImage) {
+                        if (firstArgv & UIControlStateHighlighted) {
+                            return [selfObject.qmui_clearButtonImage qmui_imageWithAlpha:UIControlHighlightedAlpha];
+                        }
+                        return selfObject.qmui_clearButtonImage;
+                    }
+                    
+                    // call super
+                    UIImage *(*originSelectorIMP)(id, SEL, UIControlState);
+                    originSelectorIMP = (UIImage *(*)(id, SEL, UIControlState))originalIMPProvider();
+                    UIImage *result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                    return result;
+                };
+            });
+        }
+    });
+}
 
 - (NSRange)qmui_selectedRange {
     NSInteger location = [self offsetFromPosition:self.beginningOfDocument toPosition:self.selectedTextRange.start];
@@ -29,11 +58,11 @@
     return [self qmui_valueForKey:@"clearButton"];
 }
 
+// - (id) _clearButtonImageForState:(unsigned long)arg1;
 static char kAssociatedObjectKey_clearButtonImage;
 - (void)setQmui_clearButtonImage:(UIImage *)qmui_clearButtonImage {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_clearButtonImage, qmui_clearButtonImage, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     [self.qmui_clearButton setImage:qmui_clearButtonImage forState:UIControlStateNormal];
-    
     // 如果当前 clearButton 正在显示的时候把自定义图片去掉，需要重新 layout 一次才能让系统默认图片显示出来
     if (!qmui_clearButtonImage) {
         [self setNeedsLayout];

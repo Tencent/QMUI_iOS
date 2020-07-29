@@ -16,15 +16,43 @@
 #import "UITableViewCell+QMUI.h"
 #import <objc/runtime.h>
 #import "QMUICore.h"
+#import "UIView+QMUI.h"
+#import "UITableView+QMUI.h"
+#import "CALayer+QMUI.h"
+
+const UIEdgeInsets QMUITableViewCellSeparatorInsetsNone = {INFINITY, INFINITY, INFINITY, INFINITY};
+
+@interface UITableViewCell ()
+
+@property(nonatomic, strong) CALayer *qmuiTbc_separatorLayer;
+@property(nonatomic, strong) CALayer *qmuiTbc_topSeparatorLayer;
+@end
 
 @implementation UITableViewCell (QMUI)
 
+QMUISynthesizeNSIntegerProperty(qmui_style, setQmui_style)
+QMUISynthesizeIdStrongProperty(qmuiTbc_separatorLayer, setQmuiTbc_separatorLayer)
+QMUISynthesizeIdStrongProperty(qmuiTbc_topSeparatorLayer, setQmuiTbc_topSeparatorLayer)
+QMUISynthesizeIdCopyProperty(qmui_separatorInsetsBlock, setQmui_separatorInsetsBlock)
+QMUISynthesizeIdCopyProperty(qmui_topSeparatorInsetsBlock, setQmui_topSeparatorInsetsBlock)
 QMUISynthesizeIdCopyProperty(qmui_setHighlightedBlock, setQmui_setHighlightedBlock)
 QMUISynthesizeIdCopyProperty(qmui_setSelectedBlock, setQmui_setSelectedBlock)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        OverrideImplementation([UITableViewCell class], @selector(initWithStyle:reuseIdentifier:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UITableViewCell *(UITableViewCell *selfObject, UITableViewCellStyle firstArgv, NSString *secondArgv) {
+                // call super
+                UITableViewCell *(*originSelectorIMP)(id, SEL, UITableViewCellStyle, NSString *);
+                originSelectorIMP = (UITableViewCell *(*)(id, SEL, UITableViewCellStyle, NSString *))originalIMPProvider();
+                UITableViewCell *result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+                
+                // 系统虽然有私有 API - (UITableViewCellStyle)style; 可以用，但该方法在 init 内得到的永远是 0，只有 init 执行完成后才可以得到正确的值，所以这里只能自己记录
+                result.qmui_style = firstArgv;
+                return result;
+            };
+        });
         ExtendImplementationOfVoidMethodWithTwoArguments([UITableViewCell class], @selector(setHighlighted:animated:), BOOL, BOOL, ^(UITableViewCell *selfObject, BOOL highlighted, BOOL animated) {
             if (selfObject.qmui_setHighlightedBlock) {
                 selfObject.qmui_setHighlightedBlock(highlighted, animated);
@@ -36,7 +64,118 @@ QMUISynthesizeIdCopyProperty(qmui_setSelectedBlock, setQmui_setSelectedBlock)
                 selfObject.qmui_setSelectedBlock(selected, animated);
             }
         });
+        
+        // 修复 iOS 13.0 UIButton 作为 cell.accessoryView 时布局错误的问题
+        // https://github.com/Tencent/QMUI_iOS/issues/693
+        if (@available(iOS 13.0, *)) {
+            if (@available(iOS 13.1, *)) {
+            } else {
+                ExtendImplementationOfVoidMethodWithoutArguments([UITableViewCell class], @selector(layoutSubviews), ^(UITableViewCell *selfObject) {
+                    if ([selfObject.accessoryView isKindOfClass:[UIButton class]]) {
+                        CGFloat defaultRightMargin = 15 + SafeAreaInsetsConstantForDeviceWithNotch.right;
+                        selfObject.accessoryView.qmui_left = selfObject.qmui_width - defaultRightMargin - selfObject.accessoryView.qmui_width;
+                        selfObject.accessoryView.qmui_top = CGRectGetMinYVerticallyCenterInParentRect(selfObject.frame, selfObject.accessoryView.frame);;
+                        selfObject.contentView.qmui_right = selfObject.accessoryView.qmui_left;
+                    }
+                });
+            }
+        }
     });
+}
+
+static char kAssociatedObjectKey_cellPosition;
+- (void)setQmui_cellPosition:(QMUITableViewCellPosition)qmui_cellPosition {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_cellPosition, @(qmui_cellPosition), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    BOOL shouldShowSeparatorInTableView = self.qmui_tableView && self.qmui_tableView.separatorStyle != UITableViewCellSeparatorStyleNone;
+    if (shouldShowSeparatorInTableView) {
+        [self qmuiTbc_createSeparatorLayerIfNeeded];
+        [self qmuiTbc_createTopSeparatorLayerIfNeeded];
+    }
+}
+
+- (QMUITableViewCellPosition)qmui_cellPosition {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_cellPosition)) integerValue];
+}
+
+- (void)qmuiTbc_swizzleLayoutSubviews {
+    [QMUIHelper executeBlock:^{
+        ExtendImplementationOfVoidMethodWithoutArguments(self.class, @selector(layoutSubviews), ^(UITableViewCell *cell) {
+            if (cell.qmuiTbc_separatorLayer && !cell.qmuiTbc_separatorLayer.hidden) {
+                UIEdgeInsets insets = cell.qmui_separatorInsetsBlock(cell.qmui_tableView, cell);
+                CGRect frame = CGRectZero;
+                if (!UIEdgeInsetsEqualToEdgeInsets(insets, QMUITableViewCellSeparatorInsetsNone)) {
+                    CGFloat height = PixelOne;
+                    frame = CGRectMake(insets.left, CGRectGetHeight(cell.bounds) - height + insets.top - insets.bottom, MAX(0, CGRectGetWidth(cell.bounds) - UIEdgeInsetsGetHorizontalValue(insets)), height);
+                }
+                cell.qmuiTbc_separatorLayer.frame = frame;
+            }
+            
+            if (cell.qmuiTbc_topSeparatorLayer && !cell.qmuiTbc_topSeparatorLayer.hidden) {
+                UIEdgeInsets insets = cell.qmui_topSeparatorInsetsBlock(cell.qmui_tableView, cell);
+                CGRect frame = CGRectZero;
+                if (!UIEdgeInsetsEqualToEdgeInsets(insets, QMUITableViewCellSeparatorInsetsNone)) {
+                    CGFloat height = PixelOne;
+                    frame = CGRectMake(insets.left, insets.top - insets.bottom, MAX(0, CGRectGetWidth(cell.bounds) - UIEdgeInsetsGetHorizontalValue(insets)), height);
+                }
+                cell.qmuiTbc_topSeparatorLayer.frame = frame;
+            }
+        });
+    } oncePerIdentifier:[NSString stringWithFormat:@"UITableViewCell %@-%@", NSStringFromClass(self.class), NSStringFromSelector(@selector(layoutSubviews))]];
+}
+
+- (BOOL)qmuiTbc_customizedSeparator {
+    return !!self.qmui_separatorInsetsBlock;
+}
+
+- (BOOL)qmuiTbc_customizedTopSeparator {
+    return !!self.qmui_topSeparatorInsetsBlock;
+}
+
+- (void)qmuiTbc_createSeparatorLayerIfNeeded {
+    if (![self qmuiTbc_customizedSeparator]) {
+        self.qmuiTbc_separatorLayer.hidden = YES;
+        return;
+    }
+    
+    BOOL shouldShowSeparator = !UIEdgeInsetsEqualToEdgeInsets(self.qmui_separatorInsetsBlock(self.qmui_tableView, self), QMUITableViewCellSeparatorInsetsNone);
+    if (shouldShowSeparator) {
+        if (!self.qmuiTbc_separatorLayer) {
+            [self qmuiTbc_swizzleLayoutSubviews];
+            self.qmuiTbc_separatorLayer = [CALayer layer];
+            [self.qmuiTbc_separatorLayer qmui_removeDefaultAnimations];
+            [self.layer addSublayer:self.qmuiTbc_separatorLayer];
+        }
+        self.qmuiTbc_separatorLayer.backgroundColor = self.qmui_tableView.separatorColor.CGColor;
+        self.qmuiTbc_separatorLayer.hidden = NO;
+    } else {
+        if (self.qmuiTbc_separatorLayer) {
+            self.qmuiTbc_separatorLayer.hidden = YES;
+        }
+    }
+}
+
+- (void)qmuiTbc_createTopSeparatorLayerIfNeeded {
+    if (![self qmuiTbc_customizedTopSeparator]) {
+        self.qmuiTbc_topSeparatorLayer.hidden = YES;
+        return;
+    }
+    
+    BOOL shouldShowSeparator = !UIEdgeInsetsEqualToEdgeInsets(self.qmui_topSeparatorInsetsBlock(self.qmui_tableView, self), QMUITableViewCellSeparatorInsetsNone);
+    if (shouldShowSeparator) {
+        if (!self.qmuiTbc_topSeparatorLayer) {
+            [self qmuiTbc_swizzleLayoutSubviews];
+            self.qmuiTbc_topSeparatorLayer = [CALayer layer];
+            [self.qmuiTbc_topSeparatorLayer qmui_removeDefaultAnimations];
+            [self.layer addSublayer:self.qmuiTbc_topSeparatorLayer];
+        }
+        self.qmuiTbc_topSeparatorLayer.backgroundColor = self.qmui_tableView.separatorColor.CGColor;
+        self.qmuiTbc_topSeparatorLayer.hidden = NO;
+    } else {
+        if (self.qmuiTbc_topSeparatorLayer) {
+            self.qmuiTbc_topSeparatorLayer.hidden = YES;
+        }
+    }
 }
 
 - (UITableView *)qmui_tableView {
@@ -69,6 +208,25 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
     if (self.accessoryView) {
         return self.accessoryView;
     }
+    
+    // UITableViewCellAccessoryDetailDisclosureButton 在 iOS 13 及以上是分开的两个 accessoryView，以 NSSet 的形式存在这个私有接口里。而 iOS 12 及以下是以一个 UITableViewCellDetailDisclosureView 的 UIControl 存在。
+    if (@available(iOS 13.0, *)) {
+        NSSet<UIView *> *accessoryViews = [self qmui_valueForKey:@"_existingSystemAccessoryViews"];
+        if ([accessoryViews isKindOfClass:NSSet.class] && accessoryViews.count) {
+            UIView *leftView = nil;
+            for (UIView *accessoryView in accessoryViews) {
+                if (!leftView) {
+                    leftView = accessoryView;
+                    continue;
+                }
+                if (CGRectGetMinX(accessoryView.frame) < CGRectGetMinX(leftView.frame)) {
+                    leftView = accessoryView;
+                }
+            }
+            return leftView;
+        }
+        return nil;
+    }
     return [self qmui_valueForKey:@"_accessoryView"];
 }
 
@@ -77,6 +235,7 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
 @implementation UITableViewCell (QMUI_Styled)
 
 - (void)qmui_styledAsQMUITableViewCell {
+    if (!QMUICMIActivated) return;
     
     self.textLabel.font = UIFontMake(16);
     self.textLabel.backgroundColor = UIColorClear;
@@ -103,28 +262,133 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
     }
 }
 
-- (BOOL)_isGroupedStyle {
-    return self.qmui_tableView && self.qmui_tableView.style == UITableViewStyleGrouped;
-}
-
 - (UIColor *)qmui_styledTextLabelColor {
-    return self._isGroupedStyle ? TableViewGroupedCellTitleLabelColor : TableViewCellTitleLabelColor;
+    return PreferredValueForTableViewStyle(self.qmui_tableView.qmui_style, TableViewCellTitleLabelColor, TableViewGroupedCellTitleLabelColor, TableViewInsetGroupedCellTitleLabelColor);
 }
 
 - (UIColor *)qmui_styledDetailTextLabelColor {
-    return self._isGroupedStyle ? TableViewGroupedCellDetailLabelColor : TableViewCellDetailLabelColor;
+    return PreferredValueForTableViewStyle(self.qmui_tableView.qmui_style, TableViewCellDetailLabelColor, TableViewGroupedCellDetailLabelColor, TableViewInsetGroupedCellDetailLabelColor);
 }
 
 - (UIColor *)qmui_styledBackgroundColor {
-    return self._isGroupedStyle ? TableViewGroupedCellBackgroundColor : TableViewCellBackgroundColor;
+    return PreferredValueForTableViewStyle(self.qmui_tableView.qmui_style, TableViewCellBackgroundColor, TableViewGroupedCellBackgroundColor, TableViewInsetGroupedCellBackgroundColor);
 }
 
 - (UIColor *)qmui_styledSelectedBackgroundColor {
-    return self._isGroupedStyle ? TableViewGroupedCellSelectedBackgroundColor : TableViewCellSelectedBackgroundColor;
+    return PreferredValueForTableViewStyle(self.qmui_tableView.qmui_style, TableViewCellSelectedBackgroundColor, TableViewGroupedCellSelectedBackgroundColor, TableViewInsetGroupedCellSelectedBackgroundColor);
 }
 
 - (UIColor *)qmui_styledWarningBackgroundColor {
-    return self._isGroupedStyle ? TableViewGroupedCellWarningBackgroundColor : TableViewCellWarningBackgroundColor;
+    return PreferredValueForTableViewStyle(self.qmui_tableView.qmui_style, TableViewCellWarningBackgroundColor, TableViewGroupedCellWarningBackgroundColor, TableViewInsetGroupedCellWarningBackgroundColor);
+}
+
+@end
+
+@implementation UITableViewCell (QMUI_InsetGrouped)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        OverrideImplementation([UITableViewCell class], NSSelectorFromString(@"_separatorFrame"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^CGRect(UITableViewCell *selfObject) {
+                
+                if ([selfObject qmuiTbc_customizedSeparator]) {
+                    return CGRectZero;
+                }
+                
+                // iOS 13 自己会控制好 InsetGrouped 时不同 cellPosition 的分隔线显隐，iOS 12 及以下要全部手动处理
+                if (@available(iOS 13.0, *)) {
+                } else {
+                    if (selfObject.qmui_tableView && selfObject.qmui_tableView.qmui_style == QMUITableViewStyleInsetGrouped && (selfObject.qmui_cellPosition & QMUITableViewCellPositionLastInSection) == QMUITableViewCellPositionLastInSection) {
+                        return CGRectZero;
+                    }
+                }
+                
+                // call super
+                CGRect (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (CGRect (*)(id, SEL))originalIMPProvider();
+                CGRect result = originSelectorIMP(selfObject, originCMD);
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UITableViewCell class], NSSelectorFromString(@"_topSeparatorFrame"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^CGRect(UITableViewCell *selfObject) {
+                
+                if ([selfObject qmuiTbc_customizedTopSeparator]) {
+                    return CGRectZero;
+                }
+                
+                if (@available(iOS 13.0, *)) {
+                } else {
+                    // iOS 13 系统在 InsetGrouped 时默认就会隐藏顶部分隔线，所以这里只对 iOS 12 及以下处理
+                    if (selfObject.qmui_tableView && selfObject.qmui_tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
+                        return CGRectZero;
+                    }
+                }
+                
+                
+                // call super
+                CGRect (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (CGRect (*)(id, SEL))originalIMPProvider();
+                CGRect result = originSelectorIMP(selfObject, originCMD);
+                return result;
+            };
+        });
+        
+        // 下方的功能，iOS 13 都交给系统的 InsetGrouped 处理
+        if (@available(iOS 13.0, *)) return;
+        
+        OverrideImplementation([UITableViewCell class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITableViewCell *selfObject, CGRect firstArgv) {
+                
+                UITableView *tableView = selfObject.qmui_tableView;
+                if (tableView && tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
+                    firstArgv = CGRectMake(tableView.qmui_safeAreaInsets.left + tableView.qmui_insetGroupedHorizontalInset, CGRectGetMinY(firstArgv), CGRectGetWidth(firstArgv) - UIEdgeInsetsGetHorizontalValue(tableView.qmui_safeAreaInsets) - tableView.qmui_insetGroupedHorizontalInset * 2, CGRectGetHeight(firstArgv));
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGRect);
+                originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
+        
+        // 将缩进后的宽度传给 cell 的 sizeThatFits:，注意 sizeThatFits: 只有在 tableView 开启 self-sizing 的情况下才会被调用（也即高度被指定为 UITableViewAutomaticDimension）
+        // TODO: molice 系统的 UITableViewCell 第一次布局总是得到错误的高度，不知道为什么
+        OverrideImplementation([UITableViewCell class], @selector(systemLayoutSizeFittingSize:withHorizontalFittingPriority:verticalFittingPriority:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^CGSize(UITableViewCell *selfObject, CGSize targetSize, UILayoutPriority horizontalFittingPriority, UILayoutPriority verticalFittingPriority) {
+                
+                UITableView *tableView = selfObject.qmui_tableView;
+                if (tableView && tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
+                    [QMUIHelper executeBlock:^{
+                        OverrideImplementation(selfObject.class, @selector(sizeThatFits:), ^id(__unsafe_unretained Class originClass, SEL cellOriginCMD, IMP (^cellOriginalIMPProvider)(void)) {
+                            return ^CGSize(UITableViewCell *cell, CGSize firstArgv) {
+                                
+                                UITableView *tableView = cell.qmui_tableView;
+                                if (tableView && tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
+                                    firstArgv.width = firstArgv.width - UIEdgeInsetsGetHorizontalValue(tableView.qmui_safeAreaInsets) - tableView.qmui_insetGroupedHorizontalInset * 2;
+                                }
+                                
+                                // call super
+                                CGSize (*originSelectorIMP)(id, SEL, CGSize);
+                                originSelectorIMP = (CGSize (*)(id, SEL, CGSize))cellOriginalIMPProvider();
+                                CGSize result = originSelectorIMP(cell, cellOriginCMD, firstArgv);
+                                return result;
+                            };
+                        });
+                    } oncePerIdentifier:[NSString stringWithFormat:@"InsetGroupedCell %@-%@", NSStringFromClass(selfObject.class), NSStringFromSelector(@selector(sizeThatFits:))]];
+                }
+                
+                // call super
+                CGSize (*originSelectorIMP)(id, SEL, CGSize, UILayoutPriority, UILayoutPriority);
+                originSelectorIMP = (CGSize (*)(id, SEL, CGSize, UILayoutPriority, UILayoutPriority))originalIMPProvider();
+                CGSize result = originSelectorIMP(selfObject, originCMD, targetSize, horizontalFittingPriority, verticalFittingPriority);
+                return result;
+            };
+        });
+    });
 }
 
 @end

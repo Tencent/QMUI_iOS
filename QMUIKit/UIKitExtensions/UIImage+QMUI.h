@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, QMUIImageShape) {
     QMUIImageShapeOval,                 // 椭圆
-    QMUIImageShapeTriangle,             // 三角形
+    QMUIImageShapeTriangle,             // 尖头向上的三角形
     QMUIImageShapeDisclosureIndicator,  // 列表 cell 右边的箭头
     QMUIImageShapeCheckmark,            // 列表 cell 右边的checkmark
     QMUIImageShapeDetailButtonImage,    // 列表 cell 右边的 i 按钮图片

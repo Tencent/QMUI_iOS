@@ -28,13 +28,13 @@
 @implementation QMUIMultipleDelegates
 
 + (instancetype)weakDelegates {
-    QMUIMultipleDelegates *delegates = [[QMUIMultipleDelegates alloc] init];
+    QMUIMultipleDelegates *delegates = [[self alloc] init];
     delegates.delegates = [NSPointerArray weakObjectsPointerArray];
     return delegates;
 }
 
 + (instancetype)strongDelegates {
-    QMUIMultipleDelegates *delegates = [[QMUIMultipleDelegates alloc] init];
+    QMUIMultipleDelegates *delegates = [[self alloc] init];
     delegates.delegates = [NSPointerArray strongObjectsPointerArray];
     return delegates;
 }

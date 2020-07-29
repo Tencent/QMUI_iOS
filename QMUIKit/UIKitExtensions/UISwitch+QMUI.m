@@ -62,12 +62,7 @@ static char kAssociatedObjectKey_offTintColor;
 static NSString * const kDefaultOffTintColorKey = @"defaultOffTintColorKey";
 
 - (void)setQmui_offTintColor:(UIColor *)qmui_offTintColor {
-    UIView *switchWellView = nil;
-    if (@available(iOS 10.0, *)) {
-        switchWellView = [self valueForKeyPath:@"_visualElement._switchWellView"];
-    } else {
-        switchWellView = [self valueForKeyPath:@"_control._switchWellView"];
-    }
+    UIView *switchWellView = [self valueForKeyPath:@"_visualElement._switchWellView"];
     UIColor *defaultOffTintColor = [switchWellView qmui_getBoundObjectForKey:kDefaultOffTintColorKey];
     if (!defaultOffTintColor) {
         defaultOffTintColor = switchWellView.backgroundColor;

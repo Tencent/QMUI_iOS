@@ -80,10 +80,10 @@
 @property(nonatomic, strong, readonly) UIImageView *imageView;
 
 /// 设置当前要显示的 Live Photo，会把 image/video 相关内容清空，因此注意不要直接通过 livePhotoView.livePhoto 来设置
-@property(nonatomic, weak) PHLivePhoto *livePhoto NS_AVAILABLE_IOS(9_1);
+@property(nonatomic, weak) PHLivePhoto *livePhoto;
 
 /// 用于显示 Live Photo 的 view，仅在 iOS 9.1 及以后才有效
-@property(nonatomic, strong, readonly) PHLivePhotoView *livePhotoView NS_AVAILABLE_IOS(9_1);
+@property(nonatomic, strong, readonly) PHLivePhotoView *livePhotoView;
 
 /// 设置当前要显示的 video ，会把 image/livePhoto 相关内容清空，因此注意不要直接通过 videoPlayerLayer 来设置
 @property(nonatomic, weak) AVPlayerItem *videoPlayerItem;

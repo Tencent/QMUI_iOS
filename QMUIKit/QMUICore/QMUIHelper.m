@@ -24,6 +24,7 @@
 #import <math.h>
 #import <sys/utsname.h>
 
+const CGPoint QMUIBadgeInvalidateOffset = {-1000, -1000};
 NSString *const kQMUIResourcesBundleName = @"QMUIResources";
 
 @implementation QMUIHelper (Bundle)
@@ -177,8 +178,7 @@ QMUISynthesizeCGFloatProperty(lastKeyboardHeight, setLastKeyboardHeight)
         category != AVAudioSessionCategorySoloAmbient &&
         category != AVAudioSessionCategoryPlayback &&
         category != AVAudioSessionCategoryRecord &&
-        category != AVAudioSessionCategoryPlayAndRecord &&
-        category != AVAudioSessionCategoryAudioProcessing)
+        category != AVAudioSessionCategoryPlayAndRecord)
     {
         return;
     }
@@ -720,10 +720,10 @@ static NSInteger isHighPerformanceDevice = -1;
         NSInteger v1 = [currentVersionArr count] > pos ? [[currentVersionArr objectAtIndex:pos] integerValue] : 0;
         NSInteger v2 = [targetVersionArr count] > pos ? [[targetVersionArr objectAtIndex:pos] integerValue] : 0;
         if (v1 < v2) {
-            return NSOrderedAscending;
+            return NSOrderedDescending;
         }
         else if (v1 > v2) {
-            return NSOrderedDescending;
+            return NSOrderedAscending;
         }
         pos++;
     }
@@ -775,6 +775,22 @@ static NSInteger isHighPerformanceDevice = -1;
 - (void)dealloc {
     // QMUIHelper 若干个分类里有用到消息监听，所以在 dealloc 的时候注销一下
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+static NSMutableSet<NSString *> *executedIdentifiers;
++ (BOOL)executeBlock:(void (NS_NOESCAPE ^)(void))block oncePerIdentifier:(NSString *)identifier {
+    if (!block || identifier.length <= 0) return NO;
+    @synchronized (self) {
+        if (!executedIdentifiers) {
+            executedIdentifiers = NSMutableSet.new;
+        }
+        if (![executedIdentifiers containsObject:identifier]) {
+            [executedIdentifiers addObject:identifier];
+            block();
+            return YES;
+        }
+        return NO;
+    }
 }
 
 @end

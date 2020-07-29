@@ -44,7 +44,7 @@
     self.initByTableView = YES;
     if (self = [self initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         self.parentTableView = tableView;
-        [self didInitializeWithStyle:style];// _isGroupedStyle 的值因为 parentTableView 的变化而变化，所以这里重新执行一次 didInitializeWithStyle: 里的 qmui_styledAsQMUITableViewCell
+        [self didInitializeWithStyle:style];// 因为设置了 parentTableView，样式可能都需要变，所以这里重新执行一次 didInitializeWithStyle: 里的 qmui_styledAsQMUITableViewCell
     }
     return self;
 }
@@ -60,6 +60,7 @@
     return self;
 }
 
+// layoutSubviews 里不可以拿 textLabel 的 minX 来设置 separatorInset，如果要设置只能写死一个值，否则会导致 textLabel 的 minX 逐渐叠加从而使 textLabel 被移出屏幕外
 - (void)layoutSubviews {
     [super layoutSubviews];
     
@@ -114,9 +115,6 @@
         self.imageView.frame = imageViewFrame;
         self.textLabel.frame = textLabelFrame;
         self.detailTextLabel.frame = detailTextLabelFrame;
-        
-        // `layoutSubviews`这里不可以拿textLabel的minX来设置separatorInset，如果要设置只能写死一个值
-        // 否则会导致textLabel的minX逐渐叠加从而使textLabel被移出屏幕外
     }
     
     // 由于调整 accessoryEdgeInsets 可能会影响 contentView 的宽度，所以几个 subviews 的布局也要保护一下
@@ -130,15 +128,9 @@
     }
 }
 
-- (BOOL)_isGroupedStyle {
-    return self.parentTableView && self.parentTableView.style == UITableViewStyleGrouped;
-}
-
-- (void)setBackgroundColor:(UIColor *)backgroundColor {
-    [super setBackgroundColor:backgroundColor];
-    if (self.backgroundView) {
-        self.backgroundView.backgroundColor = backgroundColor;
-    }
+// QMUITableViewCell 由于 init 时就把 tableView 传进来，所以可以在更早的时机拿到 qmui_tableView 的值，如果是系统的 UITableView，默认只能在添加到 tableView 上之后才可以获取到引用
+- (UITableView *)qmui_tableView {
+    return self.parentTableView ?: [super qmui_tableView];
 }
 
 - (void)setEnabled:(BOOL)enabled {
@@ -322,6 +314,7 @@
     _enabled = YES;
     _accessoryHitTestEdgeInsets = UIEdgeInsetsMake(-12, -12, -12, -12);
     
+    // TODO: molice 测一下时至今日还需要吗？
     // 因为在hitTest里扩大了accessoryView的响应范围，因此提高了系统一个与此相关的bug的出现几率，所以又在scrollView.delegate里做一些补丁性质的东西来修复
     if ([self.subviews.firstObject isKindOfClass:[UIScrollView class]]) {
         UIScrollView *scrollView = (UIScrollView *)[self.subviews objectAtIndex:0];
@@ -333,8 +326,8 @@
 
 - (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath {
     // 子类继承
-    if (indexPath && self.parentTableView) {
-        QMUITableViewCellPosition position = [self.parentTableView qmui_positionForRowAtIndexPath:indexPath];
+    if (indexPath && self.qmui_tableView) {
+        QMUITableViewCellPosition position = [self.qmui_tableView qmui_positionForRowAtIndexPath:indexPath];
         self.cellPosition = position;
     } else {
         self.cellPosition = QMUITableViewCellPositionNone;

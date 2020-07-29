@@ -22,7 +22,6 @@
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
 #import "UIColor+QMUI.h"
-#import "UIControl+QMUI.h"
 #import "UIImage+QMUI.h"
 
 @interface QMUIConsoleToolbar ()

@@ -30,8 +30,8 @@ typedef NS_ENUM(NSUInteger, QMUITableViewHeaderFooterViewType) {
  *
  *  使用方式：
  *  基本与系统的 UITableViewHeaderFooterView 使用方式一致，额外需要做的事情有：
- *  1. 如果要支持高度自动根据内容变化，则需要重写 tableView:heightForHeaderInSection:、tableView:heightForFooterInSection:，在里面调用 headerFooterView 的 sizeThatFits:。
- *  2. 如果要应用配置表样式，则设置 parentTableView 和 type 这两个属性即可。
+ *  1. 如果要支持高度自动根据内容变化，则按系统的 self-sizing 方式，用 UITableViewAutomaticDimension 指定。或者重写 tableView:heightForHeaderInSection:、tableView:heightForFooterInSection:，在里面调用 headerFooterView 的 sizeThatFits:。
+ *  2. 如果要应用配置表样式，则设置 parentTableView 和 type 这两个属性即可。特别的，QMUICommonTableViewController 里默认已经处理好 parentTableView 和 type，子类无需操作。
  */
 @interface QMUITableViewHeaderFooterView : UITableViewHeaderFooterView
 

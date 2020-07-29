@@ -53,10 +53,20 @@ QMUISynthesizeBOOLProperty(qmui_applyingAppearance, setQmui_applyingAppearance)
  关于 appearance 要考虑这几点：
  1. 是否产生内存泄漏
  2. 父类的 appearance 能否在子类里生效
- 3. 如果某个 property 在 ClassA 里声明为 UI_APPEARANCE_SELECTOR，则在子类 Class B : Class A 里获取该 property 的值将为 nil，这是正常的，系统默认行为如此，系统是在 应用 appearance 的时候发现子类的 property 值为 nil 时才会从父类里读取值，在这个阶段才完成继承效果。
+ 3. 如果某个 property 在 ClassA 里声明为 UI_APPEARANCE_SELECTOR，则在子类 Class B : Class A 里获取该 property 的值将为 nil，这是正常的，系统默认行为如此，系统是在应用 appearance 的时候发现子类的 property 值为 nil 时才会从父类里读取值，在这个阶段才完成继承效果。
  */
 - (void)qmui_applyAppearance {
-    if ([self.class respondsToSelector:@selector(appearance)]) {
+    Class class = self.class;
+    if ([class respondsToSelector:@selector(appearance)]) {
+        // -[_UIAppearance _applyInvocationsTo:window:] 会调用 _appearanceGuideClass，如果不是 UIView 或者 UIViewController 的子类，需要额外实现这个方法。
+        SEL appearanceGuideClassSelector = NSSelectorFromString(@"_appearanceGuideClass");
+        if (!class_respondsToSelector(class, appearanceGuideClassSelector)) {
+            const char * typeEncoding = method_getTypeEncoding(class_getInstanceMethod(UIView.class, appearanceGuideClassSelector));
+            class_addMethod(class, appearanceGuideClassSelector, imp_implementationWithBlock(^Class(void) {
+                return nil;
+            }), typeEncoding);
+        }
+        
         self.qmui_applyingAppearance = YES;
         BeginIgnorePerformSelectorLeaksWarning
         SEL selector = NSSelectorFromString([NSString stringWithFormat:@"_%@:%@:", @"applyInvocationsTo", @"window"]);
@@ -68,34 +78,3 @@ QMUISynthesizeBOOLProperty(qmui_applyingAppearance, setQmui_applyingAppearance)
 
 @end
 EndIgnoreClangWarning
-
-
-@interface UIViewController (QMUIAppearance_Private)
-@end
-
-@implementation UIViewController (QMUIAppearance_Private)
-
-
-+ (void)load {
-    if (@available(iOS 10.0, *)) {
-    } else {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            OverrideImplementation([UIViewController class], @selector(view), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^UIView *(UIViewController *selfObject) {
-                    if (!selfObject.isViewLoaded && selfObject.qmui_applyingAppearance) {
-                        // qmui_applyAppearance 调用的是系统的 -[_UIAppearance applyInvocationsTowindow:] ，该方法在 iOS 9 上会访问 self.view 导致 loadView 被提前调用，这可能会导致一些流程顺序出错（比如业务的 viewDidLoad 被提前触发了），这里针这种情况做一下保护
-                        return nil;
-                    }
-                    UIView *(*originSelectorIMP)(id, SEL);
-                    originSelectorIMP = (UIView * (*)(id, SEL))originalIMPProvider();
-                    UIView *result = originSelectorIMP(selfObject, originCMD);
-                    return result;
-                };
-            });
-        });
-    }
-    
-}
-
-@end

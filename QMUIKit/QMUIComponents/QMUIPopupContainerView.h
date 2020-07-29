@@ -48,6 +48,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  */
 @interface QMUIPopupContainerView : UIControl {
     CAShapeLayer    *_backgroundLayer;
+    CALayer         *_arrowImageLayer;
     CGFloat         _arrowMinX;
     CGFloat         _arrowMinY;
 }
@@ -79,6 +80,10 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 三角箭头的大小，默认为 CGSizeMake(18, 9)
 @property(nonatomic, assign) CGSize arrowSize UI_APPEARANCE_SELECTOR;
 
+/// 三角箭头的图片，通常用于默认的三角样式不满足需求时。当使用了 arrowImage 后，arrowSize 将会被固定为 arrowImage.size。
+/// 图片必须为箭头向下的方向
+@property(nonatomic, strong) UIImage *arrowImage UI_APPEARANCE_SELECTOR;
+
 /// 最大宽度（指整个控件的宽度，而不是contentView部分），默认为CGFLOAT_MAX
 @property(nonatomic, assign) CGFloat maximumWidth UI_APPEARANCE_SELECTOR;
 
@@ -103,12 +108,18 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 最终布局时与父节点的边缘的临界点，默认为(10, 10, 10, 10)
 @property(nonatomic, assign) UIEdgeInsets safetyMarginsOfSuperview UI_APPEARANCE_SELECTOR;
 
+/// 浮层的背景色，作用区域为箭头+圆角矩形区域
 @property(nonatomic, strong) UIColor *backgroundColor UI_APPEARANCE_SELECTOR;
+
+/// 浮层点击 highlighted 时的背景色，作用区域为箭头+圆角矩形区域
 @property(nonatomic, strong) UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 当使用方法 2 显示并且打开了 automaticallyHidesWhenUserTap 时，可修改背景遮罩的颜色，默认为 UIColorMask，若非使用方法 2，或者没有打开 automaticallyHidesWhenUserTap，则背景遮罩为透明（可视为不存在背景遮罩）
 @property(nonatomic, strong) UIColor *maskViewBackgroundColor UI_APPEARANCE_SELECTOR;
+
+/// 浮层的阴影，默认包含箭头的形状，如果使用了 @c arrowImage 则不包含箭头。当不需要阴影时可将其置为 nil。
 @property(nonatomic, strong) UIColor *shadowColor UI_APPEARANCE_SELECTOR;
+
 @property(nonatomic, strong) UIColor *borderColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;
@@ -162,6 +173,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 
  @param size 浮层里除去 safetyMarginsOfSuperview、arrowSize、contentEdgeInsets 之外后，留给内容的实际大小，计算 subview 大小时均应使用这个参数来计算
  @return 自定义内容实际占据的大小
+ @note 计算结果不需要进行 MIN() 的保护操作，溢出与否会由父类统一处理，子类在这个方法里只需要告诉父类内容实际的大小即可。
  */
 - (CGSize)sizeThatFitsInContentView:(CGSize)size;
 @end

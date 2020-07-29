@@ -25,7 +25,7 @@
 @implementation QMUIEmotion
 
 + (instancetype)emotionWithIdentifier:(NSString *)identifier displayName:(NSString *)displayName {
-    QMUIEmotion *emotion = [[QMUIEmotion alloc] init];
+    QMUIEmotion *emotion = [[self alloc] init];
     emotion.identifier = identifier;
     emotion.displayName = displayName;
     return emotion;

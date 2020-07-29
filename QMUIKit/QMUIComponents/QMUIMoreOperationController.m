@@ -652,7 +652,7 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 @dynamic tag;
 
 + (instancetype)itemViewWithImage:(UIImage *)image selectedImage:(UIImage *)selectedImage title:(NSString *)title selectedTitle:(NSString *)selectedTitle handler:(void (^)(QMUIMoreOperationController *, QMUIMoreOperationItemView *))handler {
-    QMUIMoreOperationItemView *itemView = [[QMUIMoreOperationItemView alloc] init];
+    QMUIMoreOperationItemView *itemView = [[self alloc] init];
     [itemView setImage:image forState:UIControlStateNormal];
     [itemView setImage:selectedImage forState:UIControlStateSelected];
     [itemView setImage:selectedImage forState:UIControlStateHighlighted|UIControlStateSelected];

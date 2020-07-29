@@ -204,6 +204,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterContentInset;
 
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedSeparatorColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellTitleLabelColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellDetailLabelColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellBackgroundColor;
@@ -219,6 +220,26 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) CGFloat            tableViewGroupedSectionFooterDefaultHeight;
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionFooterContentInset;
+
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedCornerRadius;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedHorizontalInset;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSeparatorColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellTitleLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellDetailLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellSelectedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellWarningBackgroundColor;
+@property(nonatomic, strong, nullable) UIFont   *tableViewInsetGroupedSectionHeaderFont;
+@property(nonatomic, strong, nullable) UIFont   *tableViewInsetGroupedSectionFooterFont;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSectionHeaderTextColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSectionFooterTextColor;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionHeaderAccessoryMargins;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionFooterAccessoryMargins;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionHeaderDefaultHeight;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionFooterDefaultHeight;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionHeaderContentInset;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionFooterContentInset;
 
 #pragma mark - UIWindowLevel
 
@@ -238,13 +259,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *badgeTextColor;
 @property(nonatomic, strong, nullable) UIFont   *badgeFont;
 @property(nonatomic, assign) UIEdgeInsets       badgeContentEdgeInsets;
-@property(nonatomic, assign) CGPoint            badgeCenterOffset;
-@property(nonatomic, assign) CGPoint            badgeCenterOffsetLandscape;
+@property(nonatomic, assign) CGPoint            badgeOffset;
+@property(nonatomic, assign) CGPoint            badgeOffsetLandscape;
+@property(nonatomic, assign) CGPoint            badgeCenterOffset DEPRECATED_MSG_ATTRIBUTE("请改为使用 badgeOffset");
+@property(nonatomic, assign) CGPoint            badgeCenterOffsetLandscape DEPRECATED_MSG_ATTRIBUTE("请改为使用 badgeOffsetLandscape");
 
 @property(nonatomic, strong, nullable) UIColor  *updatesIndicatorColor;
 @property(nonatomic, assign) CGSize             updatesIndicatorSize;
-@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffset;
-@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffsetLandscape;
+@property(nonatomic, assign) CGPoint            updatesIndicatorOffset;
+@property(nonatomic, assign) CGPoint            updatesIndicatorOffsetLandscape;
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffset DEPRECATED_MSG_ATTRIBUTE("请改为使用 updatesIndicatorOffset");
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffsetLandscape DEPRECATED_MSG_ATTRIBUTE("请改为使用 updatesIndicatorOffsetLandscape");
 
 #pragma mark - Others
 

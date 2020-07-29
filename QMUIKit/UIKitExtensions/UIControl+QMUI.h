@@ -28,9 +28,6 @@
  */
 @property(nonatomic, assign) BOOL qmui_automaticallyAdjustTouchHighlightedInScrollView;
 
-/// 响应区域需要改变的大小，负值表示往外扩大，正值表示往内缩小
-@property(nonatomic,assign) UIEdgeInsets qmui_outsideEdge;
-
 /// setHighlighted: 方法的回调 block
 @property(nonatomic, copy) void (^qmui_setHighlightedBlock)(BOOL highlighted);
 

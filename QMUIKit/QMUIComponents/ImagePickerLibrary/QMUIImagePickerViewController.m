@@ -28,7 +28,6 @@
 #import "UIView+QMUI.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "QMUIEmptyView.h"
-#import "UIControl+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIAppearance.h"

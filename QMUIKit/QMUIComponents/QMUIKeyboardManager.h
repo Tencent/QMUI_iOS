@@ -55,7 +55,10 @@
 /**
  *  是否忽视 `applicationState` 状态的影响。默认为 NO，也即只有 `UIApplicationStateActive` 才会响应通知，如果设置为 YES，则任何 state 都会响应通知。
  */
-@property(nonatomic, assign) BOOL ignoreApplicationState;
+@property(nonatomic, assign) BOOL ignoreApplicationState UI_APPEARANCE_SELECTOR;
+
+
++ (instancetype)appearance;
 
 /**
  *  添加触发键盘事件的 UIResponder，一般是 UITextView 或者 UITextField ，不添加 targetResponder 的话，则默认接受任何 UIResponder 产生的键盘通知。

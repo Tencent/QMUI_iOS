@@ -15,13 +15,14 @@
 
 #import "QMUIRuntime.h"
 #import "QMUICommonDefines.h"
+#import "QMUIHelper.h"
 #include <mach-o/getsect.h>
 #include <mach-o/dyld.h>
 
 @implementation QMUIPropertyDescriptor
 
 + (instancetype)descriptorWithProperty:(objc_property_t)property {
-    QMUIPropertyDescriptor *descriptor = [[QMUIPropertyDescriptor alloc] init];
+    QMUIPropertyDescriptor *descriptor = [[self alloc] init];
     NSString *propertyName = [NSString stringWithUTF8String:property_getName(property)];
     descriptor.name = propertyName;
     

@@ -30,19 +30,19 @@
                                       didSelectTarget:(id)didSelectTarget
                                       didSelectAction:(SEL)didSelectAction
                                         accessoryType:(QMUIStaticTableViewCellAccessoryType)accessoryType {
-    return [QMUIStaticTableViewCellData staticTableViewCellDataWithIdentifier:identifier
-                                                                    cellClass:[QMUITableViewCell class]
-                                                                        style:UITableViewCellStyleDefault
-                                                                       height:TableViewCellNormalHeight
-                                                                        image:image
-                                                                         text:text
-                                                                   detailText:detailText
-                                                              didSelectTarget:didSelectTarget
-                                                              didSelectAction:didSelectAction
-                                                                accessoryType:accessoryType
-                                                         accessoryValueObject:nil
-                                                              accessoryTarget:nil
-                                                              accessoryAction:NULL];
+    return [self staticTableViewCellDataWithIdentifier:identifier
+                                             cellClass:[QMUITableViewCell class]
+                                                 style:UITableViewCellStyleDefault
+                                                height:TableViewCellNormalHeight
+                                                 image:image
+                                                  text:text
+                                            detailText:detailText
+                                       didSelectTarget:didSelectTarget
+                                       didSelectAction:didSelectAction
+                                         accessoryType:accessoryType
+                                  accessoryValueObject:nil
+                                       accessoryTarget:nil
+                                       accessoryAction:NULL];
 }
 
 + (instancetype)staticTableViewCellDataWithIdentifier:(NSInteger)identifier
@@ -58,7 +58,7 @@
                                  accessoryValueObject:(NSObject *)accessoryValueObject
                                       accessoryTarget:(id)accessoryTarget
                                       accessoryAction:(SEL)accessoryAction {
-    QMUIStaticTableViewCellData *data = [[QMUIStaticTableViewCellData alloc] init];
+    QMUIStaticTableViewCellData *data = [[self alloc] init];
     data.identifier = identifier;
     data.cellClass = cellClass;
     data.style = style;

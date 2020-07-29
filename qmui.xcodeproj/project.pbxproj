@@ -287,11 +287,21 @@
 		D021DE3C205E80EB00FFA408 /* QMUICellSizeKeyCache.m in Sources */ = {isa = PBXBuildFile; fileRef = D021DE3A205E80EB00FFA408 /* QMUICellSizeKeyCache.m */; };
 		D02FDB6E22D880F800DB7E13 /* UISwitch+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = D02FDB6C22D880F800DB7E13 /* UISwitch+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D02FDB6F22D880F800DB7E13 /* UISwitch+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = D02FDB6D22D880F800DB7E13 /* UISwitch+QMUI.m */; };
+		D03102B524A8CB410095C232 /* UIView+QMUIBorder.h in Headers */ = {isa = PBXBuildFile; fileRef = D03102B324A8CB410095C232 /* UIView+QMUIBorder.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D03102B624A8CB410095C232 /* UIView+QMUIBorder.m in Sources */ = {isa = PBXBuildFile; fileRef = D03102B424A8CB410095C232 /* UIView+QMUIBorder.m */; };
 		D031843B22C287EA00B43520 /* UIViewController+QMUITheme.h in Headers */ = {isa = PBXBuildFile; fileRef = D031843922C287EA00B43520 /* UIViewController+QMUITheme.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D031843C22C287EA00B43520 /* UIViewController+QMUITheme.m in Sources */ = {isa = PBXBuildFile; fileRef = D031843A22C287EA00B43520 /* UIViewController+QMUITheme.m */; };
+		D032060E2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = D032060C2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D032060F2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = D032060D2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.m */; };
 		D062F65F22BD0DBD00737AD2 /* UIView+QMUITheme.m in Sources */ = {isa = PBXBuildFile; fileRef = D062F65D22BD0DBD00737AD2 /* UIView+QMUITheme.m */; };
+		D09D4BDB24BF1561002D29FF /* UIVisualEffectView+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = D09D4BD924BF1561002D29FF /* UIVisualEffectView+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D09D4BDC24BF1561002D29FF /* UIVisualEffectView+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = D09D4BDA24BF1561002D29FF /* UIVisualEffectView+QMUI.m */; };
+		D0BEFA97247D42510006D1B9 /* UIView+QMUIBadge.h in Headers */ = {isa = PBXBuildFile; fileRef = D0BEFA95247D42510006D1B9 /* UIView+QMUIBadge.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D0BEFA98247D42510006D1B9 /* UIView+QMUIBadge.m in Sources */ = {isa = PBXBuildFile; fileRef = D0BEFA96247D42510006D1B9 /* UIView+QMUIBadge.m */; };
+		D0BEFA9A247D427A0006D1B9 /* QMUIBadgeProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = D0BEFA99247D427A0006D1B9 /* QMUIBadgeProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D0D0D81A20C2B973000A33D8 /* UIBarItem+QMUIBadge.h in Headers */ = {isa = PBXBuildFile; fileRef = D0D0D81820C2B973000A33D8 /* UIBarItem+QMUIBadge.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D0D0D81B20C2B973000A33D8 /* UIBarItem+QMUIBadge.m in Sources */ = {isa = PBXBuildFile; fileRef = D0D0D81920C2B973000A33D8 /* UIBarItem+QMUIBadge.m */; };
+		D0F0C7C2246A926600927A1A /* QMUICommonDefinesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D0F0C7C1246A926600927A1A /* QMUICommonDefinesTests.m */; };
 		D0FB669821CBF00F00806600 /* UIInterface+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = D0FB669621CBF00F00806600 /* UIInterface+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D0FB669921CBF00F00806600 /* UIInterface+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = D0FB669721CBF00F00806600 /* UIInterface+QMUI.m */; };
 		FE1FBCA91E8BA61300C6C01A /* UITextField+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -611,11 +621,21 @@
 		D021DE3A205E80EB00FFA408 /* QMUICellSizeKeyCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUICellSizeKeyCache.m; sourceTree = "<group>"; };
 		D02FDB6C22D880F800DB7E13 /* UISwitch+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISwitch+QMUI.h"; sourceTree = "<group>"; };
 		D02FDB6D22D880F800DB7E13 /* UISwitch+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISwitch+QMUI.m"; sourceTree = "<group>"; };
+		D03102B324A8CB410095C232 /* UIView+QMUIBorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+QMUIBorder.h"; sourceTree = "<group>"; };
+		D03102B424A8CB410095C232 /* UIView+QMUIBorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+QMUIBorder.m"; sourceTree = "<group>"; };
 		D031843922C287EA00B43520 /* UIViewController+QMUITheme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIViewController+QMUITheme.h"; sourceTree = "<group>"; };
 		D031843A22C287EA00B43520 /* UIViewController+QMUITheme.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIViewController+QMUITheme.m"; sourceTree = "<group>"; };
+		D032060C2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UITableViewHeaderFooterView+QMUI.h"; sourceTree = "<group>"; };
+		D032060D2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UITableViewHeaderFooterView+QMUI.m"; sourceTree = "<group>"; };
 		D062F65D22BD0DBD00737AD2 /* UIView+QMUITheme.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+QMUITheme.m"; sourceTree = "<group>"; };
+		D09D4BD924BF1561002D29FF /* UIVisualEffectView+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIVisualEffectView+QMUI.h"; sourceTree = "<group>"; };
+		D09D4BDA24BF1561002D29FF /* UIVisualEffectView+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIVisualEffectView+QMUI.m"; sourceTree = "<group>"; };
+		D0BEFA95247D42510006D1B9 /* UIView+QMUIBadge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIView+QMUIBadge.h"; sourceTree = "<group>"; };
+		D0BEFA96247D42510006D1B9 /* UIView+QMUIBadge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIView+QMUIBadge.m"; sourceTree = "<group>"; };
+		D0BEFA99247D427A0006D1B9 /* QMUIBadgeProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIBadgeProtocol.h; sourceTree = "<group>"; };
 		D0D0D81820C2B973000A33D8 /* UIBarItem+QMUIBadge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIBarItem+QMUIBadge.h"; sourceTree = "<group>"; };
 		D0D0D81920C2B973000A33D8 /* UIBarItem+QMUIBadge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIBarItem+QMUIBadge.m"; sourceTree = "<group>"; };
+		D0F0C7C1246A926600927A1A /* QMUICommonDefinesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUICommonDefinesTests.m; sourceTree = "<group>"; };
 		D0FB669621CBF00F00806600 /* UIInterface+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIInterface+QMUI.h"; sourceTree = "<group>"; };
 		D0FB669721CBF00F00806600 /* UIInterface+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIInterface+QMUI.m"; sourceTree = "<group>"; };
 		FE0AFAD11D82B9D8000D21D9 /* QMUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = QMUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -747,6 +767,7 @@
 		CD4EA572228C401E00A55066 /* QMUIKitTests */ = {
 			isa = PBXGroup;
 			children = (
+				D0F0C7C0246A91EF00927A1A /* Core */,
 				CD7A9A0B22C4AA2F0093DAB4 /* Components */,
 				CD4EA57C228C43FB00A55066 /* UIKitExtensions */,
 				CD4EA575228C401E00A55066 /* Info.plist */,
@@ -932,6 +953,8 @@
 				CDB8CAB91DCC870700769DF0 /* UITableView+QMUI.m */,
 				CD18CDFC20EE167200EED53C /* UITableViewCell+QMUI.h */,
 				CD18CDFD20EE167200EED53C /* UITableViewCell+QMUI.m */,
+				D032060C2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.h */,
+				D032060D2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.m */,
 				FE1FBCA71E8BA61300C6C01A /* UITextField+QMUI.h */,
 				FE1FBCA81E8BA61300C6C01A /* UITextField+QMUI.m */,
 				CDAB2D242357481700C96B31 /* UITextInputTraits+QMUI.h */,
@@ -942,10 +965,14 @@
 				08B399C822E18A3B000A8A45 /* UITraitCollection+QMUI.m */,
 				CDB8CABA1DCC870700769DF0 /* UIView+QMUI.h */,
 				CDB8CABB1DCC870700769DF0 /* UIView+QMUI.m */,
+				D03102B324A8CB410095C232 /* UIView+QMUIBorder.h */,
+				D03102B424A8CB410095C232 /* UIView+QMUIBorder.m */,
 				CDB8CABC1DCC870700769DF0 /* UIViewController+QMUI.h */,
 				CDB8CABD1DCC870700769DF0 /* UIViewController+QMUI.m */,
 				CDB8CABE1DCC870700769DF0 /* UIWindow+QMUI.h */,
 				CDB8CABF1DCC870700769DF0 /* UIWindow+QMUI.m */,
+				D09D4BD924BF1561002D29FF /* UIVisualEffectView+QMUI.h */,
+				D09D4BDA24BF1561002D29FF /* UIVisualEffectView+QMUI.m */,
 			);
 			path = UIKitExtensions;
 			sourceTree = "<group>";
@@ -1188,10 +1215,21 @@
 		D0D0D81720C2B95A000A33D8 /* QMUIBadge */ = {
 			isa = PBXGroup;
 			children = (
+				D0BEFA99247D427A0006D1B9 /* QMUIBadgeProtocol.h */,
 				D0D0D81820C2B973000A33D8 /* UIBarItem+QMUIBadge.h */,
 				D0D0D81920C2B973000A33D8 /* UIBarItem+QMUIBadge.m */,
+				D0BEFA95247D42510006D1B9 /* UIView+QMUIBadge.h */,
+				D0BEFA96247D42510006D1B9 /* UIView+QMUIBadge.m */,
 			);
 			path = QMUIBadge;
+			sourceTree = "<group>";
+		};
+		D0F0C7C0246A91EF00927A1A /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				D0F0C7C1246A926600927A1A /* QMUICommonDefinesTests.m */,
+			);
+			path = Core;
 			sourceTree = "<group>";
 		};
 		FECD351C22BBC3BB00DC69DE /* QMUIAnimation */ = {
@@ -1213,6 +1251,11 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D09D4BDB24BF1561002D29FF /* UIVisualEffectView+QMUI.h in Headers */,
+				D03102B524A8CB410095C232 /* UIView+QMUIBorder.h in Headers */,
+				D032060E2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.h in Headers */,
+				D0BEFA97247D42510006D1B9 /* UIView+QMUIBadge.h in Headers */,
+				D0BEFA9A247D427A0006D1B9 /* QMUIBadgeProtocol.h in Headers */,
 				083551A92438C0D000B8FEAB /* CALayer+QMUIViewAnimation.h in Headers */,
 				D00B6521242A67D7002C27AB /* QMUIAppearance.h in Headers */,
 				CDAB2D262357481700C96B31 /* UITextInputTraits+QMUI.h in Headers */,
@@ -1491,6 +1534,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CD4EA57E228C443B00A55066 /* UIColorTests.m in Sources */,
+				D0F0C7C2246A926600927A1A /* QMUICommonDefinesTests.m in Sources */,
 				CDC006E522A804D800A81771 /* NSObjectTests.m in Sources */,
 				CD7A9A0D22C4AA2F0093DAB4 /* QMUIThemeTests.m in Sources */,
 			);
@@ -1544,6 +1588,7 @@
 				CDAA653B22BBC3340004C6BB /* QMUIThemeManager.m in Sources */,
 				CDB8CBA01DCC870700769DF0 /* UIBezierPath+QMUI.m in Sources */,
 				CDB8CBB01DCC870800769DF0 /* UIControl+QMUI.m in Sources */,
+				D032060F2488E38900BB28E7 /* UITableViewHeaderFooterView+QMUI.m in Sources */,
 				D021DE38205E809500FFA408 /* UICollectionView+QMUICellSizeKeyCache.m in Sources */,
 				CDB8CBE01DCC870800769DF0 /* UIViewController+QMUI.m in Sources */,
 				FE1FBCAA1E8BA61300C6C01A /* UITextField+QMUI.m in Sources */,
@@ -1580,6 +1625,7 @@
 				CDC8700B1F68D63B000E8829 /* QMUIFloatLayoutView.m in Sources */,
 				FECD352322BBC3BB00DC69DE /* QMUIAnimationHelper.m in Sources */,
 				CD046C422018668900092035 /* QMUILogItem.m in Sources */,
+				D0BEFA98247D42510006D1B9 /* UIView+QMUIBadge.m in Sources */,
 				CDC8700C1F68D63B000E8829 /* QMUIGridView.m in Sources */,
 				CD046C462018670900092035 /* QMUILogNameManager.m in Sources */,
 				CDC8700F1F68D63B000E8829 /* QMUIKeyboardManager.m in Sources */,
@@ -1621,6 +1667,7 @@
 				CDAB2D272357481700C96B31 /* UITextInputTraits+QMUI.m in Sources */,
 				FE8710FD22E499EC00DF1354 /* UIMenuController+QMUI.m in Sources */,
 				083551AA2438C0D000B8FEAB /* CALayer+QMUIViewAnimation.m in Sources */,
+				D09D4BDC24BF1561002D29FF /* UIVisualEffectView+QMUI.m in Sources */,
 				D062F65F22BD0DBD00737AD2 /* UIView+QMUITheme.m in Sources */,
 				CDC870261F68D63B000E8829 /* QMUIStaticTableViewCellData.m in Sources */,
 				CDC870271F68D63B000E8829 /* QMUIStaticTableViewCellDataSource.m in Sources */,
@@ -1642,6 +1689,7 @@
 				CDC870311F68D63B000E8829 /* QMUINavigationController.m in Sources */,
 				FECD352722BBC3BB00DC69DE /* QMUIDisplayLinkAnimation.m in Sources */,
 				CDC870321F68D63B000E8829 /* QMUITabBarViewController.m in Sources */,
+				D03102B624A8CB410095C232 /* UIView+QMUIBorder.m in Sources */,
 				CD43CB28207B9B1A0090346B /* QMUIGhostButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1845,14 +1893,14 @@
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
 				INFOPLIST_FILE = QMUIKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.1.3;
+				MARKETING_VERSION = 4.2.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1889,14 +1937,14 @@
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
 				INFOPLIST_FILE = QMUIKit/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.1.3;
+				MARKETING_VERSION = 4.2.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";

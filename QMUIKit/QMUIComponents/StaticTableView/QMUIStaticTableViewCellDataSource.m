@@ -21,6 +21,7 @@
 #import <objc/runtime.h>
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
+#import "NSArray+QMUI.h"
 
 @interface QMUIStaticTableViewCellDataSource ()
 @end
@@ -41,6 +42,11 @@
 }
 
 - (void)setCellDataSections:(NSArray<NSArray<QMUIStaticTableViewCellData *> *> *)cellDataSections {
+#ifdef DEBUG
+    [cellDataSections qmui_enumerateNestedArrayWithBlock:^(QMUIStaticTableViewCellData *obj, BOOL * _Nonnull stop) {
+        NSAssert([obj isKindOfClass:QMUIStaticTableViewCellData.class], @"cellDataSections 内只允许出现 QMUIStatictableViewCellData 类型的元素");
+    }];
+#endif
     _cellDataSections = cellDataSections;
     [self.tableView reloadData];
 }
@@ -116,12 +122,16 @@
         }
         switcher.on = switcherOn;
         [switcher removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
-        [switcher addTarget:data.accessoryTarget action:data.accessoryAction forControlEvents:UIControlEventValueChanged];
+        if (data.accessorySwitchBlock) {
+            [switcher addTarget:self action:@selector(handleSwitcherEvent:) forControlEvents:UIControlEventValueChanged];
+        } else if ([data.accessoryTarget respondsToSelector:data.accessoryAction]) {
+            [switcher addTarget:data.accessoryTarget action:data.accessoryAction forControlEvents:UIControlEventValueChanged];
+        }
         cell.accessoryView = switcher;
     }
     
     // 统一设置selectionStyle
-    if (data.accessoryType == QMUIStaticTableViewCellAccessoryTypeSwitch || (!data.didSelectTarget || !data.didSelectAction)) {
+    if (data.accessoryType == QMUIStaticTableViewCellAccessoryTypeSwitch || (!data.didSelectBlock && (!data.didSelectTarget || !data.didSelectAction))) {
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
     } else {
         cell.selectionStyle = UITableViewCellSelectionStyleBlue;
@@ -143,7 +153,7 @@
 
 - (void)didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     QMUIStaticTableViewCellData *cellData = [self cellDataAtIndexPath:indexPath];
-    if (!cellData || !cellData.didSelectTarget || !cellData.didSelectAction) {
+    if (!cellData || (!cellData.didSelectBlock && (!cellData.didSelectTarget || !cellData.didSelectAction))) {
         QMUITableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         if (cell.selectionStyle != UITableViewCellSelectionStyleNone) {
             [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
@@ -152,10 +162,14 @@
     }
     
     // 1、分发选中事件（UISwitch 类型不支持 didSelect）
-    if ([cellData.didSelectTarget respondsToSelector:cellData.didSelectAction] && cellData.accessoryType != QMUIStaticTableViewCellAccessoryTypeSwitch) {
-        BeginIgnorePerformSelectorLeaksWarning
-        [cellData.didSelectTarget performSelector:cellData.didSelectAction withObject:cellData];
-        EndIgnorePerformSelectorLeaksWarning
+    if (cellData.accessoryType != QMUIStaticTableViewCellAccessoryTypeSwitch) {
+        if (cellData.didSelectBlock) {
+            cellData.didSelectBlock(self.tableView, cellData);
+        } else if ([cellData.didSelectTarget respondsToSelector:cellData.didSelectAction]) {
+            BeginIgnorePerformSelectorLeaksWarning
+            [cellData.didSelectTarget performSelector:cellData.didSelectAction withObject:cellData];
+            EndIgnorePerformSelectorLeaksWarning
+        }
     }
     
     // 2、处理点击状态（对checkmark类型的cell，选中后自动反选）
@@ -166,10 +180,20 @@
 
 - (void)accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath {
     QMUIStaticTableViewCellData *cellData = [self cellDataAtIndexPath:indexPath];
-    if ([cellData.accessoryTarget respondsToSelector:cellData.accessoryAction]) {
+    if (cellData.accessoryBlock) {
+        cellData.accessoryBlock(self.tableView, cellData);
+    } else if ([cellData.accessoryTarget respondsToSelector:cellData.accessoryAction]) {
         BeginIgnorePerformSelectorLeaksWarning
         [cellData.accessoryTarget performSelector:cellData.accessoryAction withObject:cellData];
         EndIgnorePerformSelectorLeaksWarning
+    }
+}
+
+- (void)handleSwitcherEvent:(UISwitch *)swicher {
+    NSIndexPath *indexPath = [self.tableView qmui_indexPathForRowAtView:swicher];
+    QMUIStaticTableViewCellData *cellData = [self cellDataAtIndexPath:indexPath];
+    if (cellData.accessorySwitchBlock) {
+        cellData.accessorySwitchBlock(self.tableView, cellData, swicher);
     }
 }
 
