@@ -120,6 +120,7 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIKeyboardManager' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIKeyboardManager.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIAppearance'
     end
 
     # 从这里开始就是非必须的组件
@@ -319,6 +320,7 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIVisualEffectView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIToastView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIBadge'
     end
 
     ss.subspec 'QMUITips' do |sss|
