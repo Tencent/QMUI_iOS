@@ -178,23 +178,23 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
 //}
 
 - (void)replaceMethodForDelegateIfNeeded:(id<UICollectionViewDelegate>)delegate {
-    if (self.qmui_cacheCellSizeByKeyAutomatically && delegate) {
-        void (^addSelectorBlock)(id<UICollectionViewDelegate>) = ^void(id<UICollectionViewDelegate> aDelegate) {
+//    if (self.qmui_cacheCellSizeByKeyAutomatically && delegate) {
+//        void (^addSelectorBlock)(id<UICollectionViewDelegate>) = ^void(id<UICollectionViewDelegate> aDelegate) {
 //            [QMUIHelper executeBlock:^{
 //            } oncePerIdentifier:[NSString stringWithFormat:@"QMUICellHeightKeyCache collectionView %@", NSStringFromClass(aDelegate.class)]];
-        };
-        
-        if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {
-            NSPointerArray *delegates = [((QMUIMultipleDelegates *)delegate).delegates copy];
-            for (id d in delegates) {
-                if ([d conformsToProtocol:@protocol(UICollectionViewDelegate)]) {
-                    addSelectorBlock((id<UICollectionViewDelegate>)d);
-                }
-            }
-        } else {
-            addSelectorBlock((id<UICollectionViewDelegate>)delegate);
-        }
-    }
+//        };
+//        
+//        if ([delegate isKindOfClass:[QMUIMultipleDelegates class]]) {
+//            NSPointerArray *delegates = [((QMUIMultipleDelegates *)delegate).delegates copy];
+//            for (id d in delegates) {
+//                if ([d conformsToProtocol:@protocol(UICollectionViewDelegate)]) {
+//                    addSelectorBlock((id<UICollectionViewDelegate>)d);
+//                }
+//            }
+//        } else {
+//            addSelectorBlock((id<UICollectionViewDelegate>)delegate);
+//        }
+//    }
 }
 
 @end
