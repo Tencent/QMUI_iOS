@@ -711,24 +711,7 @@ static NSInteger isHighPerformanceDevice = -1;
 }
 
 + (NSComparisonResult)compareSystemVersion:(NSString *)currentVersion toVersion:(NSString *)targetVersion {
-    NSArray *currentVersionArr = [currentVersion componentsSeparatedByString:@"."];
-    NSArray *targetVersionArr = [targetVersion componentsSeparatedByString:@"."];
-    
-    NSInteger pos = 0;
-    
-    while ([currentVersionArr count] > pos || [targetVersionArr count] > pos) {
-        NSInteger v1 = [currentVersionArr count] > pos ? [[currentVersionArr objectAtIndex:pos] integerValue] : 0;
-        NSInteger v2 = [targetVersionArr count] > pos ? [[targetVersionArr objectAtIndex:pos] integerValue] : 0;
-        if (v1 < v2) {
-            return NSOrderedDescending;
-        }
-        else if (v1 > v2) {
-            return NSOrderedAscending;
-        }
-        pos++;
-    }
-    
-    return NSOrderedSame;
+    return [currentVersion compare:targetVersion options:NSNumericSearch];
 }
 
 + (BOOL)isCurrentSystemAtLeastVersion:(NSString *)targetVersion {
