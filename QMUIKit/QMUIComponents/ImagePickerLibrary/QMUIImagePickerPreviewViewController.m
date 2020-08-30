@@ -197,6 +197,10 @@
         } else {
             [self.imagePreviewView.collectionView reloadData];
         }
+        return;
+    }
+    if (!assetFetchResultChange.hasIncrementalChanges) {
+        [self.imagePreviewView.collectionView reloadData];
     } else {
         [self.imagePreviewView.collectionView performBatchUpdates:^{
             [self.imagePreviewView.collectionView deleteItemsAtIndexPaths:assetFetchResultChange.removedIndexPaths];
@@ -471,6 +475,10 @@
     }
     const NSInteger newIndex = [self.assetsGroup convertedIndexForIndex:index
                                              albumSortType:self.albumSortType];
+    if (self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier] == nil) {
+        self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier] =
+            [[QMUIAsset alloc] initWithPHAsset:self.assetsGroup.phFetchResult[newIndex]];
+    }
     return self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier];
 }
 

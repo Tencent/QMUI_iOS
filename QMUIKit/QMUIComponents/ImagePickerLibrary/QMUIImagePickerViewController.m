@@ -212,6 +212,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
                                                                                                 albumSortType:self.albumSortType];
     if (!fetchResultChange.hasIncrementalChanges) {
         [self.collectionView reloadData];
+
     } else {
         [changeDetails.removedObjects enumerateObjectsUsingBlock:^(PHAsset * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [self.imageAssets removeObjectForKey:obj.localIdentifier];
@@ -231,22 +232,22 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
                 [self.collectionView moveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
             }];
 
-            NSMutableArray<QMUIAsset *> *selectedImageAssetArray = [[NSMutableArray alloc] init];
-            [_selectedImageAssetArray enumerateObjectsUsingBlock:^(QMUIAsset * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                PHObjectChangeDetails *objectChangeDetails = [changeInstance changeDetailsForObject:obj.phAsset];
-                if (!objectChangeDetails.objectWasDeleted) {
-                    [selectedImageAssetArray addObject:obj];
-                }
-            }];
-            _selectedImageAssetArray = selectedImageAssetArray;
-            [self updateImageCountAndCheckLimited];
-
-            // 更新 imagePickerPreviewViewController
-            if (self.imagePickerPreviewViewController != nil) {
-                self.imagePickerPreviewViewController.selectedImageAssetArray = selectedImageAssetArray;
-                [self.imagePickerPreviewViewController updateCollectionViewWithAssetFetchResultChange:fetchResultChange];
-            }
         }];
+    }
+    NSMutableArray<QMUIAsset *> *selectedImageAssetArray = [[NSMutableArray alloc] init];
+    [_selectedImageAssetArray enumerateObjectsUsingBlock:^(QMUIAsset * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        PHObjectChangeDetails *objectChangeDetails = [changeInstance changeDetailsForObject:obj.phAsset];
+        if (!objectChangeDetails.objectWasDeleted) {
+            [selectedImageAssetArray addObject:obj];
+        }
+    }];
+    _selectedImageAssetArray = selectedImageAssetArray;
+    [self updateImageCountAndCheckLimited];
+
+    // 更新 imagePickerPreviewViewController
+    if (self.imagePickerPreviewViewController != nil) {
+        self.imagePickerPreviewViewController.selectedImageAssetArray = selectedImageAssetArray;
+        [self.imagePickerPreviewViewController updateCollectionViewWithAssetFetchResultChange:fetchResultChange];
     }
 }
 
@@ -426,8 +427,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
-    const NSInteger index = [self.assetsGroup convertedIndexForIndex:indexPath.item albumSortType:self.albumSortType];
-    QMUIAsset *imageAsset = self.imageAssets[self.assetsGroup.phFetchResult[index].localIdentifier];
+    QMUIAsset *imageAsset = [self imageAssetForIndex:indexPath.item];
     NSString *identifier = nil;
     if (imageAsset.assetType == QMUIAssetTypeVideo) {
         identifier = kVideoCellIdentifier;
@@ -447,8 +447,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
-    const NSInteger index = [self.assetsGroup convertedIndexForIndex:indexPath.item albumSortType:self.albumSortType];
-    QMUIAsset *imageAsset = self.imageAssets[self.assetsGroup.phFetchResult[index].localIdentifier];
+    QMUIAsset *imageAsset = [self imageAssetForIndex:indexPath.item];
     if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:didSelectImageWithImagesAsset:afterImagePickerPreviewViewControllerUpdate:)]) {
         [self.imagePickerViewControllerDelegate imagePickerViewController:self didSelectImageWithImagesAsset:imageAsset afterImagePickerPreviewViewControllerUpdate:self.imagePickerPreviewViewController];
     }
@@ -514,8 +513,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     }
     
     QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[_collectionView cellForItemAtIndexPath:indexPath];
-    const NSInteger index = [self.assetsGroup convertedIndexForIndex:indexPath.item albumSortType:self.albumSortType];
-    QMUIAsset *imageAsset = self.imageAssets[self.assetsGroup.phFetchResult[index].localIdentifier];
+    QMUIAsset *imageAsset = [self imageAssetForIndex:indexPath.item];
     if (cell.checked) {
         // 移除选中状态
         if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:willUncheckImageAtIndex:)]) {
@@ -585,8 +583,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 
 - (void)requestImageWithIndexPath:(NSIndexPath *)indexPath {
     // 发出请求获取大图，如果图片在 iCloud，则会发出网络请求下载图片。这里同时保存请求 id，供取消请求使用
-    const NSInteger index = [self.assetsGroup convertedIndexForIndex:indexPath.item albumSortType:self.albumSortType];
-    QMUIAsset *imageAsset = self.imageAssets[self.assetsGroup.phFetchResult[index].localIdentifier];
+    QMUIAsset *imageAsset = [self imageAssetForIndex:indexPath.item];
     QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[_collectionView cellForItemAtIndexPath:indexPath];
     imageAsset.requestID = [imageAsset requestOriginImageWithCompletion:^(UIImage *result, NSDictionary *info) {
         
@@ -623,6 +620,18 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
             }
         });
     }];
+}
+
+#pragma mark - Image asset for index
+
+- (QMUIAsset *)imageAssetForIndex:(NSInteger)index {
+    const NSInteger newIndex = [self.assetsGroup convertedIndexForIndex:index
+                                                          albumSortType:self.albumSortType];
+    if (self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier] == nil) {
+        self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier] =
+            [[QMUIAsset alloc] initWithPHAsset:self.assetsGroup.phFetchResult[newIndex]];
+    }
+    return self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier];
 }
 
 @end
