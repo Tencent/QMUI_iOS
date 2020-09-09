@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIKeyboardManager.m
@@ -16,9 +16,7 @@
 #import "QMUIKeyboardManager.h"
 #import "QMUICore.h"
 #import "QMUILog.h"
-
-
-static QMUIKeyboardManager *kKeyboardManagerInstance;
+#import "QMUIAppearance.h"
 
 @interface QMUIKeyboardManager ()
 
@@ -310,13 +308,8 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
  */
 @implementation QMUIKeyboardManager
 
-+ (void)initialize {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (!kKeyboardManagerInstance) {
-            kKeyboardManagerInstance = [[QMUIKeyboardManager alloc] initWithDelegate:nil];
-        }
-    });
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
 }
 
 - (instancetype)init {
@@ -335,6 +328,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         _delegateEnabled = YES;
         _targetResponderValues = [[NSMutableArray alloc] init];
         [self addKeyboardNotification];
+        [self qmui_applyAppearance];
     }
     return self;
 }

@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUITableViewCell.h
@@ -53,13 +53,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign, getter = isEnabled) BOOL enabled;
 
 /// 保存对 tableView 的弱引用，在布局时可能会使用到 tableView 的一些属性例如 separatorColor 等
-@property(nonatomic, weak, nullable) UITableView *parentTableView;
+@property(nonatomic, weak, nullable) __kindof UITableView *parentTableView;
 
 /**
  *  cell 处于 section 中的位置，要求：
  *  1. cell 使用 initForTableViewXxx 方法初始化，或者初始化完后为 parentTableView 属性赋值。
  *  2. 在 cellForRow 里调用 [cell updateCellAppearanceWithIndexPath:] 方法。
  *  3. 之后即可通过 cellPosition 获取到正确的位置。
+ *
+ *  @note UITableViewCell(QMUI) 内也有一个 qmui_cellPosition，那个需要在 willDisplayCell 后才有值，cellForRow 里是用不了的，所以 QMUITableViewCell 才增加 cellPosition。
  */
 @property(nonatomic, assign, readonly) QMUITableViewCellPosition cellPosition;
 

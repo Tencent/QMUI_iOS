@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UITabBar+QMUI.m
@@ -51,6 +51,21 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
             return originReturnValue;
         });
         
+        // iOS 12 及以下，如果 UITabBar backgroundImage 为 nil，则 tabBar 会显示磨砂背景，此时不管怎么修改 shadowImage 都无效，都会显示系统默认的分隔线，导致无法很好地统一不同 iOS 版本的表现（iOS 13 及以上没有这个限制），所以这里做了兼容。
+        if (@available(iOS 13.0, *)) {
+        } else {
+            ExtendImplementationOfVoidMethodWithoutArguments(NSClassFromString(@"_UITabBarVisualProviderLegacyIOS"), NSSelectorFromString(@"_updateBackground"), ^(NSObject *selfObject) {
+                UITabBar *tabBar = [selfObject qmui_valueForKey:@"tabBar"];
+                if (!tabBar) return;
+                UIImage *shadowImage = tabBar.shadowImage;// 就算 tabBar 显示系统的分隔线，但依然能从 shadowImage 属性获取到业务自己设置的图片
+                UIImageView *shadowImageView = tabBar.qmui_shadowImageView;
+                if (shadowImage && shadowImageView && shadowImageView.backgroundColor && !shadowImageView.image) {
+                    shadowImageView.backgroundColor = nil;
+                    shadowImageView.image = shadowImage;
+                }
+            });
+        }
+        
         OverrideImplementation([UITabBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^void(UITabBar *selfObject, NSArray<UITabBarItem *> *items, BOOL animated) {
                 
@@ -96,7 +111,7 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
         
         OverrideImplementation([UITabBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UITabBar *selfObject, CGRect frame) {
-                if (IOS_VERSION < 11.2 && IS_58INCH_SCREEN && ShouldFixTabBarTransitionBugInIPhoneX) {
+                if (QMUICMIActivated && ShouldFixTabBarTransitionBugInIPhoneX && IOS_VERSION < 11.2 && IS_58INCH_SCREEN) {
                     if (CGRectGetHeight(frame) == TabBarHeight && CGRectGetMaxY(frame) < CGRectGetHeight(selfObject.superview.bounds)) {
                         // iOS 11 在界面 push 的过程中 tabBar 会瞬间往上跳，所以做这个修复。这个 bug 在 iOS 11.2 里已被系统修复。
                         // https://github.com/Tencent/QMUI_iOS/issues/217
@@ -175,34 +190,6 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
             });
         }
         
-        // iOS 11 全面屏设备里，在有 UITabBar 的情况下，如果一个 UIViewController 里有个占满全屏的 UIScrollView，则当 UIScrollView 滚到底部后进入下一级界面再返回，可看到 UIScrollView 滚动位置发生了跳动，这是因为切换界面过程中 UITabBar 做动画引发 safeAreaInsets 的变化，从而引发 UIScrollView 的 contentInset、contentOffset 变化。这里通过 additionalSafeAreaInsets 抵消该 safeAreaInsets 变化的差值，从而让 UIViewController.view 的所有 subview 感知不到这个过程中 safeAreaInsets 的变化，从而规避该 bug。
-        // https://github.com/Tencent/QMUI_iOS/issues/934
-        if (@available(iOS 11.0, *)) {
-            if (IS_NOTCHED_SCREEN && QMUICMIActivated && ShouldFixTabBarSafeAreaInsetsBugForNotchedScreen) {
-                ExtendImplementationOfVoidMethodWithoutArguments([UIViewController class], @selector(viewSafeAreaInsetsDidChange), ^(UIViewController *selfObject) {
-                    if (selfObject.tabBarController
-                        && selfObject.tabBarController.tabBar
-                        && !selfObject.tabBarController.tabBar.hidden
-                        && !selfObject.hidesBottomBarWhenPushed
-                        && selfObject.navigationController
-                        && selfObject.edgesForExtendedLayout & UIRectEdgeBottom) {
-                        UITabBar *tabBar = selfObject.tabBarController.tabBar;
-                        CGFloat bottom = selfObject.view.safeAreaInsets.bottom;
-                        CGFloat tabBarHeight = CGRectGetHeight(tabBar.frame);
-                        if (bottom != tabBarHeight) {
-                            UIEdgeInsets insets = selfObject.additionalSafeAreaInsets;
-                            if (bottom == tabBarHeight - tabBar.safeAreaInsets.bottom) {
-                                insets.bottom = tabBarHeight - bottom;
-                            } else {
-                                insets.bottom = 0;
-                            }
-                            selfObject.additionalSafeAreaInsets = insets;
-                        }
-                    }
-                });
-            }
-        }
-
         
         // 以下是将 iOS 12 修改 UITabBar 样式的接口转换成用 iOS 13 的新接口去设置（因为新旧方法是互斥的，所以统一在新系统都用新方法）
         // 但这样有个风险，因为 QMUIConfiguration 配置表里都是用 appearance 的方式去设置 standardAppearance，所以如果在 UITabBar 实例被添加到 window 之前修改过旧版任意一个样式接口，就会导致一个新的 UITabBarAppearance 对象被设置给 standardAppearance 属性，这样系统就会认为你这个 UITabBar 实例自定义了 standardAppearance，那么当它被 moveToWindow 时就不会自动应用 appearance 的值了，因此需要保证在添加到 window 前不要自行修改属性
@@ -277,18 +264,9 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
 - (UIImageView *)qmui_shadowImageView {
     if (@available(iOS 13, *)) {
         return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView1"];
-    } else if (@available(iOS 10, *)) {
-        // iOS 10 及以后，在 UITabBar 初始化之后就能获取到 backgroundView 和 shadowView 了
-        return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView"];
     }
-    // iOS 9 及以前，shadowView 要在 UITabBar 第一次 layoutSubviews 之后才会被创建，直至 UITabBarController viewWillAppear: 时仍未能获取到 shadowView，所以为了省去调用时机的考虑，这里获取不到的时候会主动触发一次 tabBar 的布局
-    UIImageView *shadowView = [self qmui_valueForKey:@"_shadowView"];
-    if (!shadowView) {
-        [self setNeedsLayout];
-        [self layoutIfNeeded];
-        shadowView = [self qmui_valueForKey:@"_shadowView"];
-    }
-    return shadowView;
+    // iOS 10 及以后，在 UITabBar 初始化之后就能获取到 backgroundView 和 shadowView 了
+    return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView"];
 }
 
 - (void)handleTabBarItemViewEvent:(UIControl *)itemView {

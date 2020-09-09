@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  CALayer+QMUI.m
@@ -39,7 +39,7 @@ QMUISynthesizeCGFloatProperty(qmui_originCornerRadius, setQmui_originCornerRadiu
         
         ExtendImplementationOfNonVoidMethodWithoutArguments([CALayer class], @selector(init), CALayer *, ^CALayer *(CALayer *selfObject, CALayer *originReturnValue) {
             selfObject.qmui_speedBeforePause = selfObject.speed;
-            selfObject.qmui_maskedCorners = QMUILayerMinXMinYCorner|QMUILayerMaxXMinYCorner|QMUILayerMinXMaxYCorner|QMUILayerMaxXMaxYCorner;
+            selfObject.qmui_maskedCorners = QMUILayerAllCorner;
             return originReturnValue;
         });
         
@@ -180,17 +180,11 @@ static char kAssociatedObjectKey_maskedCorners;
 }
 
 - (void)qmui_sendSublayerToBack:(CALayer *)sublayer {
-    if (sublayer.superlayer == self) {
-        [sublayer removeFromSuperlayer];
-        [self insertSublayer:sublayer atIndex:0];
-    }
+    [self insertSublayer:sublayer atIndex:0];
 }
 
 - (void)qmui_bringSublayerToFront:(CALayer *)sublayer {
-    if (sublayer.superlayer == self) {
-        [sublayer removeFromSuperlayer];
-        [self insertSublayer:sublayer atIndex:(unsigned)self.sublayers.count];
-    }
+    [self insertSublayer:sublayer atIndex:(unsigned)self.sublayers.count];
 }
 
 - (void)qmui_removeDefaultAnimations {

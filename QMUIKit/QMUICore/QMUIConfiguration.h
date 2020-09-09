@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIConfiguration.h
@@ -204,6 +204,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterContentInset;
 
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedSeparatorColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellTitleLabelColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellDetailLabelColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellBackgroundColor;
@@ -220,15 +221,37 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionFooterContentInset;
 
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedCornerRadius;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedHorizontalInset;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSeparatorColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellTitleLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellDetailLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellSelectedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellWarningBackgroundColor;
+@property(nonatomic, strong, nullable) UIFont   *tableViewInsetGroupedSectionHeaderFont;
+@property(nonatomic, strong, nullable) UIFont   *tableViewInsetGroupedSectionFooterFont;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSectionHeaderTextColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSectionFooterTextColor;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionHeaderAccessoryMargins;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionFooterAccessoryMargins;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionHeaderDefaultHeight;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionFooterDefaultHeight;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionHeaderContentInset;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionFooterContentInset;
+
 #pragma mark - UIWindowLevel
 
 @property(nonatomic, assign) CGFloat            windowLevelQMUIAlertView;
+@property(nonatomic, assign) CGFloat            windowLevelQMUIConsole;
 
 #pragma mark - QMUILog
 
 @property(nonatomic, assign) BOOL               shouldPrintDefaultLog;
 @property(nonatomic, assign) BOOL               shouldPrintInfoLog;
 @property(nonatomic, assign) BOOL               shouldPrintWarnLog;
+@property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
 
 #pragma mark - QMUIBadge
 
@@ -236,13 +259,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *badgeTextColor;
 @property(nonatomic, strong, nullable) UIFont   *badgeFont;
 @property(nonatomic, assign) UIEdgeInsets       badgeContentEdgeInsets;
-@property(nonatomic, assign) CGPoint            badgeCenterOffset;
-@property(nonatomic, assign) CGPoint            badgeCenterOffsetLandscape;
+@property(nonatomic, assign) CGPoint            badgeOffset;
+@property(nonatomic, assign) CGPoint            badgeOffsetLandscape;
+@property(nonatomic, assign) CGPoint            badgeCenterOffset DEPRECATED_MSG_ATTRIBUTE("请改为使用 badgeOffset");
+@property(nonatomic, assign) CGPoint            badgeCenterOffsetLandscape DEPRECATED_MSG_ATTRIBUTE("请改为使用 badgeOffsetLandscape");
 
 @property(nonatomic, strong, nullable) UIColor  *updatesIndicatorColor;
 @property(nonatomic, assign) CGSize             updatesIndicatorSize;
-@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffset;
-@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffsetLandscape;
+@property(nonatomic, assign) CGPoint            updatesIndicatorOffset;
+@property(nonatomic, assign) CGPoint            updatesIndicatorOffsetLandscape;
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffset DEPRECATED_MSG_ATTRIBUTE("请改为使用 updatesIndicatorOffset");
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffsetLandscape DEPRECATED_MSG_ATTRIBUTE("请改为使用 updatesIndicatorOffsetLandscape");
 
 #pragma mark - Others
 
@@ -256,8 +283,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
 @property(nonatomic, assign) BOOL               shouldFixTabBarTransitionBugInIPhoneX;
 @property(nonatomic, assign) BOOL               shouldFixTabBarButtonBugForAll;
-@property(nonatomic, assign) BOOL               shouldFixTabBarSafeAreaInsetsBugForNotchedScreen;
-@property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
+@property(nonatomic, assign) BOOL               shouldFixTabBarSafeAreaInsetsBug;
+@property(nonatomic, assign) BOOL               shouldFixSearchBarMaskViewLayoutBug;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
 @property(nonatomic, assign) BOOL               dynamicPreferredValueForIPad;
 @property(nonatomic, assign) BOOL               ignoreKVCAccessProhibited API_AVAILABLE(ios(13.0));

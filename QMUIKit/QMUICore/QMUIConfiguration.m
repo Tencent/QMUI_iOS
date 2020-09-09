@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIConfiguration.m
@@ -236,6 +236,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.tableViewSectionHeaderContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
     self.tableViewSectionFooterContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
     
+    self.tableViewGroupedSeparatorColor = self.tableViewSeparatorColor;
     self.tableViewGroupedSectionHeaderFont = UIFontMake(12);
     self.tableViewGroupedSectionFooterFont = UIFontMake(12);
     self.tableViewGroupedSectionHeaderTextColor = self.grayDarkenColor;
@@ -247,19 +248,42 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.tableViewGroupedSectionHeaderContentInset = UIEdgeInsetsMake(16, 15, 8, 15);
     self.tableViewGroupedSectionFooterContentInset = UIEdgeInsetsMake(8, 15, 2, 15);
     
+    self.tableViewInsetGroupedCornerRadius = 10;
+    self.tableViewInsetGroupedHorizontalInset = PreferredValueForVisualDevice(20, 15);
+    self.tableViewInsetGroupedSeparatorColor = self.tableViewSeparatorColor;
+    self.tableViewInsetGroupedSectionHeaderFont = self.tableViewGroupedSectionHeaderFont;
+    self.tableViewInsetGroupedSectionFooterFont = self.tableViewGroupedSectionFooterFont;
+    self.tableViewInsetGroupedSectionHeaderTextColor = self.tableViewSectionHeaderTextColor;
+    self.tableViewInsetGroupedSectionFooterTextColor = self.tableViewGroupedSectionFooterTextColor;
+    self.tableViewInsetGroupedSectionHeaderAccessoryMargins = self.tableViewGroupedSectionHeaderAccessoryMargins;
+    self.tableViewInsetGroupedSectionFooterAccessoryMargins = self.tableViewGroupedSectionFooterAccessoryMargins;
+    self.tableViewInsetGroupedSectionHeaderDefaultHeight = self.tableViewGroupedSectionHeaderDefaultHeight;
+    self.tableViewInsetGroupedSectionFooterDefaultHeight = self.tableViewGroupedSectionFooterDefaultHeight;
+    self.tableViewInsetGroupedSectionHeaderContentInset = self.tableViewGroupedSectionHeaderContentInset;
+    self.tableViewInsetGroupedSectionFooterContentInset = self.tableViewGroupedSectionFooterContentInset;
+    
     #pragma mark - UIWindowLevel
     self.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;
+    self.windowLevelQMUIConsole = 1;
     
     #pragma mark - QMUILog
     self.shouldPrintDefaultLog = YES;
     self.shouldPrintInfoLog = YES;
     self.shouldPrintWarnLog = YES;
+    self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG;
+    
+    #pragma mark - QMUIBadge
+    self.badgeOffset = QMUIBadgeInvalidateOffset;
+    self.badgeOffsetLandscape = QMUIBadgeInvalidateOffset;
+    self.updatesIndicatorOffset = QMUIBadgeInvalidateOffset;
+    self.updatesIndicatorOffsetLandscape = QMUIBadgeInvalidateOffset;
     
     #pragma mark - Others
     
     self.supportedOrientationMask = UIInterfaceOrientationMaskAll;
+    self.needsBackBarButtonItemTitle = YES;
     self.preventConcurrentNavigationControllerTransitions = YES;
-    self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG;
+    self.shouldFixTabBarSafeAreaInsetsBug = YES;
     self.sendAnalyticsToQMUITeam = YES;
 }
 
@@ -747,7 +771,8 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 @end
 
-const NSInteger QMUIImageOriginalRenderingModeDefault = -1;
+// 标记某个 UIImage 的 renderingMode 是否没有被 @c qmui_updateTintColorForiOS12AndEarlier: 方法修改过
+const NSInteger QMUIImageOriginalRenderingModeDefault = -1000;
 
 @interface UIImage (QMUIConfiguration)
 
@@ -766,19 +791,41 @@ const NSInteger QMUIImageOriginalRenderingModeDefault = -1;
     if (@available(iOS 13.0, *)) return;
     if (!tintColor) return;
     
-    UIImage *image = self.image;
-    UIImageRenderingMode renderingMode = image.renderingMode;
-    UIImageRenderingMode originalRenderingMode = image.qmui_originalRenderingMode;
-    if (originalRenderingMode == QMUIImageOriginalRenderingModeDefault) {
-        if (renderingMode != UIImageRenderingModeAlwaysOriginal) {
-            image = [[image qmui_imageWithTintColor:TabBarItemImageColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-            image.qmui_originalRenderingMode = renderingMode;
-            self.image = image;
+    UIImage *(^tintImageBlock)(UITabBarItem *item, UIImage *image, UIColor *configColor) = ^UIImage *(UITabBarItem *item, UIImage *image, UIColor *configColor) {
+        
+        if (!image || !configColor) return nil;
+        
+        UIImageRenderingMode renderingMode = image.renderingMode;
+        UIImageRenderingMode originalRenderingMode = image.qmui_originalRenderingMode;
+        
+        if (originalRenderingMode == QMUIImageOriginalRenderingModeDefault) {
+            if (renderingMode != UIImageRenderingModeAlwaysOriginal) {
+                image = [[image qmui_imageWithTintColor:configColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+                image.qmui_originalRenderingMode = renderingMode;
+                return image;
+            }
+        } else if (originalRenderingMode != UIImageRenderingModeAlwaysOriginal && renderingMode == UIImageRenderingModeAlwaysOriginal) {
+            image = [[image qmui_imageWithTintColor:configColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+            image.qmui_originalRenderingMode = originalRenderingMode;
+            return image;
         }
-    } else if (originalRenderingMode != UIImageRenderingModeAlwaysOriginal && renderingMode == UIImageRenderingModeAlwaysOriginal) {
-        image = [[image qmui_imageWithTintColor:TabBarItemImageColor] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-        image.qmui_originalRenderingMode = originalRenderingMode;
-        self.image = image;
+        return nil;
+    };
+    
+    UIImage *normalImage = tintImageBlock(self, self.image, TabBarItemImageColor);
+    if (normalImage) {
+        self.image = normalImage;
+    }
+    UIImage *selectedImage = self.selectedImage;
+    BOOL hasSetSelectedImage = selectedImage != self.image;// 系统的 UITabBarItem 只设置 image 不设置 selectedImage 时，访问 selectedImage 会直接返回 self.image 的值，但如果把相同的一个 image 对象同时赋值给 image 和 selectedImage，则两者的指针地址不同，因为 selectedImage setter 里会做一次 copy
+    if (!hasSetSelectedImage && !normalImage) {
+        // 说明没有设置 selectedImage，且 image 是 original 的，则此时 selectedImage 独立对待，从而让配置表对没设置 selectedImage 的也能配置它的颜色
+        selectedImage = [self.image imageWithRenderingMode:UIImageRenderingModeAutomatic];
+    }
+    selectedImage = tintImageBlock(self, selectedImage, TabBarItemImageColorSelected);
+    if (selectedImage) {
+        self.selectedImage = selectedImage;
+        self.selectedImage.qmui_originalRenderingMode = selectedImage.qmui_originalRenderingMode;// selectedImage setter 里会生成一个新的 selectedImage 实例，所以这里要复制原实例的属性
     }
 }
 

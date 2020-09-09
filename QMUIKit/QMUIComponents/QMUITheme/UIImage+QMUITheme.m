@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 //
 //  UIImage+QMUITheme.m
 //  QMUIKit
@@ -32,6 +32,29 @@
         [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
     }
     return self;
+}
+
+@end
+
+@interface QMUIAvoidExceptionProxy : NSProxy
+@end
+
+@implementation QMUIAvoidExceptionProxy
+
++ (instancetype)proxy {
+    static dispatch_once_t onceToken;
+    static QMUIAvoidExceptionProxy *instance = nil;
+    dispatch_once(&onceToken,^{
+        instance = [super alloc];
+    });
+    return instance;
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation {
+}
+
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector {
+    return [NSMethodSignature qmui_avoidExceptionSignature];
 }
 
 @end
@@ -65,6 +88,22 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
     return msgForwardIMP;
 }
 
+- (void)dealloc {
+    _themeProvider = nil;
+}
+
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    if (self.qmui_rawImage) {
+        // 这里不能加上 [self.qmui_rawImage respondsToSelector:aSelector] 的判断，否则 UIImage 没有机会做消息转发
+        return self.qmui_rawImage;
+    }
+    // 在 dealloc 的时候 UIImage 会调用 _isNamed 是用于判断 image 对象是否由 [UIImage imageNamed:] 创建的，并根据这个结果决定是否缓存 image，但是 QMUIThemeImage 仅仅是一个容器，真正的缓存工作会在 qmui_rawImage 的 dealloc 执行，所以可以忽略这个方法的调用
+    NSArray *ignoreSelectorNames = @[@"_isNamed"];
+    if (![ignoreSelectorNames containsObject:NSStringFromSelector(aSelector)]) {
+        QMUILogWarn(@"UIImage+QMUITheme", @"QMUIThemeImage 试图执行 %@ 方法，但是 qmui_rawImage 为 nil", NSStringFromSelector(aSelector));
+    }
+    return [QMUIAvoidExceptionProxy proxy];
+}
 
 + (void)initialize {
     static dispatch_once_t onceToken;
@@ -79,43 +118,23 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
             const char * typeDescription = (char *)method_getTypeEncoding(method);
             class_addMethod(selfClass, selector, qmui_getMsgForwardIMP(instance, selector), typeDescription);
         }];
-        
-        // dealloc 时，不应该转发给 qmui_rawImage 处理，因为 qmui_rawImage 可能会有其他对象引用，不一定在 QMUIThemeImage 释放后就随之释放
-        // 这里不能在 QMUIThemeImage 直接写 '- (void)dealloc { _themeProvider = nil; }' ，因为这样写会先调用 super dealloc，而 UIImage 的 dealloc 方法里会调用其他方法，从而再次触发消息转发、访问 qmui_rawImage，这可能会导致一些野指针问题，通过下面的方式，保持在执行 super dealloc 之前，先清空 _themeProvider
-        OverrideImplementation([QMUIThemeImage class], NSSelectorFromString(@"dealloc"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(__unsafe_unretained QMUIThemeImage *selfObject) {
-                selfObject->_themeProvider = nil;
-                void (*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD);
-            };
-        });
     });
+}
+
+// 让 QMUIThemeImage 支持 NSCopying 是为了修复 iOS 12 及以下版本，QMUIThemeImage 在搭配 resizable 使用的情况下可能无法跟随主题刷新的 bug，使用的地方在 UIView+QMUITheme qmui_themeDidChangeByManager:identifier:theme 内。
+// https://github.com/Tencent/QMUI_iOS/issues/971
+- (id)copyWithZone:(NSZone *)zone {
+    QMUIThemeImage *image = (QMUIThemeImage *)[UIImage qmui_imageWithThemeManagerName:self.managerName provider:self.themeProvider];
+    image.cachedRawImages = self.cachedRawImages;
+    return image;
+}
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<%@: %p>, rawImage is %@", NSStringFromClass(self.class), self, self.qmui_rawImage.description];
 }
 
 - (instancetype)init {
     return ((id (*)(id, SEL))[NSObject instanceMethodForSelector:_cmd])(self, _cmd);
-}
-
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
-    NSMethodSignature *result = [super methodSignatureForSelector:aSelector];
-    if (result) {
-        return result;
-    }
-    
-    result = [self.qmui_rawImage methodSignatureForSelector:aSelector];
-    if (result && [self.qmui_rawImage respondsToSelector:aSelector]) {
-        return result;
-    }
-    
-    return [NSMethodSignature qmui_avoidExceptionSignature];
-}
-
-- (void)forwardInvocation:(NSInvocation *)anInvocation {
-    SEL selector = anInvocation.selector;
-    if ([self.qmui_rawImage respondsToSelector:selector]) {
-        [anInvocation invokeWithTarget:self.qmui_rawImage];
-    }
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {

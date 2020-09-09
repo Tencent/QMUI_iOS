@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 //
 //  QMUIAppearance.h
 //  QMUIKit
@@ -21,13 +21,13 @@ UIKit 仅提供了对 UIView 默认的 UIAppearance 支持，如果你是一个�
 
 使用方法（可参考 QMUIAlertController）：
 
-1. 为目标类增加方法 +(instancetype)appearance; 方法，返回值类型使用 instancetype 是为了保证 Xcode 能正确进行代码提示。
+1. 为目标类增加方法 +(instancetype)appearance; 方法，返回值类型使用 instancetype 是为了保证 Xcode 能正确进行代码提示，命名无限制，用 appearance 只是为了统一。
 
 2. 为目标类支持 appearance 的属性、方法添加 UI_APPEARANCE_SELECTOR 标记，注意对于方法只有符合特定命名格式才支持，具体请查看 UIAppearance.h 顶部对宏 UI_APPEARANCE_SELECTOR 的注释。
  
 3. 在 +appearance 方法里通过 +[QMUIAppearance appearanceForClass:self] 得到 appearance 对象并返回。
  
-4. 在恰当的时机为目标类的 appearance 赋初始值，QMUI 通常在类的 +initialize 方法里赋值。
+4. 在恰当的时机为目标类的 appearance 赋初始值，QMUI 通常在类的 +initialize 方法里赋值。如果你支持 UI_APPEARANCE_SELECTOR 的属性默认值都为 nil，也可以忽略这一步。
  
 5. 在类初始化实例的时候（例如 init 方法里）调用 -qmui_applyQMUIAppearance 为实例赋初始值，注意如果你的父类已经调用过的话，子类不需要再重复调用。
 

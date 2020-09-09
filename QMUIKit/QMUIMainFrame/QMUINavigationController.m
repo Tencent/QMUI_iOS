@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
  * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUINavigationController.m
@@ -329,18 +329,26 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 }
 
 - (void)updateBackItemTitleWithCurrentViewController:(UIViewController *)currentViewController nextViewController:(UIViewController *)nextViewController {
-    if (currentViewController) {
-        // 全局屏蔽返回按钮的文字
-        if (QMUICMIActivated && !NeedsBackBarButtonItemTitle) {
-            currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
+    if (!currentViewController) return;
+    
+    // 如果某个 viewController 显式声明了返回按钮的文字，则无视配置表 NeedsBackBarButtonItemTitle 的值
+    UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)nextViewController;
+    if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+        NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
+        currentViewController.navigationItem.backBarButtonItem = title ? [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] : nil;
+        return;
+    }
+    
+    // 全局屏蔽返回按钮的文字
+    if (QMUICMIActivated && !NeedsBackBarButtonItemTitle) {
+#ifdef IOS14_SDK_ALLOWED
+        if (@available(iOS 14.0, *)) {
+            // 用新 API 来屏蔽返回按钮的文字，才能保证 iOS 14 长按返回按钮时能正确出现 viewController title
+            currentViewController.navigationItem.backButtonDisplayMode = UINavigationItemBackButtonDisplayModeMinimal;
+            return;
         }
-        
-        // 如果某个 viewController 显式声明了返回按钮的文字，则无视配置表 NeedsBackBarButtonItemTitle 的值，且该 viewController 的前一个 viewController 会负责设置该 viewController 的返回按钮文字
-        UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)nextViewController;
-        if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
-            NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
-            currentViewController.navigationItem.backBarButtonItem = title ? [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] : nil;
-        }
+#endif
+        currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
     }
 }
 
