@@ -207,7 +207,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     NSInteger low = 0;
     NSInteger high = [self numberOfSections];
     while (low <= high) {
-        NSInteger mid = (low + high) / 2;
+        NSInteger mid = low + ((high-low) >> 1);
         CGRect rectForSection = [self rectForSection:mid];
         rectForSection = CGRectToFixed(rectForSection, kFloatValuePrecision);
         if (CGRectContainsPoint(rectForSection, origin)) {
