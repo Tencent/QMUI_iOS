@@ -17,6 +17,7 @@
 #import "QMUICore.h"
 #import "QMUILog.h"
 #import "QMUIWeakObjectContainer.h"
+#import "UIViewController+QMUI.h"
 
 @interface _QMUINavigationInteractiveGestureDelegator : NSObject <UIGestureRecognizerDelegate>
 
@@ -104,7 +105,7 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
 
 - (BOOL)qmui_isPushing {
     if (self.viewControllers.count >= 2) {
-        UIViewController *previousViewController = self.childViewControllers[self.childViewControllers.count - 2];
+        UIViewController *previousViewController = self.viewControllers[self.viewControllers.count - 2];
         if (previousViewController == self.qmui_endedTransitionTopViewController) {
             return YES;
         }
@@ -128,32 +129,45 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
 }
 
 - (void)qmui_pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion {
-    [QMUIHelper executeAnimationBlock:^{
-        [self pushViewController:viewController animated:animated];
-    } completionBlock:completion];
+    // 要先进行转场操作才能产生 self.transitionCoordinator，然后才能用 qmui_animateAlongsideTransition:completion:，所以不能把转场操作放在 animation block 里。
+    [self pushViewController:viewController animated:animated];
+    if (completion) {
+        [self qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            completion();
+        }];
+    }
 }
 
 - (UIViewController *)qmui_popViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion {
-    __block UIViewController *result = nil;
-    [QMUIHelper executeAnimationBlock:^{
-        result = [self popViewControllerAnimated:animated];
-    } completionBlock:completion];
+    // 要先进行转场操作才能产生 self.transitionCoordinator，然后才能用 qmui_animateAlongsideTransition:completion:，所以不能把转场操作放在 animation block 里。
+    UIViewController *result = [self popViewControllerAnimated:animated];
+    if (completion) {
+        [self qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            completion();
+        }];
+    }
     return result;
 }
 
 - (NSArray<UIViewController *> *)qmui_popToViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion {
-    __block NSArray<UIViewController *> *result = nil;
-    [QMUIHelper executeAnimationBlock:^{
-        result = [self popToViewController:viewController animated:animated];
-    } completionBlock:completion];
+    // 要先进行转场操作才能产生 self.transitionCoordinator，然后才能用 qmui_animateAlongsideTransition:completion:，所以不能把转场操作放在 animation block 里。
+    NSArray<UIViewController *> *result = [self popToViewController:viewController animated:animated];
+    if (completion) {
+        [self qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            completion();
+        }];
+    }
     return result;
 }
 
 - (NSArray<UIViewController *> *)qmui_popToRootViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion {
-    __block NSArray<UIViewController *> *result = nil;
-    [QMUIHelper executeAnimationBlock:^{
-        result = [self popToRootViewControllerAnimated:animated];
-    } completionBlock:completion];
+    // 要先进行转场操作才能产生 self.transitionCoordinator，然后才能用 qmui_animateAlongsideTransition:completion:，所以不能把转场操作放在 animation block 里。
+    NSArray<UIViewController *> *result = [self popToRootViewControllerAnimated:animated];
+    if (completion) {
+        [self qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+            completion();
+        }];
+    }
     return result;
 }
 

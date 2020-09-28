@@ -67,24 +67,40 @@
 
 @implementation QMUIThemeImage
 
-
 static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
+    
     IMP msgForwardIMP = _objc_msgForward;
-    #if !defined(__arm64__)
-        Class cls = self.class;
-        Method method = class_getInstanceMethod(cls, selector);
-        const char *typeDescription = method_getTypeEncoding(method);
-        if (typeDescription[0] == '{') {
-            // 以下代码参考 JSPatch 的实现：
-            //In some cases that returns struct, we should use the '_stret' API:
-            //http://sealiesoftware.com/blog/archive/2008/10/30/objc_explain_objc_msgSend_stret.html
-            //NSMethodSignature knows the detail but has no API to return, we can only get the info from debugDescription.
-            NSMethodSignature *methodSignature = [NSMethodSignature signatureWithObjCTypes:typeDescription];
-            if ([methodSignature.debugDescription rangeOfString:@"is special struct return? YES"].location != NSNotFound) {
-                msgForwardIMP = (IMP)_objc_msgForward_stret;
+#if !defined(__arm64__)
+    // As an ugly internal runtime implementation detail in the 32bit runtime, we need to determine of the method we hook returns a struct or anything larger than id.
+    // https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/LowLevelABI/000-Introduction/introduction.html
+    // https://github.com/ReactiveCocoa/ReactiveCocoa/issues/783
+    // http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042e/IHI0042E_aapcs.pdf (Section 5.4)
+    Method method = class_getInstanceMethod(self.class, selector);
+    const char *encoding = method_getTypeEncoding(method);
+    BOOL methodReturnsStructValue = encoding[0] == _C_STRUCT_B;
+    if (methodReturnsStructValue) {
+        @try {
+            // 以下代码参考 JSPatch 的实现，但在 OpenCV 时会抛异常
+            NSMethodSignature *methodSignature = [NSMethodSignature signatureWithObjCTypes:encoding];
+            if ([methodSignature.debugDescription rangeOfString:@"is special struct return? YES"].location == NSNotFound) {
+                methodReturnsStructValue = NO;
             }
+        } @catch (__unused NSException *e) {
+            // 以下代码参考 Aspect 的实现，可以兼容 OpenCV
+            @try {
+                NSUInteger valueSize = 0;
+                NSGetSizeAndAlignment(encoding, &valueSize, NULL);
+
+                if (valueSize == 1 || valueSize == 2 || valueSize == 4 || valueSize == 8) {
+                    methodReturnsStructValue = NO;
+                }
+            } @catch (NSException *exception) {}
         }
-    #endif
+    }
+    if (methodReturnsStructValue) {
+        msgForwardIMP = (IMP)_objc_msgForward_stret;
+    }
+#endif
     return msgForwardIMP;
 }
 
@@ -271,8 +287,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
     return self.qmui_rawImage.imageWithHorizontallyFlippedOrientation;
 }
 
-#ifdef IOS13_SDK_ALLOWED
-
 - (BOOL)isSymbolImage {
     return self.qmui_rawImage.isSymbolImage;
 }
@@ -316,8 +330,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 - (UIImage *)imageWithTintColor:(UIColor *)color renderingMode:(UIImageRenderingMode)renderingMode {
     return [self.qmui_rawImage imageWithTintColor:color renderingMode:renderingMode];
 }
-
-#endif
 
 #pragma mark - <QMUIDynamicImageProtocol>
 

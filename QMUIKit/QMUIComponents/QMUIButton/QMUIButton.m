@@ -92,8 +92,8 @@
             // 图片和文字上下排版时，宽度以文字或图片的最大宽度为最终宽度
             if (isImageViewShowing) {
                 CGFloat imageLimitWidth = contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
-                CGSize imageSize = self._qmui_imageView.image ? [self._qmui_imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)] : self.currentImage.size;
-                imageSize.width = fmin(imageSize.width, imageLimitWidth);
+                CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)] : self.currentImage.size;
+                imageSize.width = fmin(imageSize.width, imageLimitWidth);// QMUIButton sizeThatFits 时 self._imageView 为 nil 但 self.imageView 有值，而开启了 Bold Text 时，系统的 self.imageView sizeThatFits 返回值会比没开启 BoldText 时多 1pt（不知道为什么文字加粗与否会影响 imageView...），从而保证开启 Bold Text 后文字依然能完整展示出来，所以这里应该用 self.imageView 而不是 self._imageView
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
             
@@ -117,8 +117,8 @@
             
             if (isImageViewShowing) {
                 CGFloat imageLimitHeight = contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
-                CGSize imageSize = self._qmui_imageView.image ? [self._qmui_imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)] : self.currentImage.size;
-                imageSize.height = fmin(imageSize.height, imageLimitHeight);
+                CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)] : self.currentImage.size;
+                imageSize.height = fmin(imageSize.height, imageLimitHeight);// QMUIButton sizeThatFits 时 self._imageView 为 nil 但 self.imageView 有值，而开启了 Bold Text 时，系统的 self.imageView sizeThatFits 返回值会比没开启 BoldText 时多 1pt（不知道为什么文字加粗与否会影响 imageView...），从而保证开启 Bold Text 后文字依然能完整展示出来，所以这里应该用 self.imageView 而不是 self._imageView
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
             

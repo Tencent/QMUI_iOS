@@ -80,18 +80,14 @@
                                        NSStringFromClass(UIToolbar.class):                  @[NSStringFromSelector(@selector(barTintColor)),],
                                        NSStringFromClass(UITabBar.class):                   ({
                                                                                            NSArray<NSString *> *result = nil;
-                                                                                           #ifdef IOS13_SDK_ALLOWED
                                                                                            if (@available(iOS 13.0, *)) {
                                                                                                // iOS 13 在 UITabBar (QMUI) 里对所有旧版接口都映射到 standardAppearance，所以重新设置一次 standardAppearance 就可以更新所有样式
                                                                                                result = @[NSStringFromSelector(@selector(standardAppearance)),];
                                                                                            } else {
-                                                                                           #endif
                                                                                                result = @[NSStringFromSelector(@selector(barTintColor)),
                                                                                                           NSStringFromSelector(@selector(unselectedItemTintColor)),
                                                                                                           NSStringFromSelector(@selector(selectedImageTintColor)),];
-                                                                                           #ifdef IOS13_SDK_ALLOWED
                                                                                            }
-                                                                                           #endif
                                                                                            result;
                                                                                        }),
                                        NSStringFromClass(UISearchBar.class):                        @[NSStringFromSelector(@selector(barTintColor)),

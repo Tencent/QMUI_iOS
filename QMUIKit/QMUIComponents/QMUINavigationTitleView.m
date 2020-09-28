@@ -340,6 +340,7 @@
             CGFloat secondLineWidth = [self secondLineWidthInVerticalStyle];
             CGFloat secondLineMinX = 0;
             CGFloat secondLineMaxX = 0;
+            CGFloat secondLineMinY = subtitleEdgeInsets.top + (isTitleLabelShowing ? CGRectGetMaxY(self.titleLabel.frame) + titleEdgeInsets.bottom : 0);
             if (alignLeft) {
                 secondLineMinX = contentOffsetLeft;
             } else if (alignRight) {
@@ -350,10 +351,10 @@
             secondLineMaxX = secondLineMinX + MIN(secondLineWidth, contentSize.width);
             secondLineMinX += self.needsSubAccessoryPlaceholderSpace ? [self subAccessorySpacingSize].width : 0;
             if (isSubAccessoryViewShowing) {
-                self.subAccessoryView.frame = CGRectSetXY(self.subAccessoryView.frame, secondLineMaxX - CGRectGetWidth(self.subAccessoryView.frame), subtitleEdgeInsets.top + CGFloatGetCenter(self.subtitleLabelSize.height, CGRectGetHeight(self.subAccessoryView.frame)) + self.subAccessoryViewOffset.y);
+                self.subAccessoryView.frame = CGRectSetXY(self.subAccessoryView.frame, secondLineMaxX - CGRectGetWidth(self.subAccessoryView.frame), secondLineMinY + CGFloatGetCenter(self.subtitleLabelSize.height, CGRectGetHeight(self.subAccessoryView.frame)) + self.subAccessoryViewOffset.y);
                 secondLineMaxX = CGRectGetMinX(self.subAccessoryView.frame) - self.subAccessoryViewOffset.x;
             }
-            self.subtitleLabel.frame = CGRectFlatMake(secondLineMinX, (isTitleLabelShowing ? CGRectGetMaxY(self.titleLabel.frame) + titleEdgeInsets.bottom : 0) + subtitleEdgeInsets.top, secondLineMaxX - secondLineMinX, self.subtitleLabelSize.height);
+            self.subtitleLabel.frame = CGRectFlatMake(secondLineMinX, secondLineMinY, secondLineMaxX - secondLineMinX, self.subtitleLabelSize.height);
         } else {
             self.subtitleLabel.frame = CGRectZero;
         }

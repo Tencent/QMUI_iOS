@@ -102,6 +102,7 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
 
 /// 提供一个 block 可以方便地控制状态栏样式，适用于无法重写父类方法的场景。默认不实现这个 block 则不干预样式。
 /// @note iOS 13 及以后，自己显示的 UIWindow 无法盖住状态栏了，但 iOS 12 及以前的系统，以 UIWindow 显示的浮层是可以盖住状态栏的，请知悉。
+/// @note 对于 QMUISearchController，这个 block 的返回值将会用于控制搜索状态下的状态栏样式。
 @property(nullable, nonatomic, copy) UIStatusBarStyle (^qmui_preferredStatusBarStyleBlock)(void);
 
 /// 提供一个 block 可以方便地控制状态栏动画，适用于无法重写父类方法的场景。默认不实现这个 block 则不干预动画。

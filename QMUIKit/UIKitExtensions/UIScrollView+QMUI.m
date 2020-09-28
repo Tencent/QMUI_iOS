@@ -40,7 +40,6 @@ QMUISynthesizeBOOLProperty(qmuiscroll_hasSetInitialContentInset, setQmuiscroll_h
             }
             return originReturnValue;
         });
-#ifdef IOS13_SDK_ALLOWED
         if (@available(iOS 13.0, *)) {
             if (QMUICMIActivated && AdjustScrollIndicatorInsetsByContentInsetAdjustment) {
                 OverrideImplementation([UIScrollView class], @selector(setContentInsetAdjustmentBehavior:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
@@ -60,7 +59,6 @@ QMUISynthesizeBOOLProperty(qmuiscroll_hasSetInitialContentInset, setQmuiscroll_h
                 });
             }
         }
-#endif
     });
 }
 

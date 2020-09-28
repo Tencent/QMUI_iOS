@@ -39,12 +39,25 @@
 
 #pragma mark - StatusBar
 
-- (UIViewController *)childViewControllerForStatusBarHidden {
-    return self.selectedViewController;
+// 如果 childViewController 有声明自己的状态栏样式，则用 childViewController 的，否则用 -[QMUITabBarViewController preferredStatusBarStyle] 里的
+- (UIViewController *)childViewControllerForStatusBarStyle {
+    UIViewController *childViewController = [super childViewControllerForStatusBarStyle];
+    if (QMUICMIActivated) {
+        BOOL hasOverride = childViewController.qmui_preferredStatusBarStyleBlock || [childViewController qmui_hasOverrideUIKitMethod:@selector(preferredStatusBarStyle)];
+        if (hasOverride) {
+            return childViewController;
+        }
+        return nil;
+    }
+    return childViewController;
 }
 
-- (UIViewController *)childViewControllerForStatusBarStyle {
-    return self.selectedViewController;
+// 只有 childViewController 没声明自己的状态栏样式时才会走到这里
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    if (QMUICMIActivated) {
+        return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+    }
+    return [super preferredStatusBarStyle];
 }
 
 #pragma mark - 屏幕旋转

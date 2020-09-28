@@ -43,17 +43,23 @@ NS_ASSUME_NONNULL_BEGIN
 /// 输入框相对于系统原有布局位置的上下左右的偏移，正值表示向内缩小，负值表示向外扩大。注意输入框默认情况下就自带 (10, 8, 10, 8) 的间距，qmui_textFieldMargins 是基于这个间距的基础上做调整，换句话说，当 qmui_textFieldMargins 为 UIEdgeInsetsZero 时不代表输入框会上下左右都撑满父容器。
 @property(nonatomic, assign) UIEdgeInsets qmui_textFieldMargins UI_APPEARANCE_SELECTOR;
 
+/// 支持根据 active 的值的不同来设置不一样的输入框位置偏移，当使用这个 block 后 @c qmui_textFieldMargins 无效。
+@property(nonatomic, copy) UIEdgeInsets (^qmui_textFieldMarginsBlock)(__kindof UISearchBar *searchBar, BOOL active);
+
 /// 获取 searchBar 内部的输入框的引用，在 searchBar 初始化完即可被获取
 @property(nullable, nonatomic, weak, readonly) UITextField *qmui_textField;
 
 /// 获取 searchBar 的背景 view，为一个 UIImageView 的子类 UISearchBarBackground，在 searchBar 初始化完即可被获取
 @property(nullable, nonatomic, weak, readonly) UIView *qmui_backgroundView;
 
-/// 获取 searchBar 内的取消按钮，注意 UISearchBar 的取消按钮是在 setShowsCancelButton:animated: 被调用之后才会生成
+/// 获取 searchBar 内的取消按钮，注意 UISearchBar 的取消按钮是在需要的时候才会生成（具体时机可以看 .m 内的 +load 方法）
 @property(nullable, nonatomic, weak, readonly) UIButton *qmui_cancelButton;
 
 /// 取消按钮的字体，由于系统的 cancelButton 是懒加载的，所以当不存在 cancelButton 时该值为 nil
 @property(nullable, nonatomic, strong) UIFont *qmui_cancelButtonFont UI_APPEARANCE_SELECTOR;
+
+/// 取消按钮相对于系统原有布局位置的上下左右的偏移。
+@property(nonatomic, copy) UIEdgeInsets (^qmui_cancelButtonMarginsBlock)(__kindof UISearchBar *searchBar, BOOL active);
 
 /// 获取 scopeBar 里的 UISegmentedControl
 @property(nullable, nonatomic, weak, readonly) UISegmentedControl *qmui_segmentedControl;

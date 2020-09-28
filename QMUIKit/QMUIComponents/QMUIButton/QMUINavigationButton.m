@@ -532,10 +532,8 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
         OverrideImplementation([UIViewController class], @selector(accessibilityPerformEscape), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UIViewController *selfObject) {
                 
-                QMUINavigationButton *backButton = selfObject.navigationItem.leftBarButtonItem.customView;
-                if ([backButton isKindOfClass:QMUINavigationButton.class]
-                    && backButton.type == QMUINavigationButtonTypeBack
-                    && backButton.enabled
+                if (selfObject.navigationItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem
+                    && ((QMUINavigationButton *)selfObject.navigationItem.leftBarButtonItem.customView).enabled
                     && selfObject.navigationController.qmui_rootViewController != selfObject
                     && selfObject.navigationController.interactivePopGestureRecognizer.enabled
                     && !UIApplication.sharedApplication.ignoringInteractionEvents) {

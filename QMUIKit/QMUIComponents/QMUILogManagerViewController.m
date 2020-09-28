@@ -25,13 +25,13 @@
 #import "QMUITableViewCell.h"
 #import "QMUISearchController.h"
 #import "UIBarItem+QMUI.h"
+#import "UIViewController+QMUI.h"
 
 @interface QMUILogManagerViewController ()
 
 @property(nonatomic, copy) NSDictionary<NSString *, NSNumber *> *allNames;
 @property(nonatomic, copy) NSArray<NSString *> *sortedLogNames;
 @property(nonatomic, copy) NSArray<NSString *> *sectionIndexTitles;
-@property(nonatomic, assign) UIStatusBarStyle statusBarStyle;
 @end
 
 @implementation QMUILogManagerViewController
@@ -39,12 +39,18 @@
 - (void)didInitializeWithStyle:(UITableViewStyle)style {
     [super didInitializeWithStyle:style];
     self.rowCountWhenShowSearchBar = 10;
-    self.statusBarStyle = QMUICMIActivated ? (StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault) : UIStatusBarStyleDefault;
 }
 
 - (void)initTableView {
     [super initTableView];
     [self setupDataSource];
+}
+
+- (void)initSearchController {
+    [super initSearchController];
+    self.searchController.qmui_preferredStatusBarStyleBlock = ^UIStatusBarStyle{
+        return QMUIStatusBarStyleDarkContent;
+    };
 }
 
 - (void)viewDidLoad {
@@ -59,10 +65,6 @@
     } else {
         self.navigationItem.rightBarButtonItem = nil;
     }
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return self.statusBarStyle;
 }
 
 - (void)setupDataSource {
@@ -247,17 +249,9 @@
     }
 }
 
-- (void)willPresentSearchController:(QMUISearchController *)searchController {
-    self.statusBarStyle = UIStatusBarStyleDefault;
-    [self setNeedsStatusBarAppearanceUpdate];
-}
-
 - (void)willDismissSearchController:(QMUISearchController *)searchController {
-    
     // 在搜索状态里可能修改了 switch 的值，则退出时强制刷新一下默认状态的列表
     [self reloadData];
-    self.statusBarStyle = QMUICMIActivated ? (StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault) : UIStatusBarStyleDefault;
-    [self setNeedsStatusBarAppearanceUpdate];
 }
 
 @end

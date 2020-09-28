@@ -18,7 +18,6 @@
 #import "QMUICore.h"
 #import "NSPointerArray+QMUI.h"
 #import "NSString+QMUI.h"
-#import <objc/runtime.h>
 
 @interface NSObject ()
 

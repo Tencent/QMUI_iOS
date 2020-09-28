@@ -14,7 +14,6 @@
 //
 
 #import "QMUINavigationBarScrollingSnapAnimator.h"
-#import "UINavigationBar+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "UIScrollView+QMUI.h"
 

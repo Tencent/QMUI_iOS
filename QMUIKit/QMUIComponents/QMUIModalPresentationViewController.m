@@ -151,6 +151,8 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    self.visible = YES;// present 模式没有入口 show 方法，只能加在这里
+    
     if (self.shownInWindowMode) {
         // 只有使用showWithAnimated:completion:显示出来的浮层，才需要修改之前就记住的animated的值
         animated = self.appearAnimated;
@@ -176,8 +178,6 @@
         if (self.contentViewController) {
             [self.contentViewController endAppearanceTransition];
         }
-        
-        self.visible = YES;
         
         if (self.appearCompletionBlock) {
             self.appearCompletionBlock(finished);
@@ -473,6 +473,7 @@
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
     if (self.visible) return;
+    self.visible = YES;
     
     // makeKeyAndVisible 导致的 viewWillAppear: 必定 animated 是 NO 的，所以这里用额外的变量保存这个 animated 的值
     self.appearAnimated = animated;
@@ -557,6 +558,8 @@
 
 - (void)showInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL))completion {
     if (self.visible) return;
+    self.visible = YES;
+    
     self.appearCompletionBlock = completion;
     [self loadViewIfNeeded];
     [self beginAppearanceTransition:YES animated:animated];

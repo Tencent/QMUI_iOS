@@ -554,13 +554,7 @@ static char kAssociatedObjectKey_updatesIndicatorView;
 
 - (CGSize)sizeThatFits:(CGSize)size {
     CGSize result = [super sizeThatFits:size];
-    
-    // 只有一个字的时候保证它是一个正方形
-    if (self.text.length <= 1) {
-        CGFloat finalSize = MAX(result.width, result.height);
-        result = CGSizeMake(finalSize, finalSize);
-    }
-    
+    result = CGSizeMake(MAX(result.width, result.height), result.height);
     return result;
 }
 

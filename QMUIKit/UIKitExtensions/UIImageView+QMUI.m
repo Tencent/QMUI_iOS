@@ -37,26 +37,6 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        // 虽然 UIImageView.h 里并没有把两个 initWithImage: 方法标记为 NS_DESIGNATED_INITIALIZER，但实测它们就是 NS_DESIGNATED_INITIALIZER，不会互相调用，也不会调用 initWithFrame:、initWithCoder:
-        ExtendImplementationOfNonVoidMethodWithSingleArgument([UIImageView class], @selector(initWithImage:), UIImage *, UIImageView *, ^UIImageView *(UIImageView *selfObject, UIImage *image, UIImageView *originReturnValue) {
-            [selfObject qimgv_didInitialize];
-            return originReturnValue;
-        });
-        ExtendImplementationOfNonVoidMethodWithTwoArguments([UIImageView class], @selector(initWithImage:highlightedImage:), UIImage *, UIImage *, UIImageView *, ^UIImageView *(UIImageView *selfObject, UIImage *image, UIImage *highlightedImage, UIImageView *originReturnValue) {
-            [selfObject qimgv_didInitialize];
-            return originReturnValue;
-        });
-        
-        ExtendImplementationOfNonVoidMethodWithSingleArgument([UIImageView class], @selector(initWithFrame:), CGRect, UIImageView *, ^UIImageView *(UIImageView *selfObject, CGRect frame, UIImageView *originReturnValue) {
-            [selfObject qimgv_didInitialize];
-            return originReturnValue;
-        });
-        
-        ExtendImplementationOfNonVoidMethodWithSingleArgument([UIImageView class], @selector(initWithCoder:), NSCoder *, UIImageView *, ^UIImageView *(UIImageView *selfObject, NSCoder *aDecoder, UIImageView *originReturnValue) {
-            [selfObject qimgv_didInitialize];
-            return originReturnValue;
-        });
-        
         OverrideImplementation([UIImageView class], @selector(setImage:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIImageView *selfObject, UIImage *image) {
                 
@@ -132,11 +112,13 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
                 return result;
             };
         });
+        
+        ExtendImplementationOfVoidMethodWithSingleArgument([UIImageView class], @selector(setContentMode:), UIViewContentMode, ^(UIImageView *selfObject, UIViewContentMode firstArgv) {
+            if (selfObject.qimgv_animatedImageLayer) {
+                selfObject.qimgv_animatedImageLayer.contentsGravity = [QMUIHelper layerContentsGravityWithContentMode:firstArgv];
+            }
+        });
     });
-}
-
-- (void)qimgv_didInitialize {
-    self.qmui_smoothAnimation = YES;
 }
 
 - (BOOL)qimgv_requestToStartAnimation {
@@ -144,6 +126,7 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
     
     if (!self.qimgv_animatedImageLayer) {
         self.qimgv_animatedImageLayer = [CALayer layer];
+        self.qimgv_animatedImageLayer.contentsGravity = [QMUIHelper layerContentsGravityWithContentMode:self.contentMode];
         [self.layer addSublayer:self.qimgv_animatedImageLayer];
     }
     

@@ -671,11 +671,9 @@ static NSInteger isHighPerformanceDevice = -1;
 }
 
 + (UIStatusBarStyle)statusBarStyleDarkContent {
-#ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *))
         return UIStatusBarStyleDarkContent;
     else
-#endif
         return UIStatusBarStyleDefault;
 }
 
@@ -774,6 +772,24 @@ static NSMutableSet<NSString *> *executedIdentifiers;
         }
         return NO;
     }
+}
+
++ (CALayerContentsGravity)layerContentsGravityWithContentMode:(UIViewContentMode)contentMode {
+    NSDictionary<NSNumber *, CALayerContentsGravity> *relationship = @{
+        @(UIViewContentModeScaleToFill):        kCAGravityResize,
+        @(UIViewContentModeScaleAspectFit):     kCAGravityResizeAspect,
+        @(UIViewContentModeScaleAspectFill):    kCAGravityResizeAspectFill,
+        @(UIViewContentModeCenter):             kCAGravityCenter,
+        @(UIViewContentModeTop):                kCAGravityBottom,
+        @(UIViewContentModeBottom):             kCAGravityTop,
+        @(UIViewContentModeLeft):               kCAGravityLeft,
+        @(UIViewContentModeRight):              kCAGravityRight,
+        @(UIViewContentModeTopLeft):            kCAGravityBottomLeft,
+        @(UIViewContentModeTopRight):           kCAGravityBottomRight,
+        @(UIViewContentModeBottomLeft):         kCAGravityTopLeft,
+        @(UIViewContentModeBottomRight):        kCAGravityTopRight
+    };
+    return relationship[@(contentMode)] ?: kCAGravityCenter;
 }
 
 @end

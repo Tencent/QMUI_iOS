@@ -453,10 +453,10 @@ static char kAssociatedObjectKey_visibleState;
         } else if (self.navigationItem.largeTitleDisplayMode == UINavigationItemLargeTitleDisplayModeNever) {
             return NO;
         } else if (self.navigationItem.largeTitleDisplayMode == UINavigationItemLargeTitleDisplayModeAutomatic) {
-            if (self.navigationController.childViewControllers.firstObject == self) {
+            if (self.navigationController.viewControllers.firstObject == self) {
                 return YES;
             } else {
-                UIViewController *previousViewController = self.navigationController.childViewControllers[[self.navigationController.childViewControllers indexOfObject:self] - 1];
+                UIViewController *previousViewController = self.navigationController.viewControllers[[self.navigationController.viewControllers indexOfObject:self] - 1];
                 return previousViewController.qmui_prefersLargeTitleDisplayed == YES;
             }
         }

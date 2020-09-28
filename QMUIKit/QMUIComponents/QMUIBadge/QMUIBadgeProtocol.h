@@ -44,8 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 特别地，对于普通的 UITabBarItem 和 UIBarButtonItem，badge 布局相对于内部的 imageView 而不是按钮本身，如果该 item 使用了 customView 则相对于按钮本身。
 @property(nonatomic, assign) CGPoint qmui_badgeOffset;
 
-/// 默认 badge 的布局处于 view 右上角（x = view.width, y = -badge height），通过这个属性可以调整 badge 相对于默认原点的偏移，x 正值表示向右，y 正值表示向下。
-/// 特别地，对于普通的 UITabBarItem 和 UIBarButtonItem，badge 布局相对于内部的 imageView 而不是按钮本身，如果该 item 使用了 customView 则相对于按钮本身。
+/// 横屏下使用，其他同 @c qmui_badgeOffset 。
 @property(nonatomic, assign) CGPoint qmui_badgeOffsetLandscape;
 
 /// 在这两个属性被删除之前，如果不主动设置 @c qmui_badgeOffset 和 @c qmui_badgeOffsetLandscape ，则依然使用旧的逻辑，一旦设置过两个新属性，则旧属性会失效。
@@ -66,8 +65,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 特别地，对于普通的 UITabBarItem 和 UIBarButtonItem，红点相对于内部的 imageView 布局而不是按钮本身，如果该 item 使用了 customView 则相对于按钮本身。
 @property(nonatomic, assign) CGPoint qmui_updatesIndicatorOffset;
 
-/// 默认红点的布局处于 view 右上角（x = view.width, y = -badge height），通过这个属性可以调整红点相对于默认原点的偏移，x 正值表示向右，y 正值表示向下。
-/// 特别地，对于普通的 UITabBarItem 和 UIBarButtonItem，红点相对于内部的 imageView 布局而不是按钮本身，如果该 item 使用了 customView 则相对于按钮本身。
+/// 横屏下使用，其他同 @c qmui_updatesIndicatorOffset 。
 @property(nonatomic, assign) CGPoint qmui_updatesIndicatorOffsetLandscape;
 
 /// 在这两个属性被删除之前，如果不主动设置 @c qmui_updatesIndicatorOffset 和 @c qmui_updatesIndicatorOffsetLandscape ，则依然使用旧的逻辑，一旦设置过两个新属性，则旧属性会失效。

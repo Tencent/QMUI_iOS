@@ -22,7 +22,6 @@
 #import "UIViewController+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIWeakObjectContainer.h"
-#import <objc/runtime.h>
 
 @interface UIView ()
 
@@ -90,119 +89,6 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
                 });
             }
         });
-        
-        OverrideImplementation([UIView class], @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIView *selfObject, UIView *view) {
-                if (view == selfObject) {
-                    [selfObject printLogForAddSubviewToSelf];
-                    return;
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, UIView *);
-                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, view);
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(insertSubview:atIndex:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIView *selfObject, UIView *view, NSInteger index) {
-                if (view == selfObject) {
-                    [selfObject printLogForAddSubviewToSelf];
-                    return;
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, UIView *, NSInteger);
-                originSelectorIMP = (void (*)(id, SEL, UIView *, NSInteger))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, view, index);
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(insertSubview:aboveSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIView *selfObject, UIView *view, UIView *siblingSubview) {
-                if (view == self) {
-                    [selfObject printLogForAddSubviewToSelf];
-                    return;
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, UIView *, UIView *);
-                originSelectorIMP = (void (*)(id, SEL, UIView *, UIView *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, view, siblingSubview);
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(insertSubview:belowSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIView *selfObject, UIView *view, UIView *siblingSubview) {
-                if (view == self) {
-                    [selfObject printLogForAddSubviewToSelf];
-                    return;
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, UIView *, UIView *);
-                originSelectorIMP = (void (*)(id, SEL, UIView *, UIView *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, view, siblingSubview);
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(convertPoint:toView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^CGPoint(UIView *selfObject, CGPoint point, UIView *view) {
-                
-                [selfObject alertConvertValueWithView:view];
-                
-                // call super
-                CGPoint (*originSelectorIMP)(id, SEL, CGPoint, UIView *);
-                originSelectorIMP = (CGPoint (*)(id, SEL, CGPoint, UIView *))originalIMPProvider();
-                CGPoint result = originSelectorIMP(selfObject, originCMD, point, view);
-                
-                return result;
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(convertPoint:fromView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^CGPoint(UIView *selfObject, CGPoint point, UIView *view) {
-                
-                [selfObject alertConvertValueWithView:view];
-                
-                // call super
-                CGPoint (*originSelectorIMP)(id, SEL, CGPoint, UIView *);
-                originSelectorIMP = (CGPoint (*)(id, SEL, CGPoint, UIView *))originalIMPProvider();
-                CGPoint result = originSelectorIMP(selfObject, originCMD, point, view);
-                
-                return result;
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(convertRect:toView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^CGRect(UIView *selfObject, CGRect rect, UIView *view) {
-                
-                [selfObject alertConvertValueWithView:view];
-                
-                // call super
-                CGRect (*originSelectorIMP)(id, SEL, CGRect, UIView *);
-                originSelectorIMP = (CGRect (*)(id, SEL, CGRect, UIView *))originalIMPProvider();
-                CGRect result = originSelectorIMP(selfObject, originCMD, rect, view);
-                
-                return result;
-            };
-        });
-        
-        OverrideImplementation([UIView class], @selector(convertRect:fromView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^CGRect(UIView *selfObject, CGRect rect, UIView *view) {
-                
-                [selfObject alertConvertValueWithView:view];
-                
-                // call super
-                CGRect (*originSelectorIMP)(id, SEL, CGRect, UIView *);
-                originSelectorIMP = (CGRect (*)(id, SEL, CGRect, UIView *))originalIMPProvider();
-                CGRect result = originSelectorIMP(selfObject, originCMD, rect, view);
-                
-                return result;
-            };
-        });
-        
     });
 }
 
@@ -316,47 +202,8 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
     }
 }
 
-- (void)printLogForAddSubviewToSelf {
-    UIViewController *visibleViewController = [QMUIHelper visibleViewController];
-    NSString *log = [NSString stringWithFormat:@"UIView (QMUI) addSubview:, 把自己作为 subview 添加到自己身上，self = %@, visibleViewController = %@, visibleState = %@, viewControllers = %@\n%@", self, visibleViewController, @(visibleViewController.qmui_visibleState), visibleViewController.navigationController.viewControllers, [NSThread callStackSymbols]];
-    NSAssert(NO, log);
-    QMUILogWarn(@"UIView (QMUI)", @"%@", log);
-}
-
 - (void)QMUISymbolicUIViewBecomeFirstResponderWithoutKeyWindow {
     QMUILogWarn(@"UIView (QMUI)", @"尝试让一个处于非 keyWindow 上的 %@ becomeFirstResponder，可能导致界面显示异常，请添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromClass(self.class), NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
-}
-
-- (BOOL)hasSharedAncestorViewWithView:(UIView *)view {
-    UIView *sharedAncestorView = self;
-    if (!view) {
-        return YES;
-    }
-    while (sharedAncestorView && ![view isDescendantOfView:sharedAncestorView]) {
-        sharedAncestorView = sharedAncestorView.superview;
-    }
-    return !!sharedAncestorView;
-}
-
-- (BOOL)isUIKitPrivateView {
-    // 系统有些东西本身也存在不合理，但我们不关心这种，所以过滤掉
-    if ([self isKindOfClass:[UIWindow class]]) return YES;
-    
-    __block BOOL isPrivate = NO;
-    NSString *classString = NSStringFromClass(self.class);
-    [@[@"LayoutContainer", @"NavigationItemButton", @"NavigationItemView", @"SelectionGrabber", @"InputViewContent", @"InputSetContainer", @"TextFieldContentView", @"FieldEditor", @"KeyboardImpl"] enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (([classString hasPrefix:@"UI"] || [classString hasPrefix:@"_UI"]) && [classString containsString:obj]) {
-            isPrivate = YES;
-            *stop = YES;
-        }
-    }];
-    return isPrivate;
-}
-
-- (void)alertConvertValueWithView:(UIView *)view {
-    if (IS_DEBUG && ![self isUIKitPrivateView] && ![self hasSharedAncestorViewWithView:view]) {
-        QMUILog(@"UIView (QMUI)", @"进行坐标系转换运算的 %@ 和 %@ 不存在共同的父 view，可能导致运算结果不准确（特别是在横竖屏旋转时，如果两个 view 处于不同的 window，由于 window 旋转有先后顺序，可能转换时两个 window 的方向不一致，坐标就会错乱）", self, view);
-    }
 }
 
 @end

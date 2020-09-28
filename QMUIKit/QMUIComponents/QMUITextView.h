@@ -34,12 +34,11 @@
 - (BOOL)textViewShouldReturn:(QMUITextView *)textView;
 
 /**
- *  配合 `maximumTextLength` 属性使用，在输入文字超过限制时被调用。例如如果你的输入框在按下键盘“Done”按键时做一些发送操作，就可以在这个方法里判断 [replacementText isEqualToString:@"\n"]。
- *  @warning 在 textViewDidChange: 里也会触发文字长度拦截，由于此时 textView 的文字已经改变完，所以无法得知发生改变的文本位置及改变的文本内容，所以此时 range 和 replacementText 这两个参数的值也会比较特殊，具体请看参数讲解。
+ *  配合 `maximumTextLength` 属性使用，在输入文字超过限制时被调用（此时文字已被自动裁剪到符合最大长度要求）。
  *
  *  @param textView 触发的 textView
- *  @param range 要变化的文字的位置，如果在 textViewDidChange: 里，这里的 range 也即文字变化后的 range，所以可能比最大长度要大。
- *  @param replacementText 要变化的文字，如果在 textViewDidChange: 里，这里永远传入 nil。
+ *  @param range 要变化的文字的位置，length > 0 表示文字被自动裁剪前，输入框已有一段文字被选中。
+ *  @param replacementText 要变化的文字
  */
 - (void)textView:(QMUITextView *)textView didPreventTextChangeInRange:(NSRange)range replacementText:(NSString *)replacementText;
 

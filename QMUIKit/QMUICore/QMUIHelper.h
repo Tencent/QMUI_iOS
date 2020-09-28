@@ -31,6 +31,11 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
  @param identifier 唯一的标记，建议在 identifier 里添加当前这段业务的特有名称，例如用于 swizzle 的可以加“swizzled”前缀，以避免与其他业务共用同一个 identifier 引发 bug
  */
 + (BOOL)executeBlock:(void (NS_NOESCAPE ^)(void))block oncePerIdentifier:(NSString *)identifier;
+
+/**
+ 将 UIViewContentMode 转为对应的 CALayerContentsGravity
+ */
++ (CALayerContentsGravity)layerContentsGravityWithContentMode:(UIViewContentMode)contentMode;
 @end
 
 @interface QMUIHelper (Bundle)
@@ -227,10 +232,11 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
 @interface QMUIHelper (Animation)
 
 /**
- 在 animationBlock 里的操作完成之后会调用 completionBlock，常用于一些不提供 completionBlock 的系统动画操作，例如 [UINavigationController pushViewController:animated:YES] 的场景，注意 UIScrollView 系列的滚动无法使用这个方法。
+ 在 animationBlock 里的操作完成之后会调用 completionBlock，常用于一些不提供 completionBlock 的系统动画操作。
 
  @param animationBlock 要进行的带动画的操作
  @param completionBlock 操作完成后的回调
+ @note 注意 UIScrollView 系列的滚动无法使用这个方法。
  */
 + (void)executeAnimationBlock:(nonnull __attribute__((noescape)) void (^)(void))animationBlock completionBlock:(nullable __attribute__((noescape)) void (^)(void))completionBlock;
 

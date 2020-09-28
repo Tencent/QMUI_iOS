@@ -17,7 +17,6 @@
 #import <CommonCrypto/CommonDigest.h>
 #import "NSArray+QMUI.h"
 #import "NSCharacterSet+QMUI.h"
-#import <objc/runtime.h>
 
 @implementation NSString (QMUI)
 

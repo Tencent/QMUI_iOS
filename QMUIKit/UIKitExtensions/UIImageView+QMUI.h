@@ -24,7 +24,7 @@
 @property(nonatomic, assign) BOOL qmui_pause;
 
 /**
- 是否要用 QMUI 提供的高性能方式去渲染由 [UIImage animatedImage] 创建的 UIImage，（系统原生的方式在 UIImageView 被放在 UIScrollView 内时会卡顿），默认为 YES。
+ 是否要用 QMUI 提供的高性能方式去渲染由 [UIImage animatedImage] 创建的 UIImage，（系统原生的方式在 UIImageView 被放在 UIScrollView 内时会卡顿），默认为 NO。
  */
 @property(nonatomic, assign) BOOL qmui_smoothAnimation;
 

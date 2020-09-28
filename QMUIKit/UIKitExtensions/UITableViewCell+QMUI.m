@@ -14,7 +14,6 @@
 //
 
 #import "UITableViewCell+QMUI.h"
-#import <objc/runtime.h>
 #import "QMUICore.h"
 #import "UIView+QMUI.h"
 #import "UITableView+QMUI.h"

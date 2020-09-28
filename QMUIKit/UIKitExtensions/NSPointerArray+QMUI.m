@@ -15,7 +15,6 @@
 
 #import "NSPointerArray+QMUI.h"
 #import "QMUICore.h"
-#import <objc/runtime.h>
 
 @implementation NSPointerArray (QMUI)
 

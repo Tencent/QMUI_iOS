@@ -50,10 +50,11 @@
  *  1. 使用 initWithContentsViewController: 初始化
  *  2. 通过 searchBar 属性得到搜索框的引用并直接使用，例如 `tableHeaderView = searchController.searchBar`
  *  3. 指定 searchResultsDelegate 属性并在其中实现 searchController:updateResultsForSearchString: 方法以更新搜索结果数据集
+ *  4. 如果需要，可通过 @c qmui_preferredStatusBarStyleBlock 来控制搜索状态下的状态栏样式。
  *
  *  @note QMUICommonTableViewController 内部自带 QMUISearchController，只需将属性 shouldShowSearchBar 置为 YES 即可，无需自行初始化 QMUISearchController。
  */
-@interface QMUISearchController : QMUICommonViewController
+@interface QMUISearchController : QMUICommonViewController<UISearchResultsUpdating, UISearchControllerDelegate>
 
 /**
  *  在某个指定的UIViewController上创建一个与其绑定的searchController

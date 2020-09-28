@@ -84,12 +84,12 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
         return [super description];
     }
     
-    NSString *result = [NSString stringWithFormat:@"%@\ntableView:\t\t\t\t%@", [super description], self.tableView];
-    NSInteger sections = [self.tableView.dataSource numberOfSectionsInTableView:self.tableView];
+    NSString *tableView = [NSString stringWithFormat:@"<%@: %p>", NSStringFromClass(self.tableView.class), self.tableView];
+    NSString *result = [NSString stringWithFormat:@"%@\ntableView:\t\t\t\t%@", [super description], tableView];
+    NSInteger sections = [self.tableView.dataSource respondsToSelector:@selector(numberOfSectionsInTableView:)] ? [self.tableView.dataSource numberOfSectionsInTableView:self.tableView] : 1;
     if (sections > 0) {
         NSMutableString *sectionCountString = [[NSMutableString alloc] init];
-        [sectionCountString appendFormat:@"\ndataCount(%@):\t\t\t\t(\n", @(sections)];
-        NSInteger sections = [self.tableView.dataSource numberOfSectionsInTableView:self.tableView];
+        [sectionCountString appendFormat:@"\ndataCount(%@):\t\t\t(\n", @(sections)];
         for (NSInteger i = 0; i < sections; i++) {
             NSInteger rows = [self.tableView.dataSource tableView:self.tableView numberOfRowsInSection:i];
             [sectionCountString appendFormat:@"\t\t\t\t\t\t\tsection%@ - rows%@%@\n", @(i), @(rows), i < sections - 1 ? @"," : @""];
@@ -213,12 +213,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
         return NO;
     }
     
-    UIEdgeInsets insets = self.tableView.contentInset;
-    if (@available(iOS 11, *)) {
-        if (self.tableView.contentInsetAdjustmentBehavior != UIScrollViewContentInsetAdjustmentNever) {
-            insets = self.tableView.adjustedContentInset;
-        }
-    }
+    UIEdgeInsets insets = self.tableView.qmui_contentInset;
     
     // 当存在 tableHeaderView 时，emptyView 的高度为 tableView 的高度减去 headerView 的高度
     if (self.tableView.tableHeaderView) {

@@ -18,7 +18,6 @@
 #import "QMUIStaticTableViewCellData.h"
 #import "QMUITableViewCell.h"
 #import "UITableView+QMUIStaticCell.h"
-#import <objc/runtime.h>
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
 #import "NSArray+QMUI.h"

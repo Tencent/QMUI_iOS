@@ -291,7 +291,6 @@ NSString *const QMUICGColorOriginalColorBindKey = @"QMUICGColorOriginalColorBind
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-#ifdef IOS13_SDK_ALLOWED
         if (@available(iOS 13.0, *)) {
             ExtendImplementationOfNonVoidMethodWithoutArguments([UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull trait) {
                 return [UIColor clearColor];
@@ -304,7 +303,6 @@ NSString *const QMUICGColorOriginalColorBindKey = @"QMUICGColorOriginalColorBind
                 return originReturnValue;
             });
         }
-#endif
     });
 }
 
@@ -321,14 +319,12 @@ NSString *const QMUICGColorOriginalColorBindKey = @"QMUICGColorOriginalColorBind
 
 - (UIColor *)qmui_rawColor {
     if (self.qmui_isDynamicColor) {
-#ifdef IOS13_SDK_ALLOWED
         if (@available(iOS 13.0, *)) {
             if ([self respondsToSelector:@selector(resolvedColorWithTraitCollection:)]) {
                 UIColor *color = [self resolvedColorWithTraitCollection:UITraitCollection.currentTraitCollection];
                 return color.qmui_rawColor;
             }
         }
-#endif
     }
     return self;
 }

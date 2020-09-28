@@ -23,6 +23,7 @@
 #import "NSString+QMUI.h"
 #import "NSObject+QMUI.h"
 #import "UIView+QMUI.h"
+#import "UIViewController+QMUI.h"
 
 BeginIgnoreDeprecatedWarning
 
@@ -109,7 +110,7 @@ BeginIgnoreDeprecatedWarning
 
 @end
 
-@interface QMUISearchController () <UISearchResultsUpdating, UISearchControllerDelegate, QMUISearchResultsTableViewControllerDelegate>
+@interface QMUISearchController () <QMUISearchResultsTableViewControllerDelegate>
 
 @property(nonatomic,strong) QMUICustomSearchController *searchController;
 @end
@@ -181,6 +182,16 @@ BeginIgnoreDeprecatedWarning
     self.searchController.hidesNavigationBarDuringPresentation = hidesNavigationBarDuringPresentation;
 }
 
+- (void)setQmui_prefersStatusBarHiddenBlock:(BOOL (^)(void))qmui_prefersStatusBarHiddenBlock {
+    [super setQmui_prefersStatusBarHiddenBlock:qmui_prefersStatusBarHiddenBlock];
+    self.searchController.qmui_prefersStatusBarHiddenBlock = qmui_prefersStatusBarHiddenBlock;
+}
+
+- (void)setQmui_preferredStatusBarStyleBlock:(UIStatusBarStyle (^)(void))qmui_preferredStatusBarStyleBlock {
+    [super setQmui_preferredStatusBarStyleBlock:qmui_preferredStatusBarStyleBlock];
+    self.searchController.qmui_preferredStatusBarStyleBlock = qmui_preferredStatusBarStyleBlock;
+}
+
 #pragma mark - QMUIEmptyView
 
 - (void)showEmptyView {
@@ -227,6 +238,9 @@ BeginIgnoreDeprecatedWarning
 #pragma mark - <UISearchControllerDelegate>
 
 - (void)willPresentSearchController:(UISearchController *)searchController {
+    if (self.searchController.qmui_prefersStatusBarHiddenBlock || self.searchController.qmui_preferredStatusBarStyleBlock) {
+        [self.searchController setNeedsStatusBarAppearanceUpdate];
+    }
     if ([self.searchResultsDelegate respondsToSelector:@selector(willPresentSearchController:)]) {
         [self.searchResultsDelegate willPresentSearchController:self];
     }
@@ -239,6 +253,9 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (void)willDismissSearchController:(UISearchController *)searchController {
+    if (self.searchController.qmui_prefersStatusBarHiddenBlock || self.searchController.qmui_preferredStatusBarStyleBlock) {
+        [self.searchController setNeedsStatusBarAppearanceUpdate];
+    }
     if ([self.searchResultsDelegate respondsToSelector:@selector(willDismissSearchController:)]) {
         [self.searchResultsDelegate willDismissSearchController:self];
     }

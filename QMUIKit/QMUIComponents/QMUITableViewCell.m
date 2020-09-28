@@ -102,7 +102,7 @@
             }
         }
         if (hasCustomTextLabelEdgeInsets) {
-            textLabelFrame.origin.x += self.textLabelEdgeInsets.left - self.imageEdgeInsets.right;
+            textLabelFrame.origin.x += self.textLabelEdgeInsets.left - self.textLabelEdgeInsets.right;
             textLabelFrame.origin.y += self.textLabelEdgeInsets.top - self.textLabelEdgeInsets.bottom;
             textLabelFrame.size.width = fmin(CGRectGetWidth(textLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(textLabelFrame));
         }
