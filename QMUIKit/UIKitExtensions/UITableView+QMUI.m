@@ -204,13 +204,23 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     CGPoint origin = [self convertPoint:view.frame.origin fromView:view.superview];
     origin = CGPointToFixed(origin, kFloatValuePrecision);// 避免一些浮点数精度问题导致的计算错误
     
-    NSUInteger numberOfSection = [self numberOfSections];
-    // TODO: molice 针对 section 特别多的场景，优化一下这里的遍历查找
-    for (NSInteger i = 0; i < numberOfSection; i++) {
-        CGRect rectForSection = [self rectForSection:i];// TODO: 这里的判断用整个 section 的 rect，可能需要加上“view 是否在 sectionHeader 上的判断”
+    NSInteger low = 0;
+    NSInteger high = [self numberOfSections];
+    while (low <= high) {
+        NSInteger mid = low + ((high-low) >> 1);
+        CGRect rectForSection = [self rectForSection:mid];
         rectForSection = CGRectToFixed(rectForSection, kFloatValuePrecision);
         if (CGRectContainsPoint(rectForSection, origin)) {
-            return i;
+            UITableViewHeaderFooterView *headerView = [self headerViewForSection:mid];
+            if (headerView && [view isDescendantOfView:headerView]) {
+                return mid;
+            } else {
+                return -1;
+            }
+        } else if (rectForSection.origin.y < origin.y) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
         }
     }
     return -1;
