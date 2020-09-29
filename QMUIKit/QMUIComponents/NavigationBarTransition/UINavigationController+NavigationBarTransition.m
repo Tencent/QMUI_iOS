@@ -36,8 +36,7 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        // TODO: molice iOS 14 正式版发布后检查
-        // iOS 14 Beta 6 开启 customNavigationBarTransitionKey 的情况下转场效果错误
+        // iOS 14 开启 customNavigationBarTransitionKey 的情况下转场效果错误
         // https://github.com/Tencent/QMUI_iOS/issues/1081
         if (@available(iOS 14.0, *)) {
             OverrideImplementation([_QMUITransitionNavigationBar class], NSSelectorFromString([NSString stringWithFormat:@"_%@_%@", @"accessibility", @"navigationController"]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
