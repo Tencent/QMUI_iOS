@@ -37,7 +37,7 @@
 @implementation QMUIConsoleLogItem
 
 + (instancetype)logItemWithLevel:(NSString *)level name:(NSString *)name timeString:(NSString *)timeString logString:(id)logString {
-    QMUIConsoleLogItem *logItem = [[QMUIConsoleLogItem alloc] init];
+    QMUIConsoleLogItem *logItem = [[self alloc] init];
     logItem.level = level ?: @"Normal";
     logItem.name = name ?: @"Default";
     
@@ -416,9 +416,7 @@
         scale.qmui_animationDidStopBlock = ^(__kindof CAAnimation *aAnimation, BOOL finished) {
             [QMUIConsole hide];
             [weakSelf.popoverButton.layer removeAnimationForKey:@"scale"];
-            if (@available(iOS 10.0, *)) {
-                [[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight] impactOccurred];
-            }
+            [[[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium] impactOccurred];
         };
         [self.popoverButton.layer addAnimation:scale forKey:@"scale"];
     }

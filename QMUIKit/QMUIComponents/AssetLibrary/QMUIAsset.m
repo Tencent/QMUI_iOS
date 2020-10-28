@@ -45,12 +45,8 @@ static NSString * const kAssetInfoSize = @"size";
                 if ([[phAsset qmui_valueForKey:@"uniformTypeIdentifier"] isEqualToString:(__bridge NSString *)kUTTypeGIF]) {
                     _assetSubType = QMUIAssetSubTypeGIF;
                 } else {
-                    if (@available(iOS 9.1, *)) {
-                        if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
-                            _assetSubType = QMUIAssetSubTypeLivePhoto;
-                        } else {
-                            _assetSubType = QMUIAssetSubTypeImage;
-                        }
+                    if (phAsset.mediaSubtypes & PHAssetMediaSubtypePhotoLive) {
+                        _assetSubType = QMUIAssetSubTypeLivePhoto;
                     } else {
                         _assetSubType = QMUIAssetSubTypeImage;
                     }

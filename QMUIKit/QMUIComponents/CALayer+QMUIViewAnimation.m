@@ -33,7 +33,7 @@
     return instance;
 }
 
-+ (id)allocWithZone:(struct _NSZone *)zone{
++ (id)allocWithZone:(struct _NSZone *)zone {
     return [self sharedDelegator];
 }
 

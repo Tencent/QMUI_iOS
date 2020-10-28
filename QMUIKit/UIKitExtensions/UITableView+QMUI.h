@@ -18,6 +18,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+#define PreferredValueForTableViewStyle(_style, _plain, _grouped, _insetGrouped) (_style == UITableViewStyleGrouped ? _grouped : (_style == QMUITableViewStyleInsetGrouped ? _insetGrouped : _plain))
+
 /// cell 在当前 section 里的位置，注意判断时要用 (var & xxx) == xxx 的方式
 typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
     QMUITableViewCellPositionNone               = 0, // 默认
@@ -99,6 +101,9 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
  */
 - (void)qmui_scrollToRowFittingOffsetY:(CGFloat)offsetY atIndexPath:(nonnull NSIndexPath *)indexPath animated:(BOOL)animated;
 
+/// 获取当前 UITableView 用于呈现内容的区域的宽度，例如在全面屏下会减去 safeAreaInsets.left/right，在 InsetGrouped 样式下会减去水平的缩进
+@property(nonatomic, assign, readonly) CGFloat qmui_validContentWidth;
+
 /**
  *  当tableHeaderView为UISearchBar时，tableView为了实现searchbar滚到顶部自动吸附的效果，会强制让self.contentSize.height至少为frame.size.height那么高（这样才能滚动，否则不满一屏就无法滚动了），所以此时如果通过self.contentSize获取tableView的内容大小是不准确的，此时可以使用`qmui_realContentSize`替代。
  *
@@ -118,6 +123,33 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
  @param completion completion callback
  */
 - (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion;
+
+@end
+
+
+extern const UITableViewStyle QMUITableViewStyleInsetGrouped;
+
+/**
+ 系统在 iOS 13 新增了 UITableViewStyleInsetGrouped 类型用于展示往内缩进、cell 带圆角的列表，而这个 Category 让 iOS 12 及以下的系统也能支持这种样式，iOS 13 也可以通过这个 Category 修改左右的缩进值和 cell 的圆角。
+ 使用方式：
+ 对于 UITableView，通过 -[UITableView initWithStyle:QMUITableViewStyleInsetGrouped] 初始化 tableView。
+ 对于 UITableViewController，通过 -[UITableViewController initWithStyle:QMUITableViewStyleInsetGrouped] 初始化 tableViewController。
+ 可通过 @c qmui_insetGroupedCornerRadius @c qmui_insetGroupedHorizontalInset 统一修改圆角值和左右缩进，如果要为不同 indexPath 指定不同圆角值，可在 -[UITableViewDelegate tableView:willDisplayCell:forRowAtIndexPath:] 内修改 cell.layer.cornerRadius 的值。
+ 
+ @note 对于 sectionHeader/footer，建议使用 QMUITableViewHeaderFooterView，或者继承系统的 UITableViewHeaderFooterView 并重写它的 sizeThatFits:、layoutSubviews 去计算高度和布局，sizeThatFits: 的参数 size.width 即为减去左右缩进后的宽度。如果直接用系统的 UITableViewHeaderFooterView，iOS 10 及以下多行文本时布局会错误，暂时无法解决，但如果业务项目本身不需要支持 iOS 10 及以下系统，那可忽略这个限制。
+ */
+@interface UITableView (QMUI_InsetGrouped)
+
+/**
+ 获取当前 UITableView 的 style，在 iOS 13 下同系统自带的 style 属性，在 iOS 12 下由于 QMUI 会把 QMUITableViewStyleInsetGrouped 转换成 UITableViewStyleGrouped，所以不能直接使用系统 style 属性的值，所以提供这个新属性用于获取业务设置的 style。如果 tableView 没使用 QMUITableViewStyleInsetGrouped 则可忽略这个属性的存在。
+ */
+@property(nonatomic, assign, readonly) UITableViewStyle qmui_style;
+
+/// 当使用 QMUITableViewStyleInsetGrouped 时可通过这个属性修改 cell 的圆角值，默认值为 10，也即 iOS 13 系统默认表现。如果要为不同 indexPath 指定不同圆角值，可在 -[UITableViewDelegate tableView:willDisplayCell:forRowAtIndexPath:] 内修改 cell.layer.cornerRadius 的值。
+@property(nonatomic, assign) CGFloat qmui_insetGroupedCornerRadius UI_APPEARANCE_SELECTOR;
+
+/// 当使用 QMUITableViewStyleInsetGrouped 时可通过这个属性修改列表的左右缩进值，默认值为 20，也即 iOS 13 系统默认表现。
+@property(nonatomic, assign) CGFloat qmui_insetGroupedHorizontalInset UI_APPEARANCE_SELECTOR;
 
 @end
 

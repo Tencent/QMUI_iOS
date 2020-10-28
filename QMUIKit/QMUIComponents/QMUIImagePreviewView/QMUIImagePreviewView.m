@@ -169,9 +169,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     // 因为 cell 复用的问题，很可能此时会显示一张错误的图片，因此这里要清空所有图片的显示
     zoomView.image = nil;
     zoomView.videoPlayerItem = nil;
-    if (@available(iOS 9.1, *)) {
-        zoomView.livePhoto = nil;
-    }
+    zoomView.livePhoto = nil;
     if ([self.delegate respondsToSelector:@selector(imagePreviewView:renderZoomImageView:atIndex:)]) {
         [self.delegate imagePreviewView:self renderZoomImageView:zoomView atIndex:indexPath.item];
     }

@@ -179,7 +179,7 @@
         width = MAX(width, MIN(itemSize.width, size.width));
     }];
     size.width = width;
-    size.height = MIN(height, size.height);
+    size.height = height;
     return size;
 }
 

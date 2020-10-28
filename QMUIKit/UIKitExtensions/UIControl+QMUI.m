@@ -14,173 +14,216 @@
 //
 
 #import "UIControl+QMUI.h"
-#import <objc/runtime.h>
 #import "QMUICore.h"
 
 @interface UIControl ()
 
-@property(nonatomic,assign) BOOL canSetHighlighted;
-@property(nonatomic,assign) NSInteger touchEndCount;
-
+@property(nonatomic,assign) BOOL qmuictl_canSetHighlighted;
+@property(nonatomic,assign) NSInteger qmuictl_touchEndCount;
 @end
 
 @implementation UIControl (QMUI)
 
-QMUISynthesizeUIEdgeInsetsProperty(qmui_outsideEdge, setQmui_outsideEdge)
-QMUISynthesizeBOOLProperty(qmui_automaticallyAdjustTouchHighlightedInScrollView, setQmui_automaticallyAdjustTouchHighlightedInScrollView)
-QMUISynthesizeBOOLProperty(canSetHighlighted, setCanSetHighlighted)
-QMUISynthesizeNSIntegerProperty(touchEndCount, setTouchEndCount)
-QMUISynthesizeIdCopyProperty(qmui_setHighlightedBlock, setQmui_setHighlightedBlock)
+QMUISynthesizeBOOLProperty(qmuictl_canSetHighlighted, setQmuictl_canSetHighlighted)
+QMUISynthesizeNSIntegerProperty(qmuictl_touchEndCount, setQmuictl_touchEndCount)
 
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIControl class], @selector(setHighlighted:), BOOL, ^(UIControl *selfObject, BOOL highlighted) {
-            if (selfObject.qmui_setHighlightedBlock) {
-                selfObject.qmui_setHighlightedBlock(highlighted);
-            }
-        });
-        
-        OverrideImplementation([UIControl class], @selector(pointInside:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^BOOL(UIControl *selfObject, CGPoint point, UIEvent *event) {
-                
-                if (event.type != UIEventTypeTouches) {
+#pragma mark - Automatically Adjust Touch Highlighted In ScrollView
+
+static char kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView;
+- (void)setQmui_automaticallyAdjustTouchHighlightedInScrollView:(BOOL)qmui_automaticallyAdjustTouchHighlightedInScrollView {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView, @(qmui_automaticallyAdjustTouchHighlightedInScrollView), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (qmui_automaticallyAdjustTouchHighlightedInScrollView) {
+        [QMUIHelper executeBlock:^{
+            OverrideImplementation([UIControl class], @selector(touchesBegan:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
+                    
                     // call super
-                    BOOL (*originSelectorIMP)(id, SEL, CGPoint, UIEvent *);
-                    originSelectorIMP = (BOOL (*)(id, SEL, CGPoint, UIEvent *))originalIMPProvider();
-                    BOOL result = originSelectorIMP(selfObject, originCMD, point, event);
-                    return result;
-                }
-                
-                UIEdgeInsets qmui_outsideEdge = selfObject.qmui_outsideEdge;
-                CGRect boundsInsetOutsideEdge = CGRectMake(CGRectGetMinX(selfObject.bounds) + qmui_outsideEdge.left, CGRectGetMinY(selfObject.bounds) + qmui_outsideEdge.top, CGRectGetWidth(selfObject.bounds) - UIEdgeInsetsGetHorizontalValue(qmui_outsideEdge), CGRectGetHeight(selfObject.bounds) - UIEdgeInsetsGetVerticalValue(qmui_outsideEdge));
-                return CGRectContainsPoint(boundsInsetOutsideEdge, point);
-            };
-        });
-        
-        OverrideImplementation([UIControl class], @selector(removeTarget:action:forControlEvents:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIControl *selfObject, id target, SEL action, UIControlEvents controlEvents) {
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, id, SEL, UIControlEvents);
-                originSelectorIMP = (void (*)(id, SEL, id, SEL, UIControlEvents))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, target, action, controlEvents);
-                
-                BOOL isTouchUpInsideEvent = controlEvents & UIControlEventTouchUpInside;
-                BOOL shouldRemoveTouchUpInsideSelector = (action == @selector(qmui_handleTouchUpInside:)) || (target == selfObject && !action) || (!target && !action);
-                if (isTouchUpInsideEvent && shouldRemoveTouchUpInsideSelector) {
-                    // 避免触发 setter 又反过来 removeTarget，然后就死循环了
-                    objc_setAssociatedObject(selfObject, &kAssociatedObjectKey_tapBlock, nil, OBJC_ASSOCIATION_COPY_NONATOMIC);
-                }
-            };
-        });
-        
-        OverrideImplementation([UIControl class], @selector(touchesBegan:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
-                
-                // call super
-                void (^callSuperBlock)(void) = ^{
-                    void (*originSelectorIMP)(id, SEL, NSSet *, UIEvent *);
-                    originSelectorIMP = (void (*)(id, SEL, NSSet *, UIEvent *))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, touches, event);
-                };
-                
-                selfObject.touchEndCount = 0;
-                if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
-                    selfObject.canSetHighlighted = YES;
-                    callSuperBlock();
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                        if (selfObject.canSetHighlighted) {
-                            [selfObject setHighlighted:YES];
-                        }
-                    });
-                } else {
-                    callSuperBlock();
-                }
-            };
-        });
-        
-        OverrideImplementation([UIControl class], @selector(touchesMoved:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
-                
-                if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
-                    selfObject.canSetHighlighted = NO;
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, NSSet *, UIEvent *);
-                originSelectorIMP = (void (*)(id, SEL, NSSet *, UIEvent *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, touches, event);
-            };
-        });
-        
-        OverrideImplementation([UIControl class], @selector(touchesEnded:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
-                
-                if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
-                    selfObject.canSetHighlighted = NO;
-                    if (selfObject.touchInside) {
-                        [selfObject setHighlighted:YES];
-                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                            // 如果延迟时间太长，会导致快速点击两次，事件会触发两次
-                            // 对于 3D Touch 的机器，如果点击按钮的时候在按钮上停留事件稍微长一点点，那么 touchesEnded 会被调用两次
-                            // 把 super touchEnded 放到延迟里调用会导致长按无法触发点击，先这么改，再想想怎么办。// [selfObject qmui_touchesEnded:touches withEvent:event];
-                            [selfObject sendActionsForAllTouchEventsIfCan];
-                            if (selfObject.highlighted) {
-                                [selfObject setHighlighted:NO];
+                    void (^callSuperBlock)(void) = ^{
+                        void (*originSelectorIMP)(id, SEL, NSSet *, UIEvent *);
+                        originSelectorIMP = (void (*)(id, SEL, NSSet *, UIEvent *))originalIMPProvider();
+                        originSelectorIMP(selfObject, originCMD, touches, event);
+                    };
+                    
+                    selfObject.qmuictl_touchEndCount = 0;
+                    if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
+                        selfObject.qmuictl_canSetHighlighted = YES;
+                        callSuperBlock();
+                        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                            if (selfObject.qmuictl_canSetHighlighted) {
+                                [selfObject setHighlighted:YES];
                             }
                         });
                     } else {
-                        [selfObject setHighlighted:NO];
+                        callSuperBlock();
                     }
-                    return;
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, NSSet *, UIEvent *);
-                originSelectorIMP = (void (*)(id, SEL, NSSet *, UIEvent *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, touches, event);
-            };
-        });
-        
-        OverrideImplementation([UIControl class], @selector(touchesCancelled:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
-                
-                // call super
-                void (^callSuperBlock)(void) = ^{
+                };
+            });
+            
+            OverrideImplementation([UIControl class], @selector(touchesMoved:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
+                    
+                    if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
+                        selfObject.qmuictl_canSetHighlighted = NO;
+                    }
+                    
+                    // call super
                     void (*originSelectorIMP)(id, SEL, NSSet *, UIEvent *);
                     originSelectorIMP = (void (*)(id, SEL, NSSet *, UIEvent *))originalIMPProvider();
                     originSelectorIMP(selfObject, originCMD, touches, event);
                 };
-                
-                if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
-                    selfObject.canSetHighlighted = NO;
-                    callSuperBlock();
-                    if (selfObject.highlighted) {
-                        [selfObject setHighlighted:NO];
+            });
+            
+            OverrideImplementation([UIControl class], @selector(touchesEnded:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
+                    
+                    if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
+                        selfObject.qmuictl_canSetHighlighted = NO;
+                        if (selfObject.touchInside) {
+                            [selfObject setHighlighted:YES];
+                            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                                // 如果延迟时间太长，会导致快速点击两次，事件会触发两次
+                                // 对于 3D Touch 的机器，如果点击按钮的时候在按钮上停留事件稍微长一点点，那么 touchesEnded 会被调用两次
+                                // 把 super touchEnded 放到延迟里调用会导致长按无法触发点击，先这么改，再想想怎么办。// [selfObject qmui_touchesEnded:touches withEvent:event];
+                                [selfObject sendActionsForAllTouchEventsIfCan];
+                                if (selfObject.highlighted) {
+                                    [selfObject setHighlighted:NO];
+                                }
+                            });
+                        } else {
+                            [selfObject setHighlighted:NO];
+                        }
+                        return;
                     }
-                    return;
-                }
-                callSuperBlock();
-            };
-        });
-    });
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, NSSet *, UIEvent *);
+                    originSelectorIMP = (void (*)(id, SEL, NSSet *, UIEvent *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, touches, event);
+                };
+            });
+            
+            OverrideImplementation([UIControl class], @selector(touchesCancelled:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, NSSet *touches, UIEvent *event) {
+                    
+                    // call super
+                    void (^callSuperBlock)(void) = ^{
+                        void (*originSelectorIMP)(id, SEL, NSSet *, UIEvent *);
+                        originSelectorIMP = (void (*)(id, SEL, NSSet *, UIEvent *))originalIMPProvider();
+                        originSelectorIMP(selfObject, originCMD, touches, event);
+                    };
+                    
+                    if (selfObject.qmui_automaticallyAdjustTouchHighlightedInScrollView) {
+                        selfObject.qmuictl_canSetHighlighted = NO;
+                        callSuperBlock();
+                        if (selfObject.highlighted) {
+                            [selfObject setHighlighted:NO];
+                        }
+                        return;
+                    }
+                    callSuperBlock();
+                };
+            });
+        } oncePerIdentifier:@"UIControl automaticallyAdjustTouchHighlightedInScrollView"];
+    }
+}
+
+- (BOOL)qmui_automaticallyAdjustTouchHighlightedInScrollView {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView)) boolValue];
 }
 
 // 这段代码需要以一个独立的方法存在，因为一旦有坑，外面可以直接通过runtime调用这个方法
 // 但，不要开放到.h文件里，理论上外面不应该用到它
 - (void)sendActionsForAllTouchEventsIfCan {
-    self.touchEndCount += 1;
-    if (self.touchEndCount == 1) {
+    self.qmuictl_touchEndCount += 1;
+    if (self.qmuictl_touchEndCount == 1) {
         [self sendActionsForControlEvents:UIControlEventAllTouchEvents];
     }
+}
+
+#pragma mark - Prevents Repeated TouchUpInside Event
+
+static char kAssociatedObjectKey_preventsRepeatedTouchUpInsideEvent;
+- (void)setQmui_preventsRepeatedTouchUpInsideEvent:(BOOL)qmui_preventsRepeatedTouchUpInsideEvent {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_preventsRepeatedTouchUpInsideEvent, @(qmui_preventsRepeatedTouchUpInsideEvent), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (qmui_preventsRepeatedTouchUpInsideEvent) {
+        [QMUIHelper executeBlock:^{
+            
+            OverrideImplementation([UIControl class], @selector(sendAction:to:forEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, SEL action, id target, UIEvent *event) {
+                    
+                    if (selfObject.qmui_preventsRepeatedTouchUpInsideEvent) {
+                        NSArray<NSString *> *actions = [selfObject actionsForTarget:target forControlEvent:UIControlEventTouchUpInside];
+                        if (!actions) {
+                            // iOS 10 UIBarButtonItem 里的 UINavigationButton 点击事件用的是 UIControlEventPrimaryActionTriggered
+                            actions = [selfObject actionsForTarget:target forControlEvent:UIControlEventPrimaryActionTriggered];
+                        }
+                        if ([actions containsObject:NSStringFromSelector(action)]) {
+                            UITouch *touch = event.allTouches.anyObject;
+                            if (touch.tapCount > 1) {
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, SEL, id, UIEvent *);
+                    originSelectorIMP = (void (*)(id, SEL, SEL, id, UIEvent *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, action, target, event);
+                };
+            });
+        } oncePerIdentifier:@"UIControl preventsRepeatedTouchUpInsideEvent"];
+    }
+}
+
+- (BOOL)qmui_preventsRepeatedTouchUpInsideEvent {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_preventsRepeatedTouchUpInsideEvent)) boolValue];
+}
+
+#pragma mark - Highlighted Block
+
+static char kAssociatedObjectKey_setHighlightedBlock;
+- (void)setQmui_setHighlightedBlock:(void (^)(BOOL))qmui_setHighlightedBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_setHighlightedBlock, qmui_setHighlightedBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_setHighlightedBlock) {
+        [QMUIHelper executeBlock:^{
+            ExtendImplementationOfVoidMethodWithSingleArgument([UIControl class], @selector(setHighlighted:), BOOL, ^(UIControl *selfObject, BOOL highlighted) {
+                if (selfObject.qmui_setHighlightedBlock) {
+                    selfObject.qmui_setHighlightedBlock(highlighted);
+                }
+            });
+        } oncePerIdentifier:@"UIControl setHighlighted:"];
+    }
+}
+
+- (void (^)(BOOL))qmui_setHighlightedBlock {
+    return (void (^)(BOOL))objc_getAssociatedObject(self, &kAssociatedObjectKey_setHighlightedBlock);
 }
 
 #pragma mark - Tap Block
 
 static char kAssociatedObjectKey_tapBlock;
 - (void)setQmui_tapBlock:(void (^)(__kindof UIControl *))qmui_tapBlock {
+    if (qmui_tapBlock) {
+        [QMUIHelper executeBlock:^{
+            OverrideImplementation([UIControl class], @selector(removeTarget:action:forControlEvents:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, id target, SEL action, UIControlEvents controlEvents) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, id, SEL, UIControlEvents);
+                    originSelectorIMP = (void (*)(id, SEL, id, SEL, UIControlEvents))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, target, action, controlEvents);
+                    
+                    BOOL isTouchUpInsideEvent = controlEvents & UIControlEventTouchUpInside;
+                    BOOL shouldRemoveTouchUpInsideSelector = (action == @selector(qmui_handleTouchUpInside:)) || (target == selfObject && !action) || (!target && !action);
+                    if (isTouchUpInsideEvent && shouldRemoveTouchUpInsideSelector) {
+                        // 避免触发 setter 又反过来 removeTarget，然后就死循环了
+                        objc_setAssociatedObject(selfObject, &kAssociatedObjectKey_tapBlock, nil, OBJC_ASSOCIATION_COPY_NONATOMIC);
+                    }
+                };
+            });
+        } oncePerIdentifier:@"UIControl tapBlock"];
+    }
+    
     SEL action = @selector(qmui_handleTouchUpInside:);
     if (!qmui_tapBlock) {
         [self removeTarget:self action:action forControlEvents:UIControlEventTouchUpInside];

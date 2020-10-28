@@ -20,7 +20,7 @@
 @implementation QMUILogItem
 
 + (instancetype)logItemWithLevel:(QMUILogLevel)level name:(NSString *)name logString:(NSString *)logString, ... {
-    QMUILogItem *logItem = [[QMUILogItem alloc] init];
+    QMUILogItem *logItem = [[self alloc] init];
     logItem.level = level;
     logItem.name = name;
     

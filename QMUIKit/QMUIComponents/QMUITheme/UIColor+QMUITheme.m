@@ -27,7 +27,7 @@
     dispatch_once(&onceToken, ^{
         // 随着 iOS 版本的迭代，需要不断检查 UIDynamicColor 对比 UIColor 多出来的方法是哪些，然后在 QMUIThemeColor 里补齐，否则可能出现”unrecognized selector sent to instance“的 crash
         // https://github.com/Tencent/QMUI_iOS/issues/791
-#if defined(DEBUG) && defined(IOS13_SDK_ALLOWED)
+#ifdef DEBUG
         if (@available(iOS 13.0, *)) {
             Class dynamicColorClass = NSClassFromString(@"UIDynamicColor");
             NSMutableSet<NSString *> *unrecognizedSelectors = NSMutableSet.new;
@@ -160,7 +160,7 @@
 @implementation UIColor (QMUITheme)
 
 + (instancetype)qmui_colorWithThemeProvider:(UIColor * _Nonnull (^)(__kindof QMUIThemeManager * _Nonnull, __kindof NSObject<NSCopying> * _Nullable, __kindof NSObject * _Nullable))provider {
-    return [UIColor qmui_colorWithThemeManagerName:QMUIThemeManagerNameDefault provider:provider];
+    return [self qmui_colorWithThemeManagerName:QMUIThemeManagerNameDefault provider:provider];
 }
 
 + (UIColor *)qmui_colorWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIColor * _Nonnull (^)(__kindof QMUIThemeManager * _Nonnull, __kindof NSObject<NSCopying> * _Nullable, __kindof NSObject * _Nullable))provider {

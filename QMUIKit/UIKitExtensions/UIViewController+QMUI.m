@@ -95,6 +95,7 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
                         if (tabBarController
                             && tabBar
                             && selfObject.navigationController.parentViewController == tabBarController
+                            && selfObject.parentViewController == selfObject.navigationController // 过滤掉那些自己添加的 childViewController 的情况
                             && !tabBar.hidden
                             && !selfObject.hidesBottomBarWhenPushed
                             && selfObject.isViewLoaded) {
@@ -105,14 +106,18 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
                             // https://github.com/Tencent/QMUI_iOS/issues/934
                             if (@available(iOS 13.4, *)) {
                             } else {
-                                if (!tabBar.translucent
-                                    && selfObject.extendedLayoutIncludesOpaqueBars
+                                if ((
+                                     (!tabBar.translucent && selfObject.extendedLayoutIncludesOpaqueBars)
+                                     || tabBar.translucent
+                                     )
+                                    && selfObject.edgesForExtendedLayout & UIRectEdgeBottom
                                     && !CGFloatEqualToFloat(CGRectGetHeight(viewRectInTabBarController), CGRectGetHeight(tabBarController.view.bounds))) {
                                     return;
                                 }
                             }
 
-                            CGRect barRectInTabBarController = [tabBar convertRect:tabBar.bounds toView:tabBarController.view];
+                            // pop 转场动画过程中有些时候 tabBar 尚未被加到 view 层级树里，所以这里做个判断，避免出现 convertRect 警告
+                            CGRect barRectInTabBarController = tabBar.window ? [tabBar convertRect:tabBar.bounds toView:tabBarController.view] : tabBar.frame;
                             CGFloat correctInsetBottom = MAX(CGRectGetMaxY(viewRectInTabBarController) - CGRectGetMinY(barRectInTabBarController), 0);
                             insets.bottom = correctInsetBottom;
                         }
@@ -448,10 +453,10 @@ static char kAssociatedObjectKey_visibleState;
         } else if (self.navigationItem.largeTitleDisplayMode == UINavigationItemLargeTitleDisplayModeNever) {
             return NO;
         } else if (self.navigationItem.largeTitleDisplayMode == UINavigationItemLargeTitleDisplayModeAutomatic) {
-            if (self.navigationController.childViewControllers.firstObject == self) {
+            if (self.navigationController.viewControllers.firstObject == self) {
                 return YES;
             } else {
-                UIViewController *previousViewController = self.navigationController.childViewControllers[[self.navigationController.childViewControllers indexOfObject:self] - 1];
+                UIViewController *previousViewController = self.navigationController.viewControllers[[self.navigationController.viewControllers indexOfObject:self] - 1];
                 return previousViewController.qmui_prefersLargeTitleDisplayed == YES;
             }
         }

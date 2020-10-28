@@ -329,18 +329,26 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 }
 
 - (void)updateBackItemTitleWithCurrentViewController:(UIViewController *)currentViewController nextViewController:(UIViewController *)nextViewController {
-    if (currentViewController) {
-        // 全局屏蔽返回按钮的文字
-        if (QMUICMIActivated && !NeedsBackBarButtonItemTitle) {
-            currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
+    if (!currentViewController) return;
+    
+    // 如果某个 viewController 显式声明了返回按钮的文字，则无视配置表 NeedsBackBarButtonItemTitle 的值
+    UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)nextViewController;
+    if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+        NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
+        currentViewController.navigationItem.backBarButtonItem = title ? [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] : nil;
+        return;
+    }
+    
+    // 全局屏蔽返回按钮的文字
+    if (QMUICMIActivated && !NeedsBackBarButtonItemTitle) {
+#ifdef IOS14_SDK_ALLOWED
+        if (@available(iOS 14.0, *)) {
+            // 用新 API 来屏蔽返回按钮的文字，才能保证 iOS 14 长按返回按钮时能正确出现 viewController title
+            currentViewController.navigationItem.backButtonDisplayMode = UINavigationItemBackButtonDisplayModeMinimal;
+            return;
         }
-        
-        // 如果某个 viewController 显式声明了返回按钮的文字，则无视配置表 NeedsBackBarButtonItemTitle 的值，且该 viewController 的前一个 viewController 会负责设置该 viewController 的返回按钮文字
-        UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)nextViewController;
-        if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
-            NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
-            currentViewController.navigationItem.backBarButtonItem = title ? [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] : nil;
-        }
+#endif
+        currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
     }
 }
 
@@ -407,12 +415,58 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 
 #pragma mark - StatusBar
 
+// 参数 hasCustomizedStatusBarBlock 用于判断指定 vc 是否有自己控制状态栏 hidden/style 的实现。
+- (UIViewController *)childViewControllerForStatusBarWithCustomBlock:(BOOL (^)(UIViewController *vc))hasCustomizedStatusBarBlock {
+    // 1. 有 modal present 则优先交给 modal present 的 vc 控制（例如进入搜索状态且没指定 definesPresentationContext 的 UISearchController）
+    UIViewController *childViewController = self.visibleViewController;
+    
+    // 2. 如果 modal present 是一个 UINavigationController，则 self.visibleViewController 拿到的是该 UINavigationController.topViewController，而不是该 UINavigationController 本身，所以这里要特殊处理一下，才能让下文的 beingDismissed 判断生效
+    if (childViewController.navigationController && (self.presentedViewController == childViewController.navigationController)) {
+        childViewController = childViewController.navigationController;
+    }
+    
+    // 3. 命中这个条件意味着 viewControllers 里某个 vc 被设置了 definesPresentationContext = YES 并 present 了一个 vc（最常见的是进入搜索状态的 UISearchController），此时对 self 而言是不存在 presentedViewController 的，所以在上面第1步里无法得到这个被 present 起来的 vc，也就无法将 statusBar 的控制权交给它，所以这里要特殊处理一下，保证状态栏的控制权
+    if (childViewController.presentedViewController && childViewController.presentedViewController != self.presentedViewController && hasCustomizedStatusBarBlock(childViewController.presentedViewController)) {
+        childViewController = childViewController.presentedViewController;
+    }
+    
+    // 4. 普通 dismiss，或者 iOS 13 默认的半屏 present 手势拖拽下来过程中，或者 UISearchController 退出搜索状态时，都会触发 statusBar 样式刷新，此时的 childViewController 依然是被 dismiss 的那个 vc，但状态栏应该交给背后的界面去控制，所以这里做个保护
+    if (childViewController.beingDismissed) {
+        childViewController = self.topViewController;
+    }
+    
+    if (QMUICMIActivated) {
+        if (hasCustomizedStatusBarBlock(childViewController)) {
+            return childViewController;
+        }
+        return nil;
+    }
+    return childViewController;
+}
+
 - (UIViewController *)childViewControllerForStatusBarHidden {
-    return self.topViewController;
+    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
+        return vc.qmui_prefersStatusBarHiddenBlock || [vc qmui_hasOverrideUIKitMethod:@selector(prefersStatusBarHidden)];
+    }];
 }
 
 - (UIViewController *)childViewControllerForStatusBarStyle {
-    return self.topViewController;
+    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
+        return vc.qmui_preferredStatusBarStyleBlock || [vc qmui_hasOverrideUIKitMethod:@selector(preferredStatusBarStyle)];
+    }];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    // 按照系统的文档，当 -[UIViewController childViewControllerForStatusBarStyle] 返回值不为 nil 时，会询问返回的 vc 的 preferredStatusBarStyle，只有当返回 nil 时才会询问 self 的 preferredStatusBarStyle，但实测在 iOS 13 默认的半屏 present 或者 UISearchController 进入搜索状态时，即便在 childViewControllerForStatusBarStyle 里返回了正确的 vc，最终依然会来询问 -[self preferredStatusBarStyle]，导致样式错误，所以这里做个保护。
+    UIViewController *childViewController = [self childViewControllerForStatusBarStyle];
+    if (childViewController) {
+        return [childViewController preferredStatusBarStyle];
+    }
+    
+    if (QMUICMIActivated) {
+        return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+    }
+    return [super preferredStatusBarStyle];
 }
 
 #pragma mark - 屏幕旋转

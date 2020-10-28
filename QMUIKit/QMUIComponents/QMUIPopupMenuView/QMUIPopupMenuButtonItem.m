@@ -27,7 +27,7 @@
 @implementation QMUIPopupMenuButtonItem
 
 + (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(nullable void (^)(QMUIPopupMenuButtonItem *))handler {
-    QMUIPopupMenuButtonItem *item = [[QMUIPopupMenuButtonItem alloc] init];
+    QMUIPopupMenuButtonItem *item = [[self alloc] init];
     item.image = image;
     item.title = title;
     item.handler = handler;
@@ -40,6 +40,7 @@
         
         _button = [[QMUIButton alloc] init];
         self.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+        self.button.tintColor = nil;
         self.button.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
         [self.button addTarget:self action:@selector(handleButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:self.button];

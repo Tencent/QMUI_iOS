@@ -15,6 +15,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface UITabBarItem (QMUI)
 
 /**
@@ -22,12 +24,14 @@
  *  @arg tabBarItem 被双击的 UITabBarItem
  *  @arg index      被双击的 UITabBarItem 的序号
  */
-@property(nonatomic, copy) void (^qmui_doubleTapBlock)(UITabBarItem *tabBarItem, NSInteger index);
+@property(nonatomic, copy, nullable) void (^qmui_doubleTapBlock)(UITabBarItem *tabBarItem, NSInteger index);
 
 /**
  * 获取一个UITabBarItem内显示图标的UIImageView，如果找不到则返回nil
- * @warning 需要对nil的返回值做保护
  */
-- (UIImageView *)qmui_imageView;
+- (nullable UIImageView *)qmui_imageView;
++ (nullable UIImageView *)qmui_imageViewInTabBarButton:(nullable UIView *)tabBarButton;
 
 @end
+
+NS_ASSUME_NONNULL_END

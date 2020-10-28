@@ -25,9 +25,6 @@
 
 @implementation UIBarItem (QMUI)
 
-// 用于某些低版本 iOS 里，在 UINavigationButton/UIToolbarButton/UITabBarButton 里建立对 UIBarItem 的引用
-static char kAssociatedObjectKey_referenceItem;
-
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -52,24 +49,6 @@ static char kAssociatedObjectKey_referenceItem;
         ExtendImplementationOfVoidMethodWithSingleArgument([UITabBarItem class], @selector(setView:), UIView *, ^(UITabBarItem *selfObject, UIView *firstArgv) {
             [UIBarItem setView:firstArgv inBarItem:selfObject];
         });
-        
-        void (^layoutSubviewsBlock)(UIView *selfObject) = ^void(UIView *selfObject) {
-            UIBarItem *item = (UIBarItem *)((QMUIWeakObjectContainer *)objc_getAssociatedObject(self, &kAssociatedObjectKey_referenceItem)).object;
-            if (item.qmui_viewDidLayoutSubviewsBlock) {
-                item.qmui_viewDidLayoutSubviewsBlock(item, selfObject);
-            }
-        };
-        
-        // iOS 10 及以下，UIBarButtonItem 的 view 的 layoutSubviews 没有调用 super，所以无法利用 UIView (QMUI).qmui_layoutSubviewsBlock 实现这个功能，所以这里才需要直接重写该 class 的 layoutSubviews
-        if (IOS_VERSION_NUMBER < 110000) {
-            ExtendImplementationOfVoidMethodWithoutArguments(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UINavigation", @"Button"]), @selector(layoutSubviews), layoutSubviewsBlock);
-            ExtendImplementationOfVoidMethodWithoutArguments(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UIToolbar", @"Button"]), @selector(layoutSubviews), layoutSubviewsBlock);
-        }
-        
-        // iOS 9 及以下，UITabBarItem 的 view 的 layoutSubviews 没有调用 super，所以无法利用 UIView (QMUI).qmui_layoutSubviewsBlock 实现这个功能，所以这里才需要直接重写该 class 的 layoutSubviews
-        if (IOS_VERSION_NUMBER < 100000) {
-            ExtendImplementationOfVoidMethodWithoutArguments(NSClassFromString([NSString stringWithFormat:@"%@%@", @"UITab", @"BarButton"]), @selector(layoutSubviews), layoutSubviewsBlock);
-        }
     });
 }
 
@@ -130,28 +109,6 @@ static char kAssociatedObjectKey_viewLayoutDidChangeBlock;
 }
 
 + (void)setView:(UIView *)view inBarItem:(__kindof UIBarItem *)item {
-    if (IOS_VERSION_NUMBER < 110000) {
-        if ([NSStringFromClass(view.class) hasPrefix:@"UINavigation"] || [NSStringFromClass(view.class) hasPrefix:@"UIToolbar"]) {
-            QMUIWeakObjectContainer *weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_referenceItem);
-            if (!weakContainer) {
-                weakContainer = [[QMUIWeakObjectContainer alloc] init];
-            }
-            weakContainer.object = item;
-            objc_setAssociatedObject(view, &kAssociatedObjectKey_referenceItem, weakContainer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        }
-    }
-    
-    if (IOS_VERSION_NUMBER < 100000) {
-        if ([NSStringFromClass(view.class) hasPrefix:@"UITabBar"]) {
-            QMUIWeakObjectContainer *weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_referenceItem);
-            if (!weakContainer) {
-                weakContainer = [[QMUIWeakObjectContainer alloc] init];
-            }
-            weakContainer.object = item;
-            objc_setAssociatedObject(view, &kAssociatedObjectKey_referenceItem, weakContainer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        }
-    }
-    
     if (item.qmui_viewDidSetBlock) {
         item.qmui_viewDidSetBlock(item, view);
     }

@@ -17,7 +17,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// iOS 13 下当 UIUserInterfaceStyle 发生变化前的通知，可用于更新状态，例如 QMUIThemeManager 利用其来自动切换主题
-extern NSNotificationName const QMUIUserInterfaceStyleWillChangeNotification API_AVAILABLE(ios(13.0));
+
+@interface UITraitCollection (QMUI)
+
+/**
+ 添加一个系统的深色、浅色外观发即将生变化前的监听，可用于需要在外观即将发生改变之前更新状态，例如 QMUIThemeManager 利用其来自动切换主题
+ @note 如果在 info.plist 中指定 User Interface Style 值将无法监听。
+ */
++ (void)qmui_addUserInterfaceStyleWillChangeObserver:(id)observer selector:(SEL)aSelector API_AVAILABLE(ios(13.0));
+
+@end
+
+
 
 NS_ASSUME_NONNULL_END

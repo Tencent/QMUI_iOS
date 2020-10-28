@@ -178,7 +178,7 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
         NSObject<UITextInputTraits> *input = (NSObject<UITextInputTraits> *)self;
         if ([input respondsToSelector:@selector(keyboardAppearance)]) {
             if (input.keyboardAppearance != KeyboardAppearance && !input.qmui_hasCustomizedKeyboardAppearance) {
-                input.keyboardAppearance = KeyboardAppearance;
+                input.qmui_keyboardAppearance = KeyboardAppearance;
             }
         }
     }

@@ -153,17 +153,17 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 
 - (UIImage *)qmui_imageWithTintColor:(UIColor *)tintColor {
     // iOS 13 的 imageWithTintColor: 方法里并不会去更新 CGImage，所以通过它更改了图片颜色后再获取到的 CGImage 依然是旧的，因此暂不使用
-//#ifdef IOS13_SDK_ALLOWED
 //    if (@available(iOS 13.0, *)) {
 //        return [self imageWithTintColor:tintColor];
 //    }
-//#endif
     BOOL opaque = self.qmui_opaque ? tintColor.qmui_alpha >= 1.0 : NO;// 如果图片不透明但 tintColor 半透明，则生成的图片也应该是半透明的
     return [UIImage qmui_imageWithSize:self.size opaque:opaque scale:self.scale actions:^(CGContextRef contextRef) {
         CGContextTranslateCTM(contextRef, 0, self.size.height);
         CGContextScaleCTM(contextRef, 1.0, -1.0);
-        CGContextSetBlendMode(contextRef, kCGBlendModeNormal);
-        CGContextClipToMask(contextRef, CGRectMakeWithSize(self.size), self.CGImage);
+        if (!opaque) {
+            CGContextSetBlendMode(contextRef, kCGBlendModeNormal);
+            CGContextClipToMask(contextRef, CGRectMakeWithSize(self.size), self.CGImage);
+        }
         CGContextSetFillColorWithColor(contextRef, tintColor.CGColor);
         CGContextFillRect(contextRef, CGRectMakeWithSize(self.size));
     }];
@@ -438,15 +438,16 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
     size_t count = CGImageSourceGetCount(source);
     UIImage *animatedImage = nil;
+    scale = scale == 0 ? ScreenScale : scale;
     if (count <= 1) {
-        animatedImage = [[UIImage alloc] initWithData:data];
+        animatedImage = [[UIImage alloc] initWithData:data scale:scale];
     } else {
         NSMutableArray<UIImage *> *images = [[NSMutableArray alloc] init];
         NSTimeInterval duration = 0.0f;
         for (size_t i = 0; i < count; i++) {
             CGImageRef image = CGImageSourceCreateImageAtIndex(source, i, NULL);
             duration += [self qmui_frameDurationAtIndex:i source:source];
-            UIImage *frameImage = [UIImage imageWithCGImage:image scale:scale == 0 ? ScreenScale : scale orientation:UIImageOrientationUp];
+            UIImage *frameImage = [UIImage imageWithCGImage:image scale:scale orientation:UIImageOrientationUp];
             [images addObject:frameImage];
             CGImageRelease(image);
         }

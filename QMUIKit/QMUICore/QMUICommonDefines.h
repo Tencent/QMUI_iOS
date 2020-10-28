@@ -54,6 +54,11 @@
 #define IOS13_SDK_ALLOWED YES
 #endif
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
+/// 当前编译使用的 Base SDK 版本为 iOS 14.0 及以上
+#define IOS14_SDK_ALLOWED YES
+#endif
+
 #pragma mark - Clang
 
 #define ArgumentToString(macro) #macro
@@ -361,24 +366,56 @@ CGFloatToFixed(CGFloat value, NSUInteger precision) {
 }
 
 /**
- 将给定的两个 CGFloat 进行等值比较，并通过参数 precision 指定要考虑的小数点后的精度，内部会将浮点数转成整型，从而避免浮点数精度导致的 == 判断错误。
- 例如 CGFloatEqualToFloatWithPrecision(1.000, 0.999, 0) 会返回 YES，但 1.000 == 0.999 会得到 NO。
- */
-CG_INLINE BOOL
-CGFloatEqualToFloatWithPrecision(CGFloat value1, CGFloat value2, NSUInteger precision) {
-    NSInteger a = ((NSInteger)round(value1) * pow(10, precision));
-    NSInteger b = ((NSInteger)round(value2) * pow(10, precision));
-    return a == b;
+ 用于两个 CGFloat 值之间的比较运算，支持 ==、>、<、>=、<= 5种，内部会将浮点数转成整型，从而避免浮点数精度导致的判断错误。
+ 
+ CGFloatEqualToFloatWithPrecision()
+ CGFloatEqualToFloat()
+ CGFloatMoreThanFloatWithPrecision()
+ CGFloatMoreThanFloat()
+ CGFloatMoreThanOrEqualToFloatWithPrecision()
+ CGFloatMoreThanOrEqualToFloat()
+ CGFloatLessThanFloatWithPrecision()
+ CGFloatLessThanFloat()
+ CGFloatLessThanOrEqualToFloatWithPrecision()
+ CGFloatLessThanOrEqualToFloat()
+ 
+ 可通过参数 precision 指定要考虑的小数点后的精度，精度的定义是保证指定的那一位小数点不会因为浮点问题导致计算错误，例如当我们要获取一个 1.0 的浮点数时，有时候会得到 0.99999999，有时候会得到 1.000000001，所以需要对指定的那一位小数点的后一位数进行四舍五入操作。
+ @code
+ precision = 0，也即对小数点后0+1位四舍五入
+    0.999 -> 0.9 -> round(0.9) -> 1
+    1.011 -> 1.0 -> round(1.0) -> 1
+    1.033 -> 1.0 -> round(1.0) -> 1
+    1.099 -> 1.0 -> round(1.0) -> 1
+ precision = 1，也即对小数点后1+1位四舍五入
+    0.999 -> 9.9 -> round(9.9)   -> 10 -> 1.0
+    1.011 -> 10.1 -> round(10.1) -> 10 -> 1.0
+    1.033 -> 10.3 -> round(10.3) -> 10 -> 1.0
+    1.099 -> 10.9 -> round(10.9) -> 11 -> 1.1
+ precision = 2，也即对小数点后2+1位四舍五入
+    0.999 -> 99.9 -> round(99.9)   -> 100 -> 1.00
+    1.011 -> 101.1 -> round(101.1) -> 101 -> 1.01
+    1.033 -> 103.3 -> round(103.3) -> 103 -> 1.03
+    1.099 -> 109.9 -> round(109.9) -> 110 -> 1.1
+ @endcode
+*/
+CG_INLINE NSInteger _RoundedIntegerFromCGFloat(CGFloat value, NSUInteger precision) {
+    return (NSInteger)(round(value * pow(10, precision)));
 }
 
-/**
- 将给定的两个 CGFloat 进行等值比较，不考虑小数点后的数值。
- 例如 CGFloatEqualToFloat(1.000, 0.999) 会返回 YES，但 1.000 == 0.999 会得到 NO。
- */
-CG_INLINE BOOL
-CGFloatEqualToFloat(CGFloat value1, CGFloat value2) {
-    return CGFloatEqualToFloatWithPrecision(value1, value2, 0);
+#define _CGFloatCalcGenerator(_operatorName, _operator) CG_INLINE BOOL CGFloat##_operatorName##FloatWithPrecision(CGFloat value1, CGFloat value2, NSUInteger precision) {\
+    NSInteger a = _RoundedIntegerFromCGFloat(value1, precision);\
+    NSInteger b = _RoundedIntegerFromCGFloat(value2, precision);\
+    return a _operator b;\
+}\
+CG_INLINE BOOL CGFloat##_operatorName##Float(CGFloat value1, CGFloat value2) {\
+    return CGFloat##_operatorName##FloatWithPrecision(value1, value2, 0);\
 }
+
+_CGFloatCalcGenerator(EqualTo, ==)
+_CGFloatCalcGenerator(LessThan, <)
+_CGFloatCalcGenerator(LessThanOrEqualTo, <=)
+_CGFloatCalcGenerator(MoreThan, >)
+_CGFloatCalcGenerator(MoreThanOrEqualTo, >=)
 
 /// 用于居中运算
 CG_INLINE CGFloat

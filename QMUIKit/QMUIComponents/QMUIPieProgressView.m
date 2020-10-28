@@ -89,7 +89,6 @@
             CGContextSetStrokeColorWithColor(context, self.strokeColor.CGColor);
             CGContextAddArc(context, center.x, center.y, radius, startAngle, endAngle, 0);
             CGContextStrokePath(context);
-            CGContextClosePath(context);
         }
             break;
     }

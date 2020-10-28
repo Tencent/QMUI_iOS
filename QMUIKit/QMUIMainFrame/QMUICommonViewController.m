@@ -92,11 +92,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (!self.view.backgroundColor) {
-        UIColor *backgroundColor = UIColorForBackground;
-        if (backgroundColor) {
-            self.view.backgroundColor = backgroundColor;
-        }
+    if (!self.view.backgroundColor && QMUICMIActivated) {// nib 里可能设置了，所以做个 if 的判断
+        self.view.backgroundColor = UIColorForBackground;
     }
     
     // 点击空白区域降下键盘 QMUICommonViewController (QMUIKeyboard)

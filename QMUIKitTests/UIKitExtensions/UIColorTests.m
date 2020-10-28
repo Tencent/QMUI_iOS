@@ -53,23 +53,32 @@
     XCTAssertEqual([UIColor blueColor].qmui_blue, 1);
     XCTAssertEqual([UIColor blueColor].qmui_alpha, 1);
     
+    XCTAssertEqualObjects([UIColor redColor].qmui_RGBAString, @"255,0,0,1.00");
+    XCTAssertEqualObjects([UIColor greenColor].qmui_RGBAString, @"0,255,0,1.00");
+    XCTAssertEqualObjects([UIColor blueColor].qmui_RGBAString, @"0,0,255,1.00");
+    
     UIColor *graySpaceColor = [UIColor whiteColor];
     XCTAssertEqual(graySpaceColor.qmui_red, 1);
     XCTAssertEqual(graySpaceColor.qmui_green, 1);
     XCTAssertEqual(graySpaceColor.qmui_blue, 1);
     XCTAssertEqual(graySpaceColor.qmui_alpha, 1);
+    XCTAssertEqualObjects(graySpaceColor.qmui_RGBAString, @"255,255,255,1.00");
+    
+    XCTAssertEqualObjects([UIColor colorWithWhite:1 alpha:.5].qmui_RGBAString, @"255,255,255,0.50");
     
     UIColor *hsbSpaceColor = [UIColor colorWithHue:1 saturation:1 brightness:1 alpha:1];// 纯红色
     XCTAssertEqual(hsbSpaceColor.qmui_red, 1);
     XCTAssertEqual(hsbSpaceColor.qmui_green, 0);
     XCTAssertEqual(hsbSpaceColor.qmui_blue, 0);
     XCTAssertEqual(hsbSpaceColor.qmui_alpha, 1);
+    XCTAssertEqualObjects(hsbSpaceColor.qmui_RGBAString, @"255,0,0,1.00");
     
     UIColor *zeroColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0];
     XCTAssertEqual(zeroColor.qmui_red, 0);
     XCTAssertEqual(zeroColor.qmui_green, 0);
     XCTAssertEqual(zeroColor.qmui_blue, 0);
     XCTAssertEqual(zeroColor.qmui_alpha, 0);
+    XCTAssertEqualObjects(zeroColor.qmui_RGBAString, @"0,0,0,0.00");
     
     CGFloat value = .25;
     UIColor *nonZeroColor = [UIColor colorWithRed:value green:value blue:value alpha:value];
@@ -77,12 +86,15 @@
     XCTAssertEqual(nonZeroColor.qmui_green, value);
     XCTAssertEqual(nonZeroColor.qmui_blue, value);
     XCTAssertEqual(nonZeroColor.qmui_alpha, value);
+    XCTAssertEqualObjects(nonZeroColor.qmui_RGBAString, @"64,64,64,0.25");
     
     UIColor *nilColor = nil;
     XCTAssertEqual(nilColor.qmui_red, 0);
     XCTAssertEqual(nilColor.qmui_green, 0);
     XCTAssertEqual(nilColor.qmui_blue, 0);
     XCTAssertEqual(nilColor.qmui_alpha, 0);
+    
+    XCTAssertEqualObjects(UIColorMakeWithRGBA(255, 0, 0, .5), [UIColor qmui_colorWithRGBAString:@"255,0,0,.5"]);
 }
 
 - (void)testHSB {

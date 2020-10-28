@@ -17,6 +17,7 @@
 #import "QMUITableViewProtocols.h"
 #import "QMUICore.h"
 #import "UIScrollView+QMUI.h"
+#import "UITableView+QMUI.h"
 #import "UIView+QMUI.h"
 #import "NSNumber+QMUI.h"
 
@@ -153,7 +154,7 @@ QMUISynthesizeIdStrongProperty(qmuiTableCache_allKeyedHeightCaches, setQmuiTable
     if (!self.qmuiTableCache_allKeyedHeightCaches) {
         self.qmuiTableCache_allKeyedHeightCaches = [[NSMutableDictionary alloc] init];
     }
-    CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset);
+    CGFloat contentWidth = self.qmui_validContentWidth;
     QMUICellHeightCache *cache = self.qmuiTableCache_allKeyedHeightCaches[@(contentWidth)];
     if (!cache) {
         cache = [[QMUICellHeightCache alloc] init];
@@ -179,7 +180,7 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
     if (!self.qmuiTableCache_allIndexPathHeightCaches) {
         self.qmuiTableCache_allIndexPathHeightCaches = [[NSMutableDictionary alloc] init];
     }
-    CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset);
+    CGFloat contentWidth = self.qmui_validContentWidth;
     QMUICellHeightIndexPathCache *cache = self.qmuiTableCache_allIndexPathHeightCaches[@(contentWidth)];
     if (!cache) {
         cache = [[QMUICellHeightIndexPathCache alloc] init];
@@ -391,13 +392,13 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
 }
 
 - (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier configuration:(void (^)(__kindof UITableViewCell *))configuration {
-    if (!identifier || CGRectIsEmpty(self.bounds)) {
+    CGFloat contentWidth = self.qmui_validContentWidth;
+    if (!identifier || contentWidth <= 0) {
         return 0;
     }
     UITableViewCell *cell = [self templateCellForReuseIdentifier:identifier];
     [cell prepareForReuse];
     if (configuration) configuration(cell);
-    CGFloat contentWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset);
     CGSize fitSize = CGSizeZero;
     if (cell && contentWidth > 0) {
         fitSize = [cell sizeThatFits:CGSizeMake(contentWidth, CGFLOAT_MAX)];
@@ -407,7 +408,7 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
 
 // 通过indexPath缓存高度
 - (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(__kindof UITableViewCell *))configuration {
-    if (!identifier || !indexPath || CGRectIsEmpty(self.bounds)) {
+    if (!identifier || !indexPath || self.qmui_validContentWidth <= 0) {
         return 0;
     }
     if ([self.qmui_indexPathHeightCache existsHeightAtIndexPath:indexPath]) {
@@ -420,7 +421,7 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
 
 // 通过key缓存高度
 - (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cacheByKey:(id<NSCopying>)key configuration:(void (^)(__kindof UITableViewCell *))configuration {
-    if (!identifier || !key || CGRectIsEmpty(self.bounds)) {
+    if (!identifier || !key || self.qmui_validContentWidth <= 0) {
         return 0;
     }
     if ([self.qmui_keyedHeightCache existsHeightForKey:key]) {
@@ -457,7 +458,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allKeyedHeightCaches, setQmui
     if (!self.qmuiCollectionCache_allKeyedHeightCaches) {
         self.qmuiCollectionCache_allKeyedHeightCaches = [[NSMutableDictionary alloc] init];
     }
-    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.qmui_contentInset));
+    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.qmui_safeAreaInsets));
     QMUICellHeightCache *cache = self.qmuiCollectionCache_allKeyedHeightCaches[[NSValue valueWithCGSize:collectionViewSize]];
     if (!cache) {
         cache = [[QMUICellHeightCache alloc] init];
@@ -483,7 +484,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
     if (!self.qmuiCollectionCache_allIndexPathHeightCaches) {
         self.qmuiCollectionCache_allIndexPathHeightCaches = [[NSMutableDictionary alloc] init];
     }
-    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.qmui_contentInset));
+    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.qmui_safeAreaInsets));
     QMUICellHeightIndexPathCache *cache = self.qmuiCollectionCache_allIndexPathHeightCaches[[NSValue valueWithCGSize:collectionViewSize]];
     if (!cache) {
         cache = [[QMUICellHeightIndexPathCache alloc] init];

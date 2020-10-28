@@ -252,11 +252,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         
         // 最顶/最底
         if (proposedContentOffset.y < -contentInset.top || proposedContentOffset.y >= contentSize.height + contentInset.bottom - frameSize.height) {
-            if (IOS_VERSION_NUMBER < 100000) {
-                // iOS 10 及以上的版本，直接返回当前的 contentOffset，系统会自动帮你调整到边界状态，而 iOS 9 及以下的版本需要自己计算
-                // https://github.com/Tencent/QMUI_iOS/issues/499
-                proposedContentOffset.y = MIN(MAX(proposedContentOffset.y, -contentInset.top), contentSize.height + contentInset.bottom - frameSize.height);
-            }
+            // iOS 10 及以上的版本，直接返回当前的 contentOffset，系统会自动帮你调整到边界状态，而 iOS 9 及以下的版本需要自己计算
             return proposedContentOffset;
         }
         
@@ -287,11 +283,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
         
         // 最左/最右
         if (proposedContentOffset.x < -contentInset.left || proposedContentOffset.x >= contentSize.width + contentInset.right - frameSize.width) {
-            if (IOS_VERSION_NUMBER < 100000) {
-                // iOS 10 及以上的版本，直接返回当前的 contentOffset，系统会自动帮你调整到边界状态，而 iOS 9 及以下的版本需要自己计算
-                // https://github.com/Tencent/QMUI_iOS/issues/499
-                proposedContentOffset.x = MIN(MAX(proposedContentOffset.x, -contentInset.left), contentSize.width + contentInset.right - frameSize.width);
-            }
+            // iOS 10 及以上的版本，直接返回当前的 contentOffset，系统会自动帮你调整到边界状态，而 iOS 9 及以下的版本需要自己计算
             return proposedContentOffset;
         }
         

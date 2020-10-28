@@ -163,16 +163,10 @@
 }
 
 - (NSInteger)preferredFramesPerSecond {
-    if (@available(iOS 10, *)) {
-        if (self.displayLink.preferredFramesPerSecond == 0) {
-            return 60;
-        }
-        return self.displayLink.preferredFramesPerSecond;
-    }
-    if (self.displayLink.frameInterval == 0) {
+    if (self.displayLink.preferredFramesPerSecond == 0) {
         return 60;
     }
-    return 60 / self.displayLink.frameInterval;
+    return self.displayLink.preferredFramesPerSecond;
 }
 
 @end
@@ -227,7 +221,7 @@
                           animation:(void (^)(id curValue))animation
                        createdBlock:(void (^)(QMUIDisplayLinkAnimation *animation))createdBlock
                        didStopBlock:(void (^)(QMUIDisplayLinkAnimation *animation))didStopBlock {
-    QMUIDisplayLinkAnimation *displayLinkAnimation = [[QMUIDisplayLinkAnimation alloc] initWithDuration:duration
+    QMUIDisplayLinkAnimation *displayLinkAnimation = [[self alloc] initWithDuration:duration
                                                                                                  easing:easing
                                                                                               fromValue:fromValue
                                                                                                 toValue:toValue
@@ -278,7 +272,7 @@
                          animations:(void (^)(QMUIDisplayLinkAnimation *animation, CGFloat curTime))animations
                        createdBlock:(void (^)(QMUIDisplayLinkAnimation *animation))createdBlock
                        didStopBlock:(void (^)(QMUIDisplayLinkAnimation *animation))didStopBlock {
-    QMUIDisplayLinkAnimation *displayLinkAnimation = [[QMUIDisplayLinkAnimation alloc] initWithDuration:duration
+    QMUIDisplayLinkAnimation *displayLinkAnimation = [[self alloc] initWithDuration:duration
                                                                                                  easing:easing
                                                                                              animations:animations];
     if (createdBlock) {

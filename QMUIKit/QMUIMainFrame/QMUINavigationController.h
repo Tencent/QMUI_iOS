@@ -143,6 +143,12 @@
 - (nullable NSString *)customNavigationBarTransitionKey;
 
 /**
+ *  在实现了系统的自定义转场情况下，导航栏转场的时候是否需要使用 QMUI 自定义的 push / pop transition 效果，默认不实现的话则不会使用，只要前后其中一个 vc 实现并返回了 YES 则会使用。
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (BOOL)shouldCustomizeNavigationBarTransitionIfUsingCustomTransitionForOperation:(UINavigationControllerOperation)operation fromViewController:(nullable UIViewController *)fromVC toViewController:(nullable UIViewController *)toVc;
+
+/**
  *  自定义navBar效果过程中UINavigationController的containerView的背景色
  *  @see UINavigationController+NavigationBarTransition.h
  */

@@ -15,30 +15,8 @@
 
 #import "UIBarItem+QMUIBadge.h"
 #import "QMUICore.h"
-#import "QMUILog.h"
-#import "QMUILabel.h"
-#import "UIView+QMUI.h"
+#import "UIView+QMUIBadge.h"
 #import "UIBarItem+QMUI.h"
-#import "UITabBarItem+QMUI.h"
-#import "UIViewController+QMUI.h"
-
-@interface _QMUIBadgeLabel : QMUILabel
-
-@property(nonatomic, assign) CGPoint centerOffset;
-@property(nonatomic, assign) CGPoint centerOffsetLandscape;
-@end
-
-@interface _QMUIUpdatesIndicatorView : UIView
-
-@property(nonatomic, assign) CGPoint centerOffset;
-@property(nonatomic, assign) CGPoint centerOffsetLandscape;
-@end
-
-@interface UIBarItem ()
-
-@property(nonatomic, strong, readwrite) _QMUIBadgeLabel *qmui_badgeLabel;
-@property(nonatomic, strong, readwrite) _QMUIUpdatesIndicatorView *qmui_updatesIndicatorView;
-@end
 
 @implementation UIBarItem (QMUIBadge)
 
@@ -64,13 +42,6 @@
                     return;
                 }
                 
-                if (selfObject == firstArgv) {
-                    UIViewController *visibleViewController = [QMUIHelper visibleViewController];
-                    NSString *log = [NSString stringWithFormat:@"UIBarItem (QMUIBadge) addSubview:, 把自己作为 subview 添加到自己身上，self = %@, visibleViewController = %@, visibleState = %@, viewControllers = %@\n%@", selfObject, visibleViewController, @(visibleViewController.qmui_visibleState), visibleViewController.navigationController.viewControllers, [NSThread callStackSymbols]];
-                    NSAssert(NO, log);
-                    QMUILogWarn(@"UIBarItem (QMUIBadge)", @"%@", log);
-                }
-                
                 // call super
                 IMP originalIMP = originalIMPProvider();
                 void (*originSelectorIMP)(id, SEL, UIView *);
@@ -82,17 +53,26 @@
 }
 
 - (void)qmuibaritem_didInitialize {
-    self.qmui_badgeBackgroundColor = BadgeBackgroundColor;
-    self.qmui_badgeTextColor = BadgeTextColor;
-    self.qmui_badgeFont = BadgeFont;
-    self.qmui_badgeContentEdgeInsets = BadgeContentEdgeInsets;
-    self.qmui_badgeCenterOffset = BadgeCenterOffset;
-    self.qmui_badgeCenterOffsetLandscape = BadgeCenterOffsetLandscape;
-    
-    self.qmui_updatesIndicatorColor = UpdatesIndicatorColor;
-    self.qmui_updatesIndicatorSize = UpdatesIndicatorSize;
-    self.qmui_updatesIndicatorCenterOffset = UpdatesIndicatorCenterOffset;
-    self.qmui_updatesIndicatorCenterOffsetLandscape = UpdatesIndicatorCenterOffsetLandscape;
+    if (QMUICMIActivated) {
+        self.qmui_badgeBackgroundColor = BadgeBackgroundColor;
+        self.qmui_badgeTextColor = BadgeTextColor;
+        self.qmui_badgeFont = BadgeFont;
+        self.qmui_badgeContentEdgeInsets = BadgeContentEdgeInsets;
+        self.qmui_badgeOffset = BadgeOffset;
+        self.qmui_badgeOffsetLandscape = BadgeOffsetLandscape;
+        
+        self.qmui_updatesIndicatorColor = UpdatesIndicatorColor;
+        self.qmui_updatesIndicatorSize = UpdatesIndicatorSize;
+        self.qmui_updatesIndicatorOffset = UpdatesIndicatorOffset;
+        self.qmui_updatesIndicatorOffsetLandscape = UpdatesIndicatorOffsetLandscape;
+        
+        BeginIgnoreDeprecatedWarning
+        self.qmui_badgeCenterOffset = BadgeCenterOffset;
+        self.qmui_badgeCenterOffsetLandscape = BadgeCenterOffsetLandscape;
+        self.qmui_updatesIndicatorCenterOffset = UpdatesIndicatorCenterOffset;
+        self.qmui_updatesIndicatorCenterOffsetLandscape = UpdatesIndicatorCenterOffsetLandscape;
+        EndIgnoreClangWarning
+    }
 }
 
 #pragma mark - Badge
@@ -111,40 +91,9 @@ static char kAssociatedObjectKey_badgeString;
 - (void)setQmui_badgeString:(NSString *)qmui_badgeString {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeString, qmui_badgeString, OBJC_ASSOCIATION_COPY_NONATOMIC);
     if (qmui_badgeString.length) {
-        if (!self.qmui_badgeLabel) {
-            self.qmui_badgeLabel = [[_QMUIBadgeLabel alloc] init];
-            self.qmui_badgeLabel.clipsToBounds = YES;
-            self.qmui_badgeLabel.textAlignment = NSTextAlignmentCenter;
-            self.qmui_badgeLabel.backgroundColor = self.qmui_badgeBackgroundColor;
-            self.qmui_badgeLabel.textColor = self.qmui_badgeTextColor;
-            self.qmui_badgeLabel.font = self.qmui_badgeFont;
-            self.qmui_badgeLabel.contentEdgeInsets = self.qmui_badgeContentEdgeInsets;
-            self.qmui_badgeLabel.centerOffset = self.qmui_badgeCenterOffset;
-            self.qmui_badgeLabel.centerOffsetLandscape = self.qmui_badgeCenterOffsetLandscape;
-            if (!self.qmui_viewDidSetBlock) {
-                self.qmui_viewDidSetBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
-                    [view addSubview:item.qmui_updatesIndicatorView];
-                    [view addSubview:item.qmui_badgeLabel];
-                    [view setNeedsLayout];
-                    [view layoutIfNeeded];
-                };
-            }
-            // 之前 item 已经 set 完 view，则手动触发一次
-            if (self.qmui_view) {
-                self.qmui_viewDidSetBlock(self, self.qmui_view);
-            }
-            if (!self.qmui_viewDidLayoutSubviewsBlock) {
-                self.qmui_viewDidLayoutSubviewsBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
-                    [item layoutSubviews];
-                };
-            }
-        }
-        self.qmui_badgeLabel.text = qmui_badgeString;
-        self.qmui_badgeLabel.hidden = NO;
-        [self setNeedsUpdateBadgeLabelLayout];
-    } else {
-        self.qmui_badgeLabel.hidden = YES;
+        [self updateViewDidSetBlockIfNeeded];
     }
+    self.qmui_view.qmui_badgeString = qmui_badgeString;
 }
 
 - (NSString *)qmui_badgeString {
@@ -154,9 +103,7 @@ static char kAssociatedObjectKey_badgeString;
 static char kAssociatedObjectKey_badgeBackgroundColor;
 - (void)setQmui_badgeBackgroundColor:(UIColor *)qmui_badgeBackgroundColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeBackgroundColor, qmui_badgeBackgroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_badgeLabel) {
-        self.qmui_badgeLabel.backgroundColor = qmui_badgeBackgroundColor;
-    }
+    self.qmui_view.qmui_badgeBackgroundColor = qmui_badgeBackgroundColor;
 }
 
 - (UIColor *)qmui_badgeBackgroundColor {
@@ -166,9 +113,7 @@ static char kAssociatedObjectKey_badgeBackgroundColor;
 static char kAssociatedObjectKey_badgeTextColor;
 - (void)setQmui_badgeTextColor:(UIColor *)qmui_badgeTextColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeTextColor, qmui_badgeTextColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_badgeLabel) {
-        self.qmui_badgeLabel.textColor = qmui_badgeTextColor;
-    }
+    self.qmui_view.qmui_badgeTextColor = qmui_badgeTextColor;
 }
 
 - (UIColor *)qmui_badgeTextColor {
@@ -178,10 +123,7 @@ static char kAssociatedObjectKey_badgeTextColor;
 static char kAssociatedObjectKey_badgeFont;
 - (void)setQmui_badgeFont:(UIFont *)qmui_badgeFont {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeFont, qmui_badgeFont, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_badgeLabel) {
-        self.qmui_badgeLabel.font = qmui_badgeFont;
-        [self setNeedsUpdateBadgeLabelLayout];
-    }
+    self.qmui_view.qmui_badgeFont = qmui_badgeFont;
 }
 
 - (UIFont *)qmui_badgeFont {
@@ -191,22 +133,40 @@ static char kAssociatedObjectKey_badgeFont;
 static char kAssociatedObjectKey_badgeContentEdgeInsets;
 - (void)setQmui_badgeContentEdgeInsets:(UIEdgeInsets)qmui_badgeContentEdgeInsets {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeContentEdgeInsets, [NSValue valueWithUIEdgeInsets:qmui_badgeContentEdgeInsets], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_badgeLabel) {
-        self.qmui_badgeLabel.contentEdgeInsets = qmui_badgeContentEdgeInsets;
-        [self setNeedsUpdateBadgeLabelLayout];
-    }
+    self.qmui_view.qmui_badgeContentEdgeInsets = qmui_badgeContentEdgeInsets;
 }
 
 - (UIEdgeInsets)qmui_badgeContentEdgeInsets {
     return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeContentEdgeInsets)) UIEdgeInsetsValue];
 }
 
+static char kAssociatedObjectKey_badgeOffset;
+- (void)setQmui_badgeOffset:(CGPoint)qmui_badgeOffset {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeOffset, @(qmui_badgeOffset), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.qmui_view.qmui_badgeOffset = qmui_badgeOffset;
+}
+
+- (CGPoint)qmui_badgeOffset {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeOffset)) CGPointValue];
+}
+
+static char kAssociatedObjectKey_badgeOffsetLandscape;
+- (void)setQmui_badgeOffsetLandscape:(CGPoint)qmui_badgeOffsetLandscape {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeOffsetLandscape, @(qmui_badgeOffsetLandscape), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.qmui_view.qmui_badgeOffsetLandscape = qmui_badgeOffsetLandscape;
+}
+
+- (CGPoint)qmui_badgeOffsetLandscape {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeOffsetLandscape)) CGPointValue];
+}
+
+BeginIgnoreDeprecatedWarning
+BeginIgnoreClangWarning(-Wdeprecated-implementations)
+
 static char kAssociatedObjectKey_badgeCenterOffset;
 - (void)setQmui_badgeCenterOffset:(CGPoint)qmui_badgeCenterOffset {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeCenterOffset, [NSValue valueWithCGPoint:qmui_badgeCenterOffset], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_badgeLabel) {
-        self.qmui_badgeLabel.centerOffset = qmui_badgeCenterOffset;
-    }
+    self.qmui_view.qmui_badgeCenterOffset = qmui_badgeCenterOffset;
 }
 
 - (CGPoint)qmui_badgeCenterOffset {
@@ -216,28 +176,18 @@ static char kAssociatedObjectKey_badgeCenterOffset;
 static char kAssociatedObjectKey_badgeCenterOffsetLandscape;
 - (void)setQmui_badgeCenterOffsetLandscape:(CGPoint)qmui_badgeCenterOffsetLandscape {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeCenterOffsetLandscape, [NSValue valueWithCGPoint:qmui_badgeCenterOffsetLandscape], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_badgeLabel) {
-        self.qmui_badgeLabel.centerOffsetLandscape = qmui_badgeCenterOffsetLandscape;
-    }
+    self.qmui_view.qmui_badgeCenterOffsetLandscape = qmui_badgeCenterOffsetLandscape;
 }
 
 - (CGPoint)qmui_badgeCenterOffsetLandscape {
     return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeCenterOffsetLandscape)) CGPointValue];
 }
 
-static char kAssociatedObjectKey_badgeLabel;
-- (void)setQmui_badgeLabel:(UILabel *)qmui_badgeLabel {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeLabel, qmui_badgeLabel, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
+EndIgnoreClangWarning
+EndIgnoreDeprecatedWarning
 
-- (_QMUIBadgeLabel *)qmui_badgeLabel {
-    return (_QMUIBadgeLabel *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeLabel);
-}
-
-- (void)setNeedsUpdateBadgeLabelLayout {
-    if (self.qmui_badgeString.length) {
-        [self.qmui_view setNeedsLayout];
-    }
+- (QMUILabel *)qmui_badgeLabel {
+    return self.qmui_view.qmui_badgeLabel;
 }
 
 #pragma mark - UpdatesIndicator
@@ -246,35 +196,9 @@ static char kAssociatedObjectKey_shouldShowUpdatesIndicator;
 - (void)setQmui_shouldShowUpdatesIndicator:(BOOL)qmui_shouldShowUpdatesIndicator {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_shouldShowUpdatesIndicator, @(qmui_shouldShowUpdatesIndicator), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (qmui_shouldShowUpdatesIndicator) {
-        if (!self.qmui_updatesIndicatorView) {
-            self.qmui_updatesIndicatorView = [[_QMUIUpdatesIndicatorView alloc] qmui_initWithSize:self.qmui_updatesIndicatorSize];
-            self.qmui_updatesIndicatorView.layer.cornerRadius = CGRectGetHeight(self.qmui_updatesIndicatorView.bounds) / 2;
-            self.qmui_updatesIndicatorView.backgroundColor = self.qmui_updatesIndicatorColor;
-            self.qmui_updatesIndicatorView.centerOffset = self.qmui_updatesIndicatorCenterOffset;
-            self.qmui_updatesIndicatorView.centerOffsetLandscape = self.qmui_updatesIndicatorCenterOffsetLandscape;
-            if (!self.qmui_viewDidLayoutSubviewsBlock) {
-                self.qmui_viewDidLayoutSubviewsBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
-                    [item layoutSubviews];
-                };
-            }
-            if (!self.qmui_viewDidSetBlock) {
-                self.qmui_viewDidSetBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
-                    [view addSubview:item.qmui_updatesIndicatorView];
-                    [view addSubview:item.qmui_badgeLabel];
-                    [view setNeedsLayout];
-                    [view layoutIfNeeded];
-                };
-            }
-            // 之前 item 已经 set 完 view，则手动触发一次
-            if (self.qmui_view) {
-                self.qmui_viewDidSetBlock(self, self.qmui_view);
-            }
-        }
-        [self setNeedsUpdateIndicatorLayout];
-        self.qmui_updatesIndicatorView.hidden = NO;
-    } else {
-        self.qmui_updatesIndicatorView.hidden = YES;
+        [self updateViewDidSetBlockIfNeeded];
     }
+    self.qmui_view.qmui_shouldShowUpdatesIndicator = qmui_shouldShowUpdatesIndicator;
 }
 
 - (BOOL)qmui_shouldShowUpdatesIndicator {
@@ -284,9 +208,7 @@ static char kAssociatedObjectKey_shouldShowUpdatesIndicator;
 static char kAssociatedObjectKey_updatesIndicatorColor;
 - (void)setQmui_updatesIndicatorColor:(UIColor *)qmui_updatesIndicatorColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorColor, qmui_updatesIndicatorColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_updatesIndicatorView) {
-        self.qmui_updatesIndicatorView.backgroundColor = qmui_updatesIndicatorColor;
-    }
+    self.qmui_view.qmui_updatesIndicatorColor = qmui_updatesIndicatorColor;
 }
 
 - (UIColor *)qmui_updatesIndicatorColor {
@@ -296,24 +218,40 @@ static char kAssociatedObjectKey_updatesIndicatorColor;
 static char kAssociatedObjectKey_updatesIndicatorSize;
 - (void)setQmui_updatesIndicatorSize:(CGSize)qmui_updatesIndicatorSize {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorSize, [NSValue valueWithCGSize:qmui_updatesIndicatorSize], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_updatesIndicatorView) {
-        self.qmui_updatesIndicatorView.frame = CGRectSetSize(self.qmui_updatesIndicatorView.frame, qmui_updatesIndicatorSize);
-        self.qmui_updatesIndicatorView.layer.cornerRadius = qmui_updatesIndicatorSize.height / 2;
-        [self setNeedsUpdateIndicatorLayout];
-    }
+    self.qmui_view.qmui_updatesIndicatorSize = qmui_updatesIndicatorSize;
 }
 
 - (CGSize)qmui_updatesIndicatorSize {
     return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorSize)) CGSizeValue];
 }
 
+static char kAssociatedObjectKey_updatesIndicatorOffset;
+- (void)setQmui_updatesIndicatorOffset:(CGPoint)qmui_updatesIndicatorOffset {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorOffset, @(qmui_updatesIndicatorOffset), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.qmui_view.qmui_updatesIndicatorOffset = qmui_updatesIndicatorOffset;
+}
+
+- (CGPoint)qmui_updatesIndicatorOffset {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorOffset)) CGPointValue];
+}
+
+static char kAssociatedObjectKey_updatesIndicatorOffsetLandscape;
+- (void)setQmui_updatesIndicatorOffsetLandscape:(CGPoint)qmui_updatesIndicatorOffsetLandscape {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorOffsetLandscape, @(qmui_updatesIndicatorOffsetLandscape), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    self.qmui_view.qmui_updatesIndicatorOffsetLandscape = qmui_updatesIndicatorOffsetLandscape;
+}
+
+- (CGPoint)qmui_updatesIndicatorOffsetLandscape {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorOffsetLandscape)) CGPointValue];
+}
+
+BeginIgnoreDeprecatedWarning
+BeginIgnoreClangWarning(-Wdeprecated-implementations)
+
 static char kAssociatedObjectKey_updatesIndicatorCenterOffset;
 - (void)setQmui_updatesIndicatorCenterOffset:(CGPoint)qmui_updatesIndicatorCenterOffset {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorCenterOffset, [NSValue valueWithCGPoint:qmui_updatesIndicatorCenterOffset], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_updatesIndicatorView) {
-        self.qmui_updatesIndicatorView.centerOffset = qmui_updatesIndicatorCenterOffset;
-        [self setNeedsUpdateIndicatorLayout];
-    }
+    self.qmui_view.qmui_updatesIndicatorCenterOffset = qmui_updatesIndicatorCenterOffset;
 }
 
 - (CGPoint)qmui_updatesIndicatorCenterOffset {
@@ -323,119 +261,53 @@ static char kAssociatedObjectKey_updatesIndicatorCenterOffset;
 static char kAssociatedObjectKey_updatesIndicatorCenterOffsetLandscape;
 - (void)setQmui_updatesIndicatorCenterOffsetLandscape:(CGPoint)qmui_updatesIndicatorCenterOffsetLandscape {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorCenterOffsetLandscape, [NSValue valueWithCGPoint:qmui_updatesIndicatorCenterOffsetLandscape], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_updatesIndicatorView) {
-        self.qmui_updatesIndicatorView.centerOffsetLandscape = qmui_updatesIndicatorCenterOffsetLandscape;
-        [self setNeedsUpdateIndicatorLayout];
-    }
+    self.qmui_view.qmui_updatesIndicatorCenterOffsetLandscape = qmui_updatesIndicatorCenterOffsetLandscape;
 }
 
 - (CGPoint)qmui_updatesIndicatorCenterOffsetLandscape {
     return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorCenterOffsetLandscape)) CGPointValue];
 }
 
-static char kAssociatedObjectKey_updatesIndicatorView;
-- (void)setQmui_updatesIndicatorView:(UIView *)qmui_updatesIndicatorView {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorView, qmui_updatesIndicatorView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
+EndIgnoreClangWarning
+EndIgnoreDeprecatedWarning
 
-- (_QMUIUpdatesIndicatorView *)qmui_updatesIndicatorView {
-    return (_QMUIUpdatesIndicatorView *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorView);
-}
-
-- (void)setNeedsUpdateIndicatorLayout {
-    if (self.qmui_shouldShowUpdatesIndicator) {
-        [self.qmui_view setNeedsLayout];
-    }
+- (UIView *)qmui_updatesIndicatorView {
+    return self.qmui_view.qmui_updatesIndicatorView;
 }
 
 #pragma mark - Common
 
-- (void)layoutSubviews {
-    
-    if (self.qmui_updatesIndicatorView && !self.qmui_updatesIndicatorView.hidden) {
-        CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_updatesIndicatorView.centerOffsetLandscape : self.qmui_updatesIndicatorView.centerOffset;
-
-        UIView *superview = self.qmui_updatesIndicatorView.superview;
-        if ([self isKindOfClass:[UITabBarItem class]]) {
-            // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
-            UIView *imageView = ((UITabBarItem *)self).qmui_imageView;
-            if (!imageView) return;
-
-            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_updatesIndicatorView.frame) + centerOffset.y);
-        } else {
-            self.qmui_updatesIndicatorView.frame = CGRectSetXY(self.qmui_updatesIndicatorView.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_updatesIndicatorView.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_updatesIndicatorView.qmui_height) + centerOffset.y);
-        }
-
-        [superview bringSubviewToFront:self.qmui_updatesIndicatorView];
-    }
-    
-    if (self.qmui_badgeLabel && !self.qmui_badgeLabel.hidden) {
-        [self.qmui_badgeLabel sizeToFit];
-        self.qmui_badgeLabel.layer.cornerRadius = MIN(self.qmui_badgeLabel.qmui_height / 2, self.qmui_badgeLabel.qmui_width / 2);
-        
-        CGPoint centerOffset = IS_LANDSCAPE ? self.qmui_badgeLabel.centerOffsetLandscape : self.qmui_badgeLabel.centerOffset;
-        
-        UIView *superview = self.qmui_badgeLabel.superview;
-        if ([self isKindOfClass:[UITabBarItem class]]) {
-            // 特别的，对于 UITabBarItem，将 imageView 的 center 作为参考点
-            UIView *imageView = ((UITabBarItem *)self).qmui_imageView;
-            if (!imageView) return;
+- (void)updateViewDidSetBlockIfNeeded {
+    if (!self.qmui_viewDidSetBlock) {
+        self.qmui_viewDidSetBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
+            view.qmui_badgeBackgroundColor = item.qmui_badgeBackgroundColor;
+            view.qmui_badgeTextColor = item.qmui_badgeTextColor;
+            view.qmui_badgeFont = item.qmui_badgeFont;
+            view.qmui_badgeContentEdgeInsets = item.qmui_badgeContentEdgeInsets;
+            view.qmui_badgeOffset = item.qmui_badgeOffset;
+            view.qmui_badgeOffsetLandscape = item.qmui_badgeOffsetLandscape;
             
-            self.qmui_badgeLabel.frame = CGRectSetXY(self.qmui_badgeLabel.frame, CGRectGetMinXHorizontallyCenter(imageView.frame, self.qmui_badgeLabel.frame) + centerOffset.x, CGRectGetMinYVerticallyCenter(imageView.frame, self.qmui_badgeLabel.frame) + centerOffset.y);
-        } else {
-            self.qmui_badgeLabel.frame = CGRectSetXY(self.qmui_badgeLabel.frame, CGFloatGetCenter(superview.qmui_width, self.qmui_badgeLabel.qmui_width) + centerOffset.x, CGFloatGetCenter(superview.qmui_height, self.qmui_badgeLabel.qmui_height) + centerOffset.y);
-        }
+            view.qmui_updatesIndicatorColor = item.qmui_updatesIndicatorColor;
+            view.qmui_updatesIndicatorSize = item.qmui_updatesIndicatorSize;
+            view.qmui_updatesIndicatorOffset = item.qmui_updatesIndicatorOffset;
+            view.qmui_updatesIndicatorOffsetLandscape = item.qmui_updatesIndicatorOffsetLandscape;
+            
+            BeginIgnoreDeprecatedWarning
+            view.qmui_badgeCenterOffset = item.qmui_badgeCenterOffset;
+            view.qmui_badgeCenterOffsetLandscape = item.qmui_badgeCenterOffsetLandscape;
+            view.qmui_updatesIndicatorCenterOffset = item.qmui_updatesIndicatorCenterOffset;
+            view.qmui_updatesIndicatorCenterOffsetLandscape = item.qmui_updatesIndicatorCenterOffsetLandscape;
+            EndIgnoreDeprecatedWarning
+            
+            view.qmui_badgeString = item.qmui_badgeString;
+            view.qmui_shouldShowUpdatesIndicator = item.qmui_shouldShowUpdatesIndicator;
+        };
         
-        [superview bringSubviewToFront:self.qmui_badgeLabel];
+        // 为 qmui_viewDidSetBlock 赋值前 item 已经 set 完 view，则手动触发一次
+        if (self.qmui_view) {
+            self.qmui_viewDidSetBlock(self, self.qmui_view);
+        }
     }
-}
-
-@end
-
-@implementation _QMUIUpdatesIndicatorView
-
-- (void)setCenterOffset:(CGPoint)centerOffset {
-    _centerOffset = centerOffset;
-    if (!IS_LANDSCAPE) {
-        [self.superview setNeedsLayout];
-    }
-}
-
-- (void)setCenterOffsetLandscape:(CGPoint)centerOffsetLandscape {
-    _centerOffsetLandscape = centerOffsetLandscape;
-    if (IS_LANDSCAPE) {
-        [self.superview setNeedsLayout];
-    }
-}
-
-@end
-
-@implementation _QMUIBadgeLabel
-
-- (void)setCenterOffset:(CGPoint)centerOffset {
-    _centerOffset = centerOffset;
-    if (!IS_LANDSCAPE) {
-        [self.superview setNeedsLayout];
-    }
-}
-
-- (void)setCenterOffsetLandscape:(CGPoint)centerOffsetLandscape {
-    _centerOffsetLandscape = centerOffsetLandscape;
-    if (IS_LANDSCAPE) {
-        [self.superview setNeedsLayout];
-    }
-}
-
-- (CGSize)sizeThatFits:(CGSize)size {
-    CGSize result = [super sizeThatFits:size];
-    
-    // 只有一个字的时候保证它是一个正方形
-    if (self.text.length <= 1) {
-        CGFloat finalSize = MAX(result.width, result.height);
-        result = CGSizeMake(finalSize, finalSize);
-    }
-    
-    return result;
 }
 
 @end

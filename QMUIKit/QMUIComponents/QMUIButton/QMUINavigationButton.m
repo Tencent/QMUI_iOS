@@ -23,6 +23,7 @@
 #import "UIControl+QMUI.h"
 #import "UIView+QMUI.h"
 #import "NSString+QMUI.h"
+#import "UINavigationController+QMUI.h"
 
 typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     QMUINavigationButtonPositionNone = -1,  // 不处于navigationBar最左（右）边的按钮，则使用None。用None则不会在alignmentRectInsets里调整位置
@@ -209,16 +210,6 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     UIEdgeInsets insets = [super alignmentRectInsets];
     
     if (self.type == QMUINavigationButtonTypeNormal || self.type == QMUINavigationButtonTypeBold) {
-        // 文字类型的按钮，分别对最左、最右那个按钮调整 inset（这里与 UINavigationItem(QMUINavigationButton) 里的 position 赋值配合使用）
-        if (@available(iOS 10, *)) {
-        } else {
-            if (self.buttonPosition == QMUINavigationButtonPositionLeft) {
-                insets.left = 8;
-            } else if (self.buttonPosition == QMUINavigationButtonPositionRight) {
-                insets.right = 8;
-            }
-        }
-        
         // 对于奇数大小的字号，不同 iOS 版本的偏移策略不同，统一一下
         if (self.titleLabel.font.pointSize / 2.0 > 0) {
             insets.top = -PixelOne;
@@ -248,27 +239,31 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 @implementation UIBarButtonItem (QMUINavigationButton)
 
-+ (instancetype)qmui_itemWithButton:(nullable QMUINavigationButton *)button target:(nullable id)target action:(nullable SEL)action {
++ (instancetype)qmui_itemWithButton:(QMUINavigationButton *)button target:(nullable id)target action:(nullable SEL)action {
+    if (!button) return nil;
     [button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
-    return [[UIBarButtonItem alloc] initWithCustomView:button];
+    return [[self alloc] initWithCustomView:button];
 }
 
-+ (instancetype)qmui_itemWithImage:(nullable UIImage *)image target:(nullable id)target action:(nullable SEL)action {
-    return [[UIBarButtonItem alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
++ (instancetype)qmui_itemWithImage:(UIImage *)image target:(nullable id)target action:(nullable SEL)action {
+    if (!image) return nil;
+    return [[self alloc] initWithImage:image style:UIBarButtonItemStylePlain target:target action:action];
 }
 
-+ (instancetype)qmui_itemWithTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action {
-    return [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:target action:action];
++ (instancetype)qmui_itemWithTitle:(NSString *)title target:(nullable id)target action:(nullable SEL)action {
+    if (!title) return nil;
+    return [[self alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:target action:action];
 }
 
-+ (instancetype)qmui_itemWithBoldTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action {
-    return [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStyleDone target:target action:action];
++ (instancetype)qmui_itemWithBoldTitle:(NSString *)title target:(nullable id)target action:(nullable SEL)action {
+    if (!title) return nil;
+    return [[self alloc] initWithTitle:title style:UIBarButtonItemStyleDone target:target action:action];
 }
 
 + (instancetype)qmui_backItemWithTitle:(nullable NSString *)title target:(nullable id)target action:(nullable SEL)action {
     QMUINavigationButton *button = [[QMUINavigationButton alloc] initWithType:QMUINavigationButtonTypeBack title:title];
     [button addTarget:target action:action forControlEvents:UIControlEventTouchUpInside];
-    UIBarButtonItem *barButtonItem = [[UIBarButtonItem alloc] initWithCustomView:button];
+    UIBarButtonItem *barButtonItem = [[self alloc] initWithCustomView:button];
     return barButtonItem;
 }
 
@@ -294,23 +289,23 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         backTitle = @" ";
     }
     
-    return [UIBarButtonItem qmui_backItemWithTitle:backTitle target:target action:action];
+    return [self qmui_backItemWithTitle:backTitle target:target action:action];
 }
 
 + (instancetype)qmui_closeItemWithTarget:(nullable id)target action:(nullable SEL)action {
-    UIBarButtonItem *closeItem = [[UIBarButtonItem alloc] initWithImage:NavBarCloseButtonImage style:UIBarButtonItemStylePlain target:target action:action];
+    UIBarButtonItem *closeItem = [[self alloc] initWithImage:NavBarCloseButtonImage style:UIBarButtonItemStylePlain target:target action:action];
     closeItem.accessibilityLabel = @"关闭";
     return closeItem;
 }
 
 + (instancetype)qmui_fixedSpaceItemWithWidth:(CGFloat)width {
-    UIBarButtonItem *item = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL];
+    UIBarButtonItem *item = [[self alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:nil action:NULL];
     item.width = width;
     return item;
 }
 
 + (instancetype)qmui_flexibleSpaceItem {
-    return [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL];
+    return [[self alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:NULL];
 }
 
 @end
@@ -531,6 +526,27 @@ QMUISynthesizeIdCopyProperty(tempRightBarButtonItems, setTempRightBarButtonItems
                 selfObject.navigationItem.rightBarButtonItems = selfObject.navigationItem.tempRightBarButtonItems;
                 selfObject.navigationItem.tempRightBarButtonItems = nil;
             }
+        });
+        
+        // 当使用自定义返回按钮时，无法使用 VoiceOver 或者 iOS 13.4 新增的 Full Keyboard Access 返回
+        OverrideImplementation([UIViewController class], @selector(accessibilityPerformEscape), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^BOOL(UIViewController *selfObject) {
+                
+                if (selfObject.navigationItem.leftBarButtonItem.qmui_isCustomizedBackBarButtonItem
+                    && ((QMUINavigationButton *)selfObject.navigationItem.leftBarButtonItem.customView).enabled
+                    && selfObject.navigationController.qmui_rootViewController != selfObject
+                    && selfObject.navigationController.interactivePopGestureRecognizer.enabled
+                    && !UIApplication.sharedApplication.ignoringInteractionEvents) {
+                    [selfObject.navigationController popViewControllerAnimated:YES];
+                    return YES;
+                }
+                
+                // call super
+                BOOL (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                BOOL result = originSelectorIMP(selfObject, originCMD);
+                return result;
+            };
         });
     });
 }

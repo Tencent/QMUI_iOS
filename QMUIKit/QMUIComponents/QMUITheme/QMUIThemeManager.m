@@ -53,17 +53,15 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
         self._themeIdentifiers = NSMutableArray.new;
         self._themes = NSMutableArray.new;
         if (@available(iOS 13.0, *)) {
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleUserInterfaceStyleWillChangeNotification:) name:QMUIUserInterfaceStyleWillChangeNotification object:nil];
+            [UITraitCollection qmui_addUserInterfaceStyleWillChangeObserver:self selector:@selector(handleUserInterfaceStyleWillChangeEvent:)];
         }
     }
     return self;
 }
 
-- (void)handleUserInterfaceStyleWillChangeNotification:(NSNotification *)notification {
+- (void)handleUserInterfaceStyleWillChangeEvent:(UITraitCollection *)traitCollection {
     if (!_respondsSystemStyleAutomatically) return;
-    
     if (@available(iOS 13.0, *)) {
-        UITraitCollection *traitCollection = notification.object;
         if (traitCollection && self.identifierForTrait) {
             self.currentThemeIdentifier = self.identifierForTrait(traitCollection);
         }
@@ -72,13 +70,11 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
 
 - (void)setRespondsSystemStyleAutomatically:(BOOL)respondsSystemStyleAutomatically {
     _respondsSystemStyleAutomatically = respondsSystemStyleAutomatically;
-#ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
         if (_respondsSystemStyleAutomatically && self.identifierForTrait) {
              self.currentThemeIdentifier = self.identifierForTrait([UITraitCollection currentTraitCollection]);
         }
     }
-#endif
 }
 
 - (void)setCurrentThemeIdentifier:(NSObject<NSCopying> *)currentThemeIdentifier {

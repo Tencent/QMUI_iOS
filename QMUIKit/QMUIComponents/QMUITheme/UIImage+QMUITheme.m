@@ -36,6 +36,29 @@
 
 @end
 
+@interface QMUIAvoidExceptionProxy : NSProxy
+@end
+
+@implementation QMUIAvoidExceptionProxy
+
++ (instancetype)proxy {
+    static dispatch_once_t onceToken;
+    static QMUIAvoidExceptionProxy *instance = nil;
+    dispatch_once(&onceToken,^{
+        instance = [super alloc];
+    });
+    return instance;
+}
+
+- (void)forwardInvocation:(NSInvocation *)invocation {
+}
+
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)selector {
+    return [NSMethodSignature qmui_avoidExceptionSignature];
+}
+
+@end
+
 @interface QMUIThemeImage()
 
 @property(nonatomic, strong) QMUIThemeImageCache *cachedRawImages;
@@ -44,27 +67,59 @@
 
 @implementation QMUIThemeImage
 
-
 static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
+    
     IMP msgForwardIMP = _objc_msgForward;
-    #if !defined(__arm64__)
-        Class cls = self.class;
-        Method method = class_getInstanceMethod(cls, selector);
-        const char *typeDescription = method_getTypeEncoding(method);
-        if (typeDescription[0] == '{') {
-            // 以下代码参考 JSPatch 的实现：
-            //In some cases that returns struct, we should use the '_stret' API:
-            //http://sealiesoftware.com/blog/archive/2008/10/30/objc_explain_objc_msgSend_stret.html
-            //NSMethodSignature knows the detail but has no API to return, we can only get the info from debugDescription.
-            NSMethodSignature *methodSignature = [NSMethodSignature signatureWithObjCTypes:typeDescription];
-            if ([methodSignature.debugDescription rangeOfString:@"is special struct return? YES"].location != NSNotFound) {
-                msgForwardIMP = (IMP)_objc_msgForward_stret;
+#if !defined(__arm64__)
+    // As an ugly internal runtime implementation detail in the 32bit runtime, we need to determine of the method we hook returns a struct or anything larger than id.
+    // https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/LowLevelABI/000-Introduction/introduction.html
+    // https://github.com/ReactiveCocoa/ReactiveCocoa/issues/783
+    // http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042e/IHI0042E_aapcs.pdf (Section 5.4)
+    Method method = class_getInstanceMethod(self.class, selector);
+    const char *encoding = method_getTypeEncoding(method);
+    BOOL methodReturnsStructValue = encoding[0] == _C_STRUCT_B;
+    if (methodReturnsStructValue) {
+        @try {
+            // 以下代码参考 JSPatch 的实现，但在 OpenCV 时会抛异常
+            NSMethodSignature *methodSignature = [NSMethodSignature signatureWithObjCTypes:encoding];
+            if ([methodSignature.debugDescription rangeOfString:@"is special struct return? YES"].location == NSNotFound) {
+                methodReturnsStructValue = NO;
             }
+        } @catch (__unused NSException *e) {
+            // 以下代码参考 Aspect 的实现，可以兼容 OpenCV
+            @try {
+                NSUInteger valueSize = 0;
+                NSGetSizeAndAlignment(encoding, &valueSize, NULL);
+
+                if (valueSize == 1 || valueSize == 2 || valueSize == 4 || valueSize == 8) {
+                    methodReturnsStructValue = NO;
+                }
+            } @catch (NSException *exception) {}
         }
-    #endif
+    }
+    if (methodReturnsStructValue) {
+        msgForwardIMP = (IMP)_objc_msgForward_stret;
+    }
+#endif
     return msgForwardIMP;
 }
 
+- (void)dealloc {
+    _themeProvider = nil;
+}
+
+- (id)forwardingTargetForSelector:(SEL)aSelector {
+    if (self.qmui_rawImage) {
+        // 这里不能加上 [self.qmui_rawImage respondsToSelector:aSelector] 的判断，否则 UIImage 没有机会做消息转发
+        return self.qmui_rawImage;
+    }
+    // 在 dealloc 的时候 UIImage 会调用 _isNamed 是用于判断 image 对象是否由 [UIImage imageNamed:] 创建的，并根据这个结果决定是否缓存 image，但是 QMUIThemeImage 仅仅是一个容器，真正的缓存工作会在 qmui_rawImage 的 dealloc 执行，所以可以忽略这个方法的调用
+    NSArray *ignoreSelectorNames = @[@"_isNamed"];
+    if (![ignoreSelectorNames containsObject:NSStringFromSelector(aSelector)]) {
+        QMUILogWarn(@"UIImage+QMUITheme", @"QMUIThemeImage 试图执行 %@ 方法，但是 qmui_rawImage 为 nil", NSStringFromSelector(aSelector));
+    }
+    return [QMUIAvoidExceptionProxy proxy];
+}
 
 + (void)initialize {
     static dispatch_once_t onceToken;
@@ -79,17 +134,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
             const char * typeDescription = (char *)method_getTypeEncoding(method);
             class_addMethod(selfClass, selector, qmui_getMsgForwardIMP(instance, selector), typeDescription);
         }];
-        
-        // dealloc 时，不应该转发给 qmui_rawImage 处理，因为 qmui_rawImage 可能会有其他对象引用，不一定在 QMUIThemeImage 释放后就随之释放
-        // 这里不能在 QMUIThemeImage 直接写 '- (void)dealloc { _themeProvider = nil; }' ，因为这样写会先调用 super dealloc，而 UIImage 的 dealloc 方法里会调用其他方法，从而再次触发消息转发、访问 qmui_rawImage，这可能会导致一些野指针问题，通过下面的方式，保持在执行 super dealloc 之前，先清空 _themeProvider
-        OverrideImplementation([QMUIThemeImage class], NSSelectorFromString(@"dealloc"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(__unsafe_unretained QMUIThemeImage *selfObject) {
-                selfObject->_themeProvider = nil;
-                void (*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD);
-            };
-        });
     });
 }
 
@@ -107,27 +151,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 
 - (instancetype)init {
     return ((id (*)(id, SEL))[NSObject instanceMethodForSelector:_cmd])(self, _cmd);
-}
-
-- (NSMethodSignature *)methodSignatureForSelector:(SEL)aSelector {
-    NSMethodSignature *result = [super methodSignatureForSelector:aSelector];
-    if (result) {
-        return result;
-    }
-    
-    result = [self.qmui_rawImage methodSignatureForSelector:aSelector];
-    if (result && [self.qmui_rawImage respondsToSelector:aSelector]) {
-        return result;
-    }
-    
-    return [NSMethodSignature qmui_avoidExceptionSignature];
-}
-
-- (void)forwardInvocation:(NSInvocation *)anInvocation {
-    SEL selector = anInvocation.selector;
-    if ([self.qmui_rawImage respondsToSelector:selector]) {
-        [anInvocation invokeWithTarget:self.qmui_rawImage];
-    }
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
@@ -264,8 +287,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
     return self.qmui_rawImage.imageWithHorizontallyFlippedOrientation;
 }
 
-#ifdef IOS13_SDK_ALLOWED
-
 - (BOOL)isSymbolImage {
     return self.qmui_rawImage.isSymbolImage;
 }
@@ -309,8 +330,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 - (UIImage *)imageWithTintColor:(UIColor *)color renderingMode:(UIImageRenderingMode)renderingMode {
     return [self.qmui_rawImage imageWithTintColor:color renderingMode:renderingMode];
 }
-
-#endif
 
 #pragma mark - <QMUIDynamicImageProtocol>
 

@@ -29,8 +29,6 @@
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        [self didInitialize];
-        
         self.tintColor = ButtonTintColor;
         if (!self.adjustsTitleTintColorAutomatically) {
             [self setTitleColor:self.tintColor forState:UIControlStateNormal];
@@ -38,6 +36,8 @@
         
         // iOS7以后的button，sizeToFit后默认会自带一个上下的contentInsets，为了保证按钮大小即为内容大小，这里直接去掉，改为一个最小的值。
         self.contentEdgeInsets = UIEdgeInsetsMake(CGFLOAT_MIN, 0, CGFLOAT_MIN, 0);
+        
+        [self didInitialize];
     }
     return self;
 }
@@ -63,6 +63,14 @@
     self.imagePosition = QMUIButtonImagePositionLeft;
 }
 
+// 系统访问 self.imageView 会触发 layout，而私有方法 _imageView 则是简单地访问 imageView，所以在 QMUIButton layoutSubviews 里应该用这个方法
+// https://github.com/Tencent/QMUI_iOS/issues/1051
+- (UIImageView *)_qmui_imageView {
+    BeginIgnorePerformSelectorLeaksWarning
+    return [self performSelector:NSSelectorFromString(@"_imageView")];
+    EndIgnorePerformSelectorLeaksWarning
+}
+
 - (CGSize)sizeThatFits:(CGSize)size {
     // 如果调用 sizeToFit，那么传进来的 size 就是当前按钮的 size，此时的计算不要去限制宽高
     if (CGSizeEqualToSize(self.bounds.size, size)) {
@@ -85,7 +93,7 @@
             if (isImageViewShowing) {
                 CGFloat imageLimitWidth = contentLimitSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets);
                 CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(imageLimitWidth, CGFLOAT_MAX)] : self.currentImage.size;
-                imageSize.width = fmin(imageSize.width, imageLimitWidth);
+                imageSize.width = fmin(imageSize.width, imageLimitWidth);// QMUIButton sizeThatFits 时 self._imageView 为 nil 但 self.imageView 有值，而开启了 Bold Text 时，系统的 self.imageView sizeThatFits 返回值会比没开启 BoldText 时多 1pt（不知道为什么文字加粗与否会影响 imageView...），从而保证开启 Bold Text 后文字依然能完整展示出来，所以这里应该用 self.imageView 而不是 self._imageView
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
             
@@ -110,7 +118,7 @@
             if (isImageViewShowing) {
                 CGFloat imageLimitHeight = contentLimitSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets);
                 CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:CGSizeMake(CGFLOAT_MAX, imageLimitHeight)] : self.currentImage.size;
-                imageSize.height = fmin(imageSize.height, imageLimitHeight);
+                imageSize.height = fmin(imageSize.height, imageLimitHeight);// QMUIButton sizeThatFits 时 self._imageView 为 nil 但 self.imageView 有值，而开启了 Bold Text 时，系统的 self.imageView sizeThatFits 返回值会比没开启 BoldText 时多 1pt（不知道为什么文字加粗与否会影响 imageView...），从而保证开启 Bold Text 后文字依然能完整展示出来，所以这里应该用 self.imageView 而不是 self._imageView
                 imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
             }
             
@@ -156,11 +164,27 @@
     // 图片的布局原则都是尽量完整展示，所以不管 imagePosition 的值是什么，这个计算过程都是相同的
     if (isImageViewShowing) {
         imageLimitSize = CGSizeMake(contentSize.width - UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), contentSize.height - UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
-        CGSize imageSize = self.imageView.image ? [self.imageView sizeThatFits:imageLimitSize] : self.currentImage.size;
+        CGSize imageSize = self._qmui_imageView.image ? [self._qmui_imageView sizeThatFits:imageLimitSize] : self.currentImage.size;
         imageSize.width = fmin(imageLimitSize.width, imageSize.width);
         imageSize.height = fmin(imageLimitSize.height, imageSize.height);
         imageFrame = CGRectMakeWithSize(imageSize);
         imageTotalSize = CGSizeMake(imageSize.width + UIEdgeInsetsGetHorizontalValue(self.imageEdgeInsets), imageSize.height + UIEdgeInsetsGetVerticalValue(self.imageEdgeInsets));
+    }
+    
+    // UIButton 如果本身大小为 (0,0)，此时设置一个 imageEdgeInsets 会让 imageView 的 bounds 错误，导致后续 imageView 的 subviews 布局时会产生偏移，因此这里做一次保护
+    // https://github.com/Tencent/QMUI_iOS/issues/1012
+    void (^makesureBoundsPositive)(UIView *) = ^void(UIView *view) {
+        CGRect bounds = view.bounds;
+        if (CGRectGetMinX(bounds) < 0 || CGRectGetMinY(bounds) < 0) {
+            bounds = CGRectMakeWithSize(bounds.size);
+            view.bounds = bounds;
+        }
+    };
+    if (isImageViewShowing) {
+        makesureBoundsPositive(self._qmui_imageView);
+    }
+    if (isTitleLabelShowing) {
+        makesureBoundsPositive(self.titleLabel);
     }
     
     if (self.imagePosition == QMUIButtonImagePositionTop || self.imagePosition == QMUIButtonImagePositionBottom) {
@@ -274,10 +298,12 @@
         }
         
         if (isImageViewShowing) {
-            self.imageView.frame = CGRectFlatted(imageFrame);
+            imageFrame = CGRectFlatted(imageFrame);
+            self._qmui_imageView.frame = imageFrame;
         }
         if (isTitleLabelShowing) {
-            self.titleLabel.frame = CGRectFlatted(titleFrame);
+            titleFrame = CGRectFlatted(titleFrame);
+            self.titleLabel.frame = titleFrame;
         }
         
     } else if (self.imagePosition == QMUIButtonImagePositionLeft || self.imagePosition == QMUIButtonImagePositionRight) {
@@ -407,10 +433,12 @@
         }
         
         if (isImageViewShowing) {
-            self.imageView.frame = CGRectFlatted(imageFrame);
+            imageFrame = CGRectFlatted(imageFrame);
+            self._qmui_imageView.frame = imageFrame;
         }
         if (isTitleLabelShowing) {
-            self.titleLabel.frame = CGRectFlatted(titleFrame);
+            titleFrame = CGRectFlatted(titleFrame);
+            self.titleLabel.frame = titleFrame;
         }
     }
 }

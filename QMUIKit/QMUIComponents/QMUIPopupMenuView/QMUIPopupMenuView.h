@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  使用方式：
  *  1. 调用 init 方法初始化。
  *  2. 按需设置分隔线、item 高度等样式。
- *  3. 设置完样式后再通过 items 或 itemSections 添加菜单项。
+ *  3. 设置完样式后再通过 items 或 itemSections 添加菜单项，并在 item 点击事件里调用 hideWithAnimated: 隐藏浮层。
  *  4. 通过为 sourceBarItem/sourceView/sourceRect 三者中的一个赋值，来决定浮层布局的位置（参考父类）。
  *  5. 调用 showWithAnimated: 即可显示（参考父类）。
  *

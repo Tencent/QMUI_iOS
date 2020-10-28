@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.1.3";
+static NSString * const QMUI_VERSION = @"4.2.1";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -97,6 +97,10 @@ static NSString * const QMUI_VERSION = @"4.1.3";
 
 #if __has_include("QMUIAssetsManager.h")
 #import "QMUIAssetsManager.h"
+#endif
+
+#if __has_include("QMUIBadgeProtocol.h")
+#import "QMUIBadgeProtocol.h"
 #endif
 
 #if __has_include("QMUIButton.h")
@@ -579,6 +583,10 @@ static NSString * const QMUI_VERSION = @"4.1.3";
 #import "UITableViewCell+QMUI.h"
 #endif
 
+#if __has_include("UITableViewHeaderFooterView+QMUI.h")
+#import "UITableViewHeaderFooterView+QMUI.h"
+#endif
+
 #if __has_include("UITextField+QMUI.h")
 #import "UITextField+QMUI.h"
 #endif
@@ -599,6 +607,14 @@ static NSString * const QMUI_VERSION = @"4.1.3";
 #import "UIView+QMUI.h"
 #endif
 
+#if __has_include("UIView+QMUIBadge.h")
+#import "UIView+QMUIBadge.h"
+#endif
+
+#if __has_include("UIView+QMUIBorder.h")
+#import "UIView+QMUIBorder.h"
+#endif
+
 #if __has_include("UIView+QMUITheme.h")
 #import "UIView+QMUITheme.h"
 #endif
@@ -613,6 +629,10 @@ static NSString * const QMUI_VERSION = @"4.1.3";
 
 #if __has_include("UIVisualEffect+QMUITheme.h")
 #import "UIVisualEffect+QMUITheme.h"
+#endif
+
+#if __has_include("UIVisualEffectView+QMUI.h")
+#import "UIVisualEffectView+QMUI.h"
 #endif
 
 #if __has_include("UIWindow+QMUI.h")

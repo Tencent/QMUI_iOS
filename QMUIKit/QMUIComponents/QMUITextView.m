@@ -38,6 +38,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 @property(nonatomic, assign) BOOL debug;
 @property(nonatomic, assign) BOOL postInitializationMethodCalled;
 @property(nonatomic, strong) _QMUITextViewDelegator *delegator;
+@property(nonatomic, assign) BOOL shouldAvoidCallingDelegateWhenSetText;
 @property(nonatomic, assign) BOOL shouldRejectSystemScroll;// 如果在 handleTextChanged: 里主动调整 contentOffset，则为了避免被系统的自动调整覆盖，会利用这个标记去屏蔽系统对 setContentOffset: 的调用
 
 @property(nonatomic, strong) UILabel *placeholderLabel;
@@ -118,12 +119,18 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     return YES;
 }
 
+- (void)_qmui_setTextAvoidCallingDelegate:(NSString *)text {
+    self.shouldAvoidCallingDelegateWhenSetText = YES;
+    [self setText:text];
+    self.shouldAvoidCallingDelegateWhenSetText = NO;
+}
+
 - (void)setText:(NSString *)text {
     NSString *textBeforeChange = self.text;
     BOOL textDifferent = [self isCurrentTextDifferentOfText:text];
     
     // 如果前后文字没变化，则什么都不做
-    if (!textDifferent) {
+    if (!textDifferent || self.shouldAvoidCallingDelegateWhenSetText) {
         [super setText:text];
         return;
     }
@@ -161,7 +168,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     BOOL textDifferent = [self isCurrentTextDifferentOfText:attributedText.string];
     
     // 如果前后文字没变化，则什么都不做
-    if (!textDifferent) {
+    if (!textDifferent || self.shouldAvoidCallingDelegateWhenSetText) {
         [super setAttributedText:attributedText];
         return;
     }
@@ -435,8 +442,14 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             if (substringLength > 0 && [textView lengthWithString:text] > substringLength) {
                 NSString *allowedText = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo];
                 if ([textView lengthWithString:allowedText] <= substringLength) {
-                    textView.text = [textView.text stringByReplacingCharactersInRange:range withString:allowedText];
-                    textView.selectedRange = NSMakeRange(range.location + substringLength, 0);
+                    [textView _qmui_setTextAvoidCallingDelegate:[textView.text stringByReplacingCharactersInRange:range withString:allowedText]];
+                     
+                    // iOS 10 修改 selectedRange 可以让光标立即移动到新位置，但 iOS 11 及以上版本需要延迟一会才可以
+                    NSRange finalSelectedRange = NSMakeRange(range.location + substringLength, 0);
+                    textView.selectedRange = finalSelectedRange;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        textView.selectedRange = finalSelectedRange;
+                    });
                     
                     if (!textView.shouldResponseToProgrammaticallyTextChanges && [textView.delegate respondsToSelector:@selector(textViewDidChange:)]) {
                         [textView.delegate textViewDidChange:textView];
@@ -455,12 +468,12 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 }
 
 - (void)textViewDidChange:(QMUITextView *)textView {
-    // 1、iOS 10 以下的版本，从中文输入法的候选词里选词输入，是不会走到 textView:shouldChangeTextInRange:replacementText: 的，所以要在这里截断文字
-    // 2、如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 那边不会限制，而是放在 didChange 这里限制。
+    // 1、从中文输入法的候选词里选词后会走到 textView:shouldChangeTextInRange:replacementText:，但那个时候 markedTextRange 尚未被清空，所以无法区分当时“是否已经选中某个词了”，所以那边只能直接 return YES，然后交给 textViewDidChange 来截断文字。
+    // 2、如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 那边不会限制，而是放在 textViewDidChange 这里限制。
     if (!textView.markedTextRange) {
         if ([textView lengthWithString:textView.text] > textView.maximumTextLength) {
             
-            textView.text = [textView.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo];
+            [textView _qmui_setTextAvoidCallingDelegate:[textView.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo]];
             
             if ([textView.delegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
                 // 如果是在这里被截断，是无法得知截断前光标所处的位置及要输入的文本的，所以只能将当前的 selectedRange 传过去，而 replacementText 为 nil
