@@ -284,6 +284,10 @@ static CGFloat pixelOne = -1.0f;
             @"iPhone12,3" : @"iPhone 11 Pro",
             @"iPhone12,5" : @"iPhone 11 Pro Max",
             @"iPhone12,8" : @"iPhone SE (2nd generation)",
+            @"iPhone13,1" : @"iPhone 12 mini",
+            @"iPhone13,2" : @"iPhone 12",
+            @"iPhone13,3" : @"iPhone 12 Pro",
+            @"iPhone13,4" : @"iPhone 12 Pro Max",
 
             @"iPad1,1" : @"iPad 1",
             @"iPad2,1" : @"iPad 2 (WiFi)",
@@ -342,7 +346,11 @@ static CGFloat pixelOne = -1.0f;
             @"iPad11,2" : @"iPad mini (5th generation)",
             @"iPad11,3" : @"iPad Air (3rd generation)",
             @"iPad11,4" : @"iPad Air (3rd generation)",
-            
+            @"iPad11,6" : @"iPad (WiFi)",
+            @"iPad11,7" : @"iPad (Cellular)",
+            @"iPad13,1" : @"iPad Air (4th generation)",
+            @"iPad13,2" : @"iPad Air (4th generation)",
+
             @"iPod1,1" : @"iPod touch 1",
             @"iPod2,1" : @"iPod touch 2",
             @"iPod3,1" : @"iPod touch 3",
@@ -372,12 +380,22 @@ static CGFloat pixelOne = -1.0f;
             @"Watch5,2" : @"Apple Watch Series 5 44mm",
             @"Watch5,3" : @"Apple Watch Series 5 40mm (LTE)",
             @"Watch5,4" : @"Apple Watch Series 5 44mm (LTE)",
-            
+            @"Watch5,9" : @"Apple Watch SE 40mm",
+            @"Watch5,10" : @"Apple Watch SE 44mm",
+            @"Watch5,11" : @"Apple Watch SE 40mm",
+            @"Watch5,12" : @"Apple Watch SE 44mm",
+            @"Watch6,1"  : @"Apple Watch Series 6 40mm",
+            @"Watch6,2"  : @"Apple Watch Series 6 44mm",
+            @"Watch6,3"  : @"Apple Watch Series 6 40mm",
+            @"Watch6,4"  : @"Apple Watch Series 6 44mm",
+
             @"AudioAccessory1,1" : @"HomePod",
             @"AudioAccessory1,2" : @"HomePod",
-            
+            @"AudioAccessory5,1" : @"HomePod mini",
+
             @"AirPods1,1" : @"AirPods (1st generation)",
             @"AirPods2,1" : @"AirPods (2nd generation)",
+            @"iProd8,1"   : @"AirPods Pro",
 
             @"AppleTV2,1" : @"Apple TV 2",
             @"AppleTV3,1" : @"Apple TV 3",
