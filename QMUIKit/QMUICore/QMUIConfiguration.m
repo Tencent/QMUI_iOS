@@ -557,7 +557,11 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 - (void)setTabBarStyle:(UIBarStyle)tabBarStyle {
     _tabBarStyle = tabBarStyle;
     if (@available(iOS 13.0, *)) {
-        self.tabBarAppearance.backgroundEffect = [UIBlurEffect effectWithStyle:tabBarStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemChromeMaterialLight : UIBlurEffectStyleSystemChromeMaterialDark];
+        if (_tabBarBackgroundImage && tabBarStyle == UIBarStyleBlack) {
+            self.tabBarAppearance.backgroundEffect = nil;
+        } else {
+            self.tabBarAppearance.backgroundEffect = [UIBlurEffect effectWithStyle:tabBarStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemChromeMaterialLight : UIBlurEffectStyleSystemChromeMaterialDark];
+        }
         [self updateTabBarAppearance];
     } else {
         [UITabBar appearance].barStyle = tabBarStyle;
