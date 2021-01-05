@@ -211,6 +211,10 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
 }
 
 - (NSString *)qmuivc_description {
+    if (![NSThread isMainThread]) {
+        return [self qmuivc_description];
+    }
+    
     NSString *result = [NSString stringWithFormat:@"%@\nsuperclass:\t\t\t\t%@\ntitle:\t\t\t\t\t%@\nview:\t\t\t\t\t%@", [self qmuivc_description], NSStringFromClass(self.superclass), self.title, [self isViewLoaded] ? self.view : nil];
     
     if ([self isKindOfClass:[UINavigationController class]]) {
@@ -253,9 +257,10 @@ static char kAssociatedObjectKey_visibleState;
 }
 
 - (UIViewController *)qmui_previousViewController {
-    if (self.navigationController.viewControllers && self.navigationController.viewControllers.count > 1 && self.navigationController.topViewController == self) {
-        NSUInteger count = self.navigationController.viewControllers.count;
-        return (UIViewController *)[self.navigationController.viewControllers objectAtIndex:count - 2];
+    NSArray<UIViewController *> *viewControllers = self.navigationController.viewControllers;
+    NSUInteger index = [viewControllers indexOfObject:self];
+    if (index != NSNotFound && index > 0) {
+        return viewControllers[index - 1];
     }
     return nil;
 }
@@ -263,7 +268,7 @@ static char kAssociatedObjectKey_visibleState;
 - (NSString *)qmui_previousViewControllerTitle {
     UIViewController *previousViewController = [self qmui_previousViewController];
     if (previousViewController) {
-        return previousViewController.title;
+        return previousViewController.title ?: previousViewController.navigationItem.title;
     }
     return nil;
 }
@@ -460,6 +465,17 @@ static char kAssociatedObjectKey_visibleState;
                 return previousViewController.qmui_prefersLargeTitleDisplayed == YES;
             }
         }
+    }
+    return NO;
+}
+
+- (BOOL)qmui_isDescendantOfViewCcontroller:(UIViewController *)viewController {
+    UIViewController *parentViewController = self;
+    while (parentViewController) {
+        if (parentViewController == viewController) {
+            return YES;
+        }
+        parentViewController = parentViewController.parentViewController;
     }
     return NO;
 }

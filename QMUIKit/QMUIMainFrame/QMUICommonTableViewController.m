@@ -174,8 +174,13 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
             [_tableView addObserver:self._qmuiTableViewObserver forKeyPath:@"contentInset" options:NSKeyValueObservingOptionOld context:nil];
         }
         
-        // 触发 loadView
-        [self.view addSubview:_tableView];
+        // 从 nib 初始化的界面，loadView 里 tableView 已经被加到 self.view 上了，但此时 loadView 尚未结束，所以 isViewLoaded 为 NO。这种场景不需要自己 addSubview，也不应该去调用 self.view 触发 loadView
+        // https://github.com/Tencent/QMUI_iOS/issues/1156
+        if (tableView.superview && self.nibName && !self.isViewLoaded) {
+        } else {
+            // 触发 loadView
+            [self.view addSubview:_tableView];
+        }
     }
 }
 

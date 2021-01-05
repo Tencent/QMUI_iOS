@@ -26,7 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  *  可作为项目内所有 `UIViewController` 的基类，提供的功能包括：
  *
- *  1. 自带顶部标题控件 `QMUINavigationTitleView`，支持loading、副标题、下拉菜单，设置标题依然使用系统的 `setTitle:` 方法
+ *  1. 自带顶部标题控件 `QMUINavigationTitleView`，支持loading、副标题、下拉菜单，设置标题依然使用系统的 `-[UIViewController setTitle:]` 或 `-[UINavigationItem setTitle:]` 方法
  *
  *  2. 自带空界面控件 `QMUIEmptyView`，支持显示loading、空文案、操作按钮
  *

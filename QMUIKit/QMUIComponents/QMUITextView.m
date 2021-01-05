@@ -38,7 +38,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 @property(nonatomic, assign) BOOL debug;
 @property(nonatomic, assign) BOOL postInitializationMethodCalled;
 @property(nonatomic, strong) _QMUITextViewDelegator *delegator;
-@property(nonatomic, assign) BOOL shouldAvoidCallingDelegateWhenSetText;
+@property(nonatomic, assign) BOOL isSettingTextByShouldChange;
 @property(nonatomic, assign) BOOL shouldRejectSystemScroll;// 如果在 handleTextChanged: 里主动调整 contentOffset，则为了避免被系统的自动调整覆盖，会利用这个标记去屏蔽系统对 setContentOffset: 的调用
 
 @property(nonatomic, strong) UILabel *placeholderLabel;
@@ -97,6 +97,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     self.placeholderLabel.alpha = 0;
     [self addSubview:self.placeholderLabel];
     
+    // 监听用户手工输入引发的文字变化（代码里通过 setText: 修改的不在这个监听范围内）
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTextChanged:) name:UITextViewTextDidChangeNotification object:nil];
     
     self.postInitializationMethodCalled = YES;
@@ -119,86 +120,45 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     return YES;
 }
 
-- (void)_qmui_setTextAvoidCallingDelegate:(NSString *)text {
-    self.shouldAvoidCallingDelegateWhenSetText = YES;
+- (void)_qmui_setTextForShouldChange:(NSString *)text {
+    self.isSettingTextByShouldChange = YES;
     [self setText:text];
-    self.shouldAvoidCallingDelegateWhenSetText = NO;
-}
-
-- (void)setText:(NSString *)text {
-    NSString *textBeforeChange = self.text;
-    BOOL textDifferent = [self isCurrentTextDifferentOfText:text];
-    
-    // 如果前后文字没变化，则什么都不做
-    if (!textDifferent || self.shouldAvoidCallingDelegateWhenSetText) {
-        [super setText:text];
-        return;
+    // 对于 shouldResponseToProgrammaticallyTextChanges = YES 的，调用 textViewDidChange: 的工作已经在 self setText: 里做完了，所以这里对 shouldResponseToProgrammaticallyTextChanges = NO 的专门做一次
+    if (!self.shouldResponseToProgrammaticallyTextChanges && [self.delegate respondsToSelector:@selector(textViewDidChange:)]) {
+        [self.delegate textViewDidChange:self];
     }
-    
-    // 前后文字发生变化，则要根据是否主动接管 delegate 来决定是否要询问 delegate
-    if (self.shouldResponseToProgrammaticallyTextChanges) {
-        BOOL shouldChangeText = YES;
-        if ([self.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:)]) {
-            shouldChangeText = [self.delegate textView:self shouldChangeTextInRange:NSMakeRange(0, textBeforeChange.length) replacementText:text];
-        }
-        
-        if (!shouldChangeText) {
-            // 不应该改变文字，所以连 super 都不调用，直接结束方法
-            return;
-        }
-        
-        // 应该改变文字，则调用 super 来改变文字，然后主动调用 textViewDidChange:
-        [super setText:text];
-        if ([self.delegate respondsToSelector:@selector(textViewDidChange:)]) {
-            [self.delegate textViewDidChange:self];
-        }
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:UITextViewTextDidChangeNotification object:self];
-        
-    } else {
-        [super setText:text];
-        
-        // 如果不需要主动接管事件，则只要触发内部的监听即可，不用调用 delegate 系列方法
-        [self handleTextChanged:self];
-    }
+    self.isSettingTextByShouldChange = NO;
 }
 
 - (void)setAttributedText:(NSAttributedString *)attributedText {
-    NSString *textBeforeChange = self.attributedText.string;
     BOOL textDifferent = [self isCurrentTextDifferentOfText:attributedText.string];
     
-    // 如果前后文字没变化，则什么都不做
-    if (!textDifferent || self.shouldAvoidCallingDelegateWhenSetText) {
+    if (!textDifferent) {
         [super setAttributedText:attributedText];
         return;
     }
     
-    // 前后文字发生变化，则要根据是否主动接管 delegate 来决定是否要询问 delegate
     if (self.shouldResponseToProgrammaticallyTextChanges) {
-        BOOL shouldChangeText = YES;
-        if ([self.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:)]) {
-            shouldChangeText = [self.delegate textView:self shouldChangeTextInRange:NSMakeRange(0, textBeforeChange.length) replacementText:attributedText.string];
+        if (!self.isSettingTextByShouldChange) {
+            BOOL shouldChangeText = YES;
+            if ([self.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:)]) {
+                NSString *textBeforeChange = self.attributedText.string;
+                shouldChangeText = [self.delegate textView:self shouldChangeTextInRange:NSMakeRange(0, textBeforeChange.length) replacementText:attributedText.string];
+            }
+            
+            if (!shouldChangeText) {
+                return;
+            }
         }
-        
-        if (!shouldChangeText) {
-            // 不应该改变文字，所以连 super 都不调用，直接结束方法
-            return;
-        }
-        
-        // 应该改变文字，则调用 super 来改变文字，然后主动调用 textViewDidChange:
         [super setAttributedText:attributedText];
         if ([self.delegate respondsToSelector:@selector(textViewDidChange:)]) {
             [self.delegate textViewDidChange:self];
         }
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:UITextViewTextDidChangeNotification object:self];
-        
     } else {
         [super setAttributedText:attributedText];
-        
-        // 如果不需要主动接管事件，则只要触发内部的监听即可，不用调用 delegate 系列方法
-        [self handleTextChanged:self];
     }
+    
+    [self handleTextChanged:self];
 }
 
 - (void)setTypingAttributes:(NSDictionary<NSString *,id> *)typingAttributes {
@@ -239,6 +199,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     }
     [self sendSubviewToBack:self.placeholderLabel];
     [self setNeedsLayout];
+    [self updatePlaceholderLabelHidden];
 }
 
 - (void)setPlaceholderColor:(UIColor *)placeholderColor {
@@ -251,13 +212,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 }
 
 - (void)handleTextChanged:(id)sender {
-    // 输入字符的时候，placeholder隐藏
-    if(self.placeholder.length > 0) {
-        [self updatePlaceholderLabelHidden];
-    }
-    
     QMUITextView *textView = nil;
-    
     if ([sender isKindOfClass:[NSNotification class]]) {
         id object = ((NSNotification *)sender).object;
         if (object == self) {
@@ -267,38 +222,59 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         textView = (QMUITextView *)sender;
     }
     
-    if (textView) {
-        
-        if (!textView.editable) {
-            return;// 不可编辑的 textView 不会显示光标
-        }
-        
-        // 计算高度
-        if ([textView.delegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)]) {
-            
-            CGFloat resultHeight = flat([textView sizeThatFits:CGSizeMake(CGRectGetWidth(textView.bounds), CGFLOAT_MAX)].height);
-            
-            if (textView.debug) QMUILog(NSStringFromClass(textView.class), @"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
-            
-            
-            // 通知delegate去更新textView的高度
-            if (resultHeight != flat(CGRectGetHeight(textView.bounds))) {
-                [textView.delegate textView:textView newHeightAfterTextChanged:resultHeight];
-            }
-        }
-        
-        // textView 尚未被展示到界面上时，此时过早进行光标调整会计算错误
-        if (!textView.window) {
-            return;
-        }
-        
-        textView.shouldRejectSystemScroll = YES;
-        // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            textView.shouldRejectSystemScroll = NO;
-            [textView qmui_scrollCaretVisibleAnimated:NO];
-        });
+    if (!textView) return;
+    
+    // 输入字符的时候，placeholder隐藏
+    if (self.placeholder.length > 0) {
+        [self updatePlaceholderLabelHidden];
     }
+    
+    // 系统的三指撤销在文本框达到最大字符长度限制时可能引发 crash
+    // https://github.com/Tencent/QMUI_iOS/issues/1168
+    if (textView.maximumTextLength < NSUIntegerMax && textView.undoManager.undoing) {
+        return;
+    }
+    
+    // 如果输入一长串中文拼音后，选择一个长度超过限制的候选词，在 textView:shouldChangeTextInRange:replacementText: 那边无法拦截，所以交给 handleTextChanged: 这边截断。这种情况会触发多次 handleTextChanged:，其中有一次是超出长度的，没办法，业务注意做好保护。
+    if (!textView.markedTextRange && [textView lengthWithString:textView.text] > textView.maximumTextLength) {
+        NSString *finalText = [textView.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo];
+        NSString *replacementText = [textView.text substringFromIndex:finalText.length];
+        textView.text = finalText;
+        if ([textView.delegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
+            // 如果是在这里被截断，是无法得知截断前光标所处的位置及要输入的文本的，所以只能将当前的 selectedRange 传过去，而 replacementText 为 nil
+            [textView.delegate textView:textView didPreventTextChangeInRange:textView.selectedRange replacementText:replacementText];
+        }
+    }
+    
+    if (!textView.editable) {
+        return;// 不可编辑的 textView 不会显示光标
+    }
+    
+    // 计算高度
+    if ([textView.delegate respondsToSelector:@selector(textView:newHeightAfterTextChanged:)]) {
+        
+        CGFloat resultHeight = flat([textView sizeThatFits:CGSizeMake(CGRectGetWidth(textView.bounds), CGFLOAT_MAX)].height);
+        
+        if (textView.debug) QMUILog(NSStringFromClass(textView.class), @"handleTextDidChange, text = %@, resultHeight = %f", textView.text, resultHeight);
+        
+        
+        // 通知delegate去更新textView的高度
+        if (resultHeight != flat(CGRectGetHeight(textView.bounds))) {
+            [textView.delegate textView:textView newHeightAfterTextChanged:resultHeight];
+        }
+    }
+    
+    // textView 尚未被展示到界面上时，此时过早进行光标调整会计算错误
+    if (!textView.window) {
+        return;
+    }
+    
+    textView.shouldRejectSystemScroll = YES;
+    // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        textView.shouldRejectSystemScroll = NO;
+        [textView qmui_scrollCaretVisibleAnimated:NO];
+    });
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
@@ -414,7 +390,8 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     
     if (textView.maximumTextLength < NSUIntegerMax) {
         
-        // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 这里不会限制，而是放在 didChange 那里限制。
+        // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符）
+        // 注意当点击了候选词后触发的那一次 textView:shouldChangeTextInRange:replacementText:，此时的 marktedTextRange 依然存在，尚未被清除，所以这种情况下的字符长度限制逻辑会交给 handleTextChanged: 那边处理。
         if (textView.markedTextRange) {
             return YES;
         }
@@ -442,7 +419,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             if (substringLength > 0 && [textView lengthWithString:text] > substringLength) {
                 NSString *allowedText = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo];
                 if ([textView lengthWithString:allowedText] <= substringLength) {
-                    [textView _qmui_setTextAvoidCallingDelegate:[textView.text stringByReplacingCharactersInRange:range withString:allowedText]];
+                    [textView _qmui_setTextForShouldChange:[textView.text stringByReplacingCharactersInRange:range withString:allowedText]];
                      
                     // iOS 10 修改 selectedRange 可以让光标立即移动到新位置，但 iOS 11 及以上版本需要延迟一会才可以
                     NSRange finalSelectedRange = NSMakeRange(range.location + substringLength, 0);
@@ -450,10 +427,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
                     dispatch_async(dispatch_get_main_queue(), ^{
                         textView.selectedRange = finalSelectedRange;
                     });
-                    
-                    if (!textView.shouldResponseToProgrammaticallyTextChanges && [textView.delegate respondsToSelector:@selector(textViewDidChange:)]) {
-                        [textView.delegate textViewDidChange:textView];
-                    }
                 }
             }
             
@@ -465,26 +438,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     }
     
     return YES;
-}
-
-- (void)textViewDidChange:(QMUITextView *)textView {
-    // 1、从中文输入法的候选词里选词后会走到 textView:shouldChangeTextInRange:replacementText:，但那个时候 markedTextRange 尚未被清空，所以无法区分当时“是否已经选中某个词了”，所以那边只能直接 return YES，然后交给 textViewDidChange 来截断文字。
-    // 2、如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 那边不会限制，而是放在 textViewDidChange 这里限制。
-    if (!textView.markedTextRange) {
-        if ([textView lengthWithString:textView.text] > textView.maximumTextLength) {
-            
-            [textView _qmui_setTextAvoidCallingDelegate:[textView.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textView.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo]];
-            
-            if ([textView.delegate respondsToSelector:@selector(textView:didPreventTextChangeInRange:replacementText:)]) {
-                // 如果是在这里被截断，是无法得知截断前光标所处的位置及要输入的文本的，所以只能将当前的 selectedRange 传过去，而 replacementText 为 nil
-                [textView.delegate textView:textView didPreventTextChangeInRange:textView.selectedRange replacementText:nil];
-            }
-            
-            if (textView.shouldResponseToProgrammaticallyTextChanges) {
-                return;
-            }
-        }
-    }
 }
 
 @end

@@ -7,7 +7,7 @@
  */
 
 //
-//  QMUINavigationBar+Transition.m
+//  UINavigationBar+Transition.m
 //  qmui
 //
 //  Created by QMUI Team on 11/25/16.

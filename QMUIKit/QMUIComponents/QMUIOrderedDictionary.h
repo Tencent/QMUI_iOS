@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(readonly) NSUInteger count;
 @property(nonatomic, copy, readonly) NSArray<KeyType> *allKeys;
-
+@property(nonatomic, copy, readonly) NSArray<ObjectType> *allValues;
 - (void)setObject:(ObjectType)object forKey:(KeyType)key;
 - (void)addObject:(ObjectType)object forKey:(KeyType)key;
 - (void)addObjects:(NSArray<ObjectType> *)objects forKeys:(NSArray<KeyType> *)keys;

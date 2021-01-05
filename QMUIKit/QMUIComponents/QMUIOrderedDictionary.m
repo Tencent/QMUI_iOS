@@ -69,6 +69,10 @@
     return self.mutableAllKeys.copy;
 }
 
+- (NSArray *)allValues {
+    return self.mutableAllValues.copy;
+}
+
 - (void)setObject:(id)object forKey:(id)key {
     if ([self.mutableAllKeys containsObject:key]) {
         NSInteger index = [self.mutableAllKeys indexOfObject:key];

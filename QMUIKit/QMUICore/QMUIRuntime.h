@@ -338,3 +338,7 @@ typedef struct classref *classref_t;
  @endcode
  */
 FOUNDATION_EXPORT int qmui_getProjectClassList(classref_t **classes);
+/**
+ 检测是否存在某个dyld  image
+ */
+FOUNDATION_EXPORT BOOL qmui_exists_dyld_image(const char *target_image_name);

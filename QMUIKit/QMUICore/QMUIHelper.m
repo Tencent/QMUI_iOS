@@ -288,7 +288,7 @@ static CGFloat pixelOne = -1.0f;
             @"iPhone13,2" : @"iPhone 12",
             @"iPhone13,3" : @"iPhone 12 Pro",
             @"iPhone13,4" : @"iPhone 12 Pro Max",
-
+            
             @"iPad1,1" : @"iPad 1",
             @"iPad2,1" : @"iPad 2 (WiFi)",
             @"iPad2,2" : @"iPad 2 (GSM)",
@@ -350,7 +350,7 @@ static CGFloat pixelOne = -1.0f;
             @"iPad11,7" : @"iPad (Cellular)",
             @"iPad13,1" : @"iPad Air (4th generation)",
             @"iPad13,2" : @"iPad Air (4th generation)",
-
+            
             @"iPod1,1" : @"iPod touch 1",
             @"iPod2,1" : @"iPod touch 2",
             @"iPod3,1" : @"iPod touch 3",
@@ -388,15 +388,15 @@ static CGFloat pixelOne = -1.0f;
             @"Watch6,2"  : @"Apple Watch Series 6 44mm",
             @"Watch6,3"  : @"Apple Watch Series 6 40mm",
             @"Watch6,4"  : @"Apple Watch Series 6 44mm",
-
+            
             @"AudioAccessory1,1" : @"HomePod",
             @"AudioAccessory1,2" : @"HomePod",
             @"AudioAccessory5,1" : @"HomePod mini",
-
+            
             @"AirPods1,1" : @"AirPods (1st generation)",
             @"AirPods2,1" : @"AirPods (2nd generation)",
             @"iProd8,1"   : @"AirPods Pro",
-
+            
             @"AppleTV2,1" : @"Apple TV 2",
             @"AppleTV3,1" : @"Apple TV 3",
             @"AppleTV3,2" : @"Apple TV 3",
@@ -449,6 +449,19 @@ static NSInteger isSimulator = -1;
     return isSimulator > 0;
 }
 
+
++ (BOOL)isMac {
+#ifdef IOS14_SDK_ALLOWED
+    if (@available(iOS 14.0, *)) {
+        return [NSProcessInfo processInfo].isiOSAppOnMac || [NSProcessInfo processInfo].isMacCatalystApp;
+    } else {
+#endif
+        return NO;
+#ifdef IOS14_SDK_ALLOWED
+    }
+#endif
+}
+
 static NSInteger isNotchedScreen = -1;
 + (BOOL)isNotchedScreen {
     if (@available(iOS 11, *)) {
@@ -489,7 +502,15 @@ static NSInteger isNotchedScreen = -1;
 }
 
 + (BOOL)isRegularScreen {
-    return [self isIPad] || (!IS_ZOOMEDMODE && ([self is65InchScreen] || [self is61InchScreen] || [self is55InchScreen]));
+    return [self isIPad] || (!IS_ZOOMEDMODE && ([self is67InchScreen] || [self is65InchScreen] || [self is61InchScreenAndiPhone12] || [self is61InchScreen] || [self is55InchScreen]));
+}
+
+static NSInteger is67InchScreen = -1;
++ (BOOL)is67InchScreen {
+    if (is67InchScreen < 0) {
+        is67InchScreen = (DEVICE_WIDTH == self.screenSizeFor67Inch.width && DEVICE_HEIGHT == self.screenSizeFor67Inch.height) ? 1 : 0;
+    }
+    return is67InchScreen > 0;
 }
 
 static NSInteger is65InchScreen = -1;
@@ -500,6 +521,14 @@ static NSInteger is65InchScreen = -1;
         is65InchScreen = (DEVICE_WIDTH == self.screenSizeFor65Inch.width && DEVICE_HEIGHT == self.screenSizeFor65Inch.height && ([[QMUIHelper deviceModel] isEqualToString:@"iPhone11,4"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone11,6"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone12,5"])) ? 1 : 0;
     }
     return is65InchScreen > 0;
+}
+
+static NSInteger is61InchScreenAndiPhone12 = -1;
++ (BOOL)is61InchScreenAndiPhone12 {
+    if (is61InchScreenAndiPhone12 < 0) {
+        is61InchScreenAndiPhone12 = (DEVICE_WIDTH == self.screenSizeFor61InchAndiPhone12.width && DEVICE_HEIGHT == self.screenSizeFor61InchAndiPhone12.height && ([[QMUIHelper deviceModel] isEqualToString:@"iPhone13,2"] || [[QMUIHelper deviceModel] isEqualToString:@"iPhone13,3"])) ? 1 : 0;
+    }
+    return is61InchScreenAndiPhone12 > 0;
 }
 
 static NSInteger is61InchScreen = -1;
@@ -528,6 +557,14 @@ static NSInteger is55InchScreen = -1;
     return is55InchScreen > 0;
 }
 
+static NSInteger is54InchScreen = -1;
++ (BOOL)is54InchScreen {
+    if (is54InchScreen < 0) {
+        is54InchScreen = (DEVICE_WIDTH == self.screenSizeFor54Inch.width && DEVICE_HEIGHT == self.screenSizeFor54Inch.height) ? 1 : 0;
+    }
+    return is54InchScreen > 0;
+}
+
 static NSInteger is47InchScreen = -1;
 + (BOOL)is47InchScreen {
     if (is47InchScreen < 0) {
@@ -552,8 +589,16 @@ static NSInteger is35InchScreen = -1;
     return is35InchScreen > 0;
 }
 
++ (CGSize)screenSizeFor67Inch {
+    return CGSizeMake(428, 926);
+}
+
 + (CGSize)screenSizeFor65Inch {
     return CGSizeMake(414, 896);
+}
+
++ (CGSize)screenSizeFor61InchAndiPhone12 {
+    return CGSizeMake(390, 844);
 }
 
 + (CGSize)screenSizeFor61Inch {
@@ -566,6 +611,10 @@ static NSInteger is35InchScreen = -1;
 
 + (CGSize)screenSizeFor55Inch {
     return CGSizeMake(414, 736);
+}
+
++ (CGSize)screenSizeFor54Inch {
+    return CGSizeMake(375, 812);
 }
 
 + (CGSize)screenSizeFor47Inch {
@@ -608,23 +657,93 @@ static CGFloat preferredLayoutWidth = -1;
         return UIEdgeInsetsMake(0, 0, 20, 0);
     }
     
-    UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
+    static NSDictionary<NSString *, NSDictionary<NSNumber *, NSValue *> *> *dict;
+    if (!dict) {
+        dict = @{
+            // iPhone 12 mini
+            @"iPhone13,1": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(50, 0, 34, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 50, 21, 50)],
+            },
+            @"iPhone13,1-Zoom": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(43, 0, 29, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 43, 21, 43)],
+            },
+            // iPhone 12
+            @"iPhone13,2": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(47, 0, 34, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 47, 21, 47)],
+            },
+            @"iPhone13,2-Zoom": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(39, 0, 28, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 39, 21, 39)],
+            },
+            // iPhone 12 Pro
+            @"iPhone13,3": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(47, 0, 34, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 47, 21, 47)],
+            },
+            @"iPhone13,3-Zoom": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(39, 0, 28, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 39, 21, 39)],
+            },
+            // iPhone 12 Pro Max
+            @"iPhone13,4": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(47, 0, 34, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 47, 21, 47)],
+            },
+            @"iPhone13,4-Zoom": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(41, 0, 29 + 2.0 / 3.0, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 41, 21, 41)],
+            },
+            // iPhone 11
+            @"iPhone12,1": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(48, 0, 34, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 48, 21, 48)],
+            },
+            @"iPhone12,1-Zoom": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(44, 0, 31, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 44, 21, 44)],
+            },
+            // iPhone 11 Pro Max
+            @"iPhone12,5": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(44, 0, 34, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 44, 21, 44)],
+            },
+            @"iPhone12,5-Zoom": @{
+                    @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(40, 0, 30 + 2.0 / 3.0, 0)],
+                    @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 40, 21, 40)],
+            },
+        };
+    }
     
+    NSString *deviceKey = [QMUIHelper deviceModel];
+    if (!dict[deviceKey]) {
+        deviceKey = @"iPhone12,5";// 默认按 iPhone 11 Pro Max
+    }
+    if ([QMUIHelper isZoomedMode]) {
+        deviceKey = [NSString stringWithFormat:@"%@-Zoom", deviceKey];
+    }
+    
+    NSNumber *orientationKey = nil;
+    UIInterfaceOrientation orientation = UIApplication.sharedApplication.statusBarOrientation;
     switch (orientation) {
-        case UIInterfaceOrientationPortrait:
-            return UIEdgeInsetsMake(44, 0, 34, 0);
-            
-        case UIInterfaceOrientationPortraitUpsideDown:
-            return UIEdgeInsetsMake(34, 0, 44, 0);
-            
         case UIInterfaceOrientationLandscapeLeft:
         case UIInterfaceOrientationLandscapeRight:
-            return UIEdgeInsetsMake(0, 44, 21, 44);
-            
-        case UIInterfaceOrientationUnknown:
+            orientationKey = @(UIInterfaceOrientationLandscapeLeft);
+            break;
         default:
-            return UIEdgeInsetsMake(44, 0, 34, 0);
+            orientationKey = @(UIInterfaceOrientationPortrait);
+            break;
     }
+    
+    UIEdgeInsets insets = dict[deviceKey][orientationKey].UIEdgeInsetsValue;
+    if (orientation == UIInterfaceOrientationPortraitUpsideDown) {
+        insets = UIEdgeInsetsMake(insets.bottom, insets.left, insets.top, insets.right);
+    } else if (orientation == UIInterfaceOrientationLandscapeRight) {
+        insets = UIEdgeInsetsMake(insets.top, insets.right, insets.bottom, insets.left);
+    }
+    return insets;
 }
 
 static NSInteger isHighPerformanceDevice = -1;

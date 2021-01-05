@@ -14,7 +14,7 @@
 
 #import "UITraitCollection+QMUI.h"
 #import "QMUICore.h"
-
+#import <dlfcn.h>
 
 @implementation UITraitCollection (QMUI)
 
@@ -61,23 +61,59 @@ static NSString * const kQMUIUserInterfaceStyleWillChangeSelectorsKey = @"qmui_u
     }
 }
 
+
+CG_INLINE UITraitCollection *
+qmui_getTraitCollection(UIWindow *targetWindow, id (*originalIMP)(id, SEL), SEL originCMD) {
+#ifndef DEBUG
+    // 非 DEBUG 无需处理 Main Thread Checker，直接用 originalIMP 取得 traitCollection
+    return originalIMP(targetWindow, originCMD);
+#endif
+    // 以下代码只会在 DEBUG 生效，主要是屏蔽 Main Thread Checker 对 QMUI swizzle traitCollection 的检测
+    // iOS 14 首次弹起键盘，UIKit 内部会在在子线程访问 -[UIWindow traitCollection]，该方法一旦被 swizzle，Main Thread Checker 就会误判为业务在子线程主动调用 UIKit 方法从而引发卡顿和警告。 https://github.com/Tencent/QMUI_iOS/issues/1087
+    // Main Thread Checker 的原理是在启动的时候替换相关方法的实现为 Main Thread Checker 自身的 trampoline，触发相关方法时会先在 trampoline 中实现线程检测逻辑并告警，所以这里唯一可行的屏蔽方法就是获取原始的 IMP 实现，并直接调用从而绕过 Main Thread Checker, 由于 QMUI 在 +load 到时候已经晚于这个时机，无法获取原始的实现方法，观察发现 -[UIWindow traitCollection] 内部会调用 -[UIWindow _updateWindowTraitsAndNotify:]，因此可以借助该方法回溯到 traitCollection 的真实地址。
+    static id (*directTraitCollectionIMP)(id, SEL) = NULL;
+    UITraitCollection *traitCollection = nil;
+    if (directTraitCollectionIMP) {
+        traitCollection = directTraitCollectionIMP(targetWindow, originCMD);
+    } else {
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            if (qmui_exists_dyld_image("libMainThreadChecker.dylib")) {
+                OverrideImplementation([UIWindow class] , NSSelectorFromString(@"_updateWindowTraitsAndNotify:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^void(UIWindow *selfObject, BOOL arg1) {
+                        if (selfObject == targetWindow && directTraitCollectionIMP == NULL) {
+                            NSArray *address = [NSThread callStackReturnAddresses];
+                            Dl_info info;
+                            dladdr((void *)[address[1] longLongValue], &info);
+                            directTraitCollectionIMP = info.dli_saddr;
+                        }
+                        id (*originSelectorIMP)(id, SEL, BOOL arg1);
+                        originSelectorIMP = (id (*)(id, SEL, BOOL))originalIMPProvider();
+                        originSelectorIMP(selfObject, originCMD, arg1);
+                    };
+                });
+            }
+        });
+        // 如果存在 Main Thread Checker，下面这行调用将会命中 _updateWindowTraitsAndNotify: 的 swizzle，并拿到 directTraitCollectionIMP，下一次 qmui_getTraitCollection 会直接调用 directTraitCollectionIMP 从而避开检测。
+        traitCollection = originalIMP(targetWindow, originCMD);
+    }
+    return traitCollection;
+}
+
+
 + (void)_qmui_overrideTraitCollectionMethodIfNeeded {
     if (@available(iOS 13.0, *)) {
         [QMUIHelper executeBlock:^{
             static BOOL _isOverridedMethodProcessing = NO;
             static UIUserInterfaceStyle qmui_lastNotifiedUserInterfaceStyle;
             qmui_lastNotifiedUserInterfaceStyle = [UITraitCollection currentTraitCollection].userInterfaceStyle;
-            
-            // 重写 -[UIWindow traitCollection] 会引发 Main Thread Checker 警告，从原理上无法解决，再加上系统本身也是如此，所以这里保持重写的逻辑。注意只有使用了 QMUITheme 组件的项目才有这个问题，不使用则不会重写方法。
-            // https://github.com/Tencent/QMUI_iOS/issues/1087
             OverrideImplementation([UIWindow class] , @selector(traitCollection), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^UITraitCollection *(UIWindow *selfObject) {
                     id (*originSelectorIMP)(id, SEL);
                     originSelectorIMP = (id (*)(id, SEL))originalIMPProvider();
-                    UITraitCollection *traitCollection = originSelectorIMP(selfObject, originCMD);
-                    
+                    UITraitCollection *traitCollection = qmui_getTraitCollection(selfObject, originSelectorIMP, originCMD);
                     if (_isOverridedMethodProcessing || !NSThread.isMainThread) {
-                        // +[UITraitCollection currentTraitCollection] 会触发 -[UIWindow traitCollection] 造成递归，这里屏蔽一下
+                        // 防止业务在接收到通知后，再次触发 traitCollection 造成递归
                         return traitCollection;
                     }
                     _isOverridedMethodProcessing = YES;
@@ -107,16 +143,10 @@ static NSString * const kQMUIUserInterfaceStyleWillChangeSelectorsKey = @"qmui_u
                                 [self _qmui_notifyUserInterfaceStyleWillChangeEvents:traitCollection];
                             }
                         } else if (!firstValidatedWindow) {
-                            // 没有 firstValidatedWindow 只能通过创建一个 window 来判断，这里不用 [UITraitCollection currentTraitCollection] 是因为在 becomeFirstResponder 的过程中，[UITraitCollection currentTraitCollection] 会得到错误的结果。
-                            static UIWindow *currentTraitCollectionWindow = nil;
-                            if (!currentTraitCollectionWindow) {
-                                currentTraitCollectionWindow = [[UIWindow alloc] init];
-                            }
-                            UITraitCollection *currentTraitCollection = [currentTraitCollectionWindow traitCollection];
-                            if (qmui_lastNotifiedUserInterfaceStyle != currentTraitCollection.userInterfaceStyle) {
-                                qmui_lastNotifiedUserInterfaceStyle = currentTraitCollection.userInterfaceStyle;
-                                [self _qmui_notifyUserInterfaceStyleWillChangeEvents:traitCollection];
-                            }
+                            // 没有 firstValidatedWindow 有以下方法来拿到当前的外观：
+                            // 1、创建一个 window 来判断，但是发现在某些场景下，traitCollection 会被频繁调用，导致短时间内创建大量 window 造成性能下降。
+                            // 2、 [UITraitCollection currentTraitCollection] 但是 becomeFirstResponder 的过程中该会得到错误的结果。
+                            // 终上，这种情况暂时不处理，因此当全部 window.overrideUserInterfaceStyle 都指定为非 UIUserInterfaceStyleUnspecified 的值，将无法获得当前系统的外观。
                         }
                     }
                     _isOverridedMethodProcessing = NO;

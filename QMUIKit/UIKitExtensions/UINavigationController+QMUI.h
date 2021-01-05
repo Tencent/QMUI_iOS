@@ -18,7 +18,44 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSUInteger, QMUINavigationAction) {
+    QMUINavigationActionUnknow,         // 初始、各种动作的 completed 之后都会立即转入 unknown 状态，此时的 appearing、disappearingViewController 均为 nil
+    
+    QMUINavigationActionWillPush,       // push 方法被触发，但尚未进行真正的 push 动作
+    QMUINavigationActionDidPush,        // 系统的 push 已经执行完，viewControllers 已被刷新
+    QMUINavigationActionPushCompleted,  // push 动画结束（如果没有动画，则在 did push 后立即进入 completed）
+    
+    QMUINavigationActionWillPop,        // pop 方法被触发，但尚未进行真正的 pop 动作
+    QMUINavigationActionDidPop,         // 系统的 pop 已经执行完，viewControllers 已被刷新（注意可能有 pop 失败的情况）
+    QMUINavigationActionPopCompleted,   // pop 动画结束（如果没有动画，则在 did pop 后立即进入 completed）
+    
+    QMUINavigationActionWillSet,        // setViewControllers 方法被触发，但尚未进行真正的 set 动作
+    QMUINavigationActionDidSet,         // 系统的 setViewControllers 已经执行完，viewControllers 已被刷新
+    QMUINavigationActionSetCompleted,   // setViewControllers 动画结束（如果没有动画，则在 did set 后立即进入 completed）
+};
+
+typedef void (^QMUINavigationActionDidChangeBlock)(QMUINavigationAction action, BOOL animated, __kindof UINavigationController * _Nullable weakNavigationController,  __kindof UIViewController * _Nullable appearingViewController, NSArray<__kindof UIViewController *> * _Nullable disappearingViewControllers);
+
+
 @interface UINavigationController (QMUI) <UIGestureRecognizerDelegate>
+
+/**
+ NS_DESIGNATED_INITIALIZER 方法被调用时就会调用这个方法，一些 init 时要处理的事情都可以统一放在这里面。
+ 为什么需要创建这个方法，是因为 UINavigationController 的 NS_DESIGNATED_INITIALIZER 数量太多了有4个，而且 iOS 12 及以前，initWithNavigationBarClass:toolbarClass:、initWithRootViewController: 这2个方法是没被标记为 NS_DESIGNATED_INITIALIZER 的，它们都会调用 initWithNibName:bundle:，但 iOS 13 及以后，这两个方法增加了 NS_DESIGNATED_INITIALIZER 标记。
+ 由于有 iOS 版本差异，业务也需要做版本判断，才能保证 init 逻辑不会被重复调用，于是 QMUI 直接提供这个方法，省去业务的判断。
+ */
+- (void)qmui_didInitialize NS_REQUIRES_SUPER;
+
+@property(nonatomic, assign, readonly) QMUINavigationAction qmui_navigationAction;
+
+/**
+ 添加一个 block 用于监听当前 UINavigationController 的 push/pop/setViewControllers 操作，在即将进行、已经进行、动画已完结等各种状态均会回调。
+ block 参数里的 appearingViewController 表示即将显示的界面。
+ disappearingViewControllers 表示即将消失的界面，数组形式是因为可能一次性 pop 掉多个（例如 popToRootViewController、setViewControllers），此时只有 disappearingViewControllers.lastObject 可以看到 pop 动画。由于 pop 可能失败，所以 will 动作里的 disappearingViewControllers 最终不一定真的会被移除。
+ weakNavigationController 是便于你引用 self 而避免循环引用（因为这个方法会令 self retain 你传进来的 block，而 block 内部如果直接用 self，就会 retain self，产生循环引用，所以这里给一个参数规避这个问题）。
+ @note 无法添加一个只监听某个 QMUINavigationAction 的 block，每一个添加的 block 在任何一个 action 变化时都会被调用，需要 block 内部自己区分当前的 action。
+ */
+- (void)qmui_addNavigationActionDidChangeBlock:(QMUINavigationActionDidChangeBlock)block;
 
 /// 是否在 push 的过程中
 @property(nonatomic, readonly) BOOL qmui_isPushing;

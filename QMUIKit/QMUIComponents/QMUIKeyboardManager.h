@@ -19,9 +19,6 @@
 @protocol QMUIKeyboardManagerDelegate;
 @class QMUIKeyboardUserInfo;
 
-/// 注意：由于某些Bug（例如 iOS 8 的 iPad 修改切换键盘类型，delegate 回调键盘高度值错误），QMUIKeyboardManager 不再支持 iPad 的浮动键盘了 - 更新于 2017.12.8 ///
-/// 注意：QMUI 已经废弃 iOS8 了，所以浮动键盘又可以支持了
-
 /**
  *  `QMUIKeyboardManager` 提供了方便管理键盘事件的方案，使用的场景是需要跟随键盘的显示或者隐藏来更改界面的 UI，例如输入框跟随在键盘的顶部。
  *  由于键盘通知是整个 App 全局的，所以经常会遇到 A 的键盘监听回调里接收到 B 的键盘事件，这样的情况往往不是我们想要的，即使可以通过判断当前的 firstResponder 来区分，但还是不能完美的解决问题或者有时候解决起来非常麻烦。`QMUIKeyboardManager` 通过 `delegateEnabled` 和 `targetResponder` 等属性来方便地控制 firstResponder，从而可以实现某个键盘监听回调方法只响应某个 UIResponder 或者某几个 UIResponder 触发的键盘通知。
@@ -33,6 +30,8 @@
  *  另外 QMUIKeyboardManager 同时集成在了 UITextField(QMUI) 和 UITextView(QMUI) 里，具体请查看对应文件。
  *  @see UITextField(QMUI)
  *  @see UITextView(QMUI)
+ *
+ *  @note 系统的“设置→辅助功能→动态效果→减弱动态效果→首选交叉淡出过渡效果”会改变系统键盘的动画，请留意是否有影响。
  */
 @interface QMUIKeyboardManager : NSObject
 

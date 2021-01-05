@@ -25,7 +25,9 @@
 - (instancetype)initWithParentViewController:(UINavigationController *)parentViewController;
 @end
 
-@interface UINavigationController (QMUI_Private)
+@interface UINavigationController ()
+
+@property(nonatomic, strong) NSMutableArray<QMUINavigationActionDidChangeBlock> *qmuinc_navigationActionDidChangeBlocks;
 @property(nullable, nonatomic, readwrite) UIViewController *qmui_endedTransitionTopViewController;
 @property(nullable, nonatomic, weak, readonly) id<UIGestureRecognizerDelegate> qmui_interactivePopGestureRecognizerDelegate;
 @property(nullable, nonatomic, strong) _QMUINavigationInteractiveGestureDelegator *qmui_interactiveGestureDelegator;
@@ -33,6 +35,7 @@
 
 @implementation UINavigationController (QMUI)
 
+QMUISynthesizeIdStrongProperty(qmuinc_navigationActionDidChangeBlocks, setQmuinc_navigationActionDidChangeBlocks)
 QMUISynthesizeIdWeakProperty(qmui_endedTransitionTopViewController, setQmui_endedTransitionTopViewController)
 QMUISynthesizeIdWeakProperty(qmui_interactivePopGestureRecognizerDelegate, setQmui_interactivePopGestureRecognizerDelegate)
 QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interactiveGestureDelegator)
@@ -41,10 +44,105 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
+        OverrideImplementation([UINavigationController class], @selector(initWithNibName:bundle:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UINavigationController *(UINavigationController *selfObject, NSString *firstArgv, NSBundle *secondArgv) {
+                
+                // call super
+                UINavigationController *(*originSelectorIMP)(id, SEL, NSString *, NSBundle *);
+                originSelectorIMP = (UINavigationController *(*)(id, SEL, NSString *, NSBundle *))originalIMPProvider();
+                UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+                
+                [selfObject qmui_didInitialize];
+                
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UINavigationController class], @selector(initWithCoder:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UINavigationController *(UINavigationController *selfObject, NSCoder *firstArgv) {
+                
+                // call super
+                UINavigationController *(*originSelectorIMP)(id, SEL, NSCoder *);
+                originSelectorIMP = (UINavigationController *(*)(id, SEL, NSCoder *))originalIMPProvider();
+                UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                [selfObject qmui_didInitialize];
+                
+                return result;
+            };
+        });
+        
+        // iOS 12 及以前，initWithNavigationBarClass:toolbarClass:、initWithRootViewController: 会调用 initWithNibName:bundle:，所以这两个方法在 iOS 12 下不需要再次调用 qmui_didInitialize 了。
+        if (@available(iOS 13.0, *)) {
+            OverrideImplementation([UINavigationController class], @selector(initWithNavigationBarClass:toolbarClass:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^UINavigationController *(UINavigationController *selfObject, Class firstArgv, Class secondArgv) {
+                    
+                    // call super
+                    UINavigationController *(*originSelectorIMP)(id, SEL, Class, Class);
+                    originSelectorIMP = (UINavigationController *(*)(id, SEL, Class, Class))originalIMPProvider();
+                    UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+                    
+                    [selfObject qmui_didInitialize];
+                    
+                    return result;
+                };
+            });
+            
+            OverrideImplementation([UINavigationController class], @selector(initWithRootViewController:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^UINavigationController *(UINavigationController *selfObject, UIViewController *firstArgv) {
+                    
+                    // call super
+                    UINavigationController *(*originSelectorIMP)(id, SEL, UIViewController *);
+                    originSelectorIMP = (UINavigationController *(*)(id, SEL, UIViewController *))originalIMPProvider();
+                    UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    [selfObject qmui_didInitialize];
+                    
+                    return result;
+                };
+            });
+        }
+        
+        
         ExtendImplementationOfVoidMethodWithoutArguments([UINavigationController class], @selector(viewDidLoad), ^(UINavigationController *selfObject) {
             selfObject.qmui_interactivePopGestureRecognizerDelegate = selfObject.interactivePopGestureRecognizer.delegate;
             selfObject.qmui_interactiveGestureDelegator = [[_QMUINavigationInteractiveGestureDelegator alloc] initWithParentViewController:selfObject];
             selfObject.interactivePopGestureRecognizer.delegate = selfObject.qmui_interactiveGestureDelegator;
+            
+            // 根据 NavBarContainerClasses 的值来决定是否应用 bar.tintColor
+            // tintColor 没有被添加 UI_APPEARANCE_SELECTOR，所以没有采用 UIAppearance 的方式去实现（虽然它实际上是支持的）
+            if (QMUICMIActivated) {
+                BOOL shouldSetTintColor = NO;
+                if (NavBarContainerClasses.count) {
+                    for (Class class in NavBarContainerClasses) {
+                        if ([selfObject isKindOfClass:class]) {
+                            shouldSetTintColor = YES;
+                            break;
+                        }
+                    }
+                } else {
+                    shouldSetTintColor = YES;
+                }
+                if (shouldSetTintColor) {
+                    selfObject.navigationBar.tintColor = NavBarTintColor;
+                }
+            }
+            if (QMUICMIActivated) {
+                BOOL shouldSetTintColor = NO;
+                if (ToolBarContainerClasses.count) {
+                    for (Class class in ToolBarContainerClasses) {
+                        if ([selfObject isKindOfClass:class]) {
+                            shouldSetTintColor = YES;
+                            break;
+                        }
+                    }
+                } else {
+                    shouldSetTintColor = YES;
+                }
+                if (shouldSetTintColor) {
+                    selfObject.toolbar.tintColor = ToolBarTintColor;
+                }
+            }
         });
         
         if (@available(iOS 11.0, *)) {
@@ -94,27 +192,237 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
         OverrideImplementation([UINavigationController class], NSSelectorFromString(@"navigationTransitionView:didEndTransition:fromView:toView:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^void(UINavigationController *selfObject, UIView *transitionView, NSInteger transition, UIView *fromView, UIView *toView) {
                 
-               BOOL (*originSelectorIMP)(id, SEL, UIView *, NSInteger , UIView *, UIView *);
-               originSelectorIMP = (BOOL (*)(id, SEL, UIView *, NSInteger , UIView *, UIView *))originalIMPProvider();
+                BOOL (*originSelectorIMP)(id, SEL, UIView *, NSInteger , UIView *, UIView *);
+                originSelectorIMP = (BOOL (*)(id, SEL, UIView *, NSInteger , UIView *, UIView *))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, transitionView, transition, fromView, toView);
                 selfObject.qmui_endedTransitionTopViewController = selfObject.topViewController;
+            };
+        });
+        
+#pragma mark - pushViewController:animated:
+        OverrideImplementation([UINavigationController class], @selector(pushViewController:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationController *selfObject, UIViewController *viewController, BOOL animated) {
+                
+                if (selfObject.presentedViewController) {
+                    QMUILogWarn(NSStringFromClass(originClass), @"push 的时候 UINavigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
+                }
+                
+                // call super
+                void (^callSuperBlock)(void) = ^void(void) {
+                    void (*originSelectorIMP)(id, SEL, UIViewController *, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, UIViewController *, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, viewController, animated);
+                };
+                
+                BOOL willPushActually = viewController && ![viewController isKindOfClass:UITabBarController.class] && ![selfObject.viewControllers containsObject:viewController];
+                
+                if (!willPushActually) {
+                    callSuperBlock();
+                    return;
+                }
+                
+                UIViewController *appearingViewController = viewController;
+                NSArray<UIViewController *> *disappearingViewControllers = selfObject.topViewController ? @[selfObject.topViewController] : nil;
+                
+                [selfObject setQmui_navigationAction:QMUINavigationActionWillPush animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                callSuperBlock();
+                
+                [selfObject setQmui_navigationAction:QMUINavigationActionDidPush animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                [selfObject qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                    [selfObject setQmui_navigationAction:QMUINavigationActionPushCompleted animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                    [selfObject setQmui_navigationAction:QMUINavigationActionUnknow animated:animated appearingViewController:nil disappearingViewControllers:nil];
+                }];
+            };
+        });
+        
+#pragma mark - popViewControllerAnimated:
+        OverrideImplementation([UINavigationController class], @selector(popViewControllerAnimated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIViewController *(UINavigationController *selfObject, BOOL animated) {
+                
+                // call super
+                UIViewController *(^callSuperBlock)(void) = ^UIViewController *(void) {
+                    UIViewController *(*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (UIViewController *(*)(id, SEL, BOOL))originalIMPProvider();
+                    UIViewController *result = originSelectorIMP(selfObject, originCMD, animated);
+                    return result;
+                };
+                
+                BOOL willPopActually = selfObject.viewControllers.count > 1;// 系统文档里说 rootViewController 是不能被 pop 的，当只剩下 rootViewController 时当前方法什么事都不会做
+                
+                if (!willPopActually) {
+                    return callSuperBlock();
+                }
+                
+                UIViewController *appearingViewController = selfObject.viewControllers[selfObject.viewControllers.count - 2];
+                NSArray<UIViewController *> *disappearingViewControllers = selfObject.viewControllers.lastObject ? @[selfObject.viewControllers.lastObject] : nil;
+                
+                [selfObject setQmui_navigationAction:QMUINavigationActionWillPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                UIViewController *result = callSuperBlock();
+                
+                NSAssert(result && disappearingViewControllers && disappearingViewControllers.firstObject == result, @"QMUI 认为 popViewController 会成功，但实际上失败了");
+                disappearingViewControllers = result ? @[result] : disappearingViewControllers;
+                
+                [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                [selfObject qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                    [selfObject setQmui_navigationAction:QMUINavigationActionPopCompleted animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                    [selfObject setQmui_navigationAction:QMUINavigationActionUnknow animated:animated appearingViewController:nil disappearingViewControllers:nil];
+                }];
+                
+                return result;
+            };
+        });
+        
+#pragma mark - popToViewController:animated:
+        OverrideImplementation([UINavigationController class], @selector(popToViewController:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^NSArray<UIViewController *> *(UINavigationController *selfObject, UIViewController *viewController, BOOL animated) {
+                
+                // call super
+                NSArray<UIViewController *> *(^callSuperBlock)(void) = ^NSArray<UIViewController *> *(void) {
+                    NSArray<UIViewController *> *(*originSelectorIMP)(id, SEL, UIViewController *, BOOL);
+                    originSelectorIMP = (NSArray<UIViewController *> * (*)(id, SEL, UIViewController *, BOOL))originalIMPProvider();
+                    NSArray<UIViewController *> *poppedViewControllers = originSelectorIMP(selfObject, originCMD, viewController, animated);
+                    return poppedViewControllers;
+                };
+                
+                BOOL willPopActually = selfObject.viewControllers.count > 1 && [selfObject.viewControllers containsObject:viewController] && selfObject.topViewController != viewController;// 系统文档里说 rootViewController 是不能被 pop 的，当只剩下 rootViewController 时当前方法什么事都不会做
+                
+                if (!willPopActually) {
+                    return callSuperBlock();
+                }
+                
+                UIViewController *appearingViewController = viewController;
+                NSArray<UIViewController *> *disappearingViewControllers = nil;
+                NSUInteger index = [selfObject.viewControllers indexOfObject:appearingViewController];
+                if (index != NSNotFound) {
+                    disappearingViewControllers = [selfObject.viewControllers subarrayWithRange:NSMakeRange(index + 1, selfObject.viewControllers.count - index - 1)];
+                }
+
+                [selfObject setQmui_navigationAction:QMUINavigationActionWillPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                NSArray<UIViewController *> *result = callSuperBlock();
+                
+                NSAssert([result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToViewController 结果和系统的不一致");
+                disappearingViewControllers = result ?: disappearingViewControllers;
+                
+                [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                [selfObject qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                    [selfObject setQmui_navigationAction:QMUINavigationActionPopCompleted animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                    [selfObject setQmui_navigationAction:QMUINavigationActionUnknow animated:animated appearingViewController:nil disappearingViewControllers:nil];
+                }];
+                
+                return result;
+            };
+        });
+
+#pragma mark - popToRootViewControllerAnimated:
+        OverrideImplementation([UINavigationController class], @selector(popToRootViewControllerAnimated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^NSArray<UIViewController *> *(UINavigationController *selfObject, BOOL animated) {
+                
+                // call super
+                NSArray<UIViewController *> *(^callSuperBlock)(void) = ^NSArray<UIViewController *> *(void) {
+                    NSArray<UIViewController *> *(*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (NSArray<UIViewController *> * (*)(id, SEL, BOOL))originalIMPProvider();
+                    NSArray<UIViewController *> *result = originSelectorIMP(selfObject, originCMD, animated);
+                    return result;
+                };
+                
+                BOOL willPopActually = selfObject.viewControllers.count > 1;
+                
+                if (!willPopActually) {
+                    return callSuperBlock();
+                }
+                
+                UIViewController *appearingViewController = selfObject.qmui_rootViewController;
+                NSArray<UIViewController *> *disappearingViewControllers = [selfObject.viewControllers subarrayWithRange:NSMakeRange(1, selfObject.viewControllers.count - 1)];
+                
+                [selfObject setQmui_navigationAction:QMUINavigationActionWillPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                NSArray<UIViewController *> *result = callSuperBlock();
+                
+                NSAssert([result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToRootViewController 结果和系统的不一致");
+                disappearingViewControllers = result ?: disappearingViewControllers;
+                
+                [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                
+                [selfObject qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                    [selfObject setQmui_navigationAction:QMUINavigationActionPopCompleted animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                    [selfObject setQmui_navigationAction:QMUINavigationActionUnknow animated:animated appearingViewController:nil disappearingViewControllers:nil];
+                }];
+                
+                return result;
+            };
+        });
+
+#pragma mark - setViewControllers:animated:
+        OverrideImplementation([UINavigationController class], @selector(setViewControllers:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationController *selfObject, NSArray<UIViewController *> *viewControllers, BOOL animated) {
+
+                UIViewController *appearingViewController = selfObject.topViewController != viewControllers.lastObject ? viewControllers.lastObject : nil;// setViewControllers 执行前后 topViewController 没有变化，则赋值为 nil，表示没有任何界面有“重新显示”，这个 nil 的值也用于在 QMUINavigationController 里实现 viewControllerKeepingAppearWhenSetViewControllersWithAnimated:
+                NSMutableArray<UIViewController *> *disappearingViewControllers = selfObject.viewControllers.mutableCopy;
+                [disappearingViewControllers removeObjectsInArray:viewControllers];
+                disappearingViewControllers = disappearingViewControllers.count ? disappearingViewControllers : nil;
+
+                [selfObject setQmui_navigationAction:QMUINavigationActionWillSet animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSArray<UIViewController *> *, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, NSArray<UIViewController *> *, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, viewControllers, animated);
+
+                [selfObject setQmui_navigationAction:QMUINavigationActionDidSet animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+
+                [selfObject qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                    [selfObject setQmui_navigationAction:QMUINavigationActionSetCompleted animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
+                    [selfObject setQmui_navigationAction:QMUINavigationActionUnknow animated:animated appearingViewController:nil disappearingViewControllers:nil];
+                }];
             };
         });
     });
 }
 
-- (BOOL)qmui_isPushing {
-    if (self.viewControllers.count >= 2) {
-        UIViewController *previousViewController = self.viewControllers[self.viewControllers.count - 2];
-        if (previousViewController == self.qmui_endedTransitionTopViewController) {
-            return YES;
-        }
-    }
-    return NO;
+- (void)qmui_didInitialize {
 }
 
+static char kAssociatedObjectKey_navigationAction;
+- (void)setQmui_navigationAction:(QMUINavigationAction)qmui_navigationAction
+                        animated:(BOOL)animated
+         appearingViewController:(UIViewController *)appearingViewController
+     disappearingViewControllers:(NSArray<UIViewController *> *)disappearingViewControllers {
+    BOOL valueChanged = self.qmui_navigationAction != qmui_navigationAction;
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_navigationAction, @(qmui_navigationAction), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (valueChanged && self.qmuinc_navigationActionDidChangeBlocks.count) {
+        [self.qmuinc_navigationActionDidChangeBlocks enumerateObjectsUsingBlock:^(QMUINavigationActionDidChangeBlock  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            obj(qmui_navigationAction, animated, self, appearingViewController, disappearingViewControllers);
+        }];
+    }
+}
+
+- (QMUINavigationAction)qmui_navigationAction {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_navigationAction)) unsignedIntegerValue];
+}
+
+- (void)qmui_addNavigationActionDidChangeBlock:(QMUINavigationActionDidChangeBlock)block {
+    if (!self.qmuinc_navigationActionDidChangeBlocks) {
+        self.qmuinc_navigationActionDidChangeBlocks = NSMutableArray.new;
+    }
+    [self.qmuinc_navigationActionDidChangeBlocks addObject:block];
+}
+
+// TODO: molice 改为用 QMUINavigationAction 判断
+- (BOOL)qmui_isPushing {
+    BOOL isPushing = self.qmui_navigationAction > QMUINavigationActionWillPush && self.qmui_navigationAction <= QMUINavigationActionPushCompleted;
+    return isPushing;
+}
+
+// TODO: molice 改为用 QMUINavigationAction 判断
 - (BOOL)qmui_isPopping {
-    return self.qmui_topViewController != self.topViewController;
+    BOOL isPopping = self.qmui_navigationAction > QMUINavigationActionWillPop && self.qmui_navigationAction <= QMUINavigationActionPopCompleted;
+    return isPopping;
 }
 
 - (UIViewController *)qmui_topViewController {

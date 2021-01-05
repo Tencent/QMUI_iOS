@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.2.1";
+static NSString * const QMUI_VERSION = @"4.2.2";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -541,6 +541,10 @@ static NSString * const QMUI_VERSION = @"4.2.1";
 
 #if __has_include("UINavigationController+QMUI.h")
 #import "UINavigationController+QMUI.h"
+#endif
+
+#if __has_include("UINavigationItem+QMUI.h")
+#import "UINavigationItem+QMUI.h"
 #endif
 
 #if __has_include("UIScrollView+QMUI.h")

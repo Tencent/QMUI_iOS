@@ -97,6 +97,7 @@
 
 #pragma mark - NavigationBar
 
+#define NavBarContainerClasses                          [QMUICMI navBarContainerClasses]
 #define NavBarHighlightedAlpha                          [QMUICMI navBarHighlightedAlpha]
 #define NavBarDisabledAlpha                             [QMUICMI navBarDisabledAlpha]
 #define NavBarButtonFont                                [QMUICMI navBarButtonFont]
@@ -124,11 +125,13 @@
 
 #pragma mark - TabBar
 
+#define TabBarContainerClasses                          [QMUICMI tabBarContainerClasses]
 #define TabBarBackgroundImage                           [QMUICMI tabBarBackgroundImage]
 #define TabBarBarTintColor                              [QMUICMI tabBarBarTintColor]
 #define TabBarShadowImageColor                          [QMUICMI tabBarShadowImageColor]
 #define TabBarStyle                                     [QMUICMI tabBarStyle]
 #define TabBarItemTitleFont                             [QMUICMI tabBarItemTitleFont]
+#define TabBarItemTitleFontSelected                     [QMUICMI tabBarItemTitleFontSelected]
 #define TabBarItemTitleColor                            [QMUICMI tabBarItemTitleColor]
 #define TabBarItemTitleColorSelected                    [QMUICMI tabBarItemTitleColorSelected]
 #define TabBarItemImageColor                            [QMUICMI tabBarItemImageColor]
@@ -136,6 +139,7 @@
 
 #pragma mark - Toolbar
 
+#define ToolBarContainerClasses                         [QMUICMI toolBarContainerClasses]
 #define ToolBarHighlightedAlpha                         [QMUICMI toolBarHighlightedAlpha]
 #define ToolBarDisabledAlpha                            [QMUICMI toolBarDisabledAlpha]
 #define ToolBarTintColor                                [QMUICMI toolBarTintColor]
@@ -271,7 +275,6 @@
 #define PreventConcurrentNavigationControllerTransitions [QMUICMI preventConcurrentNavigationControllerTransitions] // PreventConcurrentNavigationControllerTransitions : 自动保护 QMUINavigationController 在上一次 push/pop 尚未结束的时候就进行下一次 push/pop 的行为，避免产生 crash
 #define NavigationBarHiddenInitially                    [QMUICMI navigationBarHiddenInitially]      // preferredNavigationBarHidden 的初始值，默认为NO
 #define ShouldFixTabBarTransitionBugInIPhoneX           [QMUICMI shouldFixTabBarTransitionBugInIPhoneX] // 是否需要自动修复 iOS 11 下，iPhone X 的设备在 push 界面时，tabBar 会瞬间往上跳的 bug
-#define ShouldFixTabBarButtonBugForAll                  [QMUICMI shouldFixTabBarButtonBugForAll] // 是否要对 iOS 12.1.2 及以后的版本也修复手势返回时 tabBarButton 布局错误的 bug(issue #410)，默认为 NO
 #define ShouldFixTabBarSafeAreaInsetsBug [QMUICMI shouldFixTabBarSafeAreaInsetsBug] // 是否要对 iOS 11 及以后的版本修复当存在 UITabBar 时，UIScrollView 的 inset.bottom 可能错误的 bug（issue #218 #934），默认为 YES
 #define ShouldFixSearchBarMaskViewLayoutBug             [QMUICMI shouldFixSearchBarMaskViewLayoutBug] // 是否自动修复 UISearchController.searchBar 被当作 tableHeaderView 使用时可能出现的布局 bug(issue #950)
 #define SendAnalyticsToQMUITeam                         [QMUICMI sendAnalyticsToQMUITeam] // 是否允许在 DEBUG 模式下上报 Bundle Identifier 和 Display Name 给 QMUI 统计用

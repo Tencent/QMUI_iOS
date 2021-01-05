@@ -21,53 +21,9 @@
 #import "UIActivityIndicatorView+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "UIView+QMUI.h"
+#import "UINavigationItem+QMUI.h"
 #import "QMUIAppearance.h"
-
-@interface UINavigationBar (TitleView)
-
-@end
-
-@implementation UINavigationBar (TitleView)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        OverrideImplementation([UINavigationBar class], @selector(layoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UINavigationBar *selfObject) {
-                
-                QMUINavigationTitleView *titleView = (QMUINavigationTitleView *)selfObject.topItem.titleView;
-                
-                if ([titleView isKindOfClass:[QMUINavigationTitleView class]]) {
-                    CGFloat titleViewMaximumWidth = CGRectGetWidth(titleView.bounds);// 初始状态下titleView会被设置为UINavigationBar允许的最大宽度
-                    CGSize titleViewSize = [titleView sizeThatFits:CGSizeMake(titleViewMaximumWidth, CGFLOAT_MAX)];
-                    titleViewSize.height = ceil(titleViewSize.height);// titleView的高度如果非pt整数，会导致计算出来的y值时多时少，所以干脆做一下pt取整，这个策略不要改，改了要重新测试push过程中titleView是否会跳动
-                    
-                    // 当在UINavigationBar里使用自定义的titleView时，就算titleView的sizeThatFits:返回正确的高度，navigationBar也不会帮你设置高度（但会帮你设置宽度），所以我们需要自己更新高度并且修正y值
-                    if (CGRectGetHeight(titleView.bounds) != titleViewSize.height) {
-                        CGFloat titleViewMinY = flat(CGRectGetMinY(titleView.frame) - ((titleViewSize.height - CGRectGetHeight(titleView.bounds)) / 2.0));// 系统对titleView的y值布局是flat，注意，不能改，改了要测试
-                        titleView.frame = CGRectMake(CGRectGetMinX(titleView.frame), titleViewMinY, MIN(titleViewMaximumWidth, titleViewSize.width), titleViewSize.height);
-                    }
-                    
-                    // iOS 11 之后（iOS 11 Beta 5 测试过） titleView 的布局发生了一些变化，如果不主动设置宽度，titleView 里的内容就可能无法完整展示
-                    if (@available(iOS 11, *)) {
-                        if (CGRectGetWidth(titleView.bounds) != titleViewSize.width) {
-                            titleView.frame = CGRectSetWidth(titleView.frame, titleViewSize.width);
-                        }
-                    }
-                } else {
-                    titleView = nil;
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD);
-            };
-        });
-    });
-}
-
-@end
+#import "QMUINavigationController.h"
 
 @interface QMUINavigationTitleView ()
 
@@ -122,11 +78,11 @@
         self.accessoryType = QMUINavigationTitleViewAccessoryTypeNone;
         
         [self qmui_applyAppearance];
-        self.horizontalTitleFont = QMUINavigationTitleView.appearance.horizontalTitleFont ?: [UINavigationBar appearance].titleTextAttributes[NSFontAttributeName];
+        self.horizontalTitleFont = QMUINavigationTitleView.appearance.horizontalTitleFont ?: UINavigationBar.qmui_appearanceConfigured.titleTextAttributes[NSFontAttributeName];
         self.horizontalSubtitleFont = QMUINavigationTitleView.appearance.horizontalSubtitleFont ?: self.horizontalTitleFont;
         
         self.adjustsSubviewsTintColorAutomatically = YES;
-        self.tintColor = QMUICMIActivated ? NavBarTitleColor : [UINavigationBar appearance].titleTextAttributes[NSForegroundColorAttributeName];
+        self.tintColor = QMUICMIActivated ? NavBarTitleColor : UINavigationBar.qmui_appearanceConfigured.titleTextAttributes[NSForegroundColorAttributeName];
     }
     return self;
 }
@@ -665,6 +621,97 @@
     }
     self.active = active;
     [self refreshLayout];
+}
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        // 修复系统使用自定义 titleView 时的布局问题
+        OverrideImplementation([UINavigationBar class], @selector(layoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationBar *selfObject) {
+                
+                QMUINavigationTitleView *titleView = (QMUINavigationTitleView *)selfObject.topItem.titleView;
+                
+                if ([titleView isKindOfClass:[QMUINavigationTitleView class]]) {
+                    CGFloat titleViewMaximumWidth = CGRectGetWidth(titleView.bounds);// 初始状态下titleView会被设置为UINavigationBar允许的最大宽度
+                    CGSize titleViewSize = [titleView sizeThatFits:CGSizeMake(titleViewMaximumWidth, CGFLOAT_MAX)];
+                    titleViewSize.height = ceil(titleViewSize.height);// titleView的高度如果非pt整数，会导致计算出来的y值时多时少，所以干脆做一下pt取整，这个策略不要改，改了要重新测试push过程中titleView是否会跳动
+                    
+                    // 当在UINavigationBar里使用自定义的titleView时，就算titleView的sizeThatFits:返回正确的高度，navigationBar也不会帮你设置高度（但会帮你设置宽度），所以我们需要自己更新高度并且修正y值
+                    if (CGRectGetHeight(titleView.bounds) != titleViewSize.height) {
+                        CGFloat titleViewMinY = flat(CGRectGetMinY(titleView.frame) - ((titleViewSize.height - CGRectGetHeight(titleView.bounds)) / 2.0));// 系统对titleView的y值布局是flat，注意，不能改，改了要测试
+                        titleView.frame = CGRectMake(CGRectGetMinX(titleView.frame), titleViewMinY, MIN(titleViewMaximumWidth, titleViewSize.width), titleViewSize.height);
+                    }
+                    
+                    // iOS 11 之后（iOS 11 Beta 5 测试过） titleView 的布局发生了一些变化，如果不主动设置宽度，titleView 里的内容就可能无法完整展示
+                    if (@available(iOS 11, *)) {
+                        if (CGRectGetWidth(titleView.bounds) != titleViewSize.width) {
+                            titleView.frame = CGRectSetWidth(titleView.frame, titleViewSize.width);
+                        }
+                    }
+                } else {
+                    titleView = nil;
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+            };
+        });
+        
+        // 让 -[UIViewController setTitle:] 可以自动刷新 QMUINavigationTitle
+        OverrideImplementation([UIViewController class], @selector(setTitle:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, NSString *title) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSString *);
+                originSelectorIMP = (void (*)(id, SEL, NSString *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, title);
+                
+                if ([selfObject.navigationItem.titleView isKindOfClass:QMUINavigationTitleView.class]) {
+                    ((QMUINavigationTitleView *)selfObject.navigationItem.titleView).title = title;
+                }
+            };
+        });
+        
+        // 让 -[UINavigationItem setTitle:] 可以自动刷新 QMUINavigationTitleView
+        OverrideImplementation([UINavigationItem class], @selector(setTitle:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationItem *selfObject, NSString *title) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSString *);
+                originSelectorIMP = (void (*)(id, SEL, NSString *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, title);
+                
+                if ([selfObject.titleView isKindOfClass:QMUINavigationTitleView.class]) {
+                    ((QMUINavigationTitleView *)selfObject.titleView).title = title;
+                }
+            };
+        });
+        
+        // 在先设置了 title 再设置 titleView 时，保证 titleView 的 title、样式能正确。
+        OverrideImplementation([UINavigationItem class], @selector(setTitleView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationItem *selfObject, QMUINavigationTitleView *titleView) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, titleView);
+                
+                if ([titleView isKindOfClass:QMUINavigationTitleView.class]) {
+                    if (titleView.title.length <= 0) {
+                        NSString *title = selfObject.qmui_viewController.title ?: selfObject.title;
+                        titleView.title = title;
+                    }
+                    if ([selfObject.qmui_viewController respondsToSelector:@selector(titleViewTintColor)]) {
+                        titleView.tintColor = ((id<QMUINavigationControllerDelegate>)selfObject.qmui_viewController).titleViewTintColor;
+                    }
+                }
+            };
+        });
+    });
 }
 
 @end

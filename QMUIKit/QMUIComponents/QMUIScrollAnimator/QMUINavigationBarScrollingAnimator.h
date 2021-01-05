@@ -89,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, copy) UIColor * (^tintColorBlock)(QMUINavigationBarScrollingAnimator * _Nonnull animator, float progress);
 
 /**
- 返回不同滚动位置下对应的导航栏的 titleView tintColor
+ 返回不同滚动位置下对应的导航栏的 titleView tintColor，注意只能对使用了 navigationItem.titleView 生效（QMUICommonViewController 的子类默认用了 QMUINavigationTitleView，所以也可以生效）。
  @param animator 当前的 animator 对象
  @param progress 当前滚动位置处于 offsetYToStartAnimation 到 (offsetYToStartAnimation + distanceToStopAnimation) 之间的哪个进度
  */

@@ -42,7 +42,7 @@
 
 - (void)didInitialize {
     self.foregroundLayer = [CALayer layer];
-    self.foregroundLayer.qmui_viewAnimaitonEnabled = YES;
+    self.foregroundLayer.qmui_viewAnimationEnabled = YES;
     [self.foregroundLayer qmui_removeDefaultAnimations];
     [self.contentView.layer addSublayer:self.foregroundLayer];
 }

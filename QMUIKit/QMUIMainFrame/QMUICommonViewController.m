@@ -85,11 +85,6 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentSizeCategoryDidChanged:) name:UIContentSizeCategoryDidChangeNotification object:nil];
 }
 
-- (void)setTitle:(NSString *)title {
-    [super setTitle:title];
-    self.titleView.title = title;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (!self.view.backgroundColor && QMUICMIActivated) {// nib 里可能设置了，所以做个 if 的判断

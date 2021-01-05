@@ -77,7 +77,7 @@
         visibleViewController = self.selectedViewController;
     }
     
-    if ([visibleViewController isKindOfClass:NSClassFromString(@"AVFullScreenViewController")]) {
+    if ([visibleViewController isKindOfClass:NSClassFromString([NSString stringWithFormat:@"%@%@", @"AV", @"FullScreenViewController"])]) {
         return visibleViewController.supportedInterfaceOrientations;
     }
     

@@ -22,9 +22,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UIView (QMUITheme_Private)
 
+// 某些 view class 在遇到 qmui_registerThemeColorProperties: 无法满足 theme 变化时的刷新需求时，可以重写这个方法来做自己的逻辑
 - (void)_qmui_themeDidChangeByManager:(nullable QMUIThemeManager *)manager identifier:(nullable __kindof NSObject<NSCopying> *)identifier theme:(nullable __kindof NSObject *)theme shouldEnumeratorSubviews:(BOOL)shouldEnumeratorSubviews;
-
-@property(nonatomic, strong) UIColor *qmuiTheme_backgroundColor;
 
 /// 记录当前 view 总共有哪些 property 需要在 theme 变化时重新设置
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *qmuiTheme_themeColorProperties;

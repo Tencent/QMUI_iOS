@@ -54,7 +54,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 
 
 /**
- *  可作为navgationItem.titleView 的标题控件。
+ *  可作为 UIViewController 顶部导航栏里的标题控件，通过 self.navigationItem.titleView 来设置。当调用 -[UIViewController setTitle:] 或 -[UINavigationItem setTitle:] 时，会自动更新 QMUINavigationTitleView 的内容。
+ *
+ *  也可以当成单独的组件，脱离 UIViewController 使用，就跟普通组件一样。
  *
  *  支持主副标题，且可控制主副标题的布局方式（水平或垂直）；支持在左边显示loading，在右边显示accessoryView（如箭头）。
  *

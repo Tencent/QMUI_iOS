@@ -34,17 +34,6 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        // iOS 12 及以下的版本，[UIView setBackgroundColor:] 并不会保存传进来的 color，所以要自己用个变量保存起来，不然 QMUIThemeColor 对象就会被丢弃
-        if (@available(iOS 13.0, *)) {
-        } else {
-            ExtendImplementationOfVoidMethodWithSingleArgument([UIView class], @selector(setBackgroundColor:), UIColor *, ^(UIView *selfObject, UIColor *color) {
-                selfObject.qmuiTheme_backgroundColor = color;
-            });
-            ExtendImplementationOfNonVoidMethodWithoutArguments([UIView class], @selector(backgroundColor), UIColor *, ^UIColor *(UIView *selfObject, UIColor *originReturnValue) {
-                return selfObject.qmuiTheme_backgroundColor ?: originReturnValue;
-            });
-        }
-        
         OverrideImplementation([UIView class], @selector(setHidden:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, BOOL firstArgv) {
                 
@@ -136,6 +125,12 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
             if (!self.qmui_tintColorCustomized) return;
         }
         
+        // 如果某个 UITabBarItem 处于选中状态，此时发生了主题变化，执行了 UITabBarSwappableImageView.image = image 的动作，就会把 selectedImage 设置为 normal image，无法恢复。所以对 UITabBarSwappableImageView 屏蔽掉 setImage 的刷新操作
+        // https://github.com/Tencent/QMUI_iOS/issues/1122
+        if ([self isKindOfClass:NSClassFromString(@"UITabBarSwappableImageView")] && getter == @selector(image)) {
+            return;
+        }
+        
         // 注意，需要遍历的属性不一定都是 UIColor 类型，也有可能是 NSAttributedString，例如 UITextField.attributedText
         BeginIgnorePerformSelectorLeaksWarning
         id value = [self performSelector:getter];
@@ -200,7 +195,6 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
 
 @implementation UIView (QMUITheme_Private)
 
-QMUISynthesizeIdStrongProperty(qmuiTheme_backgroundColor, setQmuiTheme_backgroundColor)
 QMUISynthesizeIdStrongProperty(qmuiTheme_themeColorProperties, setQmuiTheme_themeColorProperties)
 
 - (BOOL)_qmui_visible {

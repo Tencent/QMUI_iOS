@@ -83,11 +83,11 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
                 
                 BOOL isIndexPathLegal = YES;
                 NSInteger numberOfSections = [selfObject numberOfSections];
-                if (indexPath.section >= numberOfSections) {
+                if (indexPath.section < 0 || indexPath.section >= numberOfSections) {
                     isIndexPathLegal = NO;
                 } else if (indexPath.row != NSNotFound) {
                     NSInteger rows = [selfObject numberOfRowsInSection:indexPath.section];
-                    isIndexPathLegal = indexPath.row < rows;
+                    isIndexPathLegal = indexPath.row >= 0 && indexPath.row < rows;
                 }
                 if (!isIndexPathLegal) {
                     QMUILogWarn(@"UITableView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", selfObject, indexPath, [NSThread callStackSymbols]);

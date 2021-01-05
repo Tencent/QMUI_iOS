@@ -59,7 +59,7 @@
     dispatch_once(&onceToken, ^{
         OverrideImplementation([CALayer class], @selector(addAnimation:forKey:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(CALayer *selfObject, CAAnimation *animation, NSString *key) {
-                if (selfObject.qmui_viewAnimaitonEnabled) {
+                if (selfObject.qmui_viewAnimationEnabled) {
                     BOOL isViewAnimtion = [animation isKindOfClass:CABasicAnimation.class] && [animation.delegate isKindOfClass:NSClassFromString(@"UIViewAnimationState")];
                     if (isViewAnimtion) {
                         // 这里需要清空 fromValue 和 toValue，后面会在 CAMediaTimingCopyRenderTiming 取到这个 animtion 的参数并设置到 CATransaction 中，让 Layer 改变属性时，运用上这些动画
@@ -79,11 +79,11 @@
 }
 
 
-static char kAssociatedObjectKey_qmuiviewAnimaitonEnabled;
-- (void)setQmui_viewAnimaitonEnabled:(BOOL)qmui_viewAnimaitonEnabled {
+static char kAssociatedObjectKey_qmuiviewAnimationEnabled;
+- (void)setQmui_viewAnimationEnabled:(BOOL)qmui_viewAnimationEnabled {
     NSAssert(!self.qmui_isRootLayerOfView, @"UIView 本身的 Layer 无须开启该属性");
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_qmuiviewAnimaitonEnabled, @(qmui_viewAnimaitonEnabled), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (qmui_viewAnimaitonEnabled) {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_qmuiviewAnimationEnabled, @(qmui_viewAnimationEnabled), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (qmui_viewAnimationEnabled) {
         self.qmui_multipleDelegatesEnabled = YES;
         self.delegate = [_QMUICALayerDelegator sharedDelegator];
     } else {
@@ -91,8 +91,8 @@ static char kAssociatedObjectKey_qmuiviewAnimaitonEnabled;
     }
 }
 
-- (BOOL)qmui_viewAnimaitonEnabled {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_qmuiviewAnimaitonEnabled)) boolValue];
+- (BOOL)qmui_viewAnimationEnabled {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_qmuiviewAnimationEnabled)) boolValue];
 }
 
 @end

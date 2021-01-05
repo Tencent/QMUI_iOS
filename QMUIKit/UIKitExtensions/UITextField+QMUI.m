@@ -73,4 +73,20 @@ static char kAssociatedObjectKey_clearButtonImage;
     return (UIImage *)objc_getAssociatedObject(self, &kAssociatedObjectKey_clearButtonImage);
 }
 
+- (NSRange)qmui_convertNSRangeFromUITextRange:(UITextRange *)textRange {
+    NSInteger location = [self offsetFromPosition:self.beginningOfDocument toPosition:textRange.start];
+    NSInteger length = [self offsetFromPosition:textRange.start toPosition:textRange.end];
+    return NSMakeRange(location, length);
+}
+
+- (UITextRange *)qmui_convertUITextRangeFromNSRange:(NSRange)range {
+    if (range.location == NSNotFound || NSMaxRange(range) > self.text.length) {
+        return nil;
+    }
+    UITextPosition *beginning = self.beginningOfDocument;
+    UITextPosition *startPosition = [self positionFromPosition:beginning offset:range.location];
+    UITextPosition *endPosition = [self positionFromPosition:beginning offset:NSMaxRange(range)];
+    return [self textRangeFromPosition:startPosition toPosition:endPosition];
+}
+
 @end

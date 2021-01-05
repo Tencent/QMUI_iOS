@@ -70,7 +70,7 @@
                 }
                 if (animator.titleViewTintColorBlock) {
                     UIColor *tintColor = animator.titleViewTintColorBlock(animator, progress);
-                    animator.navigationBar.topItem.titleView.tintColor = tintColor;// TODO: 对 UIViewController 是否生效？
+                    animator.navigationBar.topItem.titleView.tintColor = tintColor;
                 }
                 if (animator.barTintColorBlock) {
                     animator.barTintColorBlock(animator, progress);

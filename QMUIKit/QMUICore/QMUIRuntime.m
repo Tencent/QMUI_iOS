@@ -204,3 +204,15 @@ int qmui_getProjectClassList(classref_t **classes) {
     }
     return (int)count;
 }
+
+
+BOOL qmui_exists_dyld_image(const char *target_image_name) {
+    const uint32_t imageCount = _dyld_image_count();
+    for (uint32_t i = 0; i < imageCount; i++) {
+        const char *image_name = _dyld_get_image_name(i);
+        if (strendswith(image_name, target_image_name)) {
+            return true;
+        }
+    }
+    return false;
+}

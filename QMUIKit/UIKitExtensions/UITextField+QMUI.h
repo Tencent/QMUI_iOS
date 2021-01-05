@@ -16,6 +16,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface UITextField (QMUI)
 
 /// UITextField只有selectedTextRange属性（在<UITextInput>协议里定义），这里拓展了一个方法可以将UITextRange类型的selectedTextRange转换为NSRange类型的selectedRange
@@ -27,4 +29,17 @@
 /// 自定义 clearButton 的图片，设置成nil，恢复到系统默认的图片
 @property(nullable, nonatomic, strong) UIImage *qmui_clearButtonImage UI_APPEARANCE_SELECTOR;
 
+/**
+ *  convert UITextRange to NSRange, for example, [self qmui_convertNSRangeFromUITextRange:self.markedTextRange]
+ */
+- (NSRange)qmui_convertNSRangeFromUITextRange:(UITextRange *)textRange;
+
+/**
+ *  convert NSRange to UITextRange
+ *  @return return nil if range is invalidate.
+ */
+- (nullable UITextRange *)qmui_convertUITextRangeFromNSRange:(NSRange)range;
+
 @end
+
+NS_ASSUME_NONNULL_END

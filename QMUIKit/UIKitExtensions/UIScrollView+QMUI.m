@@ -33,13 +33,24 @@ QMUISynthesizeBOOLProperty(qmuiscroll_hasSetInitialContentInset, setQmuiscroll_h
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExtendImplementationOfNonVoidMethodWithoutArguments([UIScrollView class], @selector(description), NSString *, ^NSString *(UIScrollView *selfObject, NSString *originReturnValue) {
-            originReturnValue = ([NSString stringWithFormat:@"%@, contentInset = %@", originReturnValue, NSStringFromUIEdgeInsets(selfObject.contentInset)]);
-            if (@available(iOS 13.0, *)) {
-                return originReturnValue.mutableCopy;
-            }
-            return originReturnValue;
+        
+        OverrideImplementation([UIScrollView class], @selector(description), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^NSString *(UIScrollView *selfObject) {
+                // call super
+                NSString *(*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (NSString *(*)(id, SEL))originalIMPProvider();
+                NSString *result = originSelectorIMP(selfObject, originCMD);
+                
+                if (NSThread.isMainThread) {
+                    result = ([NSString stringWithFormat:@"%@, contentInset = %@", result, NSStringFromUIEdgeInsets(selfObject.contentInset)]);
+                    if (@available(iOS 13.0, *)) {
+                        result = result.mutableCopy;
+                    }
+                }
+                return result;
+            };
         });
+        
         if (@available(iOS 13.0, *)) {
             if (QMUICMIActivated && AdjustScrollIndicatorInsetsByContentInsetAdjustment) {
                 OverrideImplementation([UIScrollView class], @selector(setContentInsetAdjustmentBehavior:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {

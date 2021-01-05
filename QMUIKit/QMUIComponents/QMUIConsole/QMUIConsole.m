@@ -115,7 +115,9 @@
         self.consoleWindow.qmui_capturesStatusBarAppearance = NO;
         __weak __typeof(self)weakSelf = self;
         self.consoleWindow.qmui_hitTestBlock = ^__kindof UIView * _Nonnull(CGPoint point, UIEvent * _Nonnull event, __kindof UIView * _Nonnull originalView) {
-            return originalView == weakSelf.consoleWindow ? nil : originalView;
+            // 当显示 QMUIConsole 时，点击空白区域，consoleViewController hitTest 会 return nil，从而将事件传递给 window，再由 window hitTest return  nil 来把事件传递给 UIApplication.delegate.window。但在 iPad 12-inch 里，当 consoleViewController hitTest return nil 后，事件会错误地传递给 consoleViewController.view.superview（而不是 consoleWindow），不清楚原因，暂时做一下保护
+            // https://github.com/Tencent/QMUI_iOS/issues/1169
+            return originalView == weakSelf.consoleWindow || originalView == weakSelf.consoleViewController.view.superview ? nil : originalView;
         };
         
         self.consoleViewController = [[QMUIConsoleViewController alloc] init];

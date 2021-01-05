@@ -74,6 +74,7 @@
 @property(nonatomic, strong) UITapGestureRecognizer *dimmingViewTapGestureRecognizer;
 @property(nonatomic, strong) QMUIKeyboardManager *keyboardManager;
 @property(nonatomic, assign) CGFloat keyboardHeight;
+@property(nonatomic, assign) BOOL avoidKeyboardLayout;
 @end
 
 @implementation QMUIModalPresentationViewController
@@ -157,8 +158,6 @@
         // 只有使用showWithAnimated:completion:显示出来的浮层，才需要修改之前就记住的animated的值
         animated = self.appearAnimated;
     }
-    
-    self.keyboardManager.delegateEnabled = YES;
     
     if (self.contentViewController) {
         [self.contentViewController beginAppearanceTransition:YES animated:animated];
@@ -248,8 +247,8 @@
         }
     }
     
-    // 在降下键盘前取消对键盘事件的监听，从而避免键盘影响隐藏浮层的动画
-    self.keyboardManager.delegateEnabled = NO;
+    // 先更新标志位再 endEditing，保证键盘降下时不触发 updateLayout，从而避免影响 hidingAnimation 的动画
+    self.avoidKeyboardLayout = YES;
     [self.view endEditing:YES];
     
     if (self.contentViewController) {
@@ -301,6 +300,7 @@
         }
         
         self.visible = NO;
+        self.avoidKeyboardLayout = NO;
         
         if ([self.delegate respondsToSelector:@selector(didHideModalPresentationViewController:)]) {
             [self.delegate didHideModalPresentationViewController:self];
@@ -397,24 +397,27 @@
             }
         } sender:tapGestureRecognizer];
     } else if (self.shownInPresentedMode) {
+        // 这里仅屏蔽点击遮罩时的 dismiss，如果是代码手动调用 dismiss 的，在 UIViewController(QMUIModalPresentationViewController) 里会通过重写 dismiss 方法来屏蔽。
+        // 为什么不能统一交给 UIViewController(QMUIModalPresentationViewController) 里屏蔽，是因为点击遮罩触发的 dismiss 要调用 willHideByDimmingViewTappedBlock，而 UIViewController 那边不知道此次 dismiss 是否由点击遮罩触发的，所以分开两边写。
+        if ([self.delegate respondsToSelector:@selector(shouldHideModalPresentationViewController:)] && ![self.delegate shouldHideModalPresentationViewController:self]) {
+            return;
+        }
         if (self.willHideByDimmingViewTappedBlock) {
             self.willHideByDimmingViewTappedBlock();
         }
+        
         [self dismissViewControllerAnimated:YES completion:^{
             if (self.didHideByDimmingViewTappedBlock) {
                 self.didHideByDimmingViewTappedBlock();
             }
         }];
     } else if (self.shownInSubviewMode) {
-        if (self.willHideByDimmingViewTappedBlock) {
-            self.willHideByDimmingViewTappedBlock();
-        }
         __weak __typeof(self)weakSelf = self;
         [self hideInView:self.view.superview animated:YES completion:^(BOOL finished) {
             if (weakSelf.didHideByDimmingViewTappedBlock) {
                 weakSelf.didHideByDimmingViewTappedBlock();
             }
-        }];
+        } sender:tapGestureRecognizer];
     }
 }
 
@@ -568,8 +571,28 @@
 }
 
 - (void)hideInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    [self hideInView:view animated:animated completion:completion sender:nil];
+}
+
+- (void)hideInView:(UIView *)view animated:(BOOL)animated completion:(void (^)(BOOL))completion sender:(id)sender {
     if (!self.visible) return;
+    
+    BOOL shouldHide = YES;
+    if ([self.delegate respondsToSelector:@selector(shouldHideModalPresentationViewController:)]) {
+        shouldHide = [self.delegate shouldHideModalPresentationViewController:self];
+    }
+    if (!shouldHide) {
+        return;
+    }
+    
     self.willHideInView = YES;
+    
+    if (sender == self.dimmingViewTapGestureRecognizer) {
+        if (self.willHideByDimmingViewTappedBlock) {
+            self.willHideByDimmingViewTappedBlock();
+        }
+    }
+    
     self.disappearCompletionBlock = completion;
     [self beginAppearanceTransition:NO animated:animated];
     if (animated) {
@@ -621,7 +644,9 @@
     CGFloat keyboardHeight = [keyboardUserInfo heightInView:self.view];
     if (self.keyboardHeight != keyboardHeight) {
         self.keyboardHeight = keyboardHeight;
-        [self updateLayout];
+        if (!self.avoidKeyboardLayout) {
+            [self updateLayout];
+        }
     }
 }
 
@@ -770,5 +795,35 @@
 @implementation UIViewController (QMUIModalPresentationViewController)
 
 QMUISynthesizeIdWeakProperty(qmui_modalPresentationViewController, setQmui_modalPresentationViewController)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        // present 方式显示的 modal，通过拦截 dismiss 方法来实现 shouldHide 的 delegate。注意以 window 方式显示的 modal，在 window.rootViewController = nil 时系统默认也会调用 dismiss，此时要通过 isShownInPresentedMode 区分开。
+        OverrideImplementation([UIViewController class], @selector(dismissViewControllerAnimated:completion:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv, id secondArgv) {
+                
+                QMUIModalPresentationViewController *modal = nil;
+                if ([selfObject.presentedViewController isKindOfClass:QMUIModalPresentationViewController.class]) {
+                    modal = (QMUIModalPresentationViewController *)selfObject.presentedViewController;
+                } else if ([selfObject isKindOfClass:QMUIModalPresentationViewController.class] && !selfObject.presentedViewController && selfObject.presentingViewController.presentedViewController == selfObject) {
+                    modal = (QMUIModalPresentationViewController *)selfObject;
+                }
+                if ([modal.delegate respondsToSelector:@selector(shouldHideModalPresentationViewController:)] && modal.isShownInPresentedMode) {
+                    BOOL shouldHide = [modal.delegate shouldHideModalPresentationViewController:modal];
+                    if (!shouldHide) {
+                        return;
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL, id);
+                originSelectorIMP = (void (*)(id, SEL, BOOL, id))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+            };
+        });
+    });
+}
 
 @end

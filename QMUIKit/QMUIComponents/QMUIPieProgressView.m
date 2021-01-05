@@ -96,9 +96,9 @@
     [super drawInContext:context];
 }
 
-- (void)setFrame:(CGRect)frame {
-    [super setFrame:frame];
-    self.cornerRadius = CGRectGetHeight(frame) / 2;
+- (void)layoutSublayers {
+    [super layoutSublayers];
+    self.cornerRadius = CGRectGetHeight(self.bounds) / 2;
 }
 
 @end

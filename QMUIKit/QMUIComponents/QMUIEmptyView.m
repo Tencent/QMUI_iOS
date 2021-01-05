@@ -99,7 +99,7 @@
         self.contentView.frame = CGRectSetY(self.contentView.frame, 0);
     }
     
-    self.scrollView.contentSize = CGSizeMake(fmax(CGRectGetWidth(self.scrollView.bounds) - UIEdgeInsetsGetHorizontalValue(self.scrollView.contentInset), contentViewSize.width), fmax(CGRectGetHeight(self.scrollView.bounds) - UIEdgeInsetsGetVerticalValue(self.scrollView.contentInset), CGRectGetMaxY(self.contentView.frame)));
+    self.scrollView.contentSize = CGSizeMake(MAX(CGRectGetWidth(self.scrollView.bounds) - UIEdgeInsetsGetHorizontalValue(self.scrollView.contentInset), contentViewSize.width), MAX(CGRectGetHeight(self.scrollView.bounds) - UIEdgeInsetsGetVerticalValue(self.scrollView.contentInset), CGRectGetMaxY(self.contentView.frame)));
     
     CGFloat originY = 0;
     
@@ -133,27 +133,25 @@
 
 - (CGSize)sizeThatContentViewFits {
     CGFloat resultWidth = CGRectGetWidth(self.scrollView.bounds) - UIEdgeInsetsGetHorizontalValue(self.scrollView.contentInset);
-    
-    CGFloat imageViewHeight = [self.imageView sizeThatFits:CGSizeMake(resultWidth, CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.imageViewInsets);
-    CGFloat loadingViewHeight = CGRectGetHeight(self.loadingView.bounds) + UIEdgeInsetsGetVerticalValue(self.loadingViewInsets);
-    CGFloat textLabelHeight = [self.textLabel sizeThatFits:CGSizeMake(resultWidth, CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.textLabelInsets);
-    CGFloat detailTextLabelHeight = [self.detailTextLabel sizeThatFits:CGSizeMake(resultWidth, CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.detailTextLabelInsets);
-    CGFloat actionButtonHeight = [self.actionButton sizeThatFits:CGSizeMake(resultWidth, CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.actionButtonInsets);
-    
     CGFloat resultHeight = 0;
     if (!self.imageView.hidden) {
+        CGFloat imageViewHeight = [self.imageView sizeThatFits:CGSizeMake(resultWidth - UIEdgeInsetsGetHorizontalValue(self.imageViewInsets), CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.imageViewInsets);
         resultHeight += imageViewHeight;
     }
     if (!self.loadingView.hidden) {
+        CGFloat loadingViewHeight = CGRectGetHeight(self.loadingView.bounds) + UIEdgeInsetsGetVerticalValue(self.loadingViewInsets);
         resultHeight += loadingViewHeight;
     }
     if (!self.textLabel.hidden) {
+        CGFloat textLabelHeight = [self.textLabel sizeThatFits:CGSizeMake(resultWidth - UIEdgeInsetsGetHorizontalValue(self.textLabelInsets), CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.textLabelInsets);
         resultHeight += textLabelHeight;
     }
     if (!self.detailTextLabel.hidden) {
+        CGFloat detailTextLabelHeight = [self.detailTextLabel sizeThatFits:CGSizeMake(resultWidth - UIEdgeInsetsGetHorizontalValue(self.detailTextLabelInsets), CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.detailTextLabelInsets);
         resultHeight += detailTextLabelHeight;
     }
     if (!self.actionButton.hidden) {
+        CGFloat actionButtonHeight = [self.actionButton sizeThatFits:CGSizeMake(resultWidth - UIEdgeInsetsGetHorizontalValue(self.actionButtonInsets), CGFLOAT_MAX)].height + UIEdgeInsetsGetVerticalValue(self.actionButtonInsets);
         resultHeight += actionButtonHeight;
     }
     

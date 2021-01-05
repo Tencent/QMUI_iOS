@@ -32,50 +32,16 @@
 
 @implementation UIView (QMUI)
 
-QMUISynthesizeUIEdgeInsetsProperty(qmui_outsideEdge, setQmui_outsideEdge)
 QMUISynthesizeBOOLProperty(qmui_tintColorCustomized, setQmui_tintColorCustomized)
 QMUISynthesizeIdCopyProperty(qmui_frameWillChangeBlock, setQmui_frameWillChangeBlock)
 QMUISynthesizeIdCopyProperty(qmui_frameDidChangeBlock, setQmui_frameDidChangeBlock)
-QMUISynthesizeIdCopyProperty(qmui_tintColorDidChangeBlock, setQmui_tintColorDidChangeBlock)
-QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        OverrideImplementation([UIView class], @selector(pointInside:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^BOOL(UIControl *selfObject, CGPoint point, UIEvent *event) {
-                
-                if (!UIEdgeInsetsEqualToEdgeInsets(selfObject.qmui_outsideEdge, UIEdgeInsetsZero)) {
-                    CGRect rect = UIEdgeInsetsInsetRect(selfObject.bounds, selfObject.qmui_outsideEdge);
-                    BOOL result = CGRectContainsPoint(rect, point);
-                    return result;
-                }
-                
-                // call super
-                BOOL (*originSelectorIMP)(id, SEL, CGPoint, UIEvent *);
-                originSelectorIMP = (BOOL (*)(id, SEL, CGPoint, UIEvent *))originalIMPProvider();
-                BOOL result = originSelectorIMP(selfObject, originCMD, point, event);
-                return result;
-            };
-        });
-        
         ExtendImplementationOfVoidMethodWithSingleArgument([UIView class], @selector(setTintColor:), UIColor *, ^(UIView *selfObject, UIColor *tintColor) {
             selfObject.qmui_tintColorCustomized = !!tintColor;
-        });
-        
-        ExtendImplementationOfVoidMethodWithoutArguments([UIView class], @selector(tintColorDidChange), ^(UIView *selfObject) {
-            if (selfObject.qmui_tintColorDidChangeBlock) {
-                selfObject.qmui_tintColorDidChangeBlock(selfObject);
-            }
-        });
-        
-        ExtendImplementationOfNonVoidMethodWithTwoArguments([UIView class], @selector(hitTest:withEvent:), CGPoint, UIEvent *, UIView *, ^UIView *(UIView *selfObject, CGPoint point, UIEvent *event, UIView *originReturnValue) {
-            if (selfObject.qmui_hitTestBlock) {
-                UIView *view = selfObject.qmui_hitTestBlock(point, event, originReturnValue);
-                return view;
-            }
-            return originReturnValue;
         });
         
         // 这个私有方法在 view 被调用 becomeFirstResponder 并且处于 window 上时，才会被调用，所以比 becomeFirstResponder 更适合用来检测
@@ -113,6 +79,72 @@ QMUISynthesizeIdCopyProperty(qmui_hitTestBlock, setQmui_hitTestBlock)
 
 - (void)qmui_removeAllSubviews {
     [self.subviews makeObjectsPerformSelector:@selector(removeFromSuperview)];
+}
+
+static char kAssociatedObjectKey_outsideEdge;
+- (void)setQmui_outsideEdge:(UIEdgeInsets)qmui_outsideEdge {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_outsideEdge, @(qmui_outsideEdge), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    
+    if (!UIEdgeInsetsEqualToEdgeInsets(qmui_outsideEdge, UIEdgeInsetsZero)) {
+        [QMUIHelper executeBlock:^{
+            OverrideImplementation([UIView class], @selector(pointInside:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^BOOL(UIControl *selfObject, CGPoint point, UIEvent *event) {
+                    
+                    if (!UIEdgeInsetsEqualToEdgeInsets(selfObject.qmui_outsideEdge, UIEdgeInsetsZero)) {
+                        CGRect rect = UIEdgeInsetsInsetRect(selfObject.bounds, selfObject.qmui_outsideEdge);
+                        BOOL result = CGRectContainsPoint(rect, point);
+                        return result;
+                    }
+                    
+                    // call super
+                    BOOL (*originSelectorIMP)(id, SEL, CGPoint, UIEvent *);
+                    originSelectorIMP = (BOOL (*)(id, SEL, CGPoint, UIEvent *))originalIMPProvider();
+                    BOOL result = originSelectorIMP(selfObject, originCMD, point, event);
+                    return result;
+                };
+            });
+        } oncePerIdentifier:@"UIView (QMUI) outsideEdge"];
+    }
+}
+
+- (UIEdgeInsets)qmui_outsideEdge {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_outsideEdge)) UIEdgeInsetsValue];
+}
+
+static char kAssociatedObjectKey_tintColorDidChangeBlock;
+- (void)setQmui_tintColorDidChangeBlock:(void (^)(__kindof UIView * _Nonnull))qmui_tintColorDidChangeBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_tintColorDidChangeBlock, qmui_tintColorDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_tintColorDidChangeBlock) {
+        [QMUIHelper executeBlock:^{
+            ExtendImplementationOfVoidMethodWithoutArguments([UIView class], @selector(tintColorDidChange), ^(UIView *selfObject) {
+                if (selfObject.qmui_tintColorDidChangeBlock) {
+                    selfObject.qmui_tintColorDidChangeBlock(selfObject);
+                }
+            });
+        } oncePerIdentifier:@"UIView (QMUI) tintColorDidChangeBlock"];
+    }
+}
+
+- (void (^)(__kindof UIView * _Nonnull))qmui_tintColorDidChangeBlock {
+    return (void (^)(__kindof UIView * _Nonnull))objc_getAssociatedObject(self, &kAssociatedObjectKey_tintColorDidChangeBlock);
+}
+
+static char kAssociatedObjectKey_hitTestBlock;
+- (void)setQmui_hitTestBlock:(__kindof UIView * _Nonnull (^)(CGPoint, UIEvent * _Nonnull, __kindof UIView * _Nonnull))qmui_hitTestBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_hitTestBlock, qmui_hitTestBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    [QMUIHelper executeBlock:^{
+        ExtendImplementationOfNonVoidMethodWithTwoArguments([UIView class], @selector(hitTest:withEvent:), CGPoint, UIEvent *, UIView *, ^UIView *(UIView *selfObject, CGPoint point, UIEvent *event, UIView *originReturnValue) {
+            if (selfObject.qmui_hitTestBlock) {
+                UIView *view = selfObject.qmui_hitTestBlock(point, event, originReturnValue);
+                return view;
+            }
+            return originReturnValue;
+        });
+    } oncePerIdentifier:@"UIView (QMUI) hitTestBlock"];
+}
+
+- (__kindof UIView * _Nonnull (^)(CGPoint, UIEvent * _Nonnull, __kindof UIView * _Nonnull))qmui_hitTestBlock {
+    return (__kindof UIView * _Nonnull (^)(CGPoint, UIEvent * _Nonnull, __kindof UIView * _Nonnull))objc_getAssociatedObject(self, &kAssociatedObjectKey_hitTestBlock);
 }
 
 - (CGPoint)qmui_convertPoint:(CGPoint)point toView:(nullable UIView *)view {
@@ -575,23 +607,20 @@ const CGFloat QMUIViewSelfSizingHeight = INFINITY;
 QMUISynthesizeBOOLProperty(qmui_needsDifferentDebugColor, setQmui_needsDifferentDebugColor)
 QMUISynthesizeBOOLProperty(qmui_hasDebugColor, setQmui_hasDebugColor)
 
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        ExtendImplementationOfVoidMethodWithoutArguments([UIView class], @selector(layoutSubviews), ^(UIView *selfObject) {
-            if (selfObject.qmui_shouldShowDebugColor) {
-                selfObject.qmui_hasDebugColor = YES;
-                selfObject.backgroundColor = [selfObject debugColor];
-                [selfObject renderColorWithSubviews:selfObject.subviews];
-            }
-        });
-    });
-}
-
 static char kAssociatedObjectKey_shouldShowDebugColor;
 - (void)setQmui_shouldShowDebugColor:(BOOL)qmui_shouldShowDebugColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_shouldShowDebugColor, @(qmui_shouldShowDebugColor), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (qmui_shouldShowDebugColor) {
+        [QMUIHelper executeBlock:^{
+            ExtendImplementationOfVoidMethodWithoutArguments([UIView class], @selector(layoutSubviews), ^(UIView *selfObject) {
+                if (selfObject.qmui_shouldShowDebugColor) {
+                    selfObject.qmui_hasDebugColor = YES;
+                    selfObject.backgroundColor = [selfObject debugColor];
+                    [selfObject renderColorWithSubviews:selfObject.subviews];
+                }
+            });
+        } oncePerIdentifier:@"UIView (QMUIDebug) shouldShowDebugColor"];
+        
         [self setNeedsLayout];
     }
 }

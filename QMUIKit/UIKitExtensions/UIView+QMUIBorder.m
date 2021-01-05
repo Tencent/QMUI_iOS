@@ -40,20 +40,6 @@ QMUISynthesizeIdStrongProperty(qmui_borderLayer, setQmui_borderLayer)
             [selfObject _qmuibd_setDefaultStyle];
             return originReturnValue;
         });
-        
-        OverrideImplementation([UIView class], @selector(layoutSublayersOfLayer:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIView *selfObject, CALayer *firstArgv) {
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, CALayer *);
-                originSelectorIMP = (void (*)(id, SEL, CALayer *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, firstArgv);
-                
-                if (!selfObject.qmui_borderLayer || selfObject.qmui_borderLayer.hidden) return;
-                selfObject.qmui_borderLayer.frame = selfObject.bounds;
-                [selfObject.qmui_borderLayer setNeedsLayout];// 把布局刷新逻辑剥离到 layer 内，方便在子线程里直接刷新 layer，如果放在 UIView 内，子线程里就无法主动请求刷新了
-            };
-        });
     });
 }
 
@@ -68,6 +54,23 @@ QMUISynthesizeIdStrongProperty(qmui_borderLayer, setQmui_borderLayer)
         self.qmui_borderLayer.hidden = YES;
         return;
     }
+    
+    [QMUIHelper executeBlock:^{
+        OverrideImplementation([UIView class], @selector(layoutSublayersOfLayer:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject, CALayer *firstArgv) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, CALayer *);
+                originSelectorIMP = (void (*)(id, SEL, CALayer *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                if (!selfObject.qmui_borderLayer || selfObject.qmui_borderLayer.hidden) return;
+                selfObject.qmui_borderLayer.frame = selfObject.bounds;
+                [selfObject.layer qmui_bringSublayerToFront:selfObject.qmui_borderLayer];
+                [selfObject.qmui_borderLayer setNeedsLayout];// 把布局刷新逻辑剥离到 layer 内，方便在子线程里直接刷新 layer，如果放在 UIView 内，子线程里就无法主动请求刷新了
+            };
+        });
+    } oncePerIdentifier:@"UIView (QMUIBorder) layoutSublayers"];
     
     if (!self.qmui_borderLayer) {
         self.qmui_borderLayer = [CAShapeLayer layer];

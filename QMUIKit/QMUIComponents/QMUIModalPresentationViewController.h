@@ -46,9 +46,9 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @optional
 
 /**
- *  是否应该隐藏浮层，会在调用`hideWithAnimated:completion:`时，以及点击背景遮罩时被调用。默认为YES。
- *  @param  controller  当前的modalController
- *  @return 是否允许隐藏，YES表示允许隐藏，NO表示不允许隐藏
+ *  是否应该隐藏浮层，默认为YES，会在代码主动调用隐藏，或点击背景遮罩时询问。
+ *  @param  controller  当前的 modalController
+ *  @return 是否允许隐藏，YES 表示允许隐藏，NO 表示不允许隐藏
  */
 - (BOOL)shouldHideModalPresentationViewController:(QMUIModalPresentationViewController *)controller;
 

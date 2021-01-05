@@ -67,6 +67,11 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
 - (BOOL)qmui_isViewLoadedAndVisible;
 
 /**
+ 判断当前 viewController 是否为传入的 viewController 本身，或是其“子控制器” （childViewController）、孙子控制器（即 childViewController 的 childViewController ...）
+ */
+- (BOOL)qmui_isDescendantOfViewCcontroller:(UIViewController *)viewController;
+
+/**
  获取当前 viewController 所处的的生命周期阶段（也即 viewDidLoad/viewWillApear/viewDidAppear/viewWillDisappear/viewDidDisappear）
  */
 @property(nonatomic, assign, readonly) QMUIViewControllerVisibleState qmui_visibleState;

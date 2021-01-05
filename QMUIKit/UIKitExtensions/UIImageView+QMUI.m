@@ -33,10 +33,8 @@ QMUISynthesizeIdStrongProperty(qimgv_displayLink, setQimgv_displayLink)
 QMUISynthesizeIdStrongProperty(qimgv_animatedImage, setQimgv_animatedImage)
 QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_currentAnimatedImageIndex)
 
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        
+- (void)qimgv_swizzleMethods {
+    [QMUIHelper executeBlock:^{
         OverrideImplementation([UIImageView class], @selector(setImage:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIImageView *selfObject, UIImage *image) {
                 
@@ -118,7 +116,7 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
                 selfObject.qimgv_animatedImageLayer.contentsGravity = [QMUIHelper layerContentsGravityWithContentMode:firstArgv];
             }
         });
-    });
+    } oncePerIdentifier:@"UIImageView (QMUI) smoothAnimation"];
 }
 
 - (BOOL)qimgv_requestToStartAnimation {
@@ -175,6 +173,9 @@ QMUISynthesizeNSIntegerProperty(qimgv_currentAnimatedImageIndex, setQimgv_curren
 static char kAssociatedObjectKey_smoothAnimation;
 - (void)setQmui_smoothAnimation:(BOOL)qmui_smoothAnimation {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_smoothAnimation, @(qmui_smoothAnimation), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (qmui_smoothAnimation) {
+        [self qimgv_swizzleMethods];
+    }
     if (qmui_smoothAnimation && self.image.images && self.image != self.qimgv_animatedImage) {
         self.image = self.image;// 重新设置图片，触发动画
     } else if (!qmui_smoothAnimation && self.qimgv_animatedImage) {
