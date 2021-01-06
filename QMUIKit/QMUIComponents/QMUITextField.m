@@ -174,14 +174,17 @@
             return YES;
         }
         
-        BOOL isDeleting = range.length > 0 && string.length <= 0;
-        if (isDeleting) {
-            if (NSMaxRange(range) > textField.text.length) {
-                // https://github.com/Tencent/QMUI_iOS/issues/377
-                return NO;
-            } else {
-                return YES;
+        if (NSMaxRange(range) > textField.text.length) {
+            // 如果 range 越界了，继续返回 YES 会造成 rash
+            // https://github.com/Tencent/QMUI_iOS/issues/377
+            // https://github.com/Tencent/QMUI_iOS/issues/1170
+            // 这里的做法是本次返回 NO，并将越界的 range 缩减到没有越界的范围，再手动做该范围的替换。
+            range = NSMakeRange(range.location, range.length - (NSMaxRange(range) - textField.text.length));
+            if (range.length > 0) {
+                UITextRange *textRange = [self.textField qmui_convertUITextRangeFromNSRange:range];
+                [self.textField replaceRange:textRange withText:string];
             }
+            return NO;
         }
         
         NSUInteger rangeLength = textField.shouldCountingNonASCIICharacterAsTwo ? [textField.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;

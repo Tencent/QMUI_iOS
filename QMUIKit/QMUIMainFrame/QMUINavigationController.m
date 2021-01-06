@@ -612,3 +612,29 @@ QMUISynthesizeIdStrongProperty(qmuibbbt_backItem, setQmuibbbt_backItem);
 }
 
 @end
+
+@implementation QMUINavigationTitleView (QMUINavigationController)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // 在先设置了 title 再设置 titleView 时，保证 titleView 的样式能正确。
+        OverrideImplementation([UINavigationItem class], @selector(setTitleView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationItem *selfObject, QMUINavigationTitleView *titleView) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, titleView);
+                
+                if ([titleView isKindOfClass:QMUINavigationTitleView.class]) {
+                    if ([selfObject.qmui_viewController respondsToSelector:@selector(titleViewTintColor)]) {
+                        titleView.tintColor = ((id<QMUINavigationControllerDelegate>)selfObject.qmui_viewController).titleViewTintColor;
+                    }
+                }
+            };
+        });
+    });
+}
+
+@end

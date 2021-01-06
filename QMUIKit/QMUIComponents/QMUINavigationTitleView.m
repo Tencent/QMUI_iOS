@@ -23,7 +23,6 @@
 #import "UIView+QMUI.h"
 #import "UINavigationItem+QMUI.h"
 #import "QMUIAppearance.h"
-#import "QMUINavigationController.h"
 
 @interface QMUINavigationTitleView ()
 
@@ -691,7 +690,7 @@
             };
         });
         
-        // 在先设置了 title 再设置 titleView 时，保证 titleView 的 title、样式能正确。
+        // 在先设置了 title 再设置 titleView 时，保证 titleView 的 title 能正确。
         OverrideImplementation([UINavigationItem class], @selector(setTitleView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UINavigationItem *selfObject, QMUINavigationTitleView *titleView) {
                 
@@ -704,9 +703,6 @@
                     if (titleView.title.length <= 0) {
                         NSString *title = selfObject.qmui_viewController.title ?: selfObject.title;
                         titleView.title = title;
-                    }
-                    if ([selfObject.qmui_viewController respondsToSelector:@selector(titleViewTintColor)]) {
-                        titleView.tintColor = ((id<QMUINavigationControllerDelegate>)selfObject.qmui_viewController).titleViewTintColor;
                     }
                 }
             };
