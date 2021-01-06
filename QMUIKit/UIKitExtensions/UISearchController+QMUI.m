@@ -36,7 +36,7 @@
                     UIViewController *sourceViewController = [searchController valueForKey:@"_modalSourceViewController"];
                     UINavigationController *navigationController = sourceViewController.navigationController;
                     if (navigationController.qmui_isPushing) {
-                        BOOL isFromPreviousViewController = [sourceViewController qmui_isDescendantOfViewCcontroller:navigationController.topViewController.qmui_previousViewController];
+                        BOOL isFromPreviousViewController = [sourceViewController qmui_isDescendantOfViewController:navigationController.topViewController.qmui_previousViewController];
                         if (!isFromPreviousViewController) {
                             // 系统内部错误地添加了这个 view，这里直接 remove 掉，系统内部在真正要显示的时候再次添加回来。
                             [transitionView removeFromSuperview];

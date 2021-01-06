@@ -31,7 +31,7 @@
 
 @interface UIWindow (QMUIWindowSizeMonitor_Private)
 
-@property(nonatomic, assign) CGSize qwsm_previousSzie;
+@property(nonatomic, assign) CGSize qwsm_previousSize;
 @property(nonatomic, readonly) NSPointerArray *qwsm_sizeObservers;
 @property(nonatomic, readonly) NSPointerArray *qwsm_canReceiveWindowDidTransitionToSizeResponders;
 
@@ -82,7 +82,7 @@
 
 @implementation UIWindow (QMUIWindowSizeMonitor)
 
-QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
+QMUISynthesizeCGSizeProperty(qwsm_previousSize, setQwsm_previousSize)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -90,11 +90,11 @@ QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
         
         void (^notifyNewSizeBlock)(UIWindow *, CGRect) = ^(UIWindow *selfObject, CGRect firstArgv) {
             CGSize newSize = selfObject.bounds.size;
-            if (!CGSizeEqualToSize(newSize, selfObject.qwsm_previousSzie)) {
-                if (!CGSizeEqualToSize(selfObject.qwsm_previousSzie, CGSizeZero)) {
+            if (!CGSizeEqualToSize(newSize, selfObject.qwsm_previousSize)) {
+                if (!CGSizeEqualToSize(selfObject.qwsm_previousSize, CGSizeZero)) {
                     [selfObject qwsm_notifyWithNewSize:newSize];
                 }
-                selfObject.qwsm_previousSzie = selfObject.bounds.size;
+                selfObject.qwsm_previousSize = selfObject.bounds.size;
             }
         };
         

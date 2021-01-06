@@ -132,6 +132,10 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     self.delegator = [[_QMUINavigationControllerDelegator alloc] init];
     self.delegator.navigationController = self;
     self.delegate = self.delegator;
+    
+    BeginIgnoreDeprecatedWarning
+    [self didInitialize];
+    EndIgnoreDeprecatedWarning
 }
 
 - (void)didInitialize {

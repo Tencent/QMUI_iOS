@@ -469,7 +469,7 @@ static char kAssociatedObjectKey_visibleState;
     return NO;
 }
 
-- (BOOL)qmui_isDescendantOfViewCcontroller:(UIViewController *)viewController {
+- (BOOL)qmui_isDescendantOfViewController:(UIViewController *)viewController {
     UIViewController *parentViewController = self;
     while (parentViewController) {
         if (parentViewController == viewController) {

@@ -454,12 +454,12 @@ static NSInteger isSimulator = -1;
 #ifdef IOS14_SDK_ALLOWED
     if (@available(iOS 14.0, *)) {
         return [NSProcessInfo processInfo].isiOSAppOnMac || [NSProcessInfo processInfo].isMacCatalystApp;
-    } else {
-#endif
-        return NO;
-#ifdef IOS14_SDK_ALLOWED
     }
 #endif
+    if (@available(iOS 13.0, *)) {
+        return [NSProcessInfo processInfo].isMacCatalystApp;
+    }
+    return NO;
 }
 
 static NSInteger isNotchedScreen = -1;
