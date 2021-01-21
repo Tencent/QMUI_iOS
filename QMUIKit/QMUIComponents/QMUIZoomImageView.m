@@ -22,9 +22,13 @@
 #import "UIScrollView+QMUI.h"
 #import "QMUIButton.h"
 #import "QMUISlider.h"
-#import <MediaPlayer/MediaPlayer.h>
 #import "UILabel+QMUI.h"
 #import "QMUIPieProgressView.h"
+
+#import <QuartzCore/QuartzCore.h>
+#import <CoreMedia/CoreMedia.h>
+#import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
 
 #define kIconsColor UIColorMakeWithRGBA(255, 255, 255, .75)
 
