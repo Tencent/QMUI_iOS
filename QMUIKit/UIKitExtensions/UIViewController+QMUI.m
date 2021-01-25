@@ -633,7 +633,13 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
 @implementation QMUIHelper (ViewController)
 
 + (nullable UIViewController *)visibleViewController {
-    UIViewController *rootViewController = UIApplication.sharedApplication.delegate.window.rootViewController;
+    UIWindow * window;
+    if (@available(iOS 13.0, *)) {
+        window = [UIApplication sharedApplication].windows[0];
+    } else {
+        window = [UIApplication sharedApplication].delegate.window;
+    }
+    UIViewController *rootViewController = window.rootViewController;
     UIViewController *visibleViewController = [rootViewController qmui_visibleViewControllerIfExist];
     return visibleViewController;
 }
