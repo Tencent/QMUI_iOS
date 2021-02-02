@@ -481,7 +481,6 @@ static char kAssociatedObjectKey_viewController;
                                                [UIDatePicker class],
                                                [UIPickerView class],
                                                [UIVisualEffectView class],
-                                               [UIWebView class],
                                                [UIWindow class],
                                                [UINavigationBar class],
                                                [UIToolbar class],
