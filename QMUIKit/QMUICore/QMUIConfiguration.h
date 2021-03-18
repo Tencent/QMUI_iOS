@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIConfiguration.h
@@ -15,6 +15,8 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /// 所有配置表都应该实现的 protocol
 /// All configuration templates should implement this protocal
@@ -37,8 +39,6 @@
  *  A singleton that contains various UI configurations. Use `QMUIConfigurationTemplate` to set values; Use macros in `QMUIConfigurationMacros.h` to get values.
  */
 @interface QMUIConfiguration : NSObject
-
-NS_ASSUME_NONNULL_BEGIN
 
 /// 标志当前项目是否有使用配置表功能
 @property(nonatomic, assign, readonly) BOOL active;
@@ -92,12 +92,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - UITextField & UITextView
 
+@property(nonatomic, strong, nullable) UIColor  *textFieldTextColor;
 @property(nonatomic, strong, nullable) UIColor  *textFieldTintColor;
 @property(nonatomic, assign) UIEdgeInsets       textFieldTextInsets;
 @property(nonatomic, assign) UIKeyboardAppearance keyboardAppearance;
 
 #pragma mark - UISwitch
 @property(nonatomic, strong, nullable) UIColor  *switchOnTintColor;
+@property(nonatomic, strong, nullable) UIColor  *switchOffTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchThumbTintColor;
 @property(nonatomic, strong, nullable) UIImage  *switchOnImage;
@@ -105,12 +107,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - NavigationBar
 
+@property(nonatomic, copy, nullable) NSArray<Class<UIAppearanceContainer>> *navBarContainerClasses;
 @property(nonatomic, assign) CGFloat            navBarHighlightedAlpha;
 @property(nonatomic, assign) CGFloat            navBarDisabledAlpha;
 @property(nonatomic, strong, nullable) UIFont   *navBarButtonFont;
 @property(nonatomic, strong, nullable) UIFont   *navBarButtonFontBold;
 @property(nonatomic, strong, nullable) UIImage  *navBarBackgroundImage;
 @property(nonatomic, strong, nullable) UIImage  *navBarShadowImage;
+@property(nonatomic, strong, nullable) UIColor  *navBarShadowImageColor;
 @property(nonatomic, strong, nullable) UIColor  *navBarBarTintColor;
 @property(nonatomic, assign) UIBarStyle         navBarStyle;
 @property(nonatomic, strong, nullable) UIColor  *navBarTintColor;
@@ -130,17 +134,21 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - TabBar
 
+@property(nonatomic, copy, nullable) NSArray<Class<UIAppearanceContainer>> *tabBarContainerClasses;
 @property(nonatomic, strong, nullable) UIImage  *tabBarBackgroundImage;
 @property(nonatomic, strong, nullable) UIColor  *tabBarBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarShadowImageColor;
 @property(nonatomic, assign) UIBarStyle         tabBarStyle;
-@property(nonatomic, strong, nullable) UIColor  *tabBarTintColor;
+@property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFont;
+@property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFontSelected;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarItemTitleColorSelected;
-@property(nonatomic, strong, nullable) UIFont   *tabBarItemTitleFont;
+@property(nonatomic, strong, nullable) UIColor  *tabBarItemImageColor;
+@property(nonatomic, strong, nullable) UIColor  *tabBarItemImageColorSelected;
 
 #pragma mark - Toolbar
 
+@property(nonatomic, copy, nullable) NSArray<Class<UIAppearanceContainer>> *toolBarContainerClasses;
 @property(nonatomic, assign) CGFloat            toolBarHighlightedAlpha;
 @property(nonatomic, assign) CGFloat            toolBarDisabledAlpha;
 @property(nonatomic, strong, nullable) UIColor  *toolBarTintColor;
@@ -154,10 +162,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - SearchBar
 
-@property(nonatomic, strong, nullable) UIColor  *searchBarTextFieldBackground;
+@property(nonatomic, strong, nullable) UIImage  *searchBarTextFieldBackgroundImage;
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextFieldBorderColor;
-@property(nonatomic, strong, nullable) UIColor  *searchBarBottomBorderColor;
-@property(nonatomic, strong, nullable) UIColor  *searchBarBarTintColor;
+@property(nonatomic, strong, nullable) UIImage  *searchBarBackgroundImage;
 @property(nonatomic, strong, nullable) UIColor  *searchBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarTextColor;
 @property(nonatomic, strong, nullable) UIColor  *searchBarPlaceholderColor;
@@ -201,6 +208,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterContentInset;
 
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewGroupedSeparatorColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellTitleLabelColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellDetailLabelColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedCellBackgroundColor;
@@ -217,15 +225,37 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionFooterContentInset;
 
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedCornerRadius;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedHorizontalInset;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSeparatorColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellTitleLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellDetailLabelColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellSelectedBackgroundColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedCellWarningBackgroundColor;
+@property(nonatomic, strong, nullable) UIFont   *tableViewInsetGroupedSectionHeaderFont;
+@property(nonatomic, strong, nullable) UIFont   *tableViewInsetGroupedSectionFooterFont;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSectionHeaderTextColor;
+@property(nonatomic, strong, nullable) UIColor  *tableViewInsetGroupedSectionFooterTextColor;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionHeaderAccessoryMargins;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionFooterAccessoryMargins;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionHeaderDefaultHeight;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionFooterDefaultHeight;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionHeaderContentInset;
+@property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionFooterContentInset;
+
 #pragma mark - UIWindowLevel
 
 @property(nonatomic, assign) CGFloat            windowLevelQMUIAlertView;
+@property(nonatomic, assign) CGFloat            windowLevelQMUIConsole;
 
 #pragma mark - QMUILog
 
 @property(nonatomic, assign) BOOL               shouldPrintDefaultLog;
 @property(nonatomic, assign) BOOL               shouldPrintInfoLog;
 @property(nonatomic, assign) BOOL               shouldPrintWarnLog;
+@property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
 
 #pragma mark - QMUIBadge
 
@@ -233,13 +263,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *badgeTextColor;
 @property(nonatomic, strong, nullable) UIFont   *badgeFont;
 @property(nonatomic, assign) UIEdgeInsets       badgeContentEdgeInsets;
-@property(nonatomic, assign) CGPoint            badgeCenterOffset;
-@property(nonatomic, assign) CGPoint            badgeCenterOffsetLandscape;
+@property(nonatomic, assign) CGPoint            badgeOffset;
+@property(nonatomic, assign) CGPoint            badgeOffsetLandscape;
+@property(nonatomic, assign) CGPoint            badgeCenterOffset DEPRECATED_MSG_ATTRIBUTE("请改为使用 badgeOffset");
+@property(nonatomic, assign) CGPoint            badgeCenterOffsetLandscape DEPRECATED_MSG_ATTRIBUTE("请改为使用 badgeOffsetLandscape");
 
 @property(nonatomic, strong, nullable) UIColor  *updatesIndicatorColor;
 @property(nonatomic, assign) CGSize             updatesIndicatorSize;
-@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffset;
-@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffsetLandscape;
+@property(nonatomic, assign) CGPoint            updatesIndicatorOffset;
+@property(nonatomic, assign) CGPoint            updatesIndicatorOffsetLandscape;
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffset DEPRECATED_MSG_ATTRIBUTE("请改为使用 updatesIndicatorOffset");
+@property(nonatomic, assign) CGPoint            updatesIndicatorCenterOffsetLandscape DEPRECATED_MSG_ATTRIBUTE("请改为使用 updatesIndicatorOffsetLandscape");
 
 #pragma mark - Others
 
@@ -252,14 +286,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               preventConcurrentNavigationControllerTransitions;
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
 @property(nonatomic, assign) BOOL               shouldFixTabBarTransitionBugInIPhoneX;
-@property(nonatomic, assign) BOOL               shouldFixTabBarButtonBugForAll;
-@property(nonatomic, assign) BOOL               shouldPrintQMUIWarnLogToConsole;
+@property(nonatomic, assign) BOOL               shouldFixTabBarSafeAreaInsetsBug;
+@property(nonatomic, assign) BOOL               shouldFixSearchBarMaskViewLayoutBug;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
 @property(nonatomic, assign) BOOL               dynamicPreferredValueForIPad;
 @property(nonatomic, assign) BOOL               ignoreKVCAccessProhibited API_AVAILABLE(ios(13.0));
 @property(nonatomic, assign) BOOL               adjustScrollIndicatorInsetsByContentInsetAdjustment API_AVAILABLE(ios(13.0));
-
-NS_ASSUME_NONNULL_END
 
 /// 单例对象
 /// The singleton instance
@@ -267,3 +299,34 @@ NS_ASSUME_NONNULL_END
 - (void)applyInitialTemplate;
 
 @end
+
+@interface UINavigationBar (QMUIConfiguration)
+
+/**
+ 返回由配置表项 NavBarContainerClasses 配置的 UINavigationBar appearance 对象，用于代替 [UINavigationBar appearanceWhenContainedInInstancesOfClasses:NavBarContainerClasses] 的冗长写法。当配置表项 NavBarContainerClasses 为 nil 或空数组时，本方法等价于 UINavigationBar.appearance。
+ */
++ (instancetype)qmui_appearanceConfigured;
+@end
+
+@interface UITabBar (QMUIConfiguration)
+
+/**
+ 返回由配置表项 TabBarContainerClasses 配置的 UITabBar appearance 对象，用于代替 [UITabBar appearanceWhenContainedInInstancesOfClasses:TabBarContainerClasses] 的冗长写法。当配置表项 TabBarContainerClasses 为 nil 或空数组时，本方法等价于 UITabBar.appearance。
+ */
++ (instancetype)qmui_appearanceConfigured;
+@end
+
+@interface UIToolbar (QMUIConfiguration)
+
+/**
+ 返回由配置表项 ToolBarContainerClasses 配置的 UIToolbar appearance 对象，用于代替 [UIToolbar appearanceWhenContainedInInstancesOfClasses:ToolBarContainerClasses] 的冗长写法。当配置表项 ToolBarContainerClasses 为 nil 或空数组时，本方法等价于 UIToolbar.appearance。
+ */
++ (instancetype)qmui_appearanceConfigured;
+@end
+
+@interface UITabBarItem (QMUIConfiguration)
+
++ (instancetype)qmui_appearanceConfigured;
+@end
+
+NS_ASSUME_NONNULL_END

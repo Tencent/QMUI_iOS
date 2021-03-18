@@ -1,3 +1,10 @@
+/**
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ */
 //
 //  QMUIDisplayLinkAnimation.m
 //  WeRead
@@ -156,16 +163,10 @@
 }
 
 - (NSInteger)preferredFramesPerSecond {
-    if (@available(iOS 10, *)) {
-        if (self.displayLink.preferredFramesPerSecond == 0) {
-            return 60;
-        }
-        return self.displayLink.preferredFramesPerSecond;
-    }
-    if (self.displayLink.frameInterval == 0) {
+    if (self.displayLink.preferredFramesPerSecond == 0) {
         return 60;
     }
-    return 60 / self.displayLink.frameInterval;
+    return self.displayLink.preferredFramesPerSecond;
 }
 
 @end
@@ -220,7 +221,7 @@
                           animation:(void (^)(id curValue))animation
                        createdBlock:(void (^)(QMUIDisplayLinkAnimation *animation))createdBlock
                        didStopBlock:(void (^)(QMUIDisplayLinkAnimation *animation))didStopBlock {
-    QMUIDisplayLinkAnimation *displayLinkAnimation = [[QMUIDisplayLinkAnimation alloc] initWithDuration:duration
+    QMUIDisplayLinkAnimation *displayLinkAnimation = [[self alloc] initWithDuration:duration
                                                                                                  easing:easing
                                                                                               fromValue:fromValue
                                                                                                 toValue:toValue
@@ -271,7 +272,7 @@
                          animations:(void (^)(QMUIDisplayLinkAnimation *animation, CGFloat curTime))animations
                        createdBlock:(void (^)(QMUIDisplayLinkAnimation *animation))createdBlock
                        didStopBlock:(void (^)(QMUIDisplayLinkAnimation *animation))didStopBlock {
-    QMUIDisplayLinkAnimation *displayLinkAnimation = [[QMUIDisplayLinkAnimation alloc] initWithDuration:duration
+    QMUIDisplayLinkAnimation *displayLinkAnimation = [[self alloc] initWithDuration:duration
                                                                                                  easing:easing
                                                                                              animations:animations];
     if (createdBlock) {

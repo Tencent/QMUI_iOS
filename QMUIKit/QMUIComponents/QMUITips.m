@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUITips.m
@@ -138,6 +138,24 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
         [self hideAnimated:YES afterDelay:[QMUITips smartDelaySecondsForTipsText:text]];
     } else if (delay > 0) {
         [self hideAnimated:YES afterDelay:delay];
+    }
+    
+    [self postAccessibilityAnnouncement:text detailText:detailText];
+}
+
+- (void)postAccessibilityAnnouncement:(NSString *)text detailText:(NSString *)detailText {
+    NSString *announcementString = nil;
+    if (text) {
+        announcementString = text;
+    }
+    if (detailText) {
+        announcementString = announcementString ? [text stringByAppendingFormat:@", %@", detailText] : detailText;
+    }
+    if (announcementString) {
+        // 发送一个让VoiceOver播报的Announcement，帮助视障用户获取toast内的信息，但是这个播报会被即时打断而不生效，所以在这里延时1秒发送此通知。
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification, announcementString);
+        });
     }
 }
 

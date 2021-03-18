@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  CALayer+QMUI.h
@@ -22,6 +22,7 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
     QMUILayerMaxXMinYCorner = 1U << 1,
     QMUILayerMinXMaxYCorner = 1U << 2,
     QMUILayerMaxXMaxYCorner = 1U << 3,
+    QMUILayerAllCorner = QMUILayerMinXMinYCorner|QMUILayerMaxXMinYCorner|QMUILayerMinXMaxYCorner|QMUILayerMaxXMaxYCorner,
 };
 
 @interface CALayer (QMUI)
@@ -34,7 +35,7 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
 
 /**
  *  设置四个角是否支持圆角的，iOS11 及以上会调用系统的接口，否则 QMUI 额外实现
- *  @warning 如果对应的 layer 有圆角，则请使用 QMUI_Border，否则系统的 border 会被 clip 掉
+ *  @warning 如果对应的 layer 有圆角，则请使用 QMUIBorder，否则系统的 border 会被 clip 掉
  *  @warning 使用 qmui 方法，则超出 layer 范围内的内容都会被 clip 掉，系统的则不会
  *  @warning 如果使用这个接口设置圆角，那么需要获取圆角的值需要用 qmui_originCornerRadius，否则 iOS 11 以下获取到的都是 0
  */

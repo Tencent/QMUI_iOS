@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIHelper.h
@@ -15,23 +15,36 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "QMUICommonDefines.h"
+
+NS_ASSUME_NONNULL_BEGIN
+
+// TODO: molice 等废弃 qmui_badgeCenterOffset 系列接口后再删除
+extern const CGPoint QMUIBadgeInvalidateOffset;
 
 @interface QMUIHelper : NSObject
 
-+ (instancetype _Nonnull)sharedInstance;
++ (instancetype)sharedInstance;
+
+/**
+ 用一个 identifier 标记某一段 block，使其对应该 identifier 只会被运行一次
+ @param block 要执行的一段逻辑
+ @param identifier 唯一的标记，建议在 identifier 里添加当前这段业务的特有名称，例如用于 swizzle 的可以加“swizzled”前缀，以避免与其他业务共用同一个 identifier 引发 bug
+ */
++ (BOOL)executeBlock:(void (NS_NOESCAPE ^)(void))block oncePerIdentifier:(NSString *)identifier;
+
+/**
+ 将 UIViewContentMode 转为对应的 CALayerContentsGravity
+ */
++ (CALayerContentsGravity)layerContentsGravityWithContentMode:(UIViewContentMode)contentMode;
 @end
-
-
-extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 
 @interface QMUIHelper (Bundle)
 
-// QMUI专属
-+ (nullable NSBundle *)resourcesBundle;
-+ (nullable UIImage *)imageWithName:(nullable NSString *)name;
+/// 获取 QMUIKit.framework Images.xcassets 内的图片资源
+/// @param name 图片名
++ (nullable UIImage *)imageWithName:(NSString *)name;
 
-+ (nullable NSBundle *)resourcesBundleWithName:(nullable NSString *)bundleName;
-+ (nullable UIImage *)imageInBundle:(nullable NSBundle *)bundle withName:(nullable NSString *)name;
 @end
 
 @interface QMUIHelper (SystemVersion)
@@ -118,95 +131,105 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
 @interface QMUIHelper (UIGraphic)
 
 /// 获取一像素的大小
-+ (CGFloat)pixelOne;
+@property(class, nonatomic, readonly) CGFloat pixelOne;
 
 /// 判断size是否超出范围
 + (void)inspectContextSize:(CGSize)size;
 
 /// context是否合法
-+ (void)inspectContextIfInvalidatedInDebugMode:(CGContextRef _Nonnull)context;
-+ (BOOL)inspectContextIfInvalidatedInReleaseMode:(CGContextRef _Nonnull)context;
++ (void)inspectContextIfInvalidatedInDebugMode:(CGContextRef)context;
++ (BOOL)inspectContextIfInvalidatedInReleaseMode:(CGContextRef)context;
 @end
 
 
 @interface QMUIHelper (Device)
 
-+ (nonnull NSString *)deviceModel;
+/// 如 iPhone12,5、iPad6,8
+/// @NEW_DEVICE_CHECKER
+@property(class, nonatomic, readonly) NSString *deviceModel;
 
-+ (BOOL)isIPad;
-+ (BOOL)isIPod;
-+ (BOOL)isIPhone;
-+ (BOOL)isSimulator;
+/// 如 iPhone 11 Pro Max、iPad Pro (12.9 inch)，如果是模拟器，会在后面带上“ Simulator”字样。
+/// @NEW_DEVICE_CHECKER
+@property(class, nonatomic, readonly) NSString *deviceName;
+
+@property(class, nonatomic, readonly) BOOL isIPad;
+@property(class, nonatomic, readonly) BOOL isIPod;
+@property(class, nonatomic, readonly) BOOL isIPhone;
+@property(class, nonatomic, readonly) BOOL isSimulator;
+@property(class, nonatomic, readonly) BOOL isMac;
 
 /// 带物理凹槽的刘海屏或者使用 Home Indicator 类型的设备
-+ (BOOL)isNotchedScreen;
+/// @NEW_DEVICE_CHECKER
+@property(class, nonatomic, readonly) BOOL isNotchedScreen;
 
-/// 将屏幕分为普通和紧凑两种，这个方法用于判断普通屏幕
-+ (BOOL)isRegularScreen;
+/// 将屏幕分为普通和紧凑两种，这个方法用于判断普通屏幕（也即大屏幕）。
+/// @note 注意，这里普通/紧凑的标准是 QMUI 自行制定的，与系统 UITraitCollection.horizontalSizeClass/verticalSizeClass 的值无关。只要是通常意义上的“大屏幕手机”（例如 Plus 系列）都会被视为 Regular Screen。
+/// @NEW_DEVICE_CHECKER
+@property(class, nonatomic, readonly) BOOL isRegularScreen;
 
-/// iPhone XS Max
-+ (BOOL)is65InchScreen;
+/// iPhone 12 Pro Max
+@property(class, nonatomic, readonly) BOOL is67InchScreen;
 
-/// iPhone XR
-+ (BOOL)is61InchScreen;
+/// iPhone XS Max / 11 Pro Max
+@property(class, nonatomic, readonly) BOOL is65InchScreen;
 
-/// iPhone X/XS
-+ (BOOL)is58InchScreen;
+/// iPhone 12 / 12 Pro
+@property(class, nonatomic, readonly) BOOL is61InchScreenAndiPhone12;
+
+/// iPhone XR / 11
+@property(class, nonatomic, readonly) BOOL is61InchScreen;
+
+/// iPhone X / XS / 11Pro
+@property(class, nonatomic, readonly) BOOL is58InchScreen;
 
 /// iPhone 8 Plus
-+ (BOOL)is55InchScreen;
+@property(class, nonatomic, readonly) BOOL is55InchScreen;
+
+/// iPhone 12 mini
+@property(class, nonatomic, readonly) BOOL is54InchScreen;
 
 /// iPhone 8
-+ (BOOL)is47InchScreen;
+@property(class, nonatomic, readonly) BOOL is47InchScreen;
 
 /// iPhone 5
-+ (BOOL)is40InchScreen;
+@property(class, nonatomic, readonly) BOOL is40InchScreen;
 
 /// iPhone 4
-+ (BOOL)is35InchScreen;
+@property(class, nonatomic, readonly) BOOL is35InchScreen;
 
-+ (CGSize)screenSizeFor65Inch;
-+ (CGSize)screenSizeFor61Inch;
-+ (CGSize)screenSizeFor58Inch;
-+ (CGSize)screenSizeFor55Inch;
-+ (CGSize)screenSizeFor47Inch;
-+ (CGSize)screenSizeFor40Inch;
-+ (CGSize)screenSizeFor35Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor67Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor65Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor61InchAndiPhone12;
+@property(class, nonatomic, readonly) CGSize screenSizeFor61Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor58Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor55Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor54Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor47Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor40Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor35Inch;
 
-+ (CGFloat)preferredLayoutAsSimilarScreenWidthForIPad;
+@property(class, nonatomic, readonly) CGFloat preferredLayoutAsSimilarScreenWidthForIPad;
 
-// 用于获取 isNotchedScreen 设备的 insets，注意对于 iPad Pro 11-inch 这种无刘海凹槽但却有使用 Home Indicator 的设备，它的 top 返回0，bottom 返回 safeAreaInsets.bottom 的值
-+ (UIEdgeInsets)safeAreaInsetsForDeviceWithNotch;
+/// 用于获取 isNotchedScreen 设备的 insets，注意对于 iPad Pro 11-inch 这种无刘海凹槽但却有使用 Home Indicator 的设备，它的 top 返回0，bottom 返回 safeAreaInsets.bottom 的值
+/// @NEW_DEVICE_CHECKER
+@property(class, nonatomic, readonly) UIEdgeInsets safeAreaInsetsForDeviceWithNotch;
 
 /// 判断当前设备是否高性能设备，只会判断一次，以后都直接读取结果，所以没有性能问题
-+ (BOOL)isHighPerformanceDevice;
+@property(class, nonatomic, readonly) BOOL isHighPerformanceDevice;
 
 /// 系统设置里是否开启了“放大显示-试图-放大”，支持放大模式的 iPhone 设备可在官方文档中查询 https://support.apple.com/zh-cn/guide/iphone/iphd6804774e/ios
-+ (BOOL)isZoomedMode;
+/// @NEW_DEVICE_CHECKER
+@property(class, nonatomic, readonly) BOOL isZoomedMode;
 
 /**
  在 iPad 分屏模式下可获得实际运行区域的窗口大小，如需适配 iPad 分屏，建议用这个方法来代替 [UIScreen mainScreen].bounds.size
  @return 应用运行的窗口大小
  */
-+ (CGSize)applicationSize;
+@property(class, nonatomic, readonly) CGSize applicationSize;
 
 @end
 
 @interface QMUIHelper (UIApplication)
-
-/**
- *  更改状态栏内容颜色为深色
- *
- *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
- */
-+ (void)renderStatusBarStyleDark DEPRECATED_ATTRIBUTE;
-
-/**
- *  更改状态栏内容颜色为浅色
- *
- *  @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请通过系统的 - UIViewController preferredStatusBarStyle 方法来修改
- */
-+ (void)renderStatusBarStyleLight DEPRECATED_ATTRIBUTE;
 
 /**
  * 把App的主要window置灰，用于浮层弹出时，请注意要在适当时机调用`resetDimmedApplicationWindow`恢复到正常状态
@@ -218,16 +241,26 @@ extern NSString *const _Nonnull QMUIResourcesMainBundleName;
  */
 + (void)resetDimmedApplicationWindow;
 
+/**
+ * 黑色的 StatusBarStyle，用于亮色背景
+ * @note 在 iOS 13 以前  UIStatusBarStyleDefault 状态栏内容的颜色固定是黑色的，而在 iOS 13 UIStatusBarStyleDefault 会根据 user interface style 来决定状态栏的颜色，如果你需要一直黑色可以用 QMUIStatusBarStyleDarkContent 来代替以前 UIStatusBarStyleDefault 的写法
+ * @return 在 iOS 13 以上返回 UIStatusBarStyleDarkContent，在 iOS 12 及以下返回 UIStatusBarStyleDefault
+*/
+@property(class, nonatomic, readonly) UIStatusBarStyle statusBarStyleDarkContent;
+
 @end
 
 @interface QMUIHelper (Animation)
 
 /**
- 在 animationBlock 里的操作完成之后会调用 completionBlock，常用于一些不提供 completionBlock 的系统动画操作，例如 [UINavigationController pushViewController:animated:YES] 的场景，注意 UIScrollView 系列的滚动无法使用这个方法。
+ 在 animationBlock 里的操作完成之后会调用 completionBlock，常用于一些不提供 completionBlock 的系统动画操作。
 
  @param animationBlock 要进行的带动画的操作
  @param completionBlock 操作完成后的回调
+ @note 注意 UIScrollView 系列的滚动无法使用这个方法。
  */
 + (void)executeAnimationBlock:(nonnull __attribute__((noescape)) void (^)(void))animationBlock completionBlock:(nullable __attribute__((noescape)) void (^)(void))completionBlock;
 
 @end
+
+NS_ASSUME_NONNULL_END

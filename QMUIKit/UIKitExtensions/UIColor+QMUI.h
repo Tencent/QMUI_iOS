@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UIColor+QMUI.h
@@ -38,50 +38,61 @@ NS_ASSUME_NONNULL_BEGIN
  *  将当前色值转换为hex字符串，通道排序是AARRGGBB（与Android保持一致）
  *  @return 色值对应的 hex 字符串，以 # 开头，例如 #00ff00ff
  */
-- (NSString *)qmui_hexString;
+@property(nonatomic, copy, readonly) NSString *qmui_hexString;
+
+/**
+ 将一个 RGBA 字符串转换成 UIColor
+ @param rgbaString 支持 RGB 或者 RGBA，其中只有 alpha 支持小数点，取值范围为 [0.0-1.0]，其他通道均为整数，取值范围 [0-255]，通道之间用英文逗号或空格隔开，例如以下参数都是合法的：@"255,255,255,.1"、@"255,255,0"、@"255,255,255"、@"255 255 255"
+ */
++ (nullable UIColor *)qmui_colorWithRGBAString:(nullable NSString *)rgbaString;
+
+/**
+ 将当前色值转换成“255,255,255,1.00”的字符串，如果 alpha 通道为1也会输出出来。其中 alpha 通道必定带两位小数点，其他三个通道都是整数。
+ */
+@property(nonatomic, copy, readonly) NSString *qmui_RGBAString;
 
 /**
  *  获取当前 UIColor 对象里的红色色值
  *
  *  @return 红色通道的色值，值范围为0.0-1.0
  */
-- (CGFloat)qmui_red;
+@property(nonatomic, assign, readonly) CGFloat qmui_red;
 
 /**
  *  获取当前 UIColor 对象里的绿色色值
  *
  *  @return 绿色通道的色值，值范围为0.0-1.0
  */
-- (CGFloat)qmui_green;
+@property(nonatomic, assign, readonly) CGFloat qmui_green;
 
 /**
  *  获取当前 UIColor 对象里的蓝色色值
  *
  *  @return 蓝色通道的色值，值范围为0.0-1.0
  */
-- (CGFloat)qmui_blue;
+@property(nonatomic, assign, readonly) CGFloat qmui_blue;
 
 /**
  *  获取当前 UIColor 对象里的透明色值
  *
  *  @return 透明通道的色值，值范围为0.0-1.0
  */
-- (CGFloat)qmui_alpha;
+@property(nonatomic, assign, readonly) CGFloat qmui_alpha;
 
 /**
  *  获取当前 UIColor 对象里的 hue（色相），注意 hue 的值是一个角度，所以0和1（0°和360°）是等价的，用 return 值去做判断时要特别注意。
  */
-- (CGFloat)qmui_hue;
+@property(nonatomic, assign, readonly) CGFloat qmui_hue;
 
 /**
  *  获取当前 UIColor 对象里的 saturation（饱和度）
  */
-- (CGFloat)qmui_saturation;
+@property(nonatomic, assign, readonly) CGFloat qmui_saturation;
 
 /**
  *  获取当前 UIColor 对象里的 brightness（亮度）
  */
-- (CGFloat)qmui_brightness;
+@property(nonatomic, assign, readonly) CGFloat qmui_brightness;
 
 /**
  *  将当前UIColor对象剥离掉alpha通道后得到的色值。相当于把当前颜色的半透明值强制设为1.0后返回
@@ -114,7 +125,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @return 若为深色则返回“YES”，浅色则返回“NO”
  */
-- (BOOL)qmui_colorIsDark;
+@property(nonatomic, assign, readonly) BOOL qmui_colorIsDark;
 
 /**
  *  @return 当前颜色的反色，不管传入的颜色属于什么 colorSpace，最终返回的反色都是 RGB
@@ -127,12 +138,12 @@ NS_ASSUME_NONNULL_BEGIN
  *  判断当前颜色是否等于系统默认的 tintColor 颜色。
  *  背景：如果将一个 UIView.tintColor 设置为 nil，表示这个 view 的 tintColor 希望跟随 superview.tintColor 变化而变化，所以设置完再获取 view.tintColor，得到的并非 nil，而是 superview.tintColor 的值，而如果整棵 view 层级树里的 view 都没有设置自己的 tintColor，则会返回系统默认的 tintColor（也即 [UIColor qmui_systemTintColor]），所以才提供这个方法用于代替判断 tintColor == nil 的作用。
  */
-- (BOOL)qmui_isSystemTintColor;
+@property(nonatomic, assign, readonly) BOOL qmui_isSystemTintColor;
 
 /**
  *  获取当前系统的默认 tintColor 色值
  */
-+ (UIColor *)qmui_systemTintColor;
+@property(class, nonatomic, strong, readonly) UIColor *qmui_systemTintColor;
 
 /**
  *  计算两个颜色叠加之后的最终色（注意区分前景色后景色的顺序）<br/>
@@ -168,6 +179,9 @@ extern NSString *const QMUICGColorOriginalColorBindKey;
 
 /// 标志当前 UIColor 对象是否为动态颜色（由 [UIColor qmui_colorWithThemeProvider:] 创建的颜色，或者 iOS 13 下由 [UIColor colorWithDynamicProvider:]、[UIColor initWithDynamicProvider:] 创建的颜色）
 @property(nonatomic, assign, readonly) BOOL qmui_isDynamicColor;
+
+/// 标志当前 UIColor 对象是否为 QMUIThemeColor
+@property(nonatomic, assign, readonly) BOOL qmui_isQMUIDynamicColor;
 
 @optional
 /// 这方法其实是 iOS 13 新增的 UIDynamicColor 里的私有方法，只要任意 UIColor 的类实现这个方法并返回 YES，就能自动响应 iOS 13 下的 UIUserInterfaceStyle 的切换，这里在 protocol 里声明是为了方便 .m 里调用（否则会因为不存在的 selector 而无法编译）

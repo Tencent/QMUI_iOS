@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 /// Automatically created by script in Build Phases
 
@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.0.0";
+static NSString * const QMUI_VERSION = @"4.2.2";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -21,6 +21,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 
 #if __has_include("CALayer+QMUI.h")
 #import "CALayer+QMUI.h"
+#endif
+
+#if __has_include("CALayer+QMUIViewAnimation.h")
+#import "CALayer+QMUIViewAnimation.h"
 #endif
 
 #if __has_include("NSArray+QMUI.h")
@@ -79,6 +83,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "QMUIAnimationHelper.h"
 #endif
 
+#if __has_include("QMUIAppearance.h")
+#import "QMUIAppearance.h"
+#endif
+
 #if __has_include("QMUIAsset.h")
 #import "QMUIAsset.h"
 #endif
@@ -89,6 +97,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 
 #if __has_include("QMUIAssetsManager.h")
 #import "QMUIAssetsManager.h"
+#endif
+
+#if __has_include("QMUIBadgeProtocol.h")
+#import "QMUIBadgeProtocol.h"
 #endif
 
 #if __has_include("QMUIButton.h")
@@ -399,6 +411,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "QMUIThemeManager.h"
 #endif
 
+#if __has_include("QMUIThemeManagerCenter.h")
+#import "QMUIThemeManagerCenter.h"
+#endif
+
 #if __has_include("QMUITips.h")
 #import "QMUITips.h"
 #endif
@@ -507,6 +523,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "UILabel+QMUI.h"
 #endif
 
+#if __has_include("UIMenuController+QMUI.h")
+#import "UIMenuController+QMUI.h"
+#endif
+
 #if __has_include("UINavigationBar+QMUI.h")
 #import "UINavigationBar+QMUI.h"
 #endif
@@ -523,12 +543,20 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "UINavigationController+QMUI.h"
 #endif
 
+#if __has_include("UINavigationItem+QMUI.h")
+#import "UINavigationItem+QMUI.h"
+#endif
+
 #if __has_include("UIScrollView+QMUI.h")
 #import "UIScrollView+QMUI.h"
 #endif
 
 #if __has_include("UISearchBar+QMUI.h")
 #import "UISearchBar+QMUI.h"
+#endif
+
+#if __has_include("UISearchController+QMUI.h")
+#import "UISearchController+QMUI.h"
 #endif
 
 #if __has_include("UISwitch+QMUI.h")
@@ -559,8 +587,16 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 #import "UITableViewCell+QMUI.h"
 #endif
 
+#if __has_include("UITableViewHeaderFooterView+QMUI.h")
+#import "UITableViewHeaderFooterView+QMUI.h"
+#endif
+
 #if __has_include("UITextField+QMUI.h")
 #import "UITextField+QMUI.h"
+#endif
+
+#if __has_include("UITextInputTraits+QMUI.h")
+#import "UITextInputTraits+QMUI.h"
 #endif
 
 #if __has_include("UITextView+QMUI.h")
@@ -573,6 +609,14 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 
 #if __has_include("UIView+QMUI.h")
 #import "UIView+QMUI.h"
+#endif
+
+#if __has_include("UIView+QMUIBadge.h")
+#import "UIView+QMUIBadge.h"
+#endif
+
+#if __has_include("UIView+QMUIBorder.h")
+#import "UIView+QMUIBorder.h"
 #endif
 
 #if __has_include("UIView+QMUITheme.h")
@@ -589,6 +633,10 @@ static NSString * const QMUI_VERSION = @"4.0.0";
 
 #if __has_include("UIVisualEffect+QMUITheme.h")
 #import "UIVisualEffect+QMUITheme.h"
+#endif
+
+#if __has_include("UIVisualEffectView+QMUI.h")
+#import "UIVisualEffectView+QMUI.h"
 #endif
 
 #if __has_include("UIWindow+QMUI.h")

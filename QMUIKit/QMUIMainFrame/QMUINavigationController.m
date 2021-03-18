@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUINavigationController.m
@@ -18,6 +18,9 @@
 #import "QMUINavigationTitleView.h"
 #import "QMUICommonViewController.h"
 #import "UIViewController+QMUI.h"
+#import "UINavigationController+QMUI.h"
+#import "UIView+QMUI.h"
+#import "UINavigationItem+QMUI.h"
 #import "UINavigationController+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
@@ -58,24 +61,47 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewWillAppear:), BOOL, ^(UIViewController *selfObject, BOOL firstArgv) {
-            if ([selfObject.qmui_viewWillAppearNotifyDelegate respondsToSelector:@selector(qmui_viewControllerDidInvokeViewWillAppear:)]) {
-                [selfObject.qmui_viewWillAppearNotifyDelegate qmui_viewControllerDidInvokeViewWillAppear:selfObject];
-            }
+        OverrideImplementation([UIViewController class], @selector(viewWillAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                if ([selfObject.qmui_viewWillAppearNotifyDelegate respondsToSelector:@selector(qmui_viewControllerDidInvokeViewWillAppear:)]) {
+                    [selfObject.qmui_viewWillAppearNotifyDelegate qmui_viewControllerDidInvokeViewWillAppear:selfObject];
+                }
+            };
         });
         
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewDidAppear:), BOOL, ^(UIViewController *selfObject, BOOL firstArgv) {
-            if ([selfObject.navigationController.viewControllers containsObject:selfObject] && [selfObject.navigationController isKindOfClass:[QMUINavigationController class]]) {
-                ((QMUINavigationController *)selfObject.navigationController).isViewControllerTransiting = NO;
-            }
-            selfObject.qmui_poppingByInteractivePopGestureRecognizer = NO;
-            selfObject.qmui_willAppearByInteractivePopGestureRecognizer = NO;
+        OverrideImplementation([UIViewController class], @selector(viewDidAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                if ([selfObject.navigationController.viewControllers containsObject:selfObject] && [selfObject.navigationController isKindOfClass:[QMUINavigationController class]]) {
+                    ((QMUINavigationController *)selfObject.navigationController).isViewControllerTransiting = NO;
+                }
+                selfObject.qmui_poppingByInteractivePopGestureRecognizer = NO;
+                selfObject.qmui_willAppearByInteractivePopGestureRecognizer = NO;
+            };
         });
         
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewDidDisappear:), BOOL, ^(UIViewController *selfObject, BOOL firstArgv) {
-            selfObject.qmui_poppingByInteractivePopGestureRecognizer = NO;
-            selfObject.qmui_willAppearByInteractivePopGestureRecognizer = NO;
+        OverrideImplementation([UIViewController class], @selector(viewDidDisappear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                selfObject.qmui_poppingByInteractivePopGestureRecognizer = NO;
+                selfObject.qmui_willAppearByInteractivePopGestureRecognizer = NO;
+            };
         });
     });
 }
@@ -100,42 +126,19 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 
 #pragma mark - 生命周期函数 && 基类方法重写
 
-- (instancetype)initWithRootViewController:(UIViewController *)rootViewController {
-    if (self = [super initWithRootViewController:rootViewController]) {
-        if (@available(iOS 13.0, *)) {
-            // -[UINavigationController initWithRootViewController:] 在 iOS 13 以下的版本内部会调用 [self initWithNibName:bundle] 而在 iOS 13 上则是直接调用 [super initWithNibName:bundle] 所以这里需要手动调用一次 [self didInitialize]
-            [self didInitialize];
-        }
-    }
-    return self;
-}
-
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil {
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
-        [self didInitialize];
-    }
-    return self;
-}
-
-- (instancetype)initWithCoder:(NSCoder *)aDecoder {
-    if (self = [super initWithCoder:aDecoder]) {
-        [self didInitialize];
-    }
-    return self;
-}
-
-- (void)didInitialize {
-    
+- (void)qmui_didInitialize {
+    [super qmui_didInitialize];
     self.qmui_multipleDelegatesEnabled = YES;
     self.delegator = [[_QMUINavigationControllerDelegator alloc] init];
     self.delegator.navigationController = self;
     self.delegate = self.delegator;
     
-    // UIView.tintColor 并不支持 UIAppearance 协议，所以不能通过 appearance 来设置，只能在实例里设置
-    if (QMUICMIActivated) {
-        self.navigationBar.tintColor = NavBarTintColor;
-        self.toolbar.tintColor = ToolBarTintColor;
-    }
+    BeginIgnoreDeprecatedWarning
+    [self didInitialize];
+    EndIgnoreDeprecatedWarning
+}
+
+- (void)didInitialize {
 }
 
 - (void)dealloc {
@@ -167,7 +170,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     
     UIViewController *viewController = [self topViewController];
     self.viewControllerPopping = viewController;
-
+    
     if (animated) {
         self.viewControllerPopping.qmui_viewWillAppearNotifyDelegate = self;
         
@@ -178,11 +181,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewController) willPopInNavigationControllerWithAnimated:animated];
     }
     
-//    QMUILog(@"NavigationItem", @"call popViewControllerAnimated:%@, current viewControllers = %@", StringFromBOOL(animated), self.viewControllers);
+    //    QMUILog(@"NavigationItem", @"call popViewControllerAnimated:%@, current viewControllers = %@", StringFromBOOL(animated), self.viewControllers);
     
     viewController = [super popViewControllerAnimated:animated];
     
-//    QMUILog(@"NavigationItem", @"pop viewController: %@", viewController);
+    //    QMUILog(@"NavigationItem", @"pop viewController: %@", viewController);
     
     if ([viewController respondsToSelector:@selector(didPopInNavigationControllerWithAnimated:)]) {
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewController) didPopInNavigationControllerWithAnimated:animated];
@@ -197,7 +200,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     }
     
     self.viewControllerPopping = self.topViewController;
-
+    
     if (animated) {
         self.viewControllerPopping.qmui_viewWillAppearNotifyDelegate = self;
         self.isViewControllerTransiting = YES;
@@ -242,7 +245,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         self.viewControllerPopping.qmui_viewWillAppearNotifyDelegate = self;
         self.isViewControllerTransiting = YES;
     }
-
+    
     // will pop
     for (NSInteger i = self.viewControllers.count - 1; i > 0; i--) {
         UIViewController *viewControllerPopping = self.viewControllers[i];
@@ -278,6 +281,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         }
     }];
     
+    // setViewControllers 不会触发 pushViewController，所以这里也要更新一下返回按钮的文字
+    [viewControllers enumerateObjectsUsingBlock:^(UIViewController * _Nonnull viewController, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self updateBackItemTitleWithCurrentViewController:viewController nextViewController:idx + 1 < viewControllers.count ? viewControllers[idx + 1] : nil];
+    }];
+    
     [super setViewControllers:viewControllers animated:animated];
     
     // did pop
@@ -297,9 +305,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 }
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
-    if (self.isViewControllerTransiting || !viewController) {
+    if (!viewController) return;
+    
+    if (self.isViewControllerTransiting) {
         QMUILogWarn(NSStringFromClass(self.class), @"%@, 上一次界面切换的动画尚未结束就试图进行新的 push 操作，为了避免产生 bug，拦截了这次 push。\n%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@", NSStringFromClass(self.class),  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
-        return;
+        animated = NO;
     }
     
     // 增加一个 presentedViewController 作为判断条件是因为这个 issue：https://github.com/Tencent/QMUI_iOS/issues/261
@@ -311,19 +321,8 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         QMUILogWarn(NSStringFromClass(self.class), @"push 的时候 navigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
     }
     
-    UIViewController *currentViewController = self.topViewController;
-    if (currentViewController) {
-        if (!NeedsBackBarButtonItemTitle) {
-            // 会自动从 UIBarButtonItem.title 取值作为下一个界面的返回按钮的文字
-            currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
-        } else {
-            UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController;
-            if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
-                NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
-                currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL];
-            }
-        }
-    }
+    // 在 push 前先设置好返回按钮的文字
+    [self updateBackItemTitleWithCurrentViewController:self.topViewController nextViewController:viewController];
     
     [super pushViewController:viewController animated:animated];
     
@@ -331,6 +330,33 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     // https://github.com/Tencent/QMUI_iOS/issues/426
     if (![self.viewControllers containsObject:viewController]) {
         self.isViewControllerTransiting = NO;
+    }
+}
+
+- (void)updateBackItemTitleWithCurrentViewController:(UIViewController *)currentViewController nextViewController:(UIViewController *)nextViewController {
+    if (!currentViewController) return;
+    
+    // 如果某个 viewController 显式声明了返回按钮的文字，则无视配置表 NeedsBackBarButtonItemTitle 的值
+    UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)nextViewController;
+    if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+        NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
+        currentViewController.navigationItem.backBarButtonItem = title ? [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] : nil;
+        return;
+    }
+    
+    // 全局屏蔽返回按钮的文字
+    if (QMUICMIActivated && !NeedsBackBarButtonItemTitle) {
+#ifdef IOS14_SDK_ALLOWED
+        if (@available(iOS 14.0, *)) {
+            // 用新 API 来屏蔽返回按钮的文字，才能保证 iOS 14 长按返回按钮时能正确出现 viewController title
+            currentViewController.navigationItem.backButtonDisplayMode = UINavigationItemBackButtonDisplayModeMinimal;
+            return;
+        }
+#endif
+        // 业务自己设置的 backBarButtonItem 优先级高于配置表
+        if (!currentViewController.navigationItem.backBarButtonItem) {
+            currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
+        }
     }
 }
 
@@ -348,6 +374,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 - (void)handleInteractivePopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
     UIGestureRecognizerState state = gestureRecognizer.state;
     
+    // TODO: molice 看一下这里的 self.viewControllerPopping 能否通过 transition 获取，这样就不用增加 property 去保存引用了
     UIViewController *viewControllerWillDisappear = self.viewControllerPopping;
     UIViewController *viewControllerWillAppear = self.topViewController;
     
@@ -397,12 +424,67 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 
 #pragma mark - StatusBar
 
+- (UIViewController *)childViewControllerIfSearching:(UIViewController *)childViewController customBlock:(BOOL (^)(UIViewController *vc))hasCustomizedStatusBarBlock {
+    
+    UIViewController *presentedViewController = childViewController.presentedViewController;
+    
+    // 3. 命中这个条件意味着 viewControllers 里某个 vc 被设置了 definesPresentationContext = YES 并 present 了一个 vc（最常见的是进入搜索状态的 UISearchController），此时对 self 而言是不存在 presentedViewController 的，所以在上面第1步里无法得到这个被 present 起来的 vc，也就无法将 statusBar 的控制权交给它，所以这里要特殊处理一下，保证状态栏正确交给 present 起来的 vc
+    if (!presentedViewController.beingDismissed && presentedViewController && presentedViewController != self.presentedViewController && hasCustomizedStatusBarBlock(presentedViewController)) {
+        return [self childViewControllerIfSearching:childViewController.presentedViewController customBlock:hasCustomizedStatusBarBlock];
+    }
+    
+    // 4. 普通 dismiss，或者 iOS 13 默认的半屏 present 手势拖拽下来过程中，或者 UISearchController 退出搜索状态时，都会触发 statusBar 样式刷新，此时的 childViewController 依然是被 dismiss 的那个 vc，但状态栏应该交给背后的界面去控制，所以这里做个保护。为什么需要递归再查一次，是因为 self.topViewController 也可能正在显示一个 present 起来的搜索界面。
+    if (childViewController.beingDismissed) {
+        return [self childViewControllerIfSearching:self.topViewController customBlock:hasCustomizedStatusBarBlock];
+    }
+    
+    return childViewController;
+}
+
+// 参数 hasCustomizedStatusBarBlock 用于判断指定 vc 是否有自己控制状态栏 hidden/style 的实现。
+- (UIViewController *)childViewControllerForStatusBarWithCustomBlock:(BOOL (^)(UIViewController *vc))hasCustomizedStatusBarBlock {
+    // 1. 有 modal present 则优先交给 modal present 的 vc 控制（例如进入搜索状态且没指定 definesPresentationContext 的 UISearchController）
+    UIViewController *childViewController = self.visibleViewController;
+    
+    // 2. 如果 modal present 是一个 UINavigationController，则 self.visibleViewController 拿到的是该 UINavigationController.topViewController，而不是该 UINavigationController 本身，所以这里要特殊处理一下，才能让下文的 beingDismissed 判断生效
+    if (childViewController.navigationController && (self.presentedViewController == childViewController.navigationController)) {
+        childViewController = childViewController.navigationController;
+    }
+    
+    childViewController = [self childViewControllerIfSearching:childViewController customBlock:hasCustomizedStatusBarBlock];
+    
+    if (QMUICMIActivated) {
+        if (hasCustomizedStatusBarBlock(childViewController)) {
+            return childViewController;
+        }
+        return nil;
+    }
+    return childViewController;
+}
+
 - (UIViewController *)childViewControllerForStatusBarHidden {
-    return self.topViewController;
+    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
+        return vc.qmui_prefersStatusBarHiddenBlock || [vc qmui_hasOverrideUIKitMethod:@selector(prefersStatusBarHidden)];
+    }];
 }
 
 - (UIViewController *)childViewControllerForStatusBarStyle {
-    return self.topViewController;
+    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
+        return vc.qmui_preferredStatusBarStyleBlock || [vc qmui_hasOverrideUIKitMethod:@selector(preferredStatusBarStyle)];
+    }];
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+    // 按照系统的文档，当 -[UIViewController childViewControllerForStatusBarStyle] 返回值不为 nil 时，会询问返回的 vc 的 preferredStatusBarStyle，只有当返回 nil 时才会询问 self 的 preferredStatusBarStyle，但实测在 iOS 13 默认的半屏 present 或者 UISearchController 进入搜索状态时，即便在 childViewControllerForStatusBarStyle 里返回了正确的 vc，最终依然会来询问 -[self preferredStatusBarStyle]，导致样式错误，所以这里做个保护。
+    UIViewController *childViewController = [self childViewControllerForStatusBarStyle];
+    if (childViewController) {
+        return [childViewController preferredStatusBarStyle];
+    }
+    
+    if (QMUICMIActivated) {
+        return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+    }
+    return [super preferredStatusBarStyle];
 }
 
 #pragma mark - 屏幕旋转
@@ -417,7 +499,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     // https://github.com/Tencent/QMUI_iOS/issues/502
     // https://github.com/Tencent/QMUI_iOS/issues/632
     UIViewController *visibleViewController = self.visibleViewController;
-    if (visibleViewController && [visibleViewController isKindOfClass:UIAlertController.class]) {
+    if (!visibleViewController || visibleViewController.isBeingDismissed || [visibleViewController isKindOfClass:UIAlertController.class]) {
         visibleViewController = self.topViewController;
     }
     return [visibleViewController qmui_hasOverrideUIKitMethod:_cmd] ? [visibleViewController supportedInterfaceOrientations] : SupportedOrientationMask;
@@ -455,6 +537,108 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 - (void)navigationController:(QMUINavigationController *)navigationController didShowViewController:(UIViewController *)viewController animated:(BOOL)animated {
     navigationController.viewControllerPopping = nil;
     [navigationController didShowViewController:viewController animated:animated];
+}
+
+@end
+
+
+// 以下 Category 用于解决三种控制返回按钮的方式的优先级冲突问题
+// https://github.com/Tencent/QMUI_iOS/issues/1130
+
+@interface UINavigationItem (QMUIBackBarButtonItemTitle)
+@property(nonatomic, strong) UIBarButtonItem *qmuibbbt_backItem;
+@end
+
+@implementation UINavigationItem (QMUIBackBarButtonItemTitle)
+
+QMUISynthesizeIdStrongProperty(qmuibbbt_backItem, setQmuibbbt_backItem);
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        OverrideImplementation([UINavigationItem class], @selector(setBackBarButtonItem:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationItem *selfObject, UIBarButtonItem *backBarButtonItem) {
+                
+                UINavigationBar *navigationBar = selfObject.qmui_navigationBar;
+                UINavigationController *navigationController = selfObject.qmui_navigationController;
+                if (navigationController) {
+                    if ([navigationBar.items containsObject:selfObject]
+                        && (navigationBar.topItem != selfObject || navigationController.qmui_isPushing || navigationController.qmui_isPopping)
+                        && (!selfObject.qmuibbbt_backItem || selfObject.qmuibbbt_backItem != backBarButtonItem)) {
+                        // 当前 vc 存在子界面，此时要修改 backBarButtonItem，根据优先级，应该先判断子界面是否使用了 backBarButtonItemTitleWithPreviousViewController:
+                        UIViewController *currentViewController = nil;
+                        UIViewController *nextViewController = nil;
+                        NSInteger indexForChildViewController = [navigationBar.items indexOfObject:selfObject] + 1;
+                        if (indexForChildViewController < navigationController.viewControllers.count) {
+                            nextViewController = navigationController.viewControllers[indexForChildViewController];
+                            currentViewController = navigationController.viewControllers[indexForChildViewController - 1];
+                        } else if (navigationController.qmui_isPopping) {
+                            // 当 UINavigationController 正在 pop 时，navigationBar.items 里仍包含即将被 pop 的界面，但 navigationController.viewControllers 里已经是 pop 结束后的界面了，所以需要从 transitionCoordinator 里获取即将被 pop 的界面
+                            nextViewController = [navigationController.transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
+                            currentViewController = [navigationController.transitionCoordinator viewControllerForKey:UITransitionContextToViewControllerKey];
+                        }
+                        if ([nextViewController respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+                            NSAssert(!!currentViewController, @"currentViewController 和 nextViewController 必须同时存在");
+                            selfObject.qmuibbbt_backItem = backBarButtonItem;
+                            return;
+                        } else if (!nextViewController) {
+                            QMUILogWarn(@"UINavigationItem (QMUIBackBarButtonItemTitle)", @"当前界面理应存在子界面，但获取不到，qmui_isPopping = %@, navigationBar.items = %@", StringFromBOOL(navigationController.qmui_isPopping), navigationBar.items);
+                        }
+                    }
+                }
+                
+                if (selfObject.qmuibbbt_backItem) {
+                    selfObject.qmuibbbt_backItem = nil;
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIBarButtonItem *);
+                originSelectorIMP = (void (*)(id, SEL, UIBarButtonItem *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, backBarButtonItem);
+            };
+        });
+        
+        OverrideImplementation([UIViewController class], @selector(viewDidAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL firstArgv) {
+                
+                // 恢复被屏蔽的那一次 setBackBarButtonItem
+                if (selfObject.navigationItem.qmuibbbt_backItem) {
+                    selfObject.navigationItem.backBarButtonItem = selfObject.navigationItem.qmuibbbt_backItem;
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
+    });
+}
+
+@end
+
+@implementation QMUINavigationTitleView (QMUINavigationController)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // 在先设置了 title 再设置 titleView 时，保证 titleView 的样式能正确。
+        OverrideImplementation([UINavigationItem class], @selector(setTitleView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationItem *selfObject, QMUINavigationTitleView *titleView) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, titleView);
+                
+                if ([titleView isKindOfClass:QMUINavigationTitleView.class]) {
+                    if ([selfObject.qmui_viewController respondsToSelector:@selector(titleViewTintColor)]) {
+                        titleView.tintColor = ((id<QMUINavigationControllerDelegate>)selfObject.qmui_viewController).titleViewTintColor;
+                    }
+                }
+            };
+        });
+    });
 }
 
 @end

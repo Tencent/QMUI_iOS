@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIPopupContainerView.h
@@ -18,11 +18,13 @@
 
 typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
     QMUIPopupContainerViewLayoutDirectionAbove,
-    QMUIPopupContainerViewLayoutDirectionBelow
+    QMUIPopupContainerViewLayoutDirectionBelow,
+    QMUIPopupContainerViewLayoutDirectionLeft,
+    QMUIPopupContainerViewLayoutDirectionRight
 };
 
 /**
- * 带箭头的小tips浮层，自带 imageView 和 textLabel，可展示简单的图文信息。
+ * 带箭头的小tips浮层，自带 imageView 和 textLabel，可展示简单的图文信息，支持 UIViewContentModeTop/UIViewContentModeBottom/UIViewContentModeCenter 三种布局方式。
  * QMUIPopupContainerView 支持以两种方式显示在界面上：
  * 1. 添加到某个 UIView 上（适合于 viewController 切换时浮层跟着一起切换的场景），这种场景只能手动隐藏浮层。
  * 2. 在 QMUIPopupContainerView 自带的 UIWindow 里显示（适合于用完就消失的场景，不要涉及界面切换），这种场景支持点击空白地方自动隐藏浮层。
@@ -44,10 +46,11 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  * 3. 通过重写 sizeThatFitsInContentView:，在里面返回当前 subviews 的大小。
  * 4. 在 layoutSubviews: 里，所有 subviews 请相对于 contentView 布局。
  */
-
 @interface QMUIPopupContainerView : UIControl {
     CAShapeLayer    *_backgroundLayer;
+    CALayer         *_arrowImageLayer;
     CGFloat         _arrowMinX;
+    CGFloat         _arrowMinY;
 }
 
 @property(nonatomic, assign) BOOL debug;
@@ -77,6 +80,10 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 三角箭头的大小，默认为 CGSizeMake(18, 9)
 @property(nonatomic, assign) CGSize arrowSize UI_APPEARANCE_SELECTOR;
 
+/// 三角箭头的图片，通常用于默认的三角样式不满足需求时。当使用了 arrowImage 后，arrowSize 将会被固定为 arrowImage.size。
+/// 图片必须为箭头向下的方向
+@property(nonatomic, strong) UIImage *arrowImage UI_APPEARANCE_SELECTOR;
+
 /// 最大宽度（指整个控件的宽度，而不是contentView部分），默认为CGFLOAT_MAX
 @property(nonatomic, assign) CGFloat maximumWidth UI_APPEARANCE_SELECTOR;
 
@@ -101,12 +108,18 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 最终布局时与父节点的边缘的临界点，默认为(10, 10, 10, 10)
 @property(nonatomic, assign) UIEdgeInsets safetyMarginsOfSuperview UI_APPEARANCE_SELECTOR;
 
+/// 浮层的背景色，作用区域为箭头+圆角矩形区域
 @property(nonatomic, strong) UIColor *backgroundColor UI_APPEARANCE_SELECTOR;
+
+/// 浮层点击 highlighted 时的背景色，作用区域为箭头+圆角矩形区域
 @property(nonatomic, strong) UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 当使用方法 2 显示并且打开了 automaticallyHidesWhenUserTap 时，可修改背景遮罩的颜色，默认为 UIColorMask，若非使用方法 2，或者没有打开 automaticallyHidesWhenUserTap，则背景遮罩为透明（可视为不存在背景遮罩）
 @property(nonatomic, strong) UIColor *maskViewBackgroundColor UI_APPEARANCE_SELECTOR;
+
+/// 浮层的阴影，默认包含箭头的形状，如果使用了 @c arrowImage 则不包含箭头。当不需要阴影时可将其置为 nil。
 @property(nonatomic, strong) UIColor *shadowColor UI_APPEARANCE_SELECTOR;
+
 @property(nonatomic, strong) UIColor *borderColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;
@@ -160,6 +173,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 
  @param size 浮层里除去 safetyMarginsOfSuperview、arrowSize、contentEdgeInsets 之外后，留给内容的实际大小，计算 subview 大小时均应使用这个参数来计算
  @return 自定义内容实际占据的大小
+ @note 计算结果不需要进行 MIN() 的保护操作，溢出与否会由父类统一处理，子类在这个方法里只需要告诉父类内容实际的大小即可。
  */
 - (CGSize)sizeThatFitsInContentView:(CGSize)size;
 @end

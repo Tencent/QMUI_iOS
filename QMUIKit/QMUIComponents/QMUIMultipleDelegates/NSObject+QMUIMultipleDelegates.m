@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  NSObject+MultipleDelegates.m
@@ -18,7 +18,6 @@
 #import "QMUICore.h"
 #import "NSPointerArray+QMUI.h"
 #import "NSString+QMUI.h"
-#import <objc/runtime.h>
 
 @interface NSObject ()
 
@@ -28,8 +27,6 @@
 @implementation NSObject (QMUIMultipleDelegates)
 
 QMUISynthesizeIdStrongProperty(qmuimd_delegates, setQmuimd_delegates)
-
-static NSMutableSet<NSString *> *qmui_methodsReplacedClasses;
 
 static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
 - (void)setQmui_multipleDelegatesEnabled:(BOOL)qmui_multipleDelegatesEnabled {
@@ -80,14 +77,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
         }
     }
     
-    // 避免为某个 class 重复替换同一个方法的实现
-    if (!qmui_methodsReplacedClasses) {
-        qmui_methodsReplacedClasses = [NSMutableSet set];
-    }
-    NSString *classAndMethodIdentifier = [NSString stringWithFormat:@"%@-%@", NSStringFromClass(targetClass), delegateGetterKey];
-    if (![qmui_methodsReplacedClasses containsObject:classAndMethodIdentifier]) {
-        [qmui_methodsReplacedClasses addObject:classAndMethodIdentifier];
-        
+    [QMUIHelper executeBlock:^{
         IMP originIMP = method_getImplementation(originMethod);
         void (*originSelectorIMP)(id, SEL, id);
         originSelectorIMP = (void (*)(id, SEL, id))originIMP;
@@ -105,18 +95,14 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
             if (!aDelegate) {
                 // 对应 setDelegate:nil，表示清理所有的 delegate
                 [delegates removeAllDelegates];
-                selfObject.qmui_delegatesSelf = NO;
                 // 只要 qmui_multipleDelegatesEnabled 开启，就会保证 delegate 一直是 delegates，所以不去调用系统默认的 set nil
-                //            originSelectorIMP(selfObject, originDelegateSetter, nil);
+                // originSelectorIMP(selfObject, originDelegateSetter, nil);
                 return;
             }
             
             if (aDelegate != delegates) {// 过滤掉容器自身，避免把 delegates 传进去 delegates 里，导致死循环
                 [delegates addDelegate:aDelegate];
             }
-            
-            // 将类似 textView.delegate = textView 的情况标志起来，避免产生循环调用 https://github.com/Tencent/QMUI_iOS/issues/346
-            selfObject.qmui_delegatesSelf = [delegates.delegates qmui_containsPointer:(__bridge void * _Nullable)(selfObject)];
             
             originSelectorIMP(selfObject, originDelegateSetter, nil);// 先置为 nil 再设置 delegates，从而避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/305
             originSelectorIMP(selfObject, originDelegateSetter, delegates);// 不管外面将什么 object 传给 setDelegate:，最终实际上传进去的都是 QMUIMultipleDelegates 容器
@@ -126,7 +112,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
             Method newMethod = class_getInstanceMethod(targetClass, newDelegateSetter);
             method_exchangeImplementations(originMethod, newMethod);
         }
-    }
+    } oncePerIdentifier:[NSString stringWithFormat:@"MultipleDelegates %@-%@", NSStringFromClass(targetClass), NSStringFromSelector(getter)]];
     
     // 如果原来已经有 delegate，则将其加到新建的容器里
     // @see https://github.com/Tencent/QMUI_iOS/issues/378
@@ -169,11 +155,5 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
 - (SEL)newSetterWithGetter:(SEL)getter {
     return NSSelectorFromString([NSString stringWithFormat:@"qmuimd_%@", NSStringFromSelector(setterWithGetter(getter))]);
 }
-
-@end
-
-@implementation NSObject (QMUIMultipleDelegates_Private)
-
-QMUISynthesizeBOOLProperty(qmui_delegatesSelf, setQmui_delegatesSelf)
 
 @end

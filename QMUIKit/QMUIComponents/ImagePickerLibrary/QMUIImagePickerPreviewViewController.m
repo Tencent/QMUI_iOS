@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIImagePickerPreviewViewController.m
@@ -27,31 +27,27 @@
 #import "QMUIAlertController.h"
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
-#import "UIControl+QMUI.h"
 #import "QMUILog.h"
+#import "QMUIAppearance.h"
 
 #pragma mark - QMUIImagePickerPreviewViewController (UIAppearance)
 
 @implementation QMUIImagePickerPreviewViewController (UIAppearance)
 
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
+}
+
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        [self appearance]; // +initialize 时就先设置好默认样式
+        [self initAppearance];
     });
 }
 
-static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerAppearance;
-+ (nonnull instancetype)appearance {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (!imagePickerPreviewViewControllerAppearance) {
-            imagePickerPreviewViewControllerAppearance = [[QMUIImagePickerPreviewViewController alloc] init];
-            imagePickerPreviewViewControllerAppearance.toolBarBackgroundColor = UIColorMakeWithRGBA(27, 27, 27, .9f);
-            imagePickerPreviewViewControllerAppearance.toolBarTintColor = UIColorWhite;
-        }
-    });
-    return imagePickerPreviewViewControllerAppearance;
++ (void)initAppearance {
+    QMUIImagePickerPreviewViewController.appearance.toolBarBackgroundColor = UIColorMakeWithRGBA(27, 27, 27, .9f);
+    QMUIImagePickerPreviewViewController.appearance.toolBarTintColor = UIColorWhite;
 }
 
 @end
@@ -64,11 +60,8 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.maximumSelectImageCount = INT_MAX;
         self.minimumSelectImageCount = 0;
-        if (imagePickerPreviewViewControllerAppearance) {
-            // 避免 imagePickerPreviewViewControllerAppearance init 时走到这里来，导致死循环
-            self.toolBarBackgroundColor = [QMUIImagePickerPreviewViewController appearance].toolBarBackgroundColor;
-            self.toolBarTintColor = [QMUIImagePickerPreviewViewController appearance].toolBarTintColor;
-        }
+        
+        [self qmui_applyAppearance];
     }
     return self;
 }
@@ -109,10 +102,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
         self.checkboxButton.selected = [self.selectedImageAssetArray containsObject:imageAsset];
     }
     
-    BeginIgnoreDeprecatedWarning
-    [[UIApplication sharedApplication] setStatusBarHidden:YES];
-    EndIgnoreDeprecatedWarning
-    
     if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
         UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
         if ([vc respondsToSelector:@selector(shouldCustomizeNavigationBarTransitionIfHideable)] &&
@@ -125,10 +114,6 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    
-    BeginIgnoreDeprecatedWarning
-    [[UIApplication sharedApplication] setStatusBarHidden:NO];
-    EndIgnoreDeprecatedWarning
     
     if ([self conformsToProtocol:@protocol(QMUICustomNavigationBarTransitionDelegate)]) {
         UIViewController<QMUICustomNavigationBarTransitionDelegate> *vc = (UIViewController<QMUICustomNavigationBarTransitionDelegate> *)self;
@@ -198,10 +183,8 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
 - (QMUIImagePreviewMediaType)imagePreviewView:(QMUIImagePreviewView *)imagePreviewView assetTypeAtIndex:(NSUInteger)index {
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:index];
     if (imageAsset.assetType == QMUIAssetTypeImage) {
-        if (@available(iOS 9.1, *)) {
-            if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
-                return QMUIImagePreviewMediaTypeLivePhoto;
-            }
+        if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
+            return QMUIImagePreviewMediaTypeLivePhoto;
         }
         return QMUIImagePreviewMediaTypeImage;
     } else if (imageAsset.assetType == QMUIAssetTypeVideo) {
@@ -355,13 +338,8 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
         
         // 这么写是为了消除 Xcode 的 API available warning
         BOOL isLivePhoto = NO;
-        if (@available(iOS 9.1, *)) {
-            if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
-                isLivePhoto = YES;
-            }
-        }
-        
-        if (isLivePhoto) {
+        if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
+            isLivePhoto = YES;
             imageView.tag = -1;
             imageAsset.requestID = [imageAsset requestLivePhotoWithCompletion:^void(PHLivePhoto *livePhoto, NSDictionary *info) {
                 // 这里可能因为 imageView 复用，导致前面的请求得到的结果显示到别的 imageView 上，
@@ -373,9 +351,7 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
                     if (!loadICloudImageFault && (isNewRequest || isCurrentRequest)) {
                         // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
                         // 这时需要把图片放大到跟屏幕一样大，避免后面加载大图后图片的显示会有跳动
-                        if (@available(iOS 9.1, *)) {
-                            imageView.livePhoto = livePhoto;
-                        }
+                        imageView.livePhoto = livePhoto;
                     }
                     BOOL downloadSucceed = (livePhoto && !info) || (![[info objectForKey:PHLivePhotoInfoCancelledKey] boolValue] && ![info objectForKey:PHLivePhotoInfoErrorKey] && ![[info objectForKey:PHLivePhotoInfoIsDegradedKey] boolValue]);
                     if (downloadSucceed) {
@@ -392,6 +368,9 @@ static QMUIImagePickerPreviewViewController *imagePickerPreviewViewControllerApp
                 });
             } withProgressHandler:phProgressHandler];
             imageView.tag = imageAsset.requestID;
+        }
+        
+        if (isLivePhoto) {
         } else if (imageAsset.assetSubType == QMUIAssetSubTypeGIF) {
             [imageAsset requestImageData:^(NSData *imageData, NSDictionary<NSString *,id> *info, BOOL isGIF, BOOL isHEIC) {
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{

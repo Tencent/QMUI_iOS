@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIZoomImageView.h
@@ -80,10 +80,10 @@
 @property(nonatomic, strong, readonly) UIImageView *imageView;
 
 /// 设置当前要显示的 Live Photo，会把 image/video 相关内容清空，因此注意不要直接通过 livePhotoView.livePhoto 来设置
-@property(nonatomic, weak) PHLivePhoto *livePhoto NS_AVAILABLE_IOS(9_1);
+@property(nonatomic, weak) PHLivePhoto *livePhoto;
 
 /// 用于显示 Live Photo 的 view，仅在 iOS 9.1 及以后才有效
-@property(nonatomic, strong, readonly) PHLivePhotoView *livePhotoView NS_AVAILABLE_IOS(9_1);
+@property(nonatomic, strong, readonly) PHLivePhotoView *livePhotoView;
 
 /// 设置当前要显示的 video ，会把 image/livePhoto 相关内容清空，因此注意不要直接通过 videoPlayerLayer 来设置
 @property(nonatomic, weak) AVPlayerItem *videoPlayerItem;

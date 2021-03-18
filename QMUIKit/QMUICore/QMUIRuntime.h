@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIRuntime.h
@@ -109,21 +109,24 @@ OverrideImplementation(Class targetClass, SEL targetSelector, id (^implementatio
     IMP imp = method_getImplementation(originMethod);
     BOOL hasOverride = HasOverrideSuperclassMethod(targetClass, targetSelector);
     
-    // 以 block 的方式达到实时获取初始方法的 IMP 的目的，从而避免先 swizzle 了 subclass 的方法，再 swizzle superclass 的方法，会发现前者的方法调用不会触发后者 swizzle 后的版本的 bug。
+    // 以 block 的方式达到实时获取初始方法的 IMP 的目的，从而避免先 swizzle 了 subclass 的方法，再 swizzle superclass 的方法，会发现前者调用时不会触发后者 swizzle 后的版本的 bug。
     IMP (^originalIMPProvider)(void) = ^IMP(void) {
         IMP result = NULL;
-        // 如果原本 class 就没人实现那个方法，则返回一个空 block，空 block 虽然没有参数列表，但在业务那边被转换成 IMP 后就算传多个参数进来也不会 crash
-        if (!imp) {
+        if (hasOverride) {
+            result = imp;
+        } else {
+            // 如果 superclass 里依然没有实现，则会返回一个 objc_msgForward 从而触发消息转发的流程
+            // https://github.com/Tencent/QMUI_iOS/issues/776
+            Class superclass = class_getSuperclass(targetClass);
+            result = class_getMethodImplementation(superclass, targetSelector);
+        }
+        
+        // 这只是一个保底，这里要返回一个空 block 保证非 nil，才能避免用小括号语法调用 block 时 crash
+        // 空 block 虽然没有参数列表，但在业务那边被转换成 IMP 后就算传多个参数进来也不会 crash
+        if (!result) {
             result = imp_implementationWithBlock(^(id selfObject){
                 QMUILogWarn(([NSString stringWithFormat:@"%@", targetClass]), @"%@ 没有初始实现，%@\n%@", NSStringFromSelector(targetSelector), selfObject, [NSThread callStackSymbols]);
             });
-        } else {
-            if (hasOverride) {
-                result = imp;
-            } else {
-                Class superclass = class_getSuperclass(targetClass);
-                result = class_getMethodImplementation(superclass, targetSelector);
-            }
         }
         
         return result;
@@ -264,13 +267,16 @@ _QMUITypeEncodingDetectorGenerator(Int, int)
 _QMUITypeEncodingDetectorGenerator(Short, short)
 _QMUITypeEncodingDetectorGenerator(Long, long)
 _QMUITypeEncodingDetectorGenerator(LongLong, long long)
+_QMUITypeEncodingDetectorGenerator(NSInteger, NSInteger)
 _QMUITypeEncodingDetectorGenerator(UnsignedChar, unsigned char)
 _QMUITypeEncodingDetectorGenerator(UnsignedInt, unsigned int)
 _QMUITypeEncodingDetectorGenerator(UnsignedShort, unsigned short)
 _QMUITypeEncodingDetectorGenerator(UnsignedLong, unsigned long)
 _QMUITypeEncodingDetectorGenerator(UnsignedLongLong, unsigned long long)
+_QMUITypeEncodingDetectorGenerator(NSUInteger, NSUInteger)
 _QMUITypeEncodingDetectorGenerator(Float, float)
 _QMUITypeEncodingDetectorGenerator(Double, double)
+_QMUITypeEncodingDetectorGenerator(CGFloat, CGFloat)
 _QMUITypeEncodingDetectorGenerator(BOOL, BOOL)
 _QMUITypeEncodingDetectorGenerator(Void, void)
 _QMUITypeEncodingDetectorGenerator(Character, char *)
@@ -312,3 +318,27 @@ _QMUIGetIvarValueGenerator(Selector, SEL)
 CG_INLINE id getObjectIvarValue(id object, Ivar ivar) {
     return object_getIvar(object, ivar);
 }
+
+
+#pragma mark - Mach-O
+
+typedef struct classref *classref_t;
+
+/**
+ 获取业务项目的所有 class
+ @param classes 传入 classref_t 变量的指针，会填充结果到里面，然后可以用下标访问。如果只是为了得到总数，可传入 NULL。
+ @return class 的总数
+ 
+ 例如：
+ 
+ @code
+ classref_t *classes = nil;
+ int count = qmui_getProjectClassList(&classes);
+ Class class = (__bridge Class)classes[0];
+ @endcode
+ */
+FOUNDATION_EXPORT int qmui_getProjectClassList(classref_t **classes);
+/**
+ 检测是否存在某个dyld  image
+ */
+FOUNDATION_EXPORT BOOL qmui_exists_dyld_image(const char *target_image_name);

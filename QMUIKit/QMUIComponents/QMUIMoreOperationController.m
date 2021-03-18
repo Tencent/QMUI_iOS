@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIMoreOperationController.m
@@ -21,6 +21,7 @@
 #import "NSArray+QMUI.h"
 #import "UIScrollView+QMUI.h"
 #import "QMUILog.h"
+#import "QMUIAppearance.h"
 
 static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 
@@ -38,51 +39,44 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 
 @implementation QMUIMoreOperationController (UIAppearance)
 
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
+}
+
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        [self appearance];
+        [self initAppearance];
     });
 }
 
-static QMUIMoreOperationController *moreOperationViewControllerAppearance;
-+ (nonnull instancetype)appearance {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        [self resetAppearance];
-    });
-    return moreOperationViewControllerAppearance;
-}
-
-+ (void)resetAppearance {
-    if (!moreOperationViewControllerAppearance) {
-        moreOperationViewControllerAppearance = [[QMUIMoreOperationController alloc] init];
-        moreOperationViewControllerAppearance.contentBackgroundColor = UIColorForBackground;
-        moreOperationViewControllerAppearance.contentEdgeMargins = UIEdgeInsetsMake(0, 10, 10, 10);
-        moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(moreOperationViewControllerAppearance.contentEdgeMargins);
-        moreOperationViewControllerAppearance.contentCornerRadius = 10;
-        moreOperationViewControllerAppearance.contentPaddings = UIEdgeInsetsMake(10, 0, 5, 0);
-        
-        moreOperationViewControllerAppearance.scrollViewSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
-        moreOperationViewControllerAppearance.scrollViewContentInsets = UIEdgeInsetsMake(14, 8, 14, 8);
-        
-        moreOperationViewControllerAppearance.itemBackgroundColor = UIColorClear;
-        moreOperationViewControllerAppearance.itemTitleColor = UIColorGrayDarken;
-        moreOperationViewControllerAppearance.itemTitleFont = UIFontMake(11);
-        moreOperationViewControllerAppearance.itemPaddingHorizontal = 16;
-        moreOperationViewControllerAppearance.itemTitleMarginTop = 9;
-        moreOperationViewControllerAppearance.itemMinimumMarginHorizontal = 0;
-        moreOperationViewControllerAppearance.automaticallyAdjustItemMargins = YES;
-        
-        moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorForBackground;
-        moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
-        moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
-        moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(16);
-        moreOperationViewControllerAppearance.cancelButtonHeight = 56.0;
-        moreOperationViewControllerAppearance.cancelButtonMarginTop = 0;
-        
-        moreOperationViewControllerAppearance.isExtendBottomLayout = NO;
-    }
++ (void)initAppearance {
+    QMUIMoreOperationController *moreOperationViewControllerAppearance = QMUIMoreOperationController.appearance;
+    moreOperationViewControllerAppearance.contentBackgroundColor = UIColorForBackground;
+    moreOperationViewControllerAppearance.contentEdgeMargins = UIEdgeInsetsMake(0, 10, 10, 10);
+    moreOperationViewControllerAppearance.contentMaximumWidth = [QMUIHelper screenSizeFor55Inch].width - UIEdgeInsetsGetHorizontalValue(moreOperationViewControllerAppearance.contentEdgeMargins);
+    moreOperationViewControllerAppearance.contentCornerRadius = 10;
+    moreOperationViewControllerAppearance.contentPaddings = UIEdgeInsetsMake(10, 0, 5, 0);
+    
+    moreOperationViewControllerAppearance.scrollViewSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
+    moreOperationViewControllerAppearance.scrollViewContentInsets = UIEdgeInsetsMake(14, 8, 14, 8);
+    
+    moreOperationViewControllerAppearance.itemBackgroundColor = UIColorClear;
+    moreOperationViewControllerAppearance.itemTitleColor = UIColorGrayDarken;
+    moreOperationViewControllerAppearance.itemTitleFont = UIFontMake(11);
+    moreOperationViewControllerAppearance.itemPaddingHorizontal = 16;
+    moreOperationViewControllerAppearance.itemTitleMarginTop = 9;
+    moreOperationViewControllerAppearance.itemMinimumMarginHorizontal = 0;
+    moreOperationViewControllerAppearance.automaticallyAdjustItemMargins = YES;
+    
+    moreOperationViewControllerAppearance.cancelButtonBackgroundColor = UIColorForBackground;
+    moreOperationViewControllerAppearance.cancelButtonTitleColor = UIColorBlue;
+    moreOperationViewControllerAppearance.cancelButtonSeparatorColor = UIColorMakeWithRGBA(0, 0, 0, .15f);
+    moreOperationViewControllerAppearance.cancelButtonFont = UIFontBoldMake(16);
+    moreOperationViewControllerAppearance.cancelButtonHeight = 56.0;
+    moreOperationViewControllerAppearance.cancelButtonMarginTop = 0;
+    
+    moreOperationViewControllerAppearance.isExtendBottomLayout = NO;
 }
 
 @end
@@ -116,58 +110,45 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 }
 
 - (void)didInitialize {
-    if (moreOperationViewControllerAppearance) {
-        self.contentBackgroundColor = [QMUIMoreOperationController appearance].contentBackgroundColor;
-        self.contentEdgeMargins = [QMUIMoreOperationController appearance].contentEdgeMargins;
-        self.contentMaximumWidth = [QMUIMoreOperationController appearance].contentMaximumWidth;
-        self.contentCornerRadius = [QMUIMoreOperationController appearance].contentCornerRadius;
-        self.contentPaddings = [QMUIMoreOperationController appearance].contentPaddings;
-        
-        self.scrollViewSeparatorColor = [QMUIMoreOperationController appearance].scrollViewSeparatorColor;
-        self.scrollViewContentInsets = [QMUIMoreOperationController appearance].scrollViewContentInsets;
-        
-        self.itemBackgroundColor = [QMUIMoreOperationController appearance].itemBackgroundColor;
-        self.itemTitleColor = [QMUIMoreOperationController appearance].itemTitleColor;
-        self.itemTitleFont = [QMUIMoreOperationController appearance].itemTitleFont;
-        self.itemPaddingHorizontal = [QMUIMoreOperationController appearance].itemPaddingHorizontal;
-        self.itemTitleMarginTop = [QMUIMoreOperationController appearance].itemTitleMarginTop;
-        self.itemMinimumMarginHorizontal = [QMUIMoreOperationController appearance].itemMinimumMarginHorizontal;
-        self.automaticallyAdjustItemMargins = [QMUIMoreOperationController appearance].automaticallyAdjustItemMargins;
-        
-        self.cancelButtonBackgroundColor = [QMUIMoreOperationController appearance].cancelButtonBackgroundColor;
-        self.cancelButtonTitleColor = [QMUIMoreOperationController appearance].cancelButtonTitleColor;
-        self.cancelButtonSeparatorColor = [QMUIMoreOperationController appearance].cancelButtonSeparatorColor;
-        self.cancelButtonFont = [QMUIMoreOperationController appearance].cancelButtonFont;
-        self.cancelButtonHeight = [QMUIMoreOperationController appearance].cancelButtonHeight;
-        self.cancelButtonMarginTop = [QMUIMoreOperationController appearance].cancelButtonMarginTop;
-        
-        self.isExtendBottomLayout = [QMUIMoreOperationController appearance].isExtendBottomLayout;
-        
-        self.mutableScrollViews = [[NSMutableArray alloc] init];
-        self.mutableItems = [[NSMutableArray alloc] init];
-    }
+    [self qmui_applyAppearance];
     
-    [self loadViewIfNeeded];
+    self.mutableScrollViews = [[NSMutableArray alloc] init];
+    self.mutableItems = [[NSMutableArray alloc] init];
+}
+
+#pragma mark - Getters & Setters
+
+@synthesize contentView = _contentView;
+- (UIView *)contentView {
+    if (!_contentView) {
+        _contentView = [[UIView alloc] init];
+        _contentView.backgroundColor = self.contentBackgroundColor;
+    }
+    return _contentView;
+}
+
+@synthesize cancelButton = _cancelButton;
+- (QMUIButton *)cancelButton {
+    if (!_cancelButton) {
+        _cancelButton = [[QMUIButton alloc] init];
+        _cancelButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
+        _cancelButton.adjustsButtonWhenHighlighted = NO;
+        _cancelButton.titleLabel.font = self.cancelButtonFont;
+        _cancelButton.backgroundColor = self.cancelButtonBackgroundColor;
+        [_cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+        [_cancelButton setTitleColor:self.cancelButtonTitleColor forState:UIControlStateNormal];
+        [_cancelButton setTitleColor:[self.cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
+        _cancelButton.qmui_borderPosition = self.cancelButtonMarginTop > 0 ? QMUIViewBorderPositionNone : QMUIViewBorderPositionTop;
+        _cancelButton.qmui_borderColor = self.cancelButtonSeparatorColor;
+        [_cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _cancelButton;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    _contentView = [[UIView alloc] init];
-    self.contentView.backgroundColor = self.contentBackgroundColor;
     [self.view addSubview:self.contentView];
-    
-    _cancelButton = [[QMUIButton alloc] init];
-    self.cancelButton.qmui_automaticallyAdjustTouchHighlightedInScrollView = YES;
-    self.cancelButton.adjustsButtonWhenHighlighted = NO;
-    self.cancelButton.titleLabel.font = self.cancelButtonFont;
-    self.cancelButton.backgroundColor = self.cancelButtonBackgroundColor;
-    [self.cancelButton setTitle:@"取消" forState:UIControlStateNormal];
-    [self.cancelButton setTitleColor:self.cancelButtonTitleColor forState:UIControlStateNormal];
-    [self.cancelButton setTitleColor:[self.cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
-    self.cancelButton.qmui_borderPosition = QMUIViewBorderPositionBottom;
-    self.cancelButton.qmui_borderColor = self.cancelButtonSeparatorColor;
-    [self.cancelButton addTarget:self action:@selector(handleCancelButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.cancelButton];
     
     self.extendLayer = [CALayer layer];
@@ -477,7 +458,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (void)setContentBackgroundColor:(UIColor *)contentBackgroundColor {
     _contentBackgroundColor = contentBackgroundColor;
-    self.contentView.backgroundColor = contentBackgroundColor;
+    _contentView.backgroundColor = contentBackgroundColor;
 }
 
 - (void)setScrollViewSeparatorColor:(UIColor *)scrollViewSeparatorColor {
@@ -497,21 +478,21 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (void)setCancelButtonBackgroundColor:(UIColor *)cancelButtonBackgroundColor {
     _cancelButtonBackgroundColor = cancelButtonBackgroundColor;
-    self.cancelButton.backgroundColor = cancelButtonBackgroundColor;
+    _cancelButton.backgroundColor = cancelButtonBackgroundColor;
     [self updateExtendLayerAppearance];
 }
 
 - (void)setCancelButtonTitleColor:(UIColor *)cancelButtonTitleColor {
     _cancelButtonTitleColor = cancelButtonTitleColor;
-    if (self.cancelButton) {
-        [self.cancelButton setTitleColor:cancelButtonTitleColor forState:UIControlStateNormal];
-        [self.cancelButton setTitleColor:[cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
+    if (_cancelButton) {
+        [_cancelButton setTitleColor:cancelButtonTitleColor forState:UIControlStateNormal];
+        [_cancelButton setTitleColor:[cancelButtonTitleColor colorWithAlphaComponent:ButtonHighlightedAlpha] forState:UIControlStateHighlighted];
     }
 }
 
 - (void)setCancelButtonSeparatorColor:(UIColor *)cancelButtonSeparatorColor {
     _cancelButtonSeparatorColor = cancelButtonSeparatorColor;
-    self.cancelButton.qmui_borderColor = cancelButtonSeparatorColor;
+    _cancelButton.qmui_borderColor = cancelButtonSeparatorColor;
 }
 
 - (void)setItemBackgroundColor:(UIColor *)itemBackgroundColor {
@@ -561,8 +542,8 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (void)setCancelButtonFont:(UIFont *)cancelButtonFont {
     _cancelButtonFont = cancelButtonFont;
-    self.cancelButton.titleLabel.font = cancelButtonFont;
-    [self.cancelButton setNeedsLayout];
+    _cancelButton.titleLabel.font = cancelButtonFont;
+    [_cancelButton setNeedsLayout];
 }
 
 - (void)setContentCornerRadius:(CGFloat)contentCornerRadius {
@@ -572,7 +553,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (void)setCancelButtonMarginTop:(CGFloat)cancelButtonMarginTop {
     _cancelButtonMarginTop = cancelButtonMarginTop;
-    self.cancelButton.qmui_borderPosition = cancelButtonMarginTop > 0 ? QMUIViewBorderPositionNone : QMUIViewBorderPositionTop;
+    _cancelButton.qmui_borderPosition = cancelButtonMarginTop > 0 ? QMUIViewBorderPositionNone : QMUIViewBorderPositionTop;
     [self updateCornerRadius];
     [self setViewNeedsLayoutIfLoaded];
 }
@@ -602,16 +583,20 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 
 - (void)updateCornerRadius {
     if (self.cancelButtonMarginTop > 0) {
-        self.view.layer.cornerRadius = 0;
-        self.view.clipsToBounds = NO;
+        if (self.isViewLoaded) {
+            self.view.layer.cornerRadius = 0;
+            self.view.clipsToBounds = NO;
+        }
         
-        self.contentView.layer.cornerRadius = self.contentCornerRadius;
-        self.cancelButton.layer.cornerRadius = self.contentCornerRadius;
+        _contentView.layer.cornerRadius = self.contentCornerRadius;
+        _cancelButton.layer.cornerRadius = self.contentCornerRadius;
     } else {
-        self.view.layer.cornerRadius = self.contentCornerRadius;
-        self.view.clipsToBounds = self.view.layer.cornerRadius > 0;// 有圆角才需要 clip
-        self.contentView.layer.cornerRadius = 0;
-        self.cancelButton.layer.cornerRadius = 0;
+        if (self.isViewLoaded) {
+            self.view.layer.cornerRadius = self.contentCornerRadius;
+            self.view.clipsToBounds = self.view.layer.cornerRadius > 0;// 有圆角才需要 clip
+        }
+        _contentView.layer.cornerRadius = 0;
+        _cancelButton.layer.cornerRadius = 0;
     }
 }
 
@@ -667,7 +652,7 @@ static QMUIMoreOperationController *moreOperationViewControllerAppearance;
 @dynamic tag;
 
 + (instancetype)itemViewWithImage:(UIImage *)image selectedImage:(UIImage *)selectedImage title:(NSString *)title selectedTitle:(NSString *)selectedTitle handler:(void (^)(QMUIMoreOperationController *, QMUIMoreOperationItemView *))handler {
-    QMUIMoreOperationItemView *itemView = [[QMUIMoreOperationItemView alloc] init];
+    QMUIMoreOperationItemView *itemView = [[self alloc] init];
     [itemView setImage:image forState:UIControlStateNormal];
     [itemView setImage:selectedImage forState:UIControlStateSelected];
     [itemView setImage:selectedImage forState:UIControlStateHighlighted|UIControlStateSelected];

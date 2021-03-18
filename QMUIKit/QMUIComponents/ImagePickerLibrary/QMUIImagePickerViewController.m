@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIImagePickerViewController.m
@@ -28,9 +28,9 @@
 #import "UIView+QMUI.h"
 #import <MobileCoreServices/MobileCoreServices.h>
 #import "QMUIEmptyView.h"
-#import "UIControl+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "QMUILog.h"
+#import "QMUIAppearance.h"
 
 static NSString * const kVideoCellIdentifier = @"video";
 static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
@@ -40,23 +40,19 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 
 @implementation QMUIImagePickerViewController (UIAppearance)
 
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
+}
+
 + (void)initialize {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        [self appearance]; // +initialize 时就先设置好默认样式
+        [self initAppearance];
     });
 }
 
-static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
-+ (nonnull instancetype)appearance {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (!imagePickerViewControllerAppearance) {
-            imagePickerViewControllerAppearance = [[QMUIImagePickerViewController alloc] init];
-            imagePickerViewControllerAppearance.minimumImageWidth = 75;
-        }
-    });
-    return imagePickerViewControllerAppearance;
++ (void)initAppearance {
+    QMUIImagePickerViewController.appearance.minimumImageWidth = 75;
 }
 
 @end
@@ -75,94 +71,27 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)didInitialize {
     [super didInitialize];
-    if (imagePickerViewControllerAppearance) {
-        // 避免 imagePickerViewControllerAppearance init 时走到这里来，导致死循环
-        self.minimumImageWidth = [QMUIImagePickerViewController appearance].minimumImageWidth;
-    }
+    
+    [self qmui_applyAppearance];
+    
     _allowsMultipleSelection = YES;
     _maximumSelectImageCount = INT_MAX;
     _minimumSelectImageCount = 0;
     _shouldShowDefaultLoadingView = YES;
-    // 为了让使用者可以在 init 完就可以直接改 UI 相关的 property，这里提前触发 loadView
-    [self loadViewIfNeeded];
 }
 
 - (void)dealloc {
-    self.collectionView.dataSource = nil;
-    self.collectionView.delegate = nil;
-}
-
-- (void)initSubviews {
-    [super initSubviews];
-    
-    _collectionViewLayout = [[UICollectionViewFlowLayout alloc] init];
-    CGFloat inset = PixelOne * 2; // no why, just beautiful
-    self.collectionViewLayout.sectionInset = UIEdgeInsetsMake(inset, inset, inset, inset);
-    self.collectionViewLayout.minimumLineSpacing = self.collectionViewLayout.sectionInset.bottom;
-    self.collectionViewLayout.minimumInteritemSpacing = self.collectionViewLayout.sectionInset.left;
-    
-    _collectionView = [[UICollectionView alloc] initWithFrame:self.view.bounds collectionViewLayout:self.collectionViewLayout];
-    self.collectionView.delegate = self;
-    self.collectionView.dataSource = self;
-    self.collectionView.showsHorizontalScrollIndicator = NO;
-    self.collectionView.alwaysBounceHorizontal = NO;
-    self.collectionView.backgroundColor = UIColorClear;
-    [self.collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
-    [self.collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
-    if (@available(iOS 11, *)) {
-        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
-    [self.view addSubview:self.collectionView];
-    
-    // 只有允许多选时，才显示底部工具
-    if (self.allowsMultipleSelection) {
-        
-        _operationToolBarView = [[UIView alloc] init];
-        self.operationToolBarView.backgroundColor = UIColorWhite;
-        self.operationToolBarView.qmui_borderPosition = QMUIViewBorderPositionTop;
-        [self.view addSubview:self.operationToolBarView];
-        
-        _sendButton = [[QMUIButton alloc] init];
-        self.sendButton.enabled = NO;
-        self.sendButton.titleLabel.font = UIFontMake(16);
-        self.sendButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
-        [self.sendButton setTitleColor:UIColorMake(124, 124, 124) forState:UIControlStateNormal];
-        [self.sendButton setTitleColor:UIColorGray forState:UIControlStateDisabled];
-        [self.sendButton setTitle:@"发送" forState:UIControlStateNormal];
-        self.sendButton.qmui_outsideEdge = UIEdgeInsetsMake(-12, -20, -12, -20);
-        [self.sendButton sizeToFit];
-        [self.sendButton addTarget:self action:@selector(handleSendButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-        [self.operationToolBarView addSubview:self.sendButton];
-    
-        _previewButton = [[QMUIButton alloc] init];
-        self.previewButton.enabled = NO;
-        self.previewButton.titleLabel.font = self.sendButton.titleLabel.font;
-        [self.previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateNormal] forState:UIControlStateNormal];
-        [self.previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateDisabled] forState:UIControlStateDisabled];
-        [self.previewButton setTitle:@"预览" forState:UIControlStateNormal];
-        self.previewButton.qmui_outsideEdge = UIEdgeInsetsMake(-12, -20, -12, -20);
-        [self.previewButton sizeToFit];
-        [self.previewButton addTarget:self action:@selector(handlePreviewButtonClick:) forControlEvents:UIControlEventTouchUpInside];
-        [self.operationToolBarView addSubview:self.previewButton];
-        
-        _imageCountLabel = [[UILabel alloc] init];
-        self.imageCountLabel.userInteractionEnabled = NO;// 不要影响 sendButton 的事件
-        self.imageCountLabel.backgroundColor = ButtonTintColor;
-        self.imageCountLabel.textColor = UIColorWhite;
-        self.imageCountLabel.font = UIFontMake(12);
-        self.imageCountLabel.textAlignment = NSTextAlignmentCenter;
-        self.imageCountLabel.lineBreakMode = NSLineBreakByCharWrapping;
-        self.imageCountLabel.layer.masksToBounds = YES;
-        self.imageCountLabel.hidden = YES;
-        [self.operationToolBarView addSubview:self.imageCountLabel];
-    }
+    _collectionView.dataSource = nil;
+    _collectionView.delegate = nil;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = UIColorWhite;
+    [self.view addSubview:self.collectionView];
+    if (self.allowsMultipleSelection) {
+        [self.view addSubview:self.operationToolBarView];
+    }
 }
 
 - (void)setupNavigationItems {
@@ -249,7 +178,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
     if (self.shouldShowDefaultLoadingView) {
         [self showEmptyViewWithLoading];
     }
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [assetsGroup enumerateAssetsWithOptions:albumSortType usingBlock:^(QMUIAsset *resultAsset) {
             // 这里需要对 UI 进行操作，因此放回主线程处理
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -305,11 +234,11 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 }
 
 - (void)scrollToInitialPositionIfNeeded {
-    if (self.collectionView.qmui_visible && self.isImagesAssetLoaded && !self.hasScrollToInitialPosition) {
+    if (_collectionView.qmui_visible && self.isImagesAssetLoaded && !self.hasScrollToInitialPosition) {
         if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(albumSortTypeForImagePickerViewController:)] && [self.imagePickerViewControllerDelegate albumSortTypeForImagePickerViewController:self] == QMUIAlbumSortTypeReverse) {
-            [self.collectionView qmui_scrollToTop];
+            [_collectionView qmui_scrollToTop];
         } else {
-            [self.collectionView qmui_scrollToBottom];
+            [_collectionView qmui_scrollToBottom];
         }
         self.hasScrollToInitialPosition = YES;
     }
@@ -317,6 +246,114 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 
 - (void)willPopInNavigationControllerWithAnimated:(BOOL)animated {
     self.hasScrollToInitialPosition = NO;
+}
+
+#pragma mark - Getters & Setters
+
+@synthesize collectionViewLayout = _collectionViewLayout;
+- (UICollectionViewFlowLayout *)collectionViewLayout {
+    if (!_collectionViewLayout) {
+        _collectionViewLayout = [[UICollectionViewFlowLayout alloc] init];
+        CGFloat inset = PixelOne * 2; // no why, just beautiful
+        _collectionViewLayout.sectionInset = UIEdgeInsetsMake(inset, inset, inset, inset);
+        _collectionViewLayout.minimumLineSpacing = _collectionViewLayout.sectionInset.bottom;
+        _collectionViewLayout.minimumInteritemSpacing = _collectionViewLayout.sectionInset.left;
+    }
+    return _collectionViewLayout;
+}
+
+@synthesize collectionView = _collectionView;
+- (UICollectionView *)collectionView {
+    if (!_collectionView) {
+        _collectionView = [[UICollectionView alloc] initWithFrame:self.isViewLoaded ? self.view.bounds : CGRectZero collectionViewLayout:self.collectionViewLayout];
+        _collectionView.delegate = self;
+        _collectionView.dataSource = self;
+        _collectionView.showsHorizontalScrollIndicator = NO;
+        _collectionView.alwaysBounceHorizontal = NO;
+        _collectionView.backgroundColor = UIColorClear;
+        [_collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
+        [_collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
+        if (@available(iOS 11, *)) {
+            _collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        } else {
+            self.automaticallyAdjustsScrollViewInsets = NO;
+        }
+    }
+    return _collectionView;
+}
+
+@synthesize operationToolBarView = _operationToolBarView;
+- (UIView *)operationToolBarView {
+    if (!_operationToolBarView) {
+        _operationToolBarView = [[UIView alloc] init];
+        _operationToolBarView.backgroundColor = UIColorWhite;
+        _operationToolBarView.qmui_borderPosition = QMUIViewBorderPositionTop;
+        
+        [_operationToolBarView addSubview:self.sendButton];
+        [_operationToolBarView addSubview:self.previewButton];
+        [_operationToolBarView addSubview:self.imageCountLabel];
+    }
+    return _operationToolBarView;
+}
+
+@synthesize sendButton = _sendButton;
+- (QMUIButton *)sendButton {
+    if (!_sendButton) {
+        _sendButton = [[QMUIButton alloc] init];
+        _sendButton.enabled = NO;
+        _sendButton.titleLabel.font = UIFontMake(16);
+        _sendButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
+        [_sendButton setTitleColor:UIColorMake(124, 124, 124) forState:UIControlStateNormal];
+        [_sendButton setTitleColor:UIColorGray forState:UIControlStateDisabled];
+        [_sendButton setTitle:@"发送" forState:UIControlStateNormal];
+        _sendButton.qmui_outsideEdge = UIEdgeInsetsMake(-12, -20, -12, -20);
+        [_sendButton sizeToFit];
+        [_sendButton addTarget:self action:@selector(handleSendButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _sendButton;
+}
+
+@synthesize previewButton = _previewButton;
+- (QMUIButton *)previewButton {
+    if (!_previewButton) {
+        _previewButton = [[QMUIButton alloc] init];
+        _previewButton.enabled = NO;
+        _previewButton.titleLabel.font = self.sendButton.titleLabel.font;
+        [_previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateNormal] forState:UIControlStateNormal];
+        [_previewButton setTitleColor:[self.sendButton titleColorForState:UIControlStateDisabled] forState:UIControlStateDisabled];
+        [_previewButton setTitle:@"预览" forState:UIControlStateNormal];
+        _previewButton.qmui_outsideEdge = UIEdgeInsetsMake(-12, -20, -12, -20);
+        [_previewButton sizeToFit];
+        [_previewButton addTarget:self action:@selector(handlePreviewButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return _previewButton;
+}
+
+@synthesize imageCountLabel = _imageCountLabel;
+- (UILabel *)imageCountLabel {
+    if (!_imageCountLabel) {
+        _imageCountLabel = [[UILabel alloc] init];
+        _imageCountLabel.userInteractionEnabled = NO;// 不要影响 sendButton 的事件
+        _imageCountLabel.backgroundColor = ButtonTintColor;
+        _imageCountLabel.textColor = UIColorWhite;
+        _imageCountLabel.font = UIFontMake(12);
+        _imageCountLabel.textAlignment = NSTextAlignmentCenter;
+        _imageCountLabel.lineBreakMode = NSLineBreakByCharWrapping;
+        _imageCountLabel.layer.masksToBounds = YES;
+        _imageCountLabel.hidden = YES;
+    }
+    return _imageCountLabel;
+}
+
+- (void)setAllowsMultipleSelection:(BOOL)allowsMultipleSelection {
+    _allowsMultipleSelection = allowsMultipleSelection;
+    if (self.isViewLoaded) {
+        if (_allowsMultipleSelection) {
+            [self.view addSubview:self.operationToolBarView];
+        } else {
+            [_operationToolBarView removeFromSuperview];
+        }
+    }
 }
 
 #pragma mark - <UICollectionViewDelegate, UICollectionViewDataSource>
@@ -408,13 +445,13 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 }
 
 - (void)handleCheckBoxButtonClick:(UIButton *)checkboxButton {
-    NSIndexPath *indexPath = [self.collectionView qmui_indexPathForItemAtView:checkboxButton];
+    NSIndexPath *indexPath = [_collectionView qmui_indexPathForItemAtView:checkboxButton];
     
     if ([self.imagePickerViewControllerDelegate respondsToSelector:@selector(imagePickerViewController:shouldCheckImageAtIndex:)] && ![self.imagePickerViewControllerDelegate imagePickerViewController:self shouldCheckImageAtIndex:indexPath.item]) {
         return;
     }
     
-    QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+    QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[_collectionView cellForItemAtIndexPath:indexPath];
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
     if (cell.checked) {
         // 移除选中状态
@@ -486,7 +523,7 @@ static QMUIImagePickerViewController *imagePickerViewControllerAppearance;
 - (void)requestImageWithIndexPath:(NSIndexPath *)indexPath {
     // 发出请求获取大图，如果图片在 iCloud，则会发出网络请求下载图片。这里同时保存请求 id，供取消请求使用
     QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:indexPath.item];
-    QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[self.collectionView cellForItemAtIndexPath:indexPath];
+    QMUIImagePickerCollectionViewCell *cell = (QMUIImagePickerCollectionViewCell *)[_collectionView cellForItemAtIndexPath:indexPath];
     imageAsset.requestID = [imageAsset requestOriginImageWithCompletion:^(UIImage *result, NSDictionary *info) {
         
         BOOL downloadSucceed = (result && !info) || (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);

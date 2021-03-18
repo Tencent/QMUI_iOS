@@ -1,9 +1,15 @@
+/**
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ */
 //
 //  QMUIWindowSizeMonitor.m
 //  qmuidemo
 //
 //  Created by ziezheng on 2019/5/27.
-//  Copyright © 2019 QMUI Team. All rights reserved.
 //
 
 #import "QMUIWindowSizeMonitor.h"
@@ -25,7 +31,7 @@
 
 @interface UIWindow (QMUIWindowSizeMonitor_Private)
 
-@property(nonatomic, assign) CGSize qwsm_previousSzie;
+@property(nonatomic, assign) CGSize qwsm_previousSize;
 @property(nonatomic, readonly) NSPointerArray *qwsm_sizeObservers;
 @property(nonatomic, readonly) NSPointerArray *qwsm_canReceiveWindowDidTransitionToSizeResponders;
 
@@ -38,7 +44,7 @@
 @implementation NSObject (QMUIWindowSizeMonitor)
 
 - (void)qmui_addSizeObserverForMainWindow:(QMUIWindowSizeObserverHandler)handler {
-    [self qmui_addSizeObserverForWindow:[UIApplication sharedApplication].delegate.window handler:handler];
+    [self qmui_addSizeObserverForWindow:UIApplication.sharedApplication.delegate.window handler:handler];
 }
 
 - (void)qmui_addSizeObserverForWindow:(UIWindow *)window handler:(QMUIWindowSizeObserverHandler)handler {
@@ -76,7 +82,7 @@
 
 @implementation UIWindow (QMUIWindowSizeMonitor)
 
-QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
+QMUISynthesizeCGSizeProperty(qwsm_previousSize, setQwsm_previousSize)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -84,11 +90,11 @@ QMUISynthesizeCGSizeProperty(qwsm_previousSzie, setQwsm_previousSzie)
         
         void (^notifyNewSizeBlock)(UIWindow *, CGRect) = ^(UIWindow *selfObject, CGRect firstArgv) {
             CGSize newSize = selfObject.bounds.size;
-            if (!CGSizeEqualToSize(newSize, selfObject.qwsm_previousSzie)) {
-                if (!CGSizeEqualToSize(selfObject.qwsm_previousSzie, CGSizeZero)) {
+            if (!CGSizeEqualToSize(newSize, selfObject.qwsm_previousSize)) {
+                if (!CGSizeEqualToSize(selfObject.qwsm_previousSize, CGSizeZero)) {
                     [selfObject qwsm_notifyWithNewSize:newSize];
                 }
-                selfObject.qwsm_previousSzie = selfObject.bounds.size;
+                selfObject.qwsm_previousSize = selfObject.bounds.size;
             }
         };
         

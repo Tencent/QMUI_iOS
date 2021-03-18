@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUITableViewCell.m
@@ -21,6 +21,7 @@
 
 @interface QMUITableViewCell() <UIScrollViewDelegate>
 
+@property(nonatomic, assign) BOOL initByTableView;
 @property(nonatomic, assign, readwrite) QMUITableViewCellPosition cellPosition;
 @property(nonatomic, assign, readwrite) UITableViewCellStyle style;
 @property(nonatomic, strong) UIImageView *defaultAccessoryImageView;
@@ -32,15 +33,18 @@
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        [self didInitializeWithStyle:style];
+        if (!self.initByTableView) {
+            [self didInitializeWithStyle:style];
+        }
     }
     return self;
 }
 
 - (instancetype)initForTableView:(UITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
+    self.initByTableView = YES;
     if (self = [self initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         self.parentTableView = tableView;
-        [self didInitializeWithStyle:style];// _isGroupedStyle 的值因为 parentTableView 的变化而变化，所以这里重新执行一次 didInitializeWithStyle:
+        [self didInitializeWithStyle:style];// 因为设置了 parentTableView，样式可能都需要变，所以这里重新执行一次 didInitializeWithStyle: 里的 qmui_styledAsQMUITableViewCell
     }
     return self;
 }
@@ -56,11 +60,7 @@
     return self;
 }
 
-// 解决 iOS 8 以后的 cell 中 separatorInset 受 layoutMargins 影响的问题
-- (UIEdgeInsets)layoutMargins {
-    return UIEdgeInsetsZero;
-}
-
+// layoutSubviews 里不可以拿 textLabel 的 minX 来设置 separatorInset，如果要设置只能写死一个值，否则会导致 textLabel 的 minX 逐渐叠加从而使 textLabel 被移出屏幕外
 - (void)layoutSubviews {
     [super layoutSubviews];
     
@@ -102,7 +102,7 @@
             }
         }
         if (hasCustomTextLabelEdgeInsets) {
-            textLabelFrame.origin.x += self.textLabelEdgeInsets.left - self.imageEdgeInsets.right;
+            textLabelFrame.origin.x += self.textLabelEdgeInsets.left - self.textLabelEdgeInsets.right;
             textLabelFrame.origin.y += self.textLabelEdgeInsets.top - self.textLabelEdgeInsets.bottom;
             textLabelFrame.size.width = fmin(CGRectGetWidth(textLabelFrame), CGRectGetWidth(self.contentView.bounds) - CGRectGetMinX(textLabelFrame));
         }
@@ -115,9 +115,6 @@
         self.imageView.frame = imageViewFrame;
         self.textLabel.frame = textLabelFrame;
         self.detailTextLabel.frame = detailTextLabelFrame;
-        
-        // `layoutSubviews`这里不可以拿textLabel的minX来设置separatorInset，如果要设置只能写死一个值
-        // 否则会导致textLabel的minX逐渐叠加从而使textLabel被移出屏幕外
     }
     
     // 由于调整 accessoryEdgeInsets 可能会影响 contentView 的宽度，所以几个 subviews 的布局也要保护一下
@@ -131,15 +128,9 @@
     }
 }
 
-- (BOOL)_isGroupedStyle {
-    return self.parentTableView && self.parentTableView.style == UITableViewStyleGrouped;
-}
-
-- (void)setBackgroundColor:(UIColor *)backgroundColor {
-    [super setBackgroundColor:backgroundColor];
-    if (self.backgroundView) {
-        self.backgroundView.backgroundColor = backgroundColor;
-    }
+// QMUITableViewCell 由于 init 时就把 tableView 传进来，所以可以在更早的时机拿到 qmui_tableView 的值，如果是系统的 UITableView，默认只能在添加到 tableView 上之后才可以获取到引用
+- (UITableView *)qmui_tableView {
+    return self.parentTableView ?: [super qmui_tableView];
 }
 
 - (void)setEnabled:(BOOL)enabled {
@@ -177,6 +168,7 @@
     if (!self.defaultAccessoryButton) {
         self.defaultAccessoryButton = [[QMUIButton alloc] init];
         [self.defaultAccessoryButton addTarget:self action:@selector(handleAccessoryButtonEvent:) forControlEvents:UIControlEventTouchUpInside];
+        self.defaultAccessoryButton.accessibilityLabel = @"更多信息";
     }
 }
 
@@ -315,12 +307,14 @@
 @implementation QMUITableViewCell(QMUISubclassingHooks)
 
 - (void)didInitializeWithStyle:(UITableViewCellStyle)style {
+    self.initByTableView = NO;
     _cellPosition = QMUITableViewCellPositionNone;
     
     _style = style;
     _enabled = YES;
     _accessoryHitTestEdgeInsets = UIEdgeInsetsMake(-12, -12, -12, -12);
     
+    // TODO: molice 测一下时至今日还需要吗？
     // 因为在hitTest里扩大了accessoryView的响应范围，因此提高了系统一个与此相关的bug的出现几率，所以又在scrollView.delegate里做一些补丁性质的东西来修复
     if ([self.subviews.firstObject isKindOfClass:[UIScrollView class]]) {
         UIScrollView *scrollView = (UIScrollView *)[self.subviews objectAtIndex:0];
@@ -332,8 +326,8 @@
 
 - (void)updateCellAppearanceWithIndexPath:(NSIndexPath *)indexPath {
     // 子类继承
-    if (indexPath && self.parentTableView) {
-        QMUITableViewCellPosition position = [self.parentTableView qmui_positionForRowAtIndexPath:indexPath];
+    if (indexPath && self.qmui_tableView) {
+        QMUITableViewCellPosition position = [self.qmui_tableView qmui_positionForRowAtIndexPath:indexPath];
         self.cellPosition = position;
     } else {
         self.cellPosition = QMUITableViewCellPositionNone;

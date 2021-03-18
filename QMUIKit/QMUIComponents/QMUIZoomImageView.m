@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIZoomImageView.m
@@ -23,7 +23,6 @@
 #import "QMUIButton.h"
 #import "QMUISlider.h"
 #import <MediaPlayer/MediaPlayer.h>
-#import "UIControl+QMUI.h"
 #import "UILabel+QMUI.h"
 #import "QMUIPieProgressView.h"
 
@@ -181,13 +180,15 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 - (void)setImage:(UIImage *)image {
     _image = image;
     
-    // 释放以节省资源
-    [_livePhotoView removeFromSuperview];
-    _livePhotoView = nil;
-    [self destroyVideoRelatedObjectsIfNeeded];
+    if (image) {
+        self.livePhoto = nil;
+        self.videoPlayerItem = nil;
+    }
     
     if (!image) {
         _imageView.image = nil;
+        [_imageView removeFromSuperview];
+        _imageView = nil;
         return;
     }
     self.imageView.image = image;
@@ -211,19 +212,20 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 - (void)setLivePhoto:(PHLivePhoto *)livePhoto {
     _livePhoto = livePhoto;
     
-    [_imageView removeFromSuperview];
-    _imageView = nil;
-    [self destroyVideoRelatedObjectsIfNeeded];
+    if (livePhoto) {
+        self.image = nil;
+        self.videoPlayerItem = nil;
+    }
     
     if (!livePhoto) {
         _livePhotoView.livePhoto = nil;
+        [_livePhotoView removeFromSuperview];
+        _livePhotoView = nil;
         return;
     }
     
     [self initLivePhotoViewIfNeeded];
-    if (@available(iOS 9.1, *)) {
-        _livePhotoView.livePhoto = livePhoto;
-    }
+    _livePhotoView.livePhoto = livePhoto;
     _livePhotoView.hidden = NO;
     
     // 更新 livePhotoView 的大小时，livePhotoView 可能已经被缩放过，所以要应用当前的缩放
@@ -233,13 +235,11 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 - (void)initLivePhotoViewIfNeeded {
-    if (@available(iOS 9.1, *)) {
-        if (_livePhotoView) {
-            return;
-        }
-        _livePhotoView = [[PHLivePhotoView alloc] init];
-        [self.scrollView addSubview:_livePhotoView];
+    if (_livePhotoView) {
+        return;
     }
+    _livePhotoView = [[PHLivePhotoView alloc] init];
+    [self.scrollView addSubview:_livePhotoView];
 }
 
 #pragma mark - Image Scale
@@ -258,7 +258,9 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 }
 
 - (CGFloat)minimumZoomScale {
-    if (!self.image && !self.livePhoto && !self.videoPlayerItem) {
+    BOOL isLivePhoto = !!self.livePhoto;
+
+    if (!self.image && !isLivePhoto && !self.videoPlayerItem) {
         return 1;
     }
     
@@ -266,7 +268,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     CGSize mediaSize = CGSizeZero;
     if (self.image) {
         mediaSize = self.image.size;
-    } else if (self.livePhoto) {
+    } else if (isLivePhoto) {
         mediaSize = self.livePhoto.size;
     } else if (self.videoPlayerItem) {
         mediaSize = self.videoSize;
@@ -391,9 +393,10 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (BOOL)enabledZoomImageView {
     BOOL enabledZoom = YES;
+    BOOL isLivePhoto = isLivePhoto = !!self.livePhoto;
     if ([self.delegate respondsToSelector:@selector(enabledZoomViewInZoomImageView:)]) {
         enabledZoom = [self.delegate enabledZoomViewInZoomImageView:self];
-    } else if (!self.image && !self.livePhoto && !self.videoPlayerItem) {
+    } else if (!self.image && !isLivePhoto && !self.videoPlayerItem) {
         enabledZoom = NO;
     }
     return enabledZoom;
@@ -404,13 +407,19 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 - (void)setVideoPlayerItem:(AVPlayerItem *)videoPlayerItem {
     _videoPlayerItem = videoPlayerItem;
     
-    [_livePhotoView removeFromSuperview];
-    _livePhotoView = nil;
-    [_imageView removeFromSuperview];
-    _imageView = nil;
+    if (videoPlayerItem) {
+        self.livePhoto = nil;
+        self.image = nil;
+        [self hideViews];
+    }
+    
+    // 移除旧的 videoPlayer 时，同时移除相应的 timeObserver
+    if (self.videoPlayer) {
+        [self removePlayerTimeObserver];
+    }
     
     if (!videoPlayerItem) {
-        [self hideViews];
+        [self destroyVideoRelatedObjectsIfNeeded];
         return;
     }
     
@@ -425,11 +434,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         }
     }
     
-    if (self.videoPlayer) {
-        // 移除旧的 videoPlayer 时，同时移除相应的 timeObserver
-        [self removePlayerTimeObserver];
-    }
-    
     self.videoPlayer = [AVPlayer playerWithPlayerItem:videoPlayerItem];
     [self initVideoRelatedViewsIfNeeded];
     _videoPlayerLayer.player = self.videoPlayer;
@@ -441,7 +445,6 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     
     [self configVideoProgressSlider];
     
-    [self hideViews];
     self.videoPlayerLayer.hidden = NO;
     self.videoCenteredPlayButton.hidden = NO;
     self.videoToolbar.playButton.hidden = NO;
@@ -653,6 +656,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     _videoCenteredPlayButton = nil;
     
     self.videoPlayer = nil;
+    _videoPlayerLayer.player = nil;
 }
 
 - (void)setVideoToolbarMargins:(UIEdgeInsets)videoToolbarMargins {
@@ -853,6 +857,8 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     [self.emptyView setActionButtonTitle:buttonTitle];
     [self.emptyView.actionButton removeTarget:nil action:NULL forControlEvents:UIControlEventAllEvents];
     [self.emptyView.actionButton addTarget:buttonTarget action:action forControlEvents:UIControlEventTouchUpInside];
+    self.emptyView.hidden = NO;
+    [self setNeedsLayout];
 }
 
 - (void)hideEmptyView {

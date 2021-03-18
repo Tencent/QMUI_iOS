@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UILabel+QMUI.h
@@ -16,6 +16,8 @@
 #import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+extern const CGFloat QMUILineHeightIdentity;
 
 @interface UILabel (QMUI)
 
@@ -44,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  @note 如果同时通过 qmui_textAttributes 或 attributedText 给整段文字设置了行高，则此方法将不再生效。换句话说，此方法设置的行高将永远不会覆盖 qmui_textAttributes 或 attributedText 设置的行高。
  *  @note 比如对于字符串"abc"，你通过 attributedText 设置 {0, 1} 这个 range 范围内的行高为 10，又通过 setQmui_lineHeight: 设置了整体行高为 20，则最终 {0, 1} 内的行高将为 10，而 {1, 2} 内的行高将为全局行高 20
  *  @note 比如对于字符串"abc"，你先通过 setQmui_lineHeight: 设置整体行高为 10，又通过 attributedText/qmui_textAttributes 设置整体行高为 20，无论这两个设置的代码的先后顺序如何，最终行高都将为 20
- *
+ *  @note 你可以通过设置 'QMUILineHeightIdentity' 来恢复 UILabel 默认的行高
  *  @note 当你设置了此属性后，每次你调用 setText: 时，其实都会被自动转而调用 setAttributedText:
  *
  *  -----------------------------------

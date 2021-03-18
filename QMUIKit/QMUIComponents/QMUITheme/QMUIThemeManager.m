@@ -1,9 +1,15 @@
+/**
+ * Tencent is pleased to support the open source community by making QMUI_iOS available.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+ * http://opensource.org/licenses/MIT
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+ */
 //
 //  QMUIThemeManager.m
 //  QMUIKit
 //
 //  Created by MoLice on 2019/J/20.
-//  Copyright © 2019 QMUI Team. All rights reserved.
 //
 
 #import "QMUIThemeManager.h"
@@ -27,35 +33,35 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
     static dispatch_once_t onceToken;
     static QMUIThemeManager *instance = nil;
     dispatch_once(&onceToken,^{
-        instance = [[super allocWithZone:NULL] init];
+        instance = [[self allocWithZone:NULL] init];
     });
     return instance;
-}
-
-+ (id)allocWithZone:(struct _NSZone *)zone{
-    return [self sharedInstance];
 }
 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (instancetype)init {
+- (NSString *)description {
+    return [NSString stringWithFormat:@"%@, name = %@, themes = %@", [super description], self.name, self.themes];
+}
+
+// 这个方法的声明放在 QMUIThemeManagerCenter.m 里，简单实现 private 的效果
+- (instancetype)initWithName:(__kindof NSObject<NSCopying> *)name {
     if (self = [super init]) {
+        _name = name;
         self._themeIdentifiers = NSMutableArray.new;
         self._themes = NSMutableArray.new;
         if (@available(iOS 13.0, *)) {
-            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleUserInterfaceStyleWillChangeNotification:) name:QMUIUserInterfaceStyleWillChangeNotification object:nil];
+            [UITraitCollection qmui_addUserInterfaceStyleWillChangeObserver:self selector:@selector(handleUserInterfaceStyleWillChangeEvent:)];
         }
     }
     return self;
 }
 
-- (void)handleUserInterfaceStyleWillChangeNotification:(NSNotification *)notification {
+- (void)handleUserInterfaceStyleWillChangeEvent:(UITraitCollection *)traitCollection {
     if (!_respondsSystemStyleAutomatically) return;
-    
     if (@available(iOS 13.0, *)) {
-        UITraitCollection *traitCollection = notification.object;
         if (traitCollection && self.identifierForTrait) {
             self.currentThemeIdentifier = self.identifierForTrait(traitCollection);
         }
@@ -64,13 +70,11 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
 
 - (void)setRespondsSystemStyleAutomatically:(BOOL)respondsSystemStyleAutomatically {
     _respondsSystemStyleAutomatically = respondsSystemStyleAutomatically;
-#ifdef IOS13_SDK_ALLOWED
     if (@available(iOS 13.0, *)) {
         if (_respondsSystemStyleAutomatically && self.identifierForTrait) {
              self.currentThemeIdentifier = self.identifierForTrait([UITraitCollection currentTraitCollection]);
         }
     }
-#endif
 }
 
 - (void)setCurrentThemeIdentifier:(NSObject<NSCopying> *)currentThemeIdentifier {
@@ -151,10 +155,9 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
     [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
         if (!window.hidden && window.alpha > 0.01 && window.rootViewController) {
             [window.rootViewController qmui_themeDidChangeByManager:self identifier:self.currentThemeIdentifier theme:self.currentTheme];
-            if (window.rootViewController.isViewLoaded) {
-                window.rootViewController.view.qmui_currentThemeIdentifier = self.currentThemeIdentifier;
-                window.rootViewController.view.qmui_currentTheme = self.currentTheme;
-            }
+            
+            // 某些 present style 情况下，window 上可能存在多个 viewController.view，因此需要遍历所有的 subviews，而不只是 window.rootViewController.view
+            [window _qmui_themeDidChangeByManager:self identifier:self.currentThemeIdentifier theme:self.currentTheme shouldEnumeratorSubviews:YES];
         }
     }];
 }

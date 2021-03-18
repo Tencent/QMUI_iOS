@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UIImage+QMUI.h
@@ -28,7 +28,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, QMUIImageShape) {
     QMUIImageShapeOval,                 // 椭圆
-    QMUIImageShapeTriangle,             // 三角形
+    QMUIImageShapeTriangle,             // 尖头向上的三角形
     QMUIImageShapeDisclosureIndicator,  // 列表 cell 右边的箭头
     QMUIImageShapeCheckmark,            // 列表 cell 右边的checkmark
     QMUIImageShapeDetailButtonImage,    // 列表 cell 右边的 i 按钮图片
@@ -64,6 +64,9 @@ typedef NS_ENUM(NSInteger, QMUIImageResizingMode) {
  @return 返回绘制完的图片
  */
 + (nullable UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock;
+
+/// 当前图片是否是可拉伸/平铺的，也即通过 resizableImageWithCapInsets: 处理过的图片
+@property(nonatomic, assign, readonly) BOOL qmui_resizable;
 
 /// 获取当前图片的像素大小，如果是多倍图，会被放大到一倍来算
 @property(nonatomic, assign, readonly) CGSize qmui_sizeInPixel;

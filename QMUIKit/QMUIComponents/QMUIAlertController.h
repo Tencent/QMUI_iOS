@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIAlertController.h
@@ -153,6 +153,12 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// alert 内部 textField 的边框颜色，如果不需要边框，可设置为 nil
 @property(nullable, nonatomic, strong) UIColor *alertTextFieldBorderColor UI_APPEARANCE_SELECTOR;
 
+/// alert 内部 textField 的 textInsets，textField 的高度会由文字大小加这个 inset 来决定
+@property(nonatomic, assign) UIEdgeInsets alertTextFieldTextInsets UI_APPEARANCE_SELECTOR;
+
+/// alert 内部 textField 的 margin，当存在多个 textField 时可通过参数 @c aTextFieldIndex 来为不同 textField 设置不一样的 margin。
+/// @note 注意 margin 是在原有布局基础上叠加的，左右叠加 @c alertHeaderInsets ，顶部 @c alertHeaderInsets.top ，底部为 0。
+@property(nonatomic, copy) UIEdgeInsets (^alertTextFieldMarginBlock)(__kindof QMUIAlertController *aAlertController, NSInteger aTextFieldIndex);
 
 /// sheet距离屏幕四边的间距，默认UIEdgeInsetsMake(10, 10, 10, 10)。
 @property(nonatomic, assign) UIEdgeInsets sheetContentMargin UI_APPEARANCE_SELECTOR;
@@ -205,6 +211,8 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// sheet头部title和message之间的间距，默认8pt
 @property(nonatomic, assign) CGFloat sheetTitleMessageSpacing UI_APPEARANCE_SELECTOR;
 
+/// sheet 的列数，一行显示多少个 button，默认是 1。
+@property(nonatomic, assign) CGFloat sheetButtonColumnCount UI_APPEARANCE_SELECTOR;
 
 /// 默认初始化方法
 - (nonnull instancetype)initWithTitle:(nullable NSString *)title message:(nullable NSString *)message preferredStyle:(QMUIAlertControllerStyle)preferredStyle;
@@ -257,10 +265,10 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// 将`QMUIAlertController`弹出来的`QMUIModalPresentationViewController`对象
 @property(nullable, nonatomic, strong, readonly) QMUIModalPresentationViewController *modalPresentationViewController;
 
-/// 主体内容（alert 下指整个弹窗，actionSheet 下指取消按钮上方的那些 header 和 按钮）背后用来做背景样式的 view，默认为空白的 UIView，当你需要做磨砂效果时可以将一个 UIVisualEffectView 赋值给它（但推荐用 QMUIVisualEffectView）。当赋值为 nil 时，内部会自动创建一个空白的 UIView 代替，以保证这个属性不为空。
+/// 主体内容（alert 下指整个弹窗，actionSheet 下指取消按钮上方的那些 header 和 按钮）背后用来做背景样式的 view，默认为空白的 UIView，当你需要做磨砂效果时可以将一个 UIVisualEffectView 赋值给它。当赋值为 nil 时，内部会自动创建一个空白的 UIView 代替，以保证这个属性不为空。
 @property(null_resettable, nonatomic, strong) UIView *mainVisualEffectView;
 
-/// actionSheet 下的取消按钮背后用来做背景样式的 view，默认为空白的 UIView，当你需要做磨砂效果时可以将一个 UIVisualEffectView 赋值给它（但推荐用 QMUIVisualEffectView）。alert 情况下不会出现。当赋值为 nil 时，内部会自动创建一个空白的 UIView 代替，以保证这个属性不为空。
+/// actionSheet 下的取消按钮背后用来做背景样式的 view，默认为空白的 UIView，当你需要做磨砂效果时可以将一个 UIVisualEffectView 赋值给它。alert 情况下不会出现。当赋值为 nil 时，内部会自动创建一个空白的 UIView 代替，以保证这个属性不为空。
 @property(null_resettable, nonatomic, strong) UIView *cancelButtonVisualEffectView;
 
 /**
@@ -276,9 +284,6 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// 在 iPhoneX 机器上是否延伸底部背景色。因为在 iPhoneX 上我们会把整个面板往上移动 safeArea 的距离，如果你的面板本来就配置成撑满全屏的样式，那么就会露出底部的空隙，isExtendBottomLayout 可以帮助你把空暇填补上。默认为NO。
 /// @warning: 只对 sheet 类型有效
 @property(nonatomic, assign) BOOL isExtendBottomLayout UI_APPEARANCE_SELECTOR;
-
-/// 在显示 alert 之前先降下键盘，默认为 YES。系统的 UIAlertController 也会在显示时降下键盘，但它能在消失后把键盘自动升起，并且这个过程不会触发 becomeFirstResponder/resignFirstResponder，QMUIAlertController 暂时做不到这样的效果，只负责降下，不负责恢复。
-@property(nonatomic, assign) BOOL dismissKeyboardAutomatically;
 
 @end
 

@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIAssetsManager.m
@@ -91,14 +91,14 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
 
 - (void)enumerateAllAlbumsWithAlbumContentType:(QMUIAlbumContentType)contentType showEmptyAlbum:(BOOL)showEmptyAlbum showSmartAlbumIfSupported:(BOOL)showSmartAlbumIfSupported usingBlock:(void (^)(QMUIAssetsGroup *resultAssetsGroup))enumerationBlock {
     // 根据条件获取所有合适的相册，并保存到临时数组中
-    NSArray *tempAlbumsArray = [PHPhotoLibrary fetchAllAlbumsWithAlbumContentType:contentType showEmptyAlbum:showEmptyAlbum showSmartAlbum:showSmartAlbumIfSupported];
+    NSArray<PHAssetCollection *> *tempAlbumsArray = [PHPhotoLibrary fetchAllAlbumsWithAlbumContentType:contentType showEmptyAlbum:showEmptyAlbum showSmartAlbum:showSmartAlbumIfSupported];
     
     // 创建一个 PHFetchOptions，用于 QMUIAssetsGroup 对资源的排序以及对内容类型进行控制
     PHFetchOptions *phFetchOptions = [PHPhotoLibrary createFetchOptionsWithAlbumContentType:contentType];
     
     // 遍历结果，生成对应的 QMUIAssetsGroup，并调用 enumerationBlock
-    for (NSUInteger i = 0; i < [tempAlbumsArray count]; i++) {
-        PHAssetCollection *phAssetCollection = [tempAlbumsArray objectAtIndex:i];
+    for (NSUInteger i = 0; i < tempAlbumsArray.count; i++) {
+        PHAssetCollection *phAssetCollection = tempAlbumsArray[i];
         QMUIAssetsGroup *assetsGroup = [[QMUIAssetsGroup alloc] initWithPHCollection:phAssetCollection fetchAssetsOptions:phFetchOptions];
         if (enumerationBlock) {
             enumerationBlock(assetsGroup);
@@ -212,8 +212,8 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
     return fetchOptions;
 }
 
-+ (NSArray *)fetchAllAlbumsWithAlbumContentType:(QMUIAlbumContentType)contentType showEmptyAlbum:(BOOL)showEmptyAlbum showSmartAlbum:(BOOL)showSmartAlbum {
-    NSMutableArray *tempAlbumsArray = [[NSMutableArray alloc] init];
++ (NSArray<PHAssetCollection *> *)fetchAllAlbumsWithAlbumContentType:(QMUIAlbumContentType)contentType showEmptyAlbum:(BOOL)showEmptyAlbum showSmartAlbum:(BOOL)showSmartAlbum {
+    NSMutableArray<PHAssetCollection *> *tempAlbumsArray = [[NSMutableArray alloc] init];
     
     // 创建一个 PHFetchOptions，用于创建 QMUIAssetsGroup 对资源的排序和类型进行控制
     PHFetchOptions *fetchOptions = [PHPhotoLibrary createFetchOptionsWithAlbumContentType:contentType];
@@ -284,7 +284,7 @@ void QMUISaveVideoAtPathToSavedPhotosAlbumWithAlbumAssetsGroup(NSString *videoPa
         }
     }
     
-    NSArray *resultAlbumsArray = [tempAlbumsArray copy];
+    NSArray<PHAssetCollection *> *resultAlbumsArray = [tempAlbumsArray copy];
     return resultAlbumsArray;
 }
 

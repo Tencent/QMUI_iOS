@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  UITableView+QMUIStaticCell.m
@@ -16,7 +16,6 @@
 #import "UITableView+QMUIStaticCell.h"
 #import "QMUICore.h"
 #import "QMUIStaticTableViewCellDataSource.h"
-#import <objc/runtime.h>
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
 
@@ -103,19 +102,12 @@ static char kAssociatedObjectKey_staticCellDataSource;
     return (QMUIStaticTableViewCellDataSource *)objc_getAssociatedObject(self, &kAssociatedObjectKey_staticCellDataSource);
 }
 
-// 把那些已经手动 addMethod 过的 class 存起来，避免每次都触发 log，打了一堆重复的信息
-static NSMutableSet<NSString *> *QMUI_staticTableViewAddedClass;
-
 - (void)addSelector:(SEL)selector withImplementation:(IMP)implementation types:(const char *)types forObject:(NSObject *)object {
     if (!class_addMethod(object.class, selector, implementation, types)) {
-        if (!QMUI_staticTableViewAddedClass) {
-            QMUI_staticTableViewAddedClass = [[NSMutableSet alloc] init];
-        }
-        NSString *identifier = [NSString stringWithFormat:@"%@%@", NSStringFromClass(object.class), NSStringFromSelector(selector)];
-        if (![QMUI_staticTableViewAddedClass containsObject:identifier]) {
+        // 把那些已经手动 addMethod 过的 class 存起来，避免每次都触发 log，打了一堆重复的信息
+        [QMUIHelper executeBlock:^{
             QMUILog(NSStringFromClass(self.class), @"尝试为 %@ 添加方法 %@ 失败，可能该类里已经实现了这个方法", NSStringFromClass(object.class), NSStringFromSelector(selector));
-            [QMUI_staticTableViewAddedClass addObject:identifier];
-        }
+        } oncePerIdentifier:[NSString stringWithFormat:@"addedlog %@-%@", NSStringFromClass(object.class), NSStringFromSelector(selector)]];
     }
 }
 

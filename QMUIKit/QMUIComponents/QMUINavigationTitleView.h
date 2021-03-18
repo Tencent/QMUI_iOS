@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUINavigationTitleView.h
@@ -54,7 +54,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 
 
 /**
- *  可作为navgationItem.titleView 的标题控件。
+ *  可作为 UIViewController 顶部导航栏里的标题控件，通过 self.navigationItem.titleView 来设置。当调用 -[UIViewController setTitle:] 或 -[UINavigationItem setTitle:] 时，会自动更新 QMUINavigationTitleView 的内容。
+ *
+ *  也可以当成单独的组件，脱离 UIViewController 使用，就跟普通组件一样。
  *
  *  支持主副标题，且可控制主副标题的布局方式（水平或垂直）；支持在左边显示loading，在右边显示accessoryView（如箭头）。
  *
@@ -79,6 +81,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 
 @property(nonatomic, strong, readonly) UILabel *subtitleLabel;
 @property(nonatomic, copy) NSString *subtitle;
+
+/// 当 tintColor 发生变化时是否要自动把 titleLabel、subtitleLabel、loadingView 的颜色也更新为 tintColor 的色值，默认为 YES，如果你自己修改了 titleLabel、subtitleLabel、loadingView 的颜色，需要把这个值置为 NO
+@property(nonatomic, assign) BOOL adjustsSubviewsTintColorAutomatically UI_APPEARANCE_SELECTOR;
 
 /// 水平布局下的标题字体，默认为 NavBarTitleFont
 @property(nonatomic, strong) UIFont *horizontalTitleFont UI_APPEARANCE_SELECTOR;

@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUICommonViewController.m
@@ -62,29 +62,33 @@
     self.titleView.title = self.title;// 从 storyboard 初始化的话，可能带有 self.title 的值
     self.navigationItem.titleView = self.titleView;
     
-    self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
-    
     // 不管navigationBar的backgroundImage如何设置，都让布局撑到屏幕顶部，方便布局的统一
     self.extendedLayoutIncludesOpaqueBars = YES;
     
     self.supportedOrientationMask = SupportedOrientationMask;
     
+    if (QMUICMIActivated) {
+        self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
+        self.qmui_preferredStatusBarStyleBlock = ^UIStatusBarStyle{
+            return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+        };
+    }
+    
+    if (@available(iOS 11.0, *)) {
+        self.qmui_prefersHomeIndicatorAutoHiddenBlock = ^BOOL{
+            return NO;
+        };
+    }
+
+    
     // 动态字体notification
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contentSizeCategoryDidChanged:) name:UIContentSizeCategoryDidChangeNotification object:nil];
 }
 
-- (void)setTitle:(NSString *)title {
-    [super setTitle:title];
-    self.titleView.title = title;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
-    if (!self.view.backgroundColor) {
-        UIColor *backgroundColor = UIColorForBackground;
-        if (backgroundColor) {
-            self.view.backgroundColor = backgroundColor;
-        }
+    if (!self.view.backgroundColor && QMUICMIActivated) {// nib 里可能设置了，所以做个 if 的判断
+        self.view.backgroundColor = UIColorForBackground;
     }
     
     // 点击空白区域降下键盘 QMUICommonViewController (QMUIKeyboard)
@@ -128,19 +132,25 @@
 
 #pragma mark - 空列表视图 QMUIEmptyView
 
-- (void)showEmptyView {
-    if (!self.emptyView) {
-        self.emptyView = [[QMUIEmptyView alloc] initWithFrame:self.view.bounds];
+@synthesize emptyView = _emptyView;
+
+- (QMUIEmptyView *)emptyView {
+    if (!_emptyView && self.isViewLoaded) {
+        _emptyView = [[QMUIEmptyView alloc] initWithFrame:self.view.bounds];
     }
+    return _emptyView;
+}
+
+- (void)showEmptyView {
     [self.view addSubview:self.emptyView];
 }
 
 - (void)hideEmptyView {
-    [self.emptyView removeFromSuperview];
+    [_emptyView removeFromSuperview];
 }
 
 - (BOOL)isEmptyViewShowing {
-    return self.emptyView && self.emptyView.superview;
+    return _emptyView && _emptyView.superview;
 }
 
 - (void)showEmptyViewWithLoading {
@@ -184,7 +194,7 @@
 }
 
 - (BOOL)layoutEmptyView {
-    if (self.emptyView) {
+    if (_emptyView) {
         // 由于为self.emptyView设置frame时会调用到self.view，为了避免导致viewDidLoad提前触发，这里需要判断一下self.view是否已经被初始化
         BOOL viewDidLoad = self.emptyView.superview && [self isViewLoaded];
         if (viewDidLoad) {
@@ -208,12 +218,6 @@
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     return self.supportedOrientationMask;
-}
-
-#pragma mark - HomeIndicator
-
-- (BOOL)prefersHomeIndicatorAutoHidden {
-    return NO;
 }
 
 @end
@@ -245,25 +249,14 @@
     UINavigationBar *navigationBar = self.navigationController.navigationBar;
     if (!navigationBar) return;
     
-    BeginIgnoreDeprecatedWarning
-    if ([self respondsToSelector:@selector(shouldSetStatusBarStyleLight)]) {
-        if ([self shouldSetStatusBarStyleLight]) {
-            if ([[UIApplication sharedApplication] statusBarStyle] < UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleLight];
-            }
-        } else {
-            if ([[UIApplication sharedApplication] statusBarStyle] >= UIStatusBarStyleLightContent) {
-                [QMUIHelper renderStatusBarStyleDark];
-            }
-        }
-    }
-    EndIgnoreDeprecatedWarning
-    
     if ([self respondsToSelector:@selector(navigationBarBackgroundImage)]) {
         [navigationBar setBackgroundImage:[self navigationBarBackgroundImage] forBarMetrics:UIBarMetricsDefault];
     }
     if ([self respondsToSelector:@selector(navigationBarBarTintColor)]) {
         navigationBar.barTintColor = [self navigationBarBarTintColor];
+    }
+    if ([self respondsToSelector:@selector(navigationBarStyle)]) {
+        navigationBar.barStyle = [self navigationBarStyle];
     }
     if ([self respondsToSelector:@selector(navigationBarShadowImage)]) {
         navigationBar.shadowImage = [self navigationBarShadowImage];
@@ -277,16 +270,6 @@
 }
 
 #pragma mark - <QMUINavigationControllerDelegate>
-
-BeginIgnoreClangWarning(-Wdeprecated-implementations)
-- (BOOL)shouldSetStatusBarStyleLight {
-    return StatusbarStyleLightInitially;
-}
-EndIgnoreClangWarning
-
-- (UIStatusBarStyle)preferredStatusBarStyle {
-    return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
-}
 
 - (BOOL)preferredNavigationBarHidden {
     return NavigationBarHiddenInitially;

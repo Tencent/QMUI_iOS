@@ -2,7 +2,7 @@
 name: 意见与建议
 about: 功能、接口设计等的相关建议
 title: ''
-labels: 'suggest'
+labels: suggest
 assignees: ''
 
 ---

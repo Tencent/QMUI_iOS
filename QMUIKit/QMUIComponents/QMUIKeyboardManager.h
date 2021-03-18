@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIKeyboardManager.h
@@ -19,12 +19,11 @@
 @protocol QMUIKeyboardManagerDelegate;
 @class QMUIKeyboardUserInfo;
 
-/// 注意：由于某些Bug（例如 iOS 8 的 iPad 修改切换键盘类型，delegate 回调键盘高度值错误），QMUIKeyboardManager 不再支持 iPad 的浮动键盘了 - 更新于 2017.12.8 ///
-/// 注意：QMUI 已经废弃 iOS8 了，所以浮动键盘又可以支持了
-
 /**
- *  `QMUIKeyboardManager` 提供了方便管理键盘事件的方案，使用的场景是需要跟随键盘的显示或者隐藏来更改界面的 UI，例如输入框跟随在键盘的顶部。
+ *  `QMUIKeyboardManager` 提供了方便、稳定的管理键盘事件的方案，使用的场景是需要跟随键盘的显示或者隐藏来更改界面的 UI，例如输入框跟随在键盘的顶部。
  *  由于键盘通知是整个 App 全局的，所以经常会遇到 A 的键盘监听回调里接收到 B 的键盘事件，这样的情况往往不是我们想要的，即使可以通过判断当前的 firstResponder 来区分，但还是不能完美的解决问题或者有时候解决起来非常麻烦。`QMUIKeyboardManager` 通过 `delegateEnabled` 和 `targetResponder` 等属性来方便地控制 firstResponder，从而可以实现某个键盘监听回调方法只响应某个 UIResponder 或者某几个 UIResponder 触发的键盘通知。
+ *  另外系统的“设置→辅助功能→动态效果→减弱动态效果→首选交叉淡出过渡效果”会改变系统键盘的动画，QMUIKeyboardManager 也兼容了这种情况，如果业务自己处理，很容易会遗漏。
+ *  
  *  使用方式：
  *  1. 使用 initWithDelegate: 方法初始化
  *  2. 通过 addTargetResponder: 的方式将要监听的输入框添加进来
@@ -55,7 +54,10 @@
 /**
  *  是否忽视 `applicationState` 状态的影响。默认为 NO，也即只有 `UIApplicationStateActive` 才会响应通知，如果设置为 YES，则任何 state 都会响应通知。
  */
-@property(nonatomic, assign) BOOL ignoreApplicationState;
+@property(nonatomic, assign) BOOL ignoreApplicationState UI_APPEARANCE_SELECTOR;
+
+
++ (instancetype)appearance;
 
 /**
  *  添加触发键盘事件的 UIResponder，一般是 UITextView 或者 UITextField ，不添加 targetResponder 的话，则默认接受任何 UIResponder 产生的键盘通知。

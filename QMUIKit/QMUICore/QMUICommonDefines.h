@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUICommonDefines.h
@@ -54,6 +54,11 @@
 #define IOS13_SDK_ALLOWED YES
 #endif
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
+/// 当前编译使用的 Base SDK 版本为 iOS 14.0 及以上
+#define IOS14_SDK_ALLOWED YES
+#endif
+
 #pragma mark - Clang
 
 #define ArgumentToString(macro) #macro
@@ -85,6 +90,7 @@
 #define IS_IPOD [QMUIHelper isIPod]
 #define IS_IPHONE [QMUIHelper isIPhone]
 #define IS_SIMULATOR [QMUIHelper isSimulator]
+#define IS_MAC [QMUIHelper isMac]
 
 /// 操作系统版本号，只获取第二级的版本号，例如 10.3.1 只会得到 10.3
 #define IOS_VERSION ([[[UIDevice currentDevice] systemVersion] doubleValue])
@@ -94,7 +100,7 @@
 
 /// 是否横竖屏
 /// 用户界面横屏了才会返回YES
-#define IS_LANDSCAPE UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation])
+#define IS_LANDSCAPE UIInterfaceOrientationIsLandscape(UIApplication.sharedApplication.statusBarOrientation)
 /// 无论支不支持横屏，只要设备横屏了，就会返回YES
 #define IS_DEVICE_LANDSCAPE UIDeviceOrientationIsLandscape([[UIDevice currentDevice] orientation])
 
@@ -104,11 +110,11 @@
 /// 屏幕高度，会根据横竖屏的变化而变化
 #define SCREEN_HEIGHT ([[UIScreen mainScreen] bounds].size.height)
 
-/// 屏幕宽度，跟横竖屏无关
-#define DEVICE_WIDTH (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.height : [[UIScreen mainScreen] bounds].size.width)
+/// 设备宽度，跟横竖屏无关
+#define DEVICE_WIDTH MIN([[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)
 
-/// 屏幕高度，跟横竖屏无关
-#define DEVICE_HEIGHT (IS_LANDSCAPE ? [[UIScreen mainScreen] bounds].size.width : [[UIScreen mainScreen] bounds].size.height)
+/// 设备高度，跟横竖屏无关
+#define DEVICE_HEIGHT MAX([[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)
 
 /// 在 iPad 分屏模式下等于 app 实际运行宽度，否则等同于 SCREEN_WIDTH
 #define APPLICATION_WIDTH [QMUIHelper applicationSize].width
@@ -118,14 +124,20 @@
 
 /// 是否全面屏设备
 #define IS_NOTCHED_SCREEN [QMUIHelper isNotchedScreen]
+/// iPhone 12 Pro Max
+#define IS_67INCH_SCREEN [QMUIHelper is67InchScreen]
 /// iPhone XS Max
 #define IS_65INCH_SCREEN [QMUIHelper is65InchScreen]
+/// iPhone 12 / 12 Pro
+#define IS_61INCH_SCREEN_AND_IPHONE12 [QMUIHelper is61InchScreenAndiPhone12]
 /// iPhone XR
 #define IS_61INCH_SCREEN [QMUIHelper is61InchScreen]
 /// iPhone X/XS
 #define IS_58INCH_SCREEN [QMUIHelper is58InchScreen]
 /// iPhone 6/7/8 Plus
 #define IS_55INCH_SCREEN [QMUIHelper is55InchScreen]
+/// iPhone 12 mini
+#define IS_54INCH_SCREEN [QMUIHelper is54InchScreen]
 /// iPhone 6/7/8
 #define IS_47INCH_SCREEN [QMUIHelper is47InchScreen]
 /// iPhone 5/5S/SE
@@ -158,11 +170,11 @@
 /// tabBar相关frame
 #define TabBarHeight (IS_IPAD ? (IS_NOTCHED_SCREEN ? 65 : (IOS_VERSION >= 12.0 ? 50 : 49)) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(49, 32) : 49) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
 
-/// 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算)
-#define StatusBarHeight ([UIApplication sharedApplication].statusBarHidden ? 0 : [[UIApplication sharedApplication] statusBarFrame].size.height)
+/// 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算，iOS 13 起，来电等情况下状态栏高度不会改变)
+#define StatusBarHeight (UIApplication.sharedApplication.statusBarHidden ? 0 : UIApplication.sharedApplication.statusBarFrame.size.height)
 
 /// 状态栏高度(如果状态栏不可见，也会返回一个普通状态下可见的高度)
-#define StatusBarHeightConstant ([UIApplication sharedApplication].statusBarHidden ? (IS_IPAD ? (IS_NOTCHED_SCREEN ? 24 : 20) : PreferredValueForNotchedDevice(IS_LANDSCAPE ? 0 : 44, 20)) : [[UIApplication sharedApplication] statusBarFrame].size.height)
+#define StatusBarHeightConstant (UIApplication.sharedApplication.statusBarHidden ? (IS_IPAD ? (IS_NOTCHED_SCREEN ? 24 : 20) : PreferredValueForNotchedDevice(IS_LANDSCAPE ? 0 : ([[QMUIHelper deviceModel] isEqualToString:@"iPhone12,1"] ? 48 : (IS_61INCH_SCREEN_AND_IPHONE12 || IS_67INCH_SCREEN ? 47 : 44)), 20)) : UIApplication.sharedApplication.statusBarFrame.size.height)
 
 /// navigationBar 的静态高度
 #define NavigationBarHeight (IS_IPAD ? (IOS_VERSION >= 12.0 ? 50 : 44) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44))
@@ -174,8 +186,24 @@
 /// 同上，这里用于获取它的静态常量值
 #define NavigationContentTopConstant (StatusBarHeightConstant + NavigationBarHeight)
 
+/// 判断当前是否是处于分屏模式的 iPad
+#define IS_SPLIT_SCREEN_IPAD (IS_IPAD && APPLICATION_WIDTH != SCREEN_WIDTH)
+
 /// iPhoneX 系列全面屏手机的安全区域的静态值
 #define SafeAreaInsetsConstantForDeviceWithNotch [QMUIHelper safeAreaInsetsForDeviceWithNotch]
+
+/// 将所有屏幕按照宽松/紧凑分类，其中 iPad、iPhone XS Max/XR/Plus 均为宽松屏幕，但开启了放大模式的设备均会视为紧凑屏幕
+#define PreferredValueForVisualDevice(_regular, _compact) ([QMUIHelper isRegularScreen] ? _regular : _compact)
+
+/// 将所有屏幕按照 Phone/Pad 分类，由于历史上宽高比最大（最胖）的手机为 iPhone 4，所以这里以它为基准，只要宽高比比 iPhone 4 更小的，都视为 Phone，其他情况均视为 Pad。注意 iPad 分屏则取分屏后的宽高来计算。
+#define PreferredValueForInterfaceIdiom(_phone, _pad) (APPLICATION_WIDTH / APPLICATION_HEIGHT <= QMUIHelper.screenSizeFor35Inch.width / QMUIHelper.screenSizeFor35Inch.height ? _phone : _pad)
+
+/// 区分全面屏和非全面屏
+#define PreferredValueForNotchedDevice(_notchedDevice, _otherDevice) ([QMUIHelper isNotchedScreen] ? _notchedDevice : _otherDevice)
+
+
+#pragma mark - 变量-布局相关-已废弃
+/// 由于 iOS 设备屏幕碎片化越来越严重，因此以下这些宏不建议使用，以后有设备更新也不再维护，请使用 PreferredValueForVisualDevice、PreferredValueForInterfaceIdiom 代替。
 
 /// 按屏幕宽度来区分不同 iPhone 尺寸，iPhone XS Max/XR/Plus 归为一类，iPhone X/8/7/6 归为一类。
 /// iPad 也会视为最大的屏幕宽度来处理
@@ -183,15 +211,6 @@
 
 /// 同上，单独将 iPad 区分对待
 #define PreferredValueForDeviceIncludingiPad(_iPad, _65or61or55inch, _47or58inch, _40inch, _35inch) PreferredValueForAll(_iPad, _65or61or55inch, _65or61or55inch, _47or58inch, _65or61or55inch, _47or58inch, _40inch, _35inch)
-
-/// 区分全面屏（iPhone X 系列）和非全面屏
-#define PreferredValueForNotchedDevice(_notchedDevice, _otherDevice) ([QMUIHelper isNotchedScreen] ? _notchedDevice : _otherDevice)
-
-/// 将所有屏幕按照宽松/紧凑分类，其中 iPad、iPhone XS Max/XR/Plus 均为宽松屏幕，但开启了放大模式的设备均会视为紧凑屏幕
-#define PreferredValueForVisualDevice(_regular, _compact) ([QMUIHelper isRegularScreen] ? _regular : _compact)
-
-/// 判断当前是否是处于分屏模式的 iPad
-#define IS_SPLIT_SCREEN_IPAD (IS_IPAD && APPLICATION_WIDTH != SCREEN_WIDTH)
 
 /// 若 iPad 处于分屏模式下，返回 iPad 接近 iPhone 宽度（320、375、414）中近似的一种，方便屏幕适配。
 #define IPAD_SIMILAR_SCREEN_WIDTH [QMUIHelper preferredLayoutAsSimilarScreenWidthForIPad]
@@ -201,10 +220,10 @@
 #define _65INCH_WIDTH [QMUIHelper screenSizeFor65Inch].width
 
 #define AS_IPAD (DynamicPreferredValueForIPad ? ((IS_IPAD && !IS_SPLIT_SCREEN_IPAD) || (IS_SPLIT_SCREEN_IPAD && APPLICATION_WIDTH >= 768)) : IS_IPAD)
-#define AS_65INCH_SCREEN (IS_65INCH_SCREEN || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _65INCH_WIDTH))
-#define AS_61INCH_SCREEN IS_61INCH_SCREEN
-#define AS_58INCH_SCREEN (IS_58INCH_SCREEN || ((AS_61INCH_SCREEN || AS_65INCH_SCREEN) && IS_ZOOMEDMODE) || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _58INCH_WIDTH))
-#define AS_55INCH_SCREEN IS_55INCH_SCREEN
+#define AS_65INCH_SCREEN (IS_67INCH_SCREEN || IS_65INCH_SCREEN || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _65INCH_WIDTH))
+#define AS_61INCH_SCREEN (IS_61INCH_SCREEN_AND_IPHONE12 || IS_61INCH_SCREEN)
+#define AS_58INCH_SCREEN (IS_58INCH_SCREEN || IS_54INCH_SCREEN || ((AS_61INCH_SCREEN || AS_65INCH_SCREEN) && IS_ZOOMEDMODE) || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _58INCH_WIDTH))
+#define AS_55INCH_SCREEN (IS_55INCH_SCREEN)
 #define AS_47INCH_SCREEN (IS_47INCH_SCREEN || (IS_55INCH_SCREEN && IS_ZOOMEDMODE))
 #define AS_40INCH_SCREEN (IS_40INCH_SCREEN || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _40INCH_WIDTH))
 #define AS_35INCH_SCREEN IS_35INCH_SCREEN
@@ -263,6 +282,9 @@ AddAccessibilityHint(NSObject *obj, NSString *hint) {
 
 
 #pragma mark - 其他
+
+// 固定黑色的 StatusBarStyle，用于亮色背景，作为 -preferredStatusBarStyle 方法的 return 值使用。
+#define QMUIStatusBarStyleDarkContent [QMUIHelper statusBarStyleDarkContent]
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")
 
@@ -343,7 +365,7 @@ betweenOrEqual(CGFloat minimumValue, CGFloat value, CGFloat maximumValue) {
  *  例如 CGFloatToFixed(0.3333, 2) 会返回 0.33，而 CGFloatToFixed(0.6666, 2) 会返回 0.67
  *
  *  @warning 参数类型为 CGFloat，也即意味着不管传进来的是 float 还是 double 最终都会被强制转换成 CGFloat 再做计算
- *  @warning 该方法无法解决浮点数精度运算的问题
+ *  @warning 该方法无法解决浮点数精度运算的问题，如需做浮点数的 == 判断，可用下方的 CGFloatEqualToFloat()
  */
 CG_INLINE CGFloat
 CGFloatToFixed(CGFloat value, NSUInteger precision) {
@@ -356,6 +378,58 @@ CGFloatToFixed(CGFloat value, NSUInteger precision) {
     #endif
     return result;
 }
+
+/**
+ 用于两个 CGFloat 值之间的比较运算，支持 ==、>、<、>=、<= 5种，内部会将浮点数转成整型，从而避免浮点数精度导致的判断错误。
+ 
+ CGFloatEqualToFloatWithPrecision()
+ CGFloatEqualToFloat()
+ CGFloatMoreThanFloatWithPrecision()
+ CGFloatMoreThanFloat()
+ CGFloatMoreThanOrEqualToFloatWithPrecision()
+ CGFloatMoreThanOrEqualToFloat()
+ CGFloatLessThanFloatWithPrecision()
+ CGFloatLessThanFloat()
+ CGFloatLessThanOrEqualToFloatWithPrecision()
+ CGFloatLessThanOrEqualToFloat()
+ 
+ 可通过参数 precision 指定要考虑的小数点后的精度，精度的定义是保证指定的那一位小数点不会因为浮点问题导致计算错误，例如当我们要获取一个 1.0 的浮点数时，有时候会得到 0.99999999，有时候会得到 1.000000001，所以需要对指定的那一位小数点的后一位数进行四舍五入操作。
+ @code
+ precision = 0，也即对小数点后0+1位四舍五入
+    0.999 -> 0.9 -> round(0.9) -> 1
+    1.011 -> 1.0 -> round(1.0) -> 1
+    1.033 -> 1.0 -> round(1.0) -> 1
+    1.099 -> 1.0 -> round(1.0) -> 1
+ precision = 1，也即对小数点后1+1位四舍五入
+    0.999 -> 9.9 -> round(9.9)   -> 10 -> 1.0
+    1.011 -> 10.1 -> round(10.1) -> 10 -> 1.0
+    1.033 -> 10.3 -> round(10.3) -> 10 -> 1.0
+    1.099 -> 10.9 -> round(10.9) -> 11 -> 1.1
+ precision = 2，也即对小数点后2+1位四舍五入
+    0.999 -> 99.9 -> round(99.9)   -> 100 -> 1.00
+    1.011 -> 101.1 -> round(101.1) -> 101 -> 1.01
+    1.033 -> 103.3 -> round(103.3) -> 103 -> 1.03
+    1.099 -> 109.9 -> round(109.9) -> 110 -> 1.1
+ @endcode
+*/
+CG_INLINE NSInteger _RoundedIntegerFromCGFloat(CGFloat value, NSUInteger precision) {
+    return (NSInteger)(round(value * pow(10, precision)));
+}
+
+#define _CGFloatCalcGenerator(_operatorName, _operator) CG_INLINE BOOL CGFloat##_operatorName##FloatWithPrecision(CGFloat value1, CGFloat value2, NSUInteger precision) {\
+    NSInteger a = _RoundedIntegerFromCGFloat(value1, precision);\
+    NSInteger b = _RoundedIntegerFromCGFloat(value2, precision);\
+    return a _operator b;\
+}\
+CG_INLINE BOOL CGFloat##_operatorName##Float(CGFloat value1, CGFloat value2) {\
+    return CGFloat##_operatorName##FloatWithPrecision(value1, value2, 0);\
+}
+
+_CGFloatCalcGenerator(EqualTo, ==)
+_CGFloatCalcGenerator(LessThan, <)
+_CGFloatCalcGenerator(LessThanOrEqualTo, <=)
+_CGFloatCalcGenerator(MoreThan, >)
+_CGFloatCalcGenerator(MoreThanOrEqualTo, >=)
 
 /// 用于居中运算
 CG_INLINE CGFloat
@@ -614,14 +688,10 @@ CGRectGetMinXHorizontallyCenter(CGRect referenceRect, CGRect layoutingRect) {
     return CGRectGetMinX(referenceRect) + CGRectGetMinXHorizontallyCenterInParentRect(referenceRect, layoutingRect);
 }
 
-/// 为给定的rect往内部缩小insets的大小
+/// 为给定的rect往内部缩小insets的大小（系统那个方法的命名太难联想了，所以定义了一个新函数）
 CG_INLINE CGRect
 CGRectInsetEdges(CGRect rect, UIEdgeInsets insets) {
-    rect.origin.x += insets.left;
-    rect.origin.y += insets.top;
-    rect.size.width -= UIEdgeInsetsGetHorizontalValue(insets);
-    rect.size.height -= UIEdgeInsetsGetVerticalValue(insets);
-    return rect;
+    return UIEdgeInsetsInsetRect(rect, insets);
 }
 
 /// 传入size，返回一个x/y为0的CGRect

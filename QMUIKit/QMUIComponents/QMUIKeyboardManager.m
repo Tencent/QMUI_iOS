@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIKeyboardManager.m
@@ -16,9 +16,7 @@
 #import "QMUIKeyboardManager.h"
 #import "QMUICore.h"
 #import "QMUILog.h"
-
-
-static QMUIKeyboardManager *kKeyboardManagerInstance;
+#import "QMUIAppearance.h"
 
 @interface QMUIKeyboardManager ()
 
@@ -310,13 +308,8 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
  */
 @implementation QMUIKeyboardManager
 
-+ (void)initialize {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (!kKeyboardManagerInstance) {
-            kKeyboardManagerInstance = [[QMUIKeyboardManager alloc] initWithDelegate:nil];
-        }
-    });
++ (instancetype)appearance {
+    return [QMUIAppearance appearanceForClass:self];
 }
 
 - (instancetype)init {
@@ -335,6 +328,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         _delegateEnabled = YES;
         _targetResponderValues = [[NSMutableArray alloc] init];
         [self addKeyboardNotification];
+        [self qmui_applyAppearance];
     }
     return self;
 }
@@ -393,10 +387,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (UIResponder *)firstResponderInWindows {
-    UIResponder *responder = [[UIApplication sharedApplication].keyWindow qmui_findFirstResponder];
+    UIResponder *responder = [UIApplication.sharedApplication.keyWindow qmui_findFirstResponder];
     if (!responder) {
-        for (UIWindow *window in [UIApplication sharedApplication].windows) {
-            if (window != [UIApplication sharedApplication].keyWindow) {
+        for (UIWindow *window in UIApplication.sharedApplication.windows) {
+            if (window != UIApplication.sharedApplication.keyWindow) {
                 responder = [window qmui_findFirstResponder];
                 if (responder) {
                     return responder;
@@ -422,7 +416,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (self.ignoreApplicationState) {
         return YES;
     }
-    if ([[UIApplication sharedApplication] applicationState] == UIApplicationStateActive) {
+    if (UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
         return YES;
     }
     return NO;
@@ -627,8 +621,17 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (BOOL)shouldReceiveShowNotification {
-    // 这里有 BUG，如果点击了 webview 导致键盘下降，这个时候运行 shouldReceiveHideNotification 就会判断错误，所以如果发现是 nil 则值不变
-    self.currentResponder = [self firstResponderInWindows] ?: self.currentResponder;
+   
+    UIResponder *firstResponder = [self firstResponderInWindows];
+    if (self.currentResponder) {
+         // 这里有 BUG，如果点击了 webview 导致键盘下降，这个时候运行 shouldReceiveHideNotification 就会判断错误，所以如果发现是 nil 或是 WKContentView 则值不变
+        if (firstResponder && ![firstResponder isKindOfClass:NSClassFromString([NSString stringWithFormat:@"%@%@", @"WK", @"ContentView"])]) {
+            self.currentResponder = firstResponder;
+        }
+    } else {
+        self.currentResponder = firstResponder;
+    }
+
     if (self.targetResponderValues.count <= 0) {
         return YES;
     } else {
@@ -712,7 +715,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         self.keyboardMoveBeginRect = endFrame;
         
         if (self.currentResponder) {
-            UIWindow *mainWindow = [UIApplication sharedApplication].keyWindow ?: [[UIApplication sharedApplication] windows].firstObject;
+            UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
             if (mainWindow) {
                 CGRect keyboardRect = keyboardMoveUserInfo.endFrame;
                 CGFloat distanceFromBottom = [QMUIKeyboardManager distanceFromMinYToBottomInView:mainWindow keyboardRect:keyboardRect];
@@ -772,7 +775,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 
 + (UIWindow *)keyboardWindow {
     
-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         if ([self getKeyboardViewFromWindow:window]) {
             return window;
         }
@@ -780,7 +783,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     
     NSMutableArray *kbWindows = nil;
     
-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         NSString *windowName = NSStringFromClass(window.class);
         if ([windowName isEqualToString:[NSString stringWithFormat:@"UI%@%@", @"Remote", @"KeyboardWindow"]]) {
             // UIRemoteKeyboardWindow（iOS9 以下 UITextEffectsWindow）
@@ -802,7 +805,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         return rect;
     }
     
-    UIWindow *mainWindow = [UIApplication sharedApplication].keyWindow ?: [UIApplication sharedApplication].windows.firstObject;
+    UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
     if (!mainWindow) {
         if (view) {
             [view convertRect:rect fromView:nil];
@@ -841,7 +844,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 + (UIView *)keyboardView {
-    for (UIWindow *window in [UIApplication sharedApplication].windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
         UIView *view = [self getKeyboardViewFromWindow:window];
         if (view) {
             return view;
@@ -908,6 +911,12 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (!keyboardView || !keyboardWindow) {
         return 0;
     } else {
+        // 开启了系统的“设置→辅助功能→动态效果→减弱动态效果→首选交叉淡出过渡效果”后，键盘动画不再是 slide，而是 fade，此时应该用 alpha 来判断
+        // https://github.com/Tencent/QMUI_iOS/issues/1173
+        if (keyboardView.alpha <= 0) {
+            return 0;
+        }
+        
         CGRect visibleRect = CGRectIntersection(CGRectFlatted(keyboardWindow.bounds), CGRectFlatted(keyboardView.frame));
         if (CGRectIsValidated(visibleRect)) {
             return CGRectGetHeight(visibleRect);

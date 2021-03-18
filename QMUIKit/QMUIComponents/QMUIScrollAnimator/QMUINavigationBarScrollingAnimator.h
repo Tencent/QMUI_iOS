@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUINavigationBarScrollingAnimator.h
@@ -89,7 +89,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, copy) UIColor * (^tintColorBlock)(QMUINavigationBarScrollingAnimator * _Nonnull animator, float progress);
 
 /**
- 返回不同滚动位置下对应的导航栏的 titleView tintColor
+ 返回不同滚动位置下对应的导航栏的 titleView tintColor，注意只能对使用了 navigationItem.titleView 生效（QMUICommonViewController 的子类默认用了 QMUINavigationTitleView，所以也可以生效）。
  @param animator 当前的 animator 对象
  @param progress 当前滚动位置处于 offsetYToStartAnimation 到 (offsetYToStartAnimation + distanceToStopAnimation) 之间的哪个进度
  */

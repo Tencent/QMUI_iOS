@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUIDialogViewController.h
@@ -40,10 +40,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets   dialogViewMargins UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        maximumContentViewWidth UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIColor        *backgroundColor UI_APPEARANCE_SELECTOR;
+
+/// 标题的 tintColor，当没有设置 titleLabelTextColor 和 subTitleLabelTextColor 的情况下，标题和副标题的颜色均会使用 titleTintColor，当 titleLabelTextColor 和 subTitleLabelTextColor 其中任何一个被设置了值时，则 titleTintColor 作为候选项使用（也即谁为 nil 才会用 titleTintColor 顶替，不为 nil 则不会用到 titleTintColor）。
+/// 默认为 nil
 @property(nullable, nonatomic, strong) UIColor        *titleTintColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIFont         *titleLabelFont UI_APPEARANCE_SELECTOR;
+
+/// 主标题的文字颜色，当为 nil 时则会使用 titleView 的 tintColor 作为文字颜色
 @property(nullable, nonatomic, strong) UIColor        *titleLabelTextColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIFont         *subTitleLabelFont UI_APPEARANCE_SELECTOR;
+
+/// 副标题的文字颜色，当为 nil 时则会使用 titleView 的 tintColor 作为文字颜色
+/// @note 副标题可通过 dialog.titleView.subtitle 来设置
 @property(nullable, nonatomic, strong) UIColor        *subTitleLabelTextColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIColor        *headerSeparatorColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat        headerViewHeight UI_APPEARANCE_SELECTOR;
@@ -55,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, strong) UIColor        *footerViewBackgroundColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIColor        *buttonBackgroundColor UI_APPEARANCE_SELECTOR;
 @property(nullable, nonatomic, strong) UIColor        *buttonHighlightedBackgroundColor UI_APPEARANCE_SELECTOR;
-@property(nullable, nonatomic, strong) NSDictionary<NSAttributedStringKey, id> *buttonTitleAttributes UI_APPEARANCE_SELECTOR;
+@property(nullable, nonatomic, copy) NSDictionary<NSAttributedStringKey, id> *buttonTitleAttributes UI_APPEARANCE_SELECTOR;
 
 @property(nullable, nonatomic, strong, readonly) UIView *headerView;
 @property(nullable, nonatomic, strong, readonly) CALayer *headerViewSeparatorLayer;

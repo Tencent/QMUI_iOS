@@ -1,10 +1,10 @@
-/*****
+/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
- *****/
+ */
 
 //
 //  QMUINavigationController.h
@@ -18,11 +18,7 @@
 
 @interface QMUINavigationController : UINavigationController
 
-/**
- *  初始化时调用的方法，会在 initWithNibName:bundle: 和 initWithCoder: 这两个指定的初始化方法中被调用，所以子类如果需要同时支持两个初始化方法，则建议把初始化时要做的事情放到这个方法里。否则仅需重写要支持的那个初始化方法即可。
- */
-- (void)didInitialize NS_REQUIRES_SUPER;
-
+- (void)didInitialize DEPRECATED_MSG_ATTRIBUTE("使用 qmui_didInitialize 代替");
 @end
 
 @interface QMUINavigationController (UISubclassingHooks)
@@ -76,7 +72,9 @@
  *  3. popToRootViewControllerAnimated:
  *  4. setViewControllers:animated:
  *
- *  @warning 此时 self 已经不在 viewControllers 数组内
+ *  此时 self.navigationController 仍有值，但 self 已经不在 viewControllers 数组内。
+ *
+ *  @warning 这个方法被调用并不意味着 self 最终一定会被 pop 掉，例如手势返回被触发时就会调用这个方法，但如果中途取消手势，self 依然会回到 viewControllers 内。
  */
 - (void)didPopInNavigationControllerWithAnimated:(BOOL)animated;
 
@@ -93,11 +91,6 @@
 
 @optional
 
-/// 是否需要将状态栏改为浅色文字，对于 QMUICommonViewController 子类，返回值默认为宏 StatusbarStyleLightInitially 的值，对于 UIViewController，不实现该方法则视为返回 NO。
-/// @warning 需在项目的 Info.plist 文件内设置字段 “View controller-based status bar appearance” 的值为 NO 才能生效，如果不设置，或者值为 YES，则请使用系统提供的 - preferredStatusBarStyle 方法
-/// 该方法已废弃，请使用系统提供的 - preferredStatusBarStyle 方法。
-- (BOOL)shouldSetStatusBarStyleLight DEPRECATED_ATTRIBUTE;
-
 /// 设置 titleView 的 tintColor
 - (nullable UIColor *)titleViewTintColor;
 
@@ -110,10 +103,13 @@
 /// 设置当前导航栏的 barTintColor，默认为 NavBarBarTintColor
 - (nullable UIColor *)navigationBarBarTintColor;
 
+/// 设置当前导航栏的 barStyle，默认为 NavBarStyle
+- (UIBarStyle)navigationBarStyle;
+
 /// 设置当前导航栏的 UIBarButtonItem 的 tintColor，默认为NavBarTintColor
 - (nullable UIColor *)navigationBarTintColor;
 
-/// 设置系统返回按钮title，如果返回nil则使用系统默认的返回按钮标题
+/// 设置系统返回按钮title，如果返回nil则使用系统默认的返回按钮标题。当实现了这个方法时，会无视配置表 NeedsBackBarButtonItemTitle 的值
 - (nullable NSString *)backBarButtonItemTitleWithPreviousViewController:(nullable UIViewController *)viewController;
 
 @end
@@ -143,6 +139,12 @@
  *  @see 配置表有开关 AutomaticCustomNavigationBarTransitionStyle 支持自动判断样式，无需实现这个方法
  */
 - (nullable NSString *)customNavigationBarTransitionKey;
+
+/**
+ *  在实现了系统的自定义转场情况下，导航栏转场的时候是否需要使用 QMUI 自定义的 push / pop transition 效果，默认不实现的话则不会使用，只要前后其中一个 vc 实现并返回了 YES 则会使用。
+ *  @see UINavigationController+NavigationBarTransition.h
+ */
+- (BOOL)shouldCustomizeNavigationBarTransitionIfUsingCustomTransitionForOperation:(UINavigationControllerOperation)operation fromViewController:(nullable UIViewController *)fromVC toViewController:(nullable UIViewController *)toVc;
 
 /**
  *  自定义navBar效果过程中UINavigationController的containerView的背景色

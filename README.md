@@ -31,7 +31,9 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 
 ## 支持iOS版本
 
-从 3.0.0 开始，QMUI 支持 iOS 9+，2.x 版本支持 iOS 8+。
+1. 4.2.0 及以上，iOS 10+。
+2. 3.0.0 及以上，iOS 9+。
+3. 2.0.0 及以上，iOS 8+。
 
 ## 使用方法
 
@@ -42,19 +44,31 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 请下载 QMUI Demo：[https://github.com/QMUI/QMUIDemo_iOS](https://github.com/QMUI/QMUIDemo_iOS)。
 
 ![Launch](https://user-images.githubusercontent.com/1190261/49869307-041fdf00-fe4b-11e8-8f77-8007317e71c6.gif)
-![UIColor](https://user-images.githubusercontent.com/1190261/49869346-1d289000-fe4b-11e8-9e75-00b861f72b2a.gif)
-![Popup](https://user-images.githubusercontent.com/1190261/49869336-169a1880-fe4b-11e8-9fab-b3ff8233d562.gif)
-![MarqueeLabel](https://user-images.githubusercontent.com/1190261/49869323-100ba100-fe4b-11e8-947c-92082fb4ddd8.gif)
+![QMUITheme](https://user-images.githubusercontent.com/1190261/66378391-ecbb6f00-e9e5-11e9-9d47-8456347ba886.gif)
+![QMUIPopup](https://user-images.githubusercontent.com/1190261/49869336-169a1880-fe4b-11e8-9fab-b3ff8233d562.gif)
+![QMUIMarqueeLabel](https://user-images.githubusercontent.com/1190261/49869323-100ba100-fe4b-11e8-947c-92082fb4ddd8.gif)
 
 ## 注意事项
 
 - 关于 AutoLayout：通常可以配合 Masonry 等常见的 AutoLayout 框架使用，若遇到不兼容的个案请提 issue。
 - 关于 xib / storyboard：现已全面支持。
 - 关于 Swift：可以正常使用，如遇到问题请提 issue。
-- 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:91](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L91-L101)，可直接查看。
+- 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:116](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L116-L126)，可直接查看。
+
+## 设计资源
+
+QMUIKit 框架内自带图片资源的组件主要是 QMUIConsole、QMUIEmotion、QMUIImagePicker、QMUITips，另外作为 Sample Code 使用的 QMUI Demo 是另一个独立的项目，它拥有自己另外一套设计。
+
+QMUIKit 和 QMUI Demo 的 Sketch 设计稿均存放在 [https://github.com/QMUI/QMUIDemo_Design](https://github.com/QMUI/QMUIDemo_Design)。
 
 ## 其他
 
 建议搭配 QMUI 专用的 Code Snippets 及文件模板使用：
 1. [QMUI_iOS_CodeSnippets](https://github.com/QMUI/QMUI_iOS_CodeSnippets)
 2. [QMUI_iOS_Templates](https://github.com/QMUI/QMUI_iOS_Templates)
+
+## 招聘
+
+2021-03-15 更新
+
+[广州|深圳|成都] 企业微信/微信读书/王者营地长期接收 iOS 客户端社招、实习生简历，详情请看 [#1209](https://github.com/Tencent/QMUI_iOS/issues/1209)。
