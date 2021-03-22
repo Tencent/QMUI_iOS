@@ -18,6 +18,9 @@
 #import "UIBezierPath+QMUI.h"
 #import "UIColor+QMUI.h"
 #import "QMUILog.h"
+
+#import <ImageIO/ImageIO.h>
+#import <CoreImage/CoreImage.h>
 #import <Accelerate/Accelerate.h>
 
 CG_INLINE CGSize

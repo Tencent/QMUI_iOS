@@ -14,11 +14,12 @@
 //
 
 #import "QMUIAsset.h"
-#import <Photos/Photos.h>
-#import <MobileCoreServices/UTCoreTypes.h>
 #import "QMUICore.h"
 #import "QMUIAssetsManager.h"
 #import "NSString+QMUI.h"
+
+#import <Photos/Photos.h>
+#import <CoreServices/UTCoreTypes.h>
 
 static NSString * const kAssetInfoImageData = @"imageData";
 static NSString * const kAssetInfoOriginInfo = @"originInfo";

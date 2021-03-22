@@ -22,6 +22,7 @@ Pod::Spec.new do |s|
 
   s.subspec 'QMUICore' do |ss|
     ss.source_files = 'QMUIKit/QMUIKit.h', 'QMUIKit/QMUICore', 'QMUIKit/UIKitExtensions'
+		ss.frameworks = 'CoreImage', 'ImageIO'
     ss.dependency 'QMUIKit/QMUIWeakObjectContainer'
     ss.dependency 'QMUIKit/QMUILog'
   end
@@ -345,6 +346,7 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIZoomImageView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIZoomImageView.{h,m}'
+			sss.frameworks = 'PhotosUI', 'CoreMedia', 'AVFoundation', 'QuartzCore'
       sss.dependency 'QMUIKit/QMUIResources'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
@@ -355,7 +357,7 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIAssetLibrary' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/AssetLibrary/*.{h,m}'
-      sss.weak_framework = 'Photos'
+      sss.frameworks = 'Photos', 'CoreServices'
     end
 
     ss.subspec 'QMUIImagePickerLibrary' do |sss|
