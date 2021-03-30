@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -20,22 +20,29 @@
 
 @interface UISearchBar ()
 
-@property(nonatomic, strong) NSString *qmuisb_centerPlaceholderCachedKey;
+@property(nonatomic, assign) CGFloat qmuisb_centerPlaceholderCachedWidth1;
+@property(nonatomic, assign) CGFloat qmuisb_centerPlaceholderCachedWidth2;
 @property(nonatomic, assign) UIEdgeInsets qmuisb_customTextFieldMargins;
 @end
 
 @implementation UISearchBar (QMUI)
 
 QMUISynthesizeBOOLProperty(qmui_usedAsTableHeaderView, setQmui_usedAsTableHeaderView)
+QMUISynthesizeBOOLProperty(qmui_alwaysEnableCancelButton, setQmui_alwaysEnableCancelButton)
 QMUISynthesizeBOOLProperty(qmui_fixMaskViewLayoutBugAutomatically, setQmui_fixMaskViewLayoutBugAutomatically)
 QMUISynthesizeUIEdgeInsetsProperty(qmuisb_customTextFieldMargins, setQmuisb_customTextFieldMargins)
-QMUISynthesizeIdStrongProperty(qmuisb_centerPlaceholderCachedKey, setQmuisb_centerPlaceholderCachedKey)
+QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth1, setQmuisb_centerPlaceholderCachedWidth1)
+QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_centerPlaceholderCachedWidth2)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
         void (^setupCancelButtonBlock)(UISearchBar *, UIButton *) = ^void(UISearchBar *searchBar, UIButton *cancelButton) {
+            if (searchBar.qmui_alwaysEnableCancelButton && !searchBar.qmui_searchController) {
+                cancelButton.enabled = YES;
+            }
+            
             if (cancelButton && searchBar.qmui_cancelButtonFont) {
                 cancelButton.titleLabel.font = searchBar.qmui_cancelButtonFont;
             }
@@ -63,6 +70,27 @@ QMUISynthesizeIdStrongProperty(qmuisb_centerPlaceholderCachedKey, setQmuisb_cent
                 setupCancelButtonBlock(selfObject, selfObject.qmui_cancelButton);
             });
         }
+        
+        OverrideImplementation(NSClassFromString(@"UINavigationButton"), @selector(setEnabled:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIButton *selfObject, BOOL firstArgv) {
+                
+                UISearchBar *searchBar = nil;
+                if (@available(iOS 13.0, *)) {
+                    searchBar = (UISearchBar *)selfObject.superview.superview.superview;
+                } else {
+                    searchBar = (UISearchBar *)selfObject.superview.superview;
+                }
+                NSAssert(!searchBar || [searchBar isKindOfClass:UISearchBar.class], @"Can not find UISearchBar from cancelButton");
+                if (searchBar.qmui_alwaysEnableCancelButton && !searchBar.qmui_searchController) {
+                    firstArgv = YES;
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
         
         ExtendImplementationOfVoidMethodWithSingleArgument([UISearchBar class], @selector(setPlaceholder:), NSString *, (^(UISearchBar *selfObject, NSString *placeholder) {
             if (selfObject.qmui_placeholderColor || selfObject.qmui_font) {
@@ -211,6 +239,18 @@ QMUISynthesizeIdStrongProperty(qmuisb_centerPlaceholderCachedKey, setQmuisb_cent
             };
         });
         
+        // [UIKit Bug] 将 UISearchBar 作为 UITableView.tableHeaderView 使用时，如果列表内容不满一屏，可能出现搜索框不可视的问题
+        // https://github.com/Tencent/QMUI_iOS/issues/1207
+        if (@available(iOS 11.0, *)) {
+            ExtendImplementationOfVoidMethodWithoutArguments([UISearchBar class], @selector(didMoveToSuperview), ^(UISearchBar *selfObject) {
+                if (selfObject.superview && CGRectGetHeight(selfObject.subviews.firstObject.frame) != CGRectGetHeight(selfObject.bounds)) {
+                    BeginIgnorePerformSelectorLeaksWarning
+                    [selfObject.qmui_searchController performSelector:NSSelectorFromString([NSString stringWithFormat:@"%@%@MaskIfNecessary", @"_update", @"SearchBar"])];
+                    EndIgnorePerformSelectorLeaksWarning
+                }
+            });
+        }
+        
         ExtendImplementationOfNonVoidMethodWithSingleArgument([UISearchBar class], @selector(initWithFrame:), CGRect, UISearchBar *, ^UISearchBar *(UISearchBar *selfObject, CGRect firstArgv, UISearchBar *originReturnValue) {
             [originReturnValue qmuisb_didInitialize];
             return originReturnValue;
@@ -224,6 +264,7 @@ QMUISynthesizeIdStrongProperty(qmuisb_centerPlaceholderCachedKey, setQmuisb_cent
 }
 
 - (void)qmuisb_didInitialize {
+    self.qmui_alwaysEnableCancelButton = YES;
     self.qmui_showsLeftAccessoryView = YES;
     self.qmui_showsRightAccessoryView = YES;
     
@@ -244,7 +285,8 @@ static char kAssociatedObjectKey_centerPlaceholder;
             if (textField.bounds.size.width <= 0) return;
             
             if (textField.isEditing || textField.text.length > 0) {
-                weakSelf.qmuisb_centerPlaceholderCachedKey = nil;
+                weakSelf.qmuisb_centerPlaceholderCachedWidth1 = 0;
+                weakSelf.qmuisb_centerPlaceholderCachedWidth2 = 0;
                 if (!UIOffsetEqualToOffset(UIOffsetZero, [weakSelf positionAdjustmentForSearchBarIcon:UISearchBarIconSearch])) {
                     [weakSelf setPositionAdjustment:UIOffsetZero forSearchBarIcon:UISearchBarIconSearch];
                     [textField layoutIfNeeded];// 在切换搜索状态时要让 positionAdjustment 立即生效，才能看到动画效果
@@ -253,11 +295,11 @@ static char kAssociatedObjectKey_centerPlaceholder;
                 UIView *leftView = [textField qmui_valueForKey:@"leftView"];
                 UILabel *label = [textField qmui_valueForKey:@"placeholderLabel"];
                 CGFloat width = CGRectGetMaxX(label.frame) - CGRectGetMinX(leftView.frame);
-                NSString *cachedKey = [NSString stringWithFormat:@"%.0f-%.f", CGRectGetWidth(textField.bounds), CGFloatToFixed(width, 0)];
-                if (![cachedKey isEqualToString:weakSelf.qmuisb_centerPlaceholderCachedKey]) {
-                    weakSelf.qmuisb_centerPlaceholderCachedKey = cachedKey;
+                if (fabs(CGRectGetWidth(textField.bounds) - weakSelf.qmuisb_centerPlaceholderCachedWidth1) > 1 || fabs(width - weakSelf.qmuisb_centerPlaceholderCachedWidth2) > 1) {
+                    weakSelf.qmuisb_centerPlaceholderCachedWidth1 = CGRectGetWidth(textField.bounds);
+                    weakSelf.qmuisb_centerPlaceholderCachedWidth2 = width;
                     CGFloat searchIconDefaultMarginLeft = 6; // 系统的放大镜 icon 默认距离 textField 左边就是这个值，计算居中时要考虑进去，因为 positionAdjustment 是基于系统默认布局的基础上做偏移的
-                    CGFloat horizontal = (CGRectGetWidth(textField.bounds) - width) / 2.0 - searchIconDefaultMarginLeft;// 这里没有用 CGFloatGetCenter 是为了避免 iOS 12 及以下 iPhone 8 Plus tableView 显示右边的索引条时，每次算出来都差1，第一次49第二次50第三次49...陷入死循环，干脆不要操作精度取整
+                    CGFloat horizontal = (weakSelf.qmuisb_centerPlaceholderCachedWidth1 - weakSelf.qmuisb_centerPlaceholderCachedWidth2) / 2.0 - searchIconDefaultMarginLeft;// 这里没有用 CGFloatGetCenter 是为了避免 iOS 12 及以下 iPhone 8 Plus tableView 显示右边的索引条时，每次算出来都差1，第一次49第二次50第三次49...陷入死循环，干脆不要操作精度取整
                     [weakSelf setPositionAdjustment:UIOffsetMake(horizontal, 0) forSearchBarIcon:UISearchBarIconSearch];
                     [textField layoutIfNeeded];// 在切换搜索状态时要让 positionAdjustment 立即生效，才能看到动画效果
                 }
@@ -266,7 +308,8 @@ static char kAssociatedObjectKey_centerPlaceholder;
         [self.qmui_textField setNeedsLayout];
     } else {
         self.qmui_textField.qmui_layoutSubviewsBlock = nil;
-        self.qmuisb_centerPlaceholderCachedKey = nil;
+        self.qmuisb_centerPlaceholderCachedWidth1 = 0;
+        self.qmuisb_centerPlaceholderCachedWidth2 = 0;
         [self setPositionAdjustment:UIOffsetZero forSearchBarIcon:UISearchBarIconSearch];
     }
 }
@@ -472,7 +515,7 @@ static char kAssociatedObjectKey_showsLeftAccessoryView;
     if (animated) {
         if (showsLeftAccessoryView) {
             self.qmui_leftAccessoryView.hidden = NO;
-            self.qmui_leftAccessoryView.frame = CGRectSetXY(self.qmui_leftAccessoryView.frame, -CGRectGetWidth(self.qmui_leftAccessoryView.frame), CGRectGetMinYVerticallyCenter(self.qmui_textField.frame, self.qmui_leftAccessoryView.frame));
+            self.qmui_leftAccessoryView.qmui_frameApplyTransform = CGRectSetXY(self.qmui_leftAccessoryView.frame, -CGRectGetWidth(self.qmui_leftAccessoryView.frame), CGRectGetMinYVerticallyCenter(self.qmui_textField.frame, self.qmui_leftAccessoryView.frame));
             [UIView animateWithDuration:.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
                 [self qmuisb_updateCustomTextFieldMargins];
             } completion:nil];
@@ -633,7 +676,7 @@ static char kAssociatedObjectKey_rightAccessoryViewMargins;
 #pragma mark - Layout
 
 - (void)qmuisb_setNeedsLayoutTextField {
-    if (self.qmui_textField) {
+    if (self.qmui_textField && !CGRectIsEmpty(self.qmui_textField.frame)) {
         if (@available(iOS 13.0, *)) {
             [self.qmui_textField.superview setNeedsLayout];
             [self.qmui_textField.superview layoutIfNeeded];

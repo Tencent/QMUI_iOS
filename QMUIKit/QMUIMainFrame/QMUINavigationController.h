@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -18,7 +18,6 @@
 
 @interface QMUINavigationController : UINavigationController
 
-- (void)didInitialize DEPRECATED_MSG_ATTRIBUTE("使用 qmui_didInitialize 代替");
 @end
 
 @interface QMUINavigationController (UISubclassingHooks)
@@ -48,7 +47,24 @@
  *  @param viewControllerWillDisappear 手势返回中顶部的那个 vc
  *  @param viewControllerWillAppear 手势返回中背后的那个 vc
  */
-- (void)navigationController:(nonnull QMUINavigationController *)navigationController poppingByInteractiveGestureRecognizer:(nullable UIScreenEdgePanGestureRecognizer *)gestureRecognizer viewControllerWillDisappear:(nullable UIViewController *)viewControllerWillDisappear viewControllerWillAppear:(nullable UIViewController *)viewControllerWillAppear;
+- (void)navigationController:(nonnull QMUINavigationController *)navigationController
+poppingByInteractiveGestureRecognizer:(nullable UIScreenEdgePanGestureRecognizer *)gestureRecognizer
+ viewControllerWillDisappear:(nullable UIViewController *)viewControllerWillDisappear
+    viewControllerWillAppear:(nullable UIViewController *)viewControllerWillAppear DEPRECATED_MSG_ATTRIBUTE("不便于判断手势返回是否成功，请使用 navigationController:poppingByInteractiveGestureRecognizer:isCancelled:viewControllerWillDisappear:viewControllerWillAppear: 代替");
+
+/**
+ *  当前界面正处于手势返回的过程中，可自行通过 gestureRecognizer.state 来区分手势返回的各个阶段。手势返回有多个阶段（手势返回开始、拖拽过程中、松手并成功返回、松手但不切换界面），不同阶段的 viewController 的状态可能不一样。
+ *  @param navigationController 当前正在手势返回的 QMUINavigationController，请勿通过 vc.navigationController 获取 UINavigationController 的引用，而应该用本参数。因为某些手势阶段，vc.navigationController 得到的是 nil。
+ *  @param gestureRecognizer 手势对象
+ *  @param isCancelled 表示当前手势返回是否取消，只有在松手后这个参数的值才有意义
+ *  @param viewControllerWillDisappear 手势返回中顶部的那个 vc，松手时如果成功手势返回，则该参数表示被 pop 的界面，如果手势返回取消，则该参数表示背后的界面。
+ *  @param viewControllerWillAppear 手势返回中背后的那个 vc，松手时如果成功手势返回，则该参数表示背后的界面，如果手势返回取消，则该参数表示当前顶部的界面。
+ */
+- (void)navigationController:(nonnull QMUINavigationController *)navigationController
+poppingByInteractiveGestureRecognizer:(nullable UIScreenEdgePanGestureRecognizer *)gestureRecognizer
+                 isCancelled:(BOOL)isCancelled
+ viewControllerWillDisappear:(nullable UIViewController *)viewControllerWillDisappear
+    viewControllerWillAppear:(nullable UIViewController *)viewControllerWillAppear;
 
 /**
  *  在 self.navigationController 进行以下 4 个操作前，相应的 viewController 的 willPopInNavigationControllerWithAnimated: 方法会被调用：

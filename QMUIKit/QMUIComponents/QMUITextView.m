@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -18,6 +18,7 @@
 #import "NSObject+QMUI.h"
 #import "NSString+QMUI.h"
 #import "UITextView+QMUI.h"
+#import "UIScrollView+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
 
@@ -211,6 +212,27 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     self.placeholder = self.placeholder;// 触发文字样式的更新
 }
 
+- (void)updatePlaceholderLabelHidden {
+    if (self.text.length == 0 && self.placeholder.length > 0) {
+        self.placeholderLabel.alpha = 1;
+    } else {
+        self.placeholderLabel.alpha = 0;// 用alpha来让placeholder隐藏，从而尽量避免因为显隐 placeholder 导致 layout
+    }
+}
+
+- (CGRect)preferredPlaceholderFrameWithSize:(CGSize)size {
+    if (self.placeholder.length <= 0) return CGRectZero;
+    
+    UIEdgeInsets allInsets = self.allInsets;
+    UIEdgeInsets labelMargins = UIEdgeInsetsMake(allInsets.top - self.qmui_contentInset.top, allInsets.left - self.qmui_contentInset.left, allInsets.bottom - self.qmui_contentInset.bottom, allInsets.right - self.qmui_contentInset.right);
+    CGFloat limitWidth = size.width - UIEdgeInsetsGetHorizontalValue(allInsets);
+    CGFloat limitHeight = size.height - UIEdgeInsetsGetVerticalValue(allInsets);
+    CGSize labelSize = [self.placeholderLabel sizeThatFits:CGSizeMake(limitWidth, limitHeight)];
+    labelSize.width = MIN(limitWidth, labelSize.width);
+    labelSize.height = MIN(limitHeight, labelSize.height);
+    return CGRectFlatMake(labelMargins.left, labelMargins.top, limitWidth, labelSize.height);
+}
+
 - (void)handleTextChanged:(id)sender {
     QMUITextView *textView = nil;
     if ([sender isKindOfClass:[NSNotification class]]) {
@@ -278,9 +300,23 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 }
 
 - (CGSize)sizeThatFits:(CGSize)size {
-    CGSize result = [super sizeThatFits:size];
+    if (size.width <= 0) size.width = CGFLOAT_MAX;
+    if (size.height <= 0) size.height = CGFLOAT_MAX;
+    CGSize result = CGSizeZero;
+    if (self.placeholder.length > 0 && self.text.length <= 0) {
+        UIEdgeInsets allInsets = self.allInsets;
+        CGRect frame = [self preferredPlaceholderFrameWithSize:size];
+        result.width = CGRectGetWidth(frame) + UIEdgeInsetsGetHorizontalValue(allInsets);
+        result.height = CGRectGetHeight(frame) + UIEdgeInsetsGetVerticalValue(allInsets);
+    } else {
+        result = [super sizeThatFits:size];
+    }
     result.height = MIN(result.height, self.maximumHeight);
     return result;
+}
+
+- (UIEdgeInsets)allInsets {
+    return UIEdgeInsetsConcat(UIEdgeInsetsConcat(UIEdgeInsetsConcat(self.textContainerInset, self.placeholderMargins), kSystemTextViewFixTextInsets), self.qmui_contentInset);
 }
 
 - (void)setFrame:(CGRect)frame {
@@ -306,26 +342,14 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 - (void)layoutSubviews {
     [super layoutSubviews];
     if (self.placeholder.length > 0) {
-        UIEdgeInsets labelMargins = UIEdgeInsetsConcat(UIEdgeInsetsConcat(self.textContainerInset, self.placeholderMargins), kSystemTextViewFixTextInsets);
-        CGFloat limitWidth = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.contentInset) - UIEdgeInsetsGetHorizontalValue(labelMargins);
-        CGFloat limitHeight = CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.contentInset) - UIEdgeInsetsGetVerticalValue(labelMargins);
-        CGSize labelSize = [self.placeholderLabel sizeThatFits:CGSizeMake(limitWidth, limitHeight)];
-        labelSize.height = fmin(limitHeight, labelSize.height);
-        self.placeholderLabel.frame = CGRectFlatMake(labelMargins.left, labelMargins.top, limitWidth, labelSize.height);
+        CGRect frame = [self preferredPlaceholderFrameWithSize:self.bounds.size];
+        self.placeholderLabel.frame = frame;
     }
 }
 
 - (void)drawRect:(CGRect)rect {
     [super drawRect:rect];
     [self updatePlaceholderLabelHidden];
-}
-
-- (void)updatePlaceholderLabelHidden {
-    if (self.text.length == 0 && self.placeholder.length > 0) {
-        self.placeholderLabel.alpha = 1;
-    } else {
-        self.placeholderLabel.alpha = 0;// 用alpha来让placeholder隐藏，从而尽量避免因为显隐 placeholder 导致 layout
-    }
 }
 
 - (NSUInteger)lengthWithString:(NSString *)string {

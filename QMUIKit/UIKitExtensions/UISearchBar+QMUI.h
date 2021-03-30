@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -22,6 +22,11 @@ NS_ASSUME_NONNULL_BEGIN
  提供更丰富的接口来修改 UISearchBar 的样式，注意大部分接口都同时支持配置表和 UIAppearance，如果有使用配置表并且该项的值不为 nil，则以配置表的值为准。
  */
 @interface UISearchBar (QMUI)
+
+/**
+ 获取与 searchBar 关联的 UISearchController
+ */
+@property(nonatomic, strong, readonly) UISearchController *qmui_searchController;
 
 /**
  当以 tableHeaderView 的方式使用 UISearchBar 时，建议将这个属性置为 YES，从而可以帮你处理 https://github.com/Tencent/QMUI_iOS/issues/233 里列出的问题（抖动、iPhone X 适配等），默认为 NO
@@ -60,6 +65,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 取消按钮相对于系统原有布局位置的上下左右的偏移。
 @property(nonatomic, copy) UIEdgeInsets (^qmui_cancelButtonMarginsBlock)(__kindof UISearchBar *searchBar, BOOL active);
+
+/// 当 UISearchBar 被直接初始化后使用时（也即不存在关联的 UISearchController），cancelButton 只有在 searchBar 聚焦升起键盘时才是 enabled，键盘降下时就 disabled。通常这不是我们想要的，所以提供这个开关，允许你强制保持 cancelButton 一直为 enabled。
+/// 默认为 YES。
+/// @note 注意只有 searchBar 不存在关联的 UISearchController 时，这个属性才会生效。
+@property(nonatomic, assign) BOOL qmui_alwaysEnableCancelButton UI_APPEARANCE_SELECTOR;
 
 /// 获取 scopeBar 里的 UISegmentedControl
 @property(nullable, nonatomic, weak, readonly) UISegmentedControl *qmui_segmentedControl;

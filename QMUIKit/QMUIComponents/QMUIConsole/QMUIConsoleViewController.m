@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -14,6 +14,9 @@
 
 #import "QMUIConsoleViewController.h"
 #import "QMUICore.h"
+#import "QMUITableView.h"
+#import "QMUITableViewCell.h"
+#import "UITableView+QMUICellHeightKeyCache.h"
 #import "QMUITextView.h"
 #import "QMUITextField.h"
 #import "QMUIButton.h"
@@ -23,6 +26,7 @@
 #import "UIImage+QMUI.h"
 #import "NSObject+QMUI.h"
 #import "CAAnimation+QMUI.h"
+#import "NSArray+QMUI.h"
 #import "QMUIConsole.h"
 #import "QMUIPopupMenuView.h"
 
@@ -32,6 +36,12 @@
 @property(nullable, nonatomic, copy) NSString *name;
 @property(nonatomic, copy) NSAttributedString *timeString;
 @property(nonatomic, copy) NSAttributedString *logString;
+@property(nonatomic, copy) NSAttributedString *displayString;
+
+@property(nonatomic, copy) NSString *searchingString;
+@property(nonatomic, copy) NSArray<NSTextCheckingResult *> *searchResults;
+- (void)updateDisplayStringWithSearchResults:(NSArray<NSTextCheckingResult *> *)searchResults;
+- (void)focusSearchResultAtIndex:(NSInteger)index;
 @end
 
 @implementation QMUIConsoleLogItem
@@ -55,21 +65,82 @@
     }
     logItem.logString = string;
     
+    NSMutableAttributedString *displayString = NSMutableAttributedString.new;
+    [displayString appendAttributedString:logItem.timeString];
+    [displayString appendAttributedString:logItem.logString];
+    logItem.displayString = displayString;
     return logItem;
+}
+
+- (void)updateDisplayStringWithSearchResults:(NSArray<NSTextCheckingResult *> *)searchResults {
+    self.searchResults = searchResults;
+    NSMutableAttributedString *displayString = self.displayString.mutableCopy;
+    [displayString removeAttribute:NSBackgroundColorAttributeName range:NSMakeRange(0, displayString.length)];
+    [searchResults enumerateObjectsUsingBlock:^(NSTextCheckingResult * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [displayString addAttribute:NSBackgroundColorAttributeName value:[[QMUIConsole appearance].searchResultHighlightedBackgroundColor colorWithAlphaComponent:.4] range:NSMakeRange(self.timeString.length + obj.range.location, obj.range.length)];
+    }];
+    self.displayString = displayString.copy;
+}
+
+- (void)focusSearchResultAtIndex:(NSInteger)index {
+    NSAssert(index < self.searchResults.count, @"尝试聚焦一个超出 searchResults 范围的关键词");
+    [self updateDisplayStringWithSearchResults:self.searchResults];// 重置之前的 focus range
+    NSRange rangeInLogString = self.searchResults[index].range;
+    NSRange range = NSMakeRange(self.timeString.length + rangeInLogString.location, rangeInLogString.length);
+    NSMutableAttributedString *displayString = self.displayString.mutableCopy;
+    [displayString addAttribute:NSBackgroundColorAttributeName value:[QMUIConsole appearance].searchResultHighlightedBackgroundColor range:range];
+    self.displayString = displayString.copy;
 }
 
 @end
 
-@interface QMUIConsoleViewController ()<QMUITextFieldDelegate>
+@interface QMUIConsoleLogItemCell : QMUITableViewCell
+
+@property(nonatomic, strong) QMUITextView *textView;
+@end
+
+@implementation QMUIConsoleLogItemCell
+
+- (void)didInitializeWithStyle:(UITableViewCellStyle)style {
+    [super didInitializeWithStyle:style];
+    self.backgroundColor = nil;
+    self.selectionStyle = UITableViewCellSelectionStyleNone;
+    
+    self.textView = [[QMUITextView alloc] init];
+    self.textView.textContainerInset = UIEdgeInsetsMake(2, 0, 2, 0);
+    self.textView.backgroundColor = [UIColor clearColor];
+    self.textView.scrollsToTop = NO;
+    self.textView.editable = NO;
+    if (@available(iOS 11, *)) {
+        self.textView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
+    [self.contentView addSubview:self.textView];
+}
+
+- (CGSize)sizeThatFits:(CGSize)size {
+    return [self.textView sizeThatFits:CGSizeMake(size.width, CGFLOAT_MAX)];
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    self.textView.frame = self.contentView.bounds;
+}
+
+@end
+
+@interface QMUIConsoleViewController ()<QMUITableViewDataSource, QMUITableViewDelegate, QMUITextFieldDelegate>
 
 @property(nonatomic, strong) UIView *containerView;
 @property(nonatomic, strong) QMUIPopupMenuView *levelMenu;
 @property(nonatomic, strong) QMUIPopupMenuView *nameMenu;
 @property(nonatomic, strong) NSMutableArray<QMUIConsoleLogItem *> *logItems;
+@property(nonatomic, strong) NSArray<QMUIConsoleLogItem *> *showingLogItems;
 @property(nonatomic, strong) NSMutableArray<NSString *> *selectedLevels;
 @property(nonatomic, strong) NSMutableArray<NSString *> *selectedNames;
-@property(nonatomic, copy) NSArray<NSTextCheckingResult *> *searchResults;
+@property(nonatomic, strong) NSRegularExpression *searchRegularExpression;
+@property(nonatomic, assign) NSInteger searchResultsTotalCount;
 @property(nonatomic, assign) NSInteger currentHighlightedResultIndex;
+@property(nonatomic, weak) QMUIConsoleLogItem *lastHighlightedItem;
 
 @property(nonatomic, strong) UIPanGestureRecognizer *popoverPanGesture;
 @property(nonatomic, strong) UILongPressGestureRecognizer *popoverLongPressGesture;
@@ -100,18 +171,24 @@
     return _containerView;
 }
 
-@synthesize textView = _textView;
-- (QMUITextView *)textView {
-    if (!_textView) {
-        _textView = [[QMUITextView alloc] init];
-        _textView.backgroundColor = [UIColor clearColor];
-        _textView.scrollsToTop = NO;
-        _textView.editable = NO;
+@synthesize tableView = _tableView;
+- (QMUITableView *)tableView {
+    if (!_tableView) {
+        _tableView = [[QMUITableView alloc] init];
+        _tableView.dataSource = self;
+        _tableView.delegate = self;
+        _tableView.estimatedRowHeight = 44;
+        _tableView.rowHeight = UITableViewAutomaticDimension;
+        _tableView.qmui_cacheCellHeightByKeyAutomatically = YES;
+        _tableView.backgroundColor = nil;
+        _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+        _tableView.scrollsToTop = NO;
+        [_tableView registerClass:QMUIConsoleLogItemCell.class forCellReuseIdentifier:@"cell"];
         if (@available(iOS 11, *)) {
-            _textView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+            _tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         }
     }
-    return _textView;
+    return _tableView;
 }
 
 @synthesize toolbar = _toolbar;
@@ -158,7 +235,7 @@
 - (void)initSubviews {
     [super initSubviews];
     [self.view addSubview:self.containerView];
-    [self.containerView addSubview:self.textView];
+    [self.containerView addSubview:self.tableView];
     [self.containerView addSubview:self.toolbar];
     
     __weak __typeof(self)weakSelf = self;
@@ -240,10 +317,10 @@
     self.toolbar.qmui_width = self.containerView.qmui_width;
     self.toolbar.qmui_bottom = self.containerView.qmui_height;
     
-    self.textView.qmui_width = self.containerView.qmui_width;
-    self.textView.qmui_height = self.toolbar.qmui_top;
-    self.textView.contentInset = UIEdgeInsetsMake(self.textView.qmui_safeAreaInsets.top, self.textView.qmui_safeAreaInsets.left, self.textView.contentInset.bottom, self.textView.qmui_safeAreaInsets.right);
-    self.textView.scrollIndicatorInsets = self.textView.contentInset;
+    self.tableView.qmui_width = self.containerView.qmui_width;
+    self.tableView.qmui_height = self.toolbar.qmui_top;
+    self.tableView.contentInset = UIEdgeInsetsMake(self.tableView.qmui_safeAreaInsets.top, self.tableView.qmui_safeAreaInsets.left, self.tableView.contentInset.bottom, self.tableView.qmui_safeAreaInsets.right);
+    self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
     
     [@[self.levelMenu, self.nameMenu] enumerateObjectsUsingBlock:^(QMUIPopupMenuView *menuView, NSUInteger idx, BOOL * _Nonnull stop) {
         menuView.safetyMarginsOfSuperview = UIEdgeInsetsConcat(UIEdgeInsetsMake(2, 2, 2, 2), self.view.qmui_safeAreaInsets);
@@ -267,9 +344,11 @@
 
 - (void)logWithLevel:(NSString *)level name:(NSString *)name logString:(id)logString {
     QMUIConsoleLogItem *logItem = [QMUIConsoleLogItem logItemWithLevel:level name:name timeString:[self.dateFormatter stringFromDate:[NSDate new]] logString:logString];
+    [self searchInLogItem:logItem];
     [self.logItems addObject:logItem];
-    [self updateToolbarButtonState];
-    [self printLog];
+    dispatch_async(dispatch_get_main_queue(), ^{// 避免频繁打 log 时卡顿
+        [self printLog];
+    });
 }
 
 - (void)log:(id)logString {
@@ -277,24 +356,46 @@
 }
 
 - (void)printLog {
-    NSMutableAttributedString *string = [[NSMutableAttributedString alloc] init];
-    [self.logItems enumerateObjectsUsingBlock:^(QMUIConsoleLogItem * _Nonnull logItem, NSUInteger idx, BOOL * _Nonnull stop) {
+    self.showingLogItems = [self.logItems qmui_filterWithBlock:^BOOL(QMUIConsoleLogItem * _Nonnull logItem) {
         BOOL shouldPrintLevel = !self.selectedLevels.count || [self.selectedLevels containsObject:logItem.level];
         BOOL shouldPrintName = !self.selectedNames.count || [self.selectedNames containsObject:logItem.name];
-        if (shouldPrintLevel && shouldPrintName) {
-            if (string.length > 0) {
-                [string appendAttributedString:[[NSAttributedString alloc] initWithString:@"\n" attributes:[QMUIConsole appearance].textAttributes]];
-            }
-            
-            [string appendAttributedString:logItem.timeString];
-            [string appendAttributedString:logItem.logString];
-        }
+        return shouldPrintLevel && shouldPrintName;
     }];
-    self.textView.attributedText = string;
-    if (self.toolbar.searchTextField.text.length > 0) {
-        [self handleSearchTextFieldChanged:self.toolbar.searchTextField];
-    } else {
-        [self.textView qmui_scrollToBottomAnimated:YES];
+    if (_tableView) {
+        [self updateToolbarButtonState];
+        
+        [self.tableView reloadData];
+        [self.tableView qmui_performBatchUpdates:^{
+        } completion:^(BOOL finished) {
+            NSArray<QMUIConsoleLogItem *> *matchedItems = [self.showingLogItems qmui_filterWithBlock:^BOOL(QMUIConsoleLogItem * _Nonnull item) {
+                return item.searchResults.count > 0;
+            }];
+            NSArray<NSArray<NSTextCheckingResult *> *> *matchedResults = [matchedItems qmui_mapWithBlock:^id _Nonnull(QMUIConsoleLogItem * _Nonnull item) {
+                return item.searchResults;
+            }];
+            self.searchResultsTotalCount = 0;
+            [matchedResults enumerateObjectsUsingBlock:^(NSArray<NSTextCheckingResult *> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                self.searchResultsTotalCount += obj.count;
+            }];
+            
+            BOOL shouldShowCountLabel = self.toolbar.searchTextField.text.length > 0;// 不管有没有结果，只要有搜索文本，就显示结果计数
+            if (shouldShowCountLabel) {
+                self.toolbar.searchTextField.rightViewMode = UITextFieldViewModeAlways;
+                self.toolbar.searchResultPreviousButton.enabled = self.searchResultsTotalCount > 1;
+                self.toolbar.searchResultNextButton.enabled = self.searchResultsTotalCount > 1;
+            } else {
+                self.toolbar.searchTextField.rightViewMode = UITextFieldViewModeNever;
+            }
+            if (self.searchResultsTotalCount == 0) {
+                self.currentHighlightedResultIndex = -1;// < 0 时不会自动滚动，所以需要手动再滚到列表末尾
+                if ([self.tableView numberOfRowsInSection:0] > 0) {
+                    NSIndexPath *lastRow = [NSIndexPath indexPathForRow:[self.tableView numberOfRowsInSection:0] - 1 inSection:0];
+                    [self.tableView scrollToRowAtIndexPath:lastRow atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+                }
+            } else {
+                self.currentHighlightedResultIndex = 0;// >= 0 时内部会自动滚动
+            }
+        }];
     }
 }
 
@@ -306,9 +407,25 @@
     self.toolbar.levelButton.selected = NO;
     self.toolbar.nameButton.enabled = NO;
     self.toolbar.nameButton.selected = NO;
-    self.textView.attributedText = nil;
-    self.searchResults = nil;
-    [self handleSearchTextFieldChanged:self.toolbar.searchTextField];
+    [self printLog];
+}
+
+#pragma mark - <QMUITableViewDataSource, QMUITableViewDelegate>
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.showingLogItems.count;
+}
+
+- (id<NSCopying>)qmui_tableView:(UITableView *)tableView cacheKeyForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return self.showingLogItems[indexPath.row].logString.string;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    QMUIConsoleLogItemCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
+    QMUIConsoleLogItem *logItem = self.showingLogItems[indexPath.row];
+    cell.textView.attributedText = logItem.displayString.copy;
+    [cell updateCellAppearanceWithIndexPath:indexPath];
+    return cell;
 }
 
 #pragma mark - Popover Button
@@ -502,64 +619,77 @@
 
 #pragma mark - Search
 
+- (void)searchInLogItem:(QMUIConsoleLogItem *)logItem {
+    NSString *searchingText = self.toolbar.searchTextField.text ?: @"";
+    BOOL valueChanged = ![searchingText isEqualToString:logItem.searchingString ?: @""];// UITextField.text 不会为 nil，至少是 @""，为了保证 isEqualToString: 的正确性，这里对 searchingString 也做了 nil -> @"" 的转换
+    if (!valueChanged) return;
+    logItem.searchingString = searchingText;
+    NSArray<NSTextCheckingResult *> *matches = [self.searchRegularExpression matchesInString:logItem.logString.string options:NSMatchingReportCompletion range:NSMakeRange(0, logItem.logString.string.length)];
+    [logItem updateDisplayStringWithSearchResults:matches];
+}
+
 - (void)handleSearchTextFieldChanged:(QMUITextField *)searchTextField {
     
     if (self.levelMenu.isShowing) [self.levelMenu hideWithAnimated:YES];
     if (self.nameMenu.isShowing) [self.nameMenu hideWithAnimated:YES];
     
-    NSError *error = nil;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:searchTextField.text options:NSRegularExpressionCaseInsensitive error:&error];
-    
-    if (!error) {
-        NSString *text = self.textView.text;
-        self.searchResults = [regex matchesInString:text options:NSMatchingReportProgress range:NSMakeRange(0, text.length)];
-        if (self.searchResults.count) {
-            self.currentHighlightedResultIndex = 0;
-            self.toolbar.searchResultPreviousButton.enabled = self.searchResults.count > 1;
-            self.toolbar.searchResultNextButton.enabled = self.searchResults.count > 1;
-            
-            self.toolbar.searchResultCountLabel.text = [NSString stringWithFormat:@"%@个结果", @(self.searchResults.count)];
-            [self.toolbar setNeedsLayoutSearchResultViews];
-            self.toolbar.searchTextField.rightViewMode = UITextFieldViewModeAlways;
-            [self updateSearchHighlighted];
-            return;
-        }
-    }
-    
-    self.currentHighlightedResultIndex = -1;
-    self.toolbar.searchTextField.rightViewMode = UITextFieldViewModeNever;
-    [self updateSearchHighlighted];
+    self.searchRegularExpression = [NSRegularExpression regularExpressionWithPattern:searchTextField.text options:NSRegularExpressionCaseInsensitive error:nil];
+    [self.logItems enumerateObjectsUsingBlock:^(QMUIConsoleLogItem * _Nonnull logItem, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self searchInLogItem:logItem];
+    }];
+    [self printLog];
 }
 
 - (void)handleSearchResultPreviousButtonEvent:(QMUIButton *)button {
     if (self.currentHighlightedResultIndex == 0) {
-        self.currentHighlightedResultIndex = self.searchResults.count - 1;
+        self.currentHighlightedResultIndex = self.searchResultsTotalCount - 1;
     } else {
         self.currentHighlightedResultIndex --;
     }
-    [self updateSearchHighlighted];
 }
 
 - (void)handleSearchResultNextButtonEvent:(QMUIButton *)button {
-    if (self.currentHighlightedResultIndex == self.searchResults.count - 1) {
+    if (self.currentHighlightedResultIndex == self.searchResultsTotalCount - 1) {
         self.currentHighlightedResultIndex = 0;
     } else {
         self.currentHighlightedResultIndex ++;
     }
-    [self updateSearchHighlighted];
 }
 
-- (void)updateSearchHighlighted {
-    NSMutableAttributedString *attributedText = self.textView.attributedText.mutableCopy;
-    [attributedText addAttribute:NSBackgroundColorAttributeName value:[UIColor clearColor] range:NSMakeRange(0, attributedText.length)];
-    if (self.currentHighlightedResultIndex >= 0) {
-        [attributedText addAttribute:NSBackgroundColorAttributeName value:[QMUIConsole appearance].searchResultHighlightedBackgroundColor range:self.searchResults[self.currentHighlightedResultIndex].range];
-    }
-    
-    self.textView.attributedText = attributedText;
-    
-    if (self.currentHighlightedResultIndex >= 0) {
-        [self.textView scrollRangeToVisible:self.searchResults[self.currentHighlightedResultIndex].range];
+- (void)setCurrentHighlightedResultIndex:(NSInteger)currentHighlightedResultIndex {
+    _currentHighlightedResultIndex = currentHighlightedResultIndex;
+    [self.lastHighlightedItem updateDisplayStringWithSearchResults:self.lastHighlightedItem.searchResults];// clear focus
+    self.toolbar.searchResultCountLabel.text = currentHighlightedResultIndex >= 0 ? [NSString stringWithFormat:@"%@/%@", @(currentHighlightedResultIndex + 1), @(self.searchResultsTotalCount)] : @"0";
+    [self.toolbar setNeedsLayoutSearchResultViews];
+    if (currentHighlightedResultIndex >= 0) {
+        
+        NSInteger row = NSNotFound;
+        NSInteger indexInItem = NSNotFound;
+        for (NSInteger i = 0, j = 0; i < self.showingLogItems.count; i++) {
+            if (self.currentHighlightedResultIndex < j + self.showingLogItems[i].searchResults.count) {
+                row = i;
+                indexInItem = self.currentHighlightedResultIndex - j;
+                break;
+            }
+            j += self.showingLogItems[i].searchResults.count;
+        }
+        if (row != NSNotFound) {
+            [self.showingLogItems[row] focusSearchResultAtIndex:indexInItem];
+            [self.tableView reloadData];
+            self.lastHighlightedItem = self.showingLogItems[row];
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:row inSection:0];
+            BOOL shouldScrollToVisible = ![self.tableView qmui_cellVisibleAtIndexPath:indexPath];
+            if (!shouldScrollToVisible) {
+                // 本来就可视的，可能 cell 比较高，只露出屏幕一半，高亮的那个地方没露出来，这种要手动计算
+                CGRect rect = [self.tableView rectForRowAtIndexPath:indexPath];
+                if (!CGRectContainsRect(self.tableView.bounds, rect)) {
+                    shouldScrollToVisible = YES;
+                }
+            }
+            if (shouldScrollToVisible) {
+                [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+            }
+        }
     }
 }
 

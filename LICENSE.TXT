@@ -1,5 +1,5 @@
 Tencent is pleased to support the open source community by making QMUI_iOS available.  
-Copyright (C) 2016-2019 THL A29 Limited, a Tencent company.  All rights reserved.
+Copyright (C) 2016-2021 THL A29 Limited, a Tencent company.  All rights reserved.
 If you have downloaded a copy of the QMUI_iOS binary from Tencent, please note that the QMUI_iOS binary is licensed under the MIT License.
 If you have downloaded a copy of the QMUI_iOS source code from Tencent, please note that QMUI_iOS source code is licensed under the MIT License.  Your integration of QMUI_iOS into your own projects may require compliance with the MIT License.
 A copy of the MIT License is included in this file.

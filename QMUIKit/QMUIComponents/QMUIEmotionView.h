@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -47,7 +47,7 @@
  *  表情控件，支持任意表情的展示，每个表情以相同的大小显示。
  *
  *  使用方式：
- *  
+ *
  *  - 通过`initWithFrame:`初始化，如果面板高度不变，建议在init时就设置好，若最终布局以父类的`layoutSubviews`为准，则也可通过`init`方法初始化，再在`layoutSubviews`里计算布局
  *  - 通过调整`paddingInPage`、`emotionSize`等变量来自定义UI
  *  - 通过`emotions`设置要展示的表情
@@ -75,6 +75,15 @@
 /// 用于展示表情面板的横向滚动collectionView，布局撑满整个控件
 @property(nonatomic, strong, readonly) UICollectionView *collectionView;
 
+/// 用于展示表情面板的竖向滚动的 scrollView，布局撑满整个控件
+@property(nonatomic, strong, readonly) UIScrollView *scrollView;
+
+/// 竖向滚动，默认为 NO
+@property(nonatomic, assign) BOOL verticalAlignment UI_APPEARANCE_SELECTOR;
+
+/// 表情与表情之间的垂直间距，默认为10，仅在 verticalAlignment 为 YES 时生效，当 verticalAlignment 为 N0 时，表情的垂直间距由 numberOfRowsPerPage 决定
+@property(nonatomic, assign) CGFloat emotionVerticalSpacing UI_APPEARANCE_SELECTOR;
+
 /// 用于横向按页滚动的collectionViewLayout
 @property(nonatomic, strong, readonly) UICollectionViewFlowLayout *collectionViewLayout;
 
@@ -83,6 +92,9 @@
 
 /// 控件右下角的发送按钮
 @property(nonatomic, strong, readonly) QMUIButton *sendButton;
+
+/// 控件右下角的删除按钮
+@property(nonatomic, strong, readonly) QMUIButton *deleteButton;
 
 /// 每一页表情的上下左右padding，默认为{18, 18, 65, 18}
 @property(nonatomic, assign) UIEdgeInsets paddingInPage UI_APPEARANCE_SELECTOR;
@@ -101,6 +113,15 @@
 
 /// 表情面板右下角的删除按钮的图片，默认为`[QMUIHelper imageWithName:@"QMUI_emotion_delete"]`
 @property(nonatomic, strong) UIImage *deleteButtonImage UI_APPEARANCE_SELECTOR;
+
+/// 删除按钮的背景色，默认为 nil
+@property(nonatomic, strong) UIColor *deleteButtonBackgroundColor UI_APPEARANCE_SELECTOR;
+
+/// 删除按钮位置的 (x,y) 的偏移，默认为 CGPointZero
+@property(nonatomic, assign) CGPoint deleteButtonOffset UI_APPEARANCE_SELECTOR;
+
+/// 删除按钮的圆角大小，默认为4
+@property(nonatomic, assign) CGFloat deleteButtonCornerRadius UI_APPEARANCE_SELECTOR;
 
 /// 发送按钮的文字样式，默认为{NSFontAttributeName: UIFontMake(15), NSForegroundColorAttributeName: UIColorWhite}
 @property(nonatomic, strong) NSDictionary *sendButtonTitleAttributes UI_APPEARANCE_SELECTOR;

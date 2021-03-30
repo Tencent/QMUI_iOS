@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -315,7 +315,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     _navBarTintColor = navBarTintColor;
     // tintColor 并没有声明 UI_APPEARANCE_SELECTOR，所以暂不使用 appearance 的方式去修改（虽然 appearance 方式实测是生效的）
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        navigationController.navigationBar.tintColor = _navBarTintColor;
+        if (![navigationController.topViewController respondsToSelector:@selector(navigationBarTintColor)]) {
+            navigationController.navigationBar.tintColor = _navBarTintColor;
+        }
     }];
 }
 
@@ -323,7 +325,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     _navBarBarTintColor = navBarBarTintColor;
     UINavigationBar.qmui_appearanceConfigured.barTintColor = _navBarBarTintColor;
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        navigationController.navigationBar.barTintColor = _navBarBarTintColor;
+        if (![navigationController.topViewController respondsToSelector:@selector(navigationBarBarTintColor)]) {
+            navigationController.navigationBar.barTintColor = _navBarBarTintColor;
+        }
     }];
 }
 
@@ -354,7 +358,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     
     UINavigationBar.qmui_appearanceConfigured.shadowImage = shadowImage;
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        navigationController.navigationBar.shadowImage = shadowImage;
+        if (![navigationController.topViewController respondsToSelector:@selector(navigationBarShadowImage)]) {
+            navigationController.navigationBar.shadowImage = shadowImage;
+        }
     }];
 }
 
@@ -362,7 +368,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     _navBarStyle = navBarStyle;
     UINavigationBar.qmui_appearanceConfigured.barStyle = navBarStyle;
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        navigationController.navigationBar.barStyle = navBarStyle;
+        if (![navigationController.topViewController respondsToSelector:@selector(navigationBarStyle)]) {
+            navigationController.navigationBar.barStyle = navBarStyle;
+        }
     }];
 }
 
@@ -370,7 +378,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     _navBarBackgroundImage = navBarBackgroundImage;
     [UINavigationBar.qmui_appearanceConfigured setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        [navigationController.navigationBar setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+        if (![navigationController.topViewController respondsToSelector:@selector(navigationBarBackgroundImage)]) {
+            [navigationController.navigationBar setBackgroundImage:_navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+        }
     }];
 }
 
@@ -397,7 +407,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     }
     UINavigationBar.qmui_appearanceConfigured.titleTextAttributes = titleTextAttributes;
     [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
+        if (![navigationController.topViewController respondsToSelector:@selector(titleViewTintColor)]) {
+            navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
+        }
     }];
 }
 

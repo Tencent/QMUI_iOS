@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -262,6 +262,8 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                 
                 UIViewController *result = callSuperBlock();
                 
+                // UINavigationController 不可见时 return 值可能为 nil
+                // https://github.com/Tencent/QMUI_iOS/issues/1180
                 NSAssert(result && disappearingViewControllers && disappearingViewControllers.firstObject == result, @"QMUI 认为 popViewController 会成功，但实际上失败了");
                 disappearingViewControllers = result ? @[result] : disappearingViewControllers;
                 
@@ -305,7 +307,7 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                 
                 NSArray<UIViewController *> *result = callSuperBlock();
                 
-                NSAssert([result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToViewController 结果和系统的不一致");
+                NSAssert(!(selfObject.isViewLoaded && selfObject.view.window) || [result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToViewController 结果和系统的不一致");
                 disappearingViewControllers = result ?: disappearingViewControllers;
                 
                 [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
@@ -344,7 +346,9 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                 
                 NSArray<UIViewController *> *result = callSuperBlock();
                 
-                NSAssert([result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToRootViewController 结果和系统的不一致");
+                // UINavigationController 不可见时 return 值可能为 nil
+                // https://github.com/Tencent/QMUI_iOS/issues/1180
+                NSAssert(!(selfObject.isViewLoaded && selfObject.view.window) || [result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToRootViewController 结果和系统的不一致");
                 disappearingViewControllers = result ?: disappearingViewControllers;
                 
                 [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];

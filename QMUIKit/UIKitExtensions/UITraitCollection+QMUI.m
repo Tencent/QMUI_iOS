@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -62,43 +62,34 @@ static NSString * const kQMUIUserInterfaceStyleWillChangeSelectorsKey = @"qmui_u
 }
 
 
-CG_INLINE UITraitCollection *
-qmui_getTraitCollection(UIWindow *targetWindow, id (*originalIMP)(id, SEL), SEL originCMD) {
-#ifndef DEBUG
-    // 非 DEBUG 无需处理 Main Thread Checker，直接用 originalIMP 取得 traitCollection
-    return originalIMP(targetWindow, originCMD);
-#endif
+#ifdef DEBUG
+static id (*directTraitCollectionIMP)(id, SEL) = NULL;
++ (void)load {
     // 以下代码只会在 DEBUG 生效，主要是屏蔽 Main Thread Checker 对 QMUI swizzle traitCollection 的检测
     // iOS 14 首次弹起键盘，UIKit 内部会在在子线程访问 -[UIWindow traitCollection]，该方法一旦被 swizzle，Main Thread Checker 就会误判为业务在子线程主动调用 UIKit 方法从而引发卡顿和警告。 https://github.com/Tencent/QMUI_iOS/issues/1087
     // Main Thread Checker 的原理是在启动的时候替换相关方法的实现为 Main Thread Checker 自身的 trampoline，触发相关方法时会先在 trampoline 中实现线程检测逻辑并告警，所以这里唯一可行的屏蔽方法就是获取原始的 IMP 实现，并直接调用从而绕过 Main Thread Checker, 由于 QMUI 在 +load 到时候已经晚于这个时机，无法获取原始的实现方法，观察发现 -[UIWindow traitCollection] 内部会调用 -[UIWindow _updateWindowTraitsAndNotify:]，因此可以借助该方法回溯到 traitCollection 的真实地址。
-    static id (*directTraitCollectionIMP)(id, SEL) = NULL;
-    UITraitCollection *traitCollection = nil;
-    if (directTraitCollectionIMP) {
-        traitCollection = directTraitCollectionIMP(targetWindow, originCMD);
-    } else {
-        static dispatch_once_t onceToken;
-        dispatch_once(&onceToken, ^{
-            if (qmui_exists_dyld_image("libMainThreadChecker.dylib")) {
-                OverrideImplementation([UIWindow class] , NSSelectorFromString(@"_updateWindowTraitsAndNotify:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                    return ^void(UIWindow *selfObject, BOOL arg1) {
-                        if (selfObject == targetWindow && directTraitCollectionIMP == NULL) {
-                            NSArray *address = [NSThread callStackReturnAddresses];
-                            Dl_info info;
-                            dladdr((void *)[address[1] longLongValue], &info);
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (qmui_exists_dyld_image("libMainThreadChecker.dylib")) {
+            OverrideImplementation([UIWindow class] , NSSelectorFromString(@"_updateWindowTraitsAndNotify:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^void(UIWindow *selfObject, BOOL arg1) {
+                    if (directTraitCollectionIMP == NULL) {
+                        NSArray *address = [NSThread callStackReturnAddresses];
+                        Dl_info info;
+                        dladdr((void *)[address[1] longLongValue], &info);
+                        if (strncmp(info.dli_sname, "-[UIWindow traitCollection]", 27) == 0) {
                             directTraitCollectionIMP = info.dli_saddr;
                         }
-                        id (*originSelectorIMP)(id, SEL, BOOL arg1);
-                        originSelectorIMP = (id (*)(id, SEL, BOOL))originalIMPProvider();
-                        originSelectorIMP(selfObject, originCMD, arg1);
-                    };
-                });
-            }
-        });
-        // 如果存在 Main Thread Checker，下面这行调用将会命中 _updateWindowTraitsAndNotify: 的 swizzle，并拿到 directTraitCollectionIMP，下一次 qmui_getTraitCollection 会直接调用 directTraitCollectionIMP 从而避开检测。
-        traitCollection = originalIMP(targetWindow, originCMD);
-    }
-    return traitCollection;
+                    }
+                    id (*originSelectorIMP)(id, SEL, BOOL arg1);
+                    originSelectorIMP = (id (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, arg1);
+                };
+            });
+        }
+    });
 }
+#endif
 
 
 + (void)_qmui_overrideTraitCollectionMethodIfNeeded {
@@ -110,8 +101,12 @@ qmui_getTraitCollection(UIWindow *targetWindow, id (*originalIMP)(id, SEL), SEL 
             OverrideImplementation([UIWindow class] , @selector(traitCollection), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^UITraitCollection *(UIWindow *selfObject) {
                     id (*originSelectorIMP)(id, SEL);
+#ifdef DEBUG
+                    originSelectorIMP = directTraitCollectionIMP ? : (id (*)(id, SEL))originalIMPProvider();
+#else
                     originSelectorIMP = (id (*)(id, SEL))originalIMPProvider();
-                    UITraitCollection *traitCollection = qmui_getTraitCollection(selfObject, originSelectorIMP, originCMD);
+#endif
+                    UITraitCollection *traitCollection = originSelectorIMP(selfObject, originCMD);
                     if (_isOverridedMethodProcessing || !NSThread.isMainThread) {
                         // 防止业务在接收到通知后，再次触发 traitCollection 造成递归
                         return traitCollection;

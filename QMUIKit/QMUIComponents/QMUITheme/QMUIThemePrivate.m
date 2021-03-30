@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -23,6 +23,7 @@
 #import "CALayer+QMUI.h"
 #import "UIVisualEffectView+QMUI.h"
 #import "UIBarItem+QMUI.h"
+#import "UITabBar+QMUI.h"
 #import "UITabBarItem+QMUI.h"
 
 // QMUI classes
@@ -78,20 +79,24 @@
                                                                                               NSStringFromSelector(@selector(sectionIndexTrackingBackgroundColor)),
                                                                                               NSStringFromSelector(@selector(separatorColor)),],
                                        NSStringFromClass(UITableViewCell.class):            @[NSStringFromSelector(@selector(qmui_selectedBackgroundColor)),],
+                                       NSStringFromClass(UICollectionViewCell.class):            @[NSStringFromSelector(@selector(qmui_selectedBackgroundColor)),],
                                        NSStringFromClass(UINavigationBar.class):            @[NSStringFromSelector(@selector(barTintColor)),],
                                        NSStringFromClass(UIToolbar.class):                  @[NSStringFromSelector(@selector(barTintColor)),],
                                        NSStringFromClass(UITabBar.class):                   ({
-                                                                                           NSArray<NSString *> *result = nil;
-                                                                                           if (@available(iOS 13.0, *)) {
-                                                                                               // iOS 13 在 UITabBar (QMUI) 里对所有旧版接口都映射到 standardAppearance，所以重新设置一次 standardAppearance 就可以更新所有样式
-                                                                                               result = @[NSStringFromSelector(@selector(standardAppearance)),];
-                                                                                           } else {
-                                                                                               result = @[NSStringFromSelector(@selector(barTintColor)),
-                                                                                                          NSStringFromSelector(@selector(unselectedItemTintColor)),
-                                                                                                          NSStringFromSelector(@selector(selectedImageTintColor)),];
-                                                                                           }
-                                                                                           result;
-                                                                                       }),
+                                           NSMutableArray<NSString *> *result = @[
+                                               NSStringFromSelector(@selector(qmui_effect)),
+                                               NSStringFromSelector(@selector(qmui_effectForegroundColor)),
+                                           ].mutableCopy;
+                                           if (@available(iOS 13.0, *)) {
+                                               // iOS 13 在 UITabBar (QMUI) 里对所有旧版接口都映射到 standardAppearance，所以重新设置一次 standardAppearance 就可以更新所有样式
+                                               [result addObject:NSStringFromSelector(@selector(standardAppearance))];
+                                           } else {
+                                               [result addObjectsFromArray:@[NSStringFromSelector(@selector(barTintColor)),
+                                                                             NSStringFromSelector(@selector(unselectedItemTintColor)),
+                                                                             NSStringFromSelector(@selector(selectedImageTintColor)),]];
+                                           }
+                                           result.copy;
+                                       }),
                                        NSStringFromClass(UISearchBar.class):                        @[NSStringFromSelector(@selector(barTintColor)),
                                                                                                       NSStringFromSelector(@selector(qmui_placeholderColor)),
                                                                                                       NSStringFromSelector(@selector(qmui_textColor)),],
@@ -347,12 +352,14 @@
         OverrideImplementation([UITabBarItem class], @selector(setSelectedImage:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UITabBarItem *selfObject, UIImage *selectedImage) {
                 
+                // 必须先保存起来再执行 super，因为 setter 的 super 里会触发 getter，如果不先保存，就会导致走到 getter 时拿到的 boundObject 还是旧值
+                // https://github.com/Tencent/QMUI_iOS/issues/1218
+                [selfObject qmui_bindObject:selectedImage.qmui_isDynamicImage ? selectedImage : nil forKey:@"UITabBarItem(QMUIThemeCompatibility).selectedImage"];
+                
                 // call super
                 void (*originSelectorIMP)(id, SEL, UIImage *);
                 originSelectorIMP = (void (*)(id, SEL, UIImage *))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, selectedImage);
-                
-                [selfObject qmui_bindObject:selectedImage forKey:@"UITabBarItem(QMUIThemeCompatibility).selectedImage"];
             };
         });
         

@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -16,6 +16,10 @@
 #import "UINavigationBar+QMUI.h"
 #import "QMUICore.h"
 #import "NSObject+QMUI.h"
+#import "UIView+QMUI.h"
+#import "NSArray+QMUI.h"
+
+NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
 
 @implementation UINavigationBar (QMUI)
 
@@ -33,6 +37,84 @@
                     shadowImageView.backgroundColor = nil;
                     shadowImageView.image = shadowImage;
                 }
+            });
+        }
+        
+        
+        // [UIKit Bug] iOS 12 及以上的系统，如果设置了自己的 leftBarButtonItem，且 title 很长时，则当 pop 的时候，title 会瞬间跳到左边，与 leftBarButtonItem 重叠
+        // https://github.com/Tencent/QMUI_iOS/issues/1217
+        if (@available(iOS 12.0, *)) {
+            
+            // _UITAMICAdaptorView
+            Class adaptorClass = NSClassFromString([NSString qmui_stringByConcat:@"_", @"UITAMIC", @"Adaptor", @"View", nil]);
+            
+            // _UINavigationBarContentView
+            OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil]), @selector(didAddSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIView *selfObject, UIView *firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UIView *);
+                    originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if ([firstArgv isKindOfClass:adaptorClass] || [firstArgv isKindOfClass:UILabel.class]) {
+                        firstArgv.qmui_frameWillChangeBlock = ^CGRect(__kindof UIView * _Nonnull view, CGRect followingFrame) {
+                            if ([view qmui_getBoundObjectForKey:kShouldFixTitleViewBugKey]) {
+                                followingFrame = [[view qmui_getBoundObjectForKey:kShouldFixTitleViewBugKey] CGRectValue];
+                            }
+                            return followingFrame;
+                        };
+                    }
+                };
+            });
+            
+            void (^boundTitleViewMinXBlock)(UINavigationBar *, BOOL) = ^void(UINavigationBar *navigationBar, BOOL cleanup) {
+                
+                if (!navigationBar.topItem.leftBarButtonItem) return;
+                
+                UIView *titleView = nil;
+                UIView *adapterView = navigationBar.topItem.titleView.superview;
+                if ([adapterView isKindOfClass:adaptorClass]) {
+                    titleView = adapterView;
+                } else {
+                    titleView = [navigationBar.qmui_contentView.subviews qmui_filterWithBlock:^BOOL(__kindof UIView * _Nonnull item) {
+                        return [item isKindOfClass:UILabel.class];
+                    }].firstObject;
+                }
+                if (!titleView) return;
+                
+                if (cleanup) {
+                    [titleView qmui_bindObject:nil forKey:kShouldFixTitleViewBugKey];
+                } else if (CGRectGetWidth(titleView.frame) > CGRectGetWidth(navigationBar.bounds) / 2) {
+                    [titleView qmui_bindObject:[NSValue valueWithCGRect:titleView.frame] forKey:kShouldFixTitleViewBugKey];
+                }
+            };
+            
+            // - (id) _popNavigationItemWithTransition:(int)arg1; (0x1a15513a0)
+            OverrideImplementation([UINavigationBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"popNavigationItem", @"With", @"Transition:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^id(UINavigationBar *selfObject, NSInteger firstArgv) {
+                    
+                    boundTitleViewMinXBlock(selfObject, NO);
+                    
+                    // call super
+                    id (*originSelectorIMP)(id, SEL, NSInteger);
+                    originSelectorIMP = (id (*)(id, SEL, NSInteger))originalIMPProvider();
+                    id result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                    return result;
+                };
+            });
+            
+            // - (void) _completePopOperationAnimated:(BOOL)arg1 transitionAssistant:(id)arg2; (0x1a1551668)
+            OverrideImplementation([UINavigationBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"complete", @"PopOperationAnimated:", @"transitionAssistant:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UINavigationBar *selfObject, BOOL firstArgv, id secondArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL, id);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL, id))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+                    
+                    boundTitleViewMinXBlock(selfObject, YES);
+                };
             });
         }
     });
