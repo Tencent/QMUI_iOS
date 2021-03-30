@@ -1,7 +1,8 @@
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/1190261/43357675-f18b3096-92b7-11e8-807e-809717ca504a.png" width="220" alt="Banner" />
+  <img src="https://user-images.githubusercontent.com/1190261/113016569-32a75c80-91b1-11eb-95b3-5453b10272af.png" width="200" alt="Banner" />
 </p>
+
 
 # QMUI iOS
 QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设计目的是用于辅助快速搭建一个具备基本设计还原效果的 iOS 项目，同时利用自身提供的丰富控件及兼容处理，
@@ -71,4 +72,4 @@ QMUIKit 和 QMUI Demo 的 Sketch 设计稿均存放在 [https://github.com/QMUI/
 
 2021-03-15 更新
 
-[广州|深圳|成都] 企业微信/微信读书/王者营地长期接收 iOS 客户端社招、实习生简历，详情请看 [#1209](https://github.com/Tencent/QMUI_iOS/issues/1209)。
+[广州|成都] 企业微信/微信读书/王者营地长期接收 iOS 客户端社招、实习生简历，详情请看 [#1209](https://github.com/Tencent/QMUI_iOS/issues/1209)。
