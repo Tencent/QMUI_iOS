@@ -21,7 +21,6 @@
 @interface QMUIAssetsGroup()
 
 @property(nonatomic, strong, readwrite) PHAssetCollection *phAssetCollection;
-@property(nonatomic, strong, readwrite) PHFetchResult *phFetchResult;
 
 @end
 
@@ -42,6 +41,14 @@
 
 - (NSInteger)numberOfAssets {
     return self.phFetchResult.count;
+}
+
+- (NSInteger)convertedIndexForIndex:(NSInteger)index albumSortType:(QMUIAlbumSortType)albumSortType {
+    if (albumSortType == QMUIAlbumSortTypeReverse) {
+        return self.phFetchResult.count - 1 - index;
+    } else {
+        return index;
+    }
 }
 
 - (NSString *)name {

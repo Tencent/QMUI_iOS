@@ -21,6 +21,7 @@
 #import "QMUIImagePickerViewController.h"
 #import "QMUIImagePickerHelper.h"
 #import "QMUIAppearance.h"
+#import "QMUIAssetFetchResultChange.h"
 #import <Photos/PHPhotoLibrary.h>
 #import <Photos/PHAsset.h>
 #import <Photos/PHFetchOptions.h>
@@ -125,13 +126,17 @@
 
 #pragma mark - QMUIAlbumViewController
 
-@interface QMUIAlbumViewController ()
+@interface QMUIAlbumViewController () <PHPhotoLibraryChangeObserver>
 
 @property(nonatomic, strong) NSMutableArray<QMUIAssetsGroup *> *albumsArray;
 @property(nonatomic, strong) QMUIImagePickerViewController *imagePickerViewController;
 @end
 
 @implementation QMUIAlbumViewController
+
+- (void)dealloc {
+    [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
+}
 
 - (void)didInitialize {
     [super didInitialize];
@@ -154,6 +159,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
+
     if ([QMUIAssetsManager authorizationStatus] == QMUIAssetAuthorizationStatusNotAuthorized) {
         // 如果没有获取访问授权，或者访问授权状态已经被明确禁止，则显示提示语，引导用户开启授权
         NSString *tipString = self.tipTextWhenNoPhotosAuthorization;
@@ -214,11 +221,11 @@
         if (self.shouldShowDefaultLoadingView) {
             [self hideEmptyView];
         }
-        [self.tableView reloadData];
     } else {
         NSString *tipString = self.tipTextWhenPhotosEmpty ? : @"空照片";
         [self showEmptyViewWithText:tipString detailText:nil buttonTitle:nil buttonAction:nil];
     }
+    [self.tableView reloadData];
 }
 
 - (void)pickAlbumsGroup:(QMUIAssetsGroup *)assetsGroup animated:(BOOL)animated {
@@ -277,4 +284,23 @@
     }];
 }
 
+#pragma mark - PHPhotoLibraryChangeObserver
+
+- (void)photoLibraryDidChange:(PHChange *)changeInstance {
+    NSMutableArray <QMUIAssetsGroup *> *albums = [[NSMutableArray alloc] init];
+    [[QMUIAssetsManager sharedInstance] enumerateAllAlbumsWithAlbumContentType:self.contentType usingBlock:^(QMUIAssetsGroup *resultAssetsGroup) {
+        if (resultAssetsGroup) {
+            [albums addObject:resultAssetsGroup];
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.albumsArray = albums;
+                [self sortAlbumArray];
+                [self refreshAlbumAndShowEmptyTipIfNeed];
+                if (self.imagePickerViewController) {
+                    [self.imagePickerViewController updateCollectionViewWithChangeInstance:changeInstance];
+                }
+            });
+        }
+    }];
+}
 @end
