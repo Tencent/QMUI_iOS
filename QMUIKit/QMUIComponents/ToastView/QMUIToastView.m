@@ -334,7 +334,6 @@ static NSMutableArray <QMUIToastView *> *kToastViews = nil;
     BOOL result = NO;
     for (QMUIToastView *toastView in toastViews) {
         result = YES;
-        toastView.removeFromSuperViewWhenHide = YES;
         [toastView hideAnimated:animated];
     }
     return result;
