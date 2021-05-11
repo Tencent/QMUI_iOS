@@ -1,7 +1,7 @@
-
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/1190261/43357675-f18b3096-92b7-11e8-807e-809717ca504a.png" width="220" alt="Banner" />
+  <img src="https://user-images.githubusercontent.com/1190261/113146850-bff6b980-9262-11eb-948b-8719b6c578f5.png" width="200" alt="Banner" />
 </p>
+
 
 # QMUI iOS
 QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设计目的是用于辅助快速搭建一个具备基本设计还原效果的 iOS 项目，同时利用自身提供的丰富控件及兼容处理，
@@ -53,7 +53,7 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 - 关于 AutoLayout：通常可以配合 Masonry 等常见的 AutoLayout 框架使用，若遇到不兼容的个案请提 issue。
 - 关于 xib / storyboard：现已全面支持。
 - 关于 Swift：可以正常使用，如遇到问题请提 issue。
-- 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:116](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L116-L126)，可直接查看。
+- 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:124](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L124-L135)，可直接查看。
 
 ## 设计资源
 
@@ -71,4 +71,4 @@ QMUIKit 和 QMUI Demo 的 Sketch 设计稿均存放在 [https://github.com/QMUI/
 
 2021-03-15 更新
 
-[广州|深圳|成都] 企业微信/微信读书/王者营地长期接收 iOS 客户端社招、实习生简历，详情请看 [#1209](https://github.com/Tencent/QMUI_iOS/issues/1209)。
+[广州|成都] 企业微信/微信读书/王者营地长期接收 iOS 客户端社招、实习生简历，详情请看 [#1209](https://github.com/Tencent/QMUI_iOS/issues/1209)。

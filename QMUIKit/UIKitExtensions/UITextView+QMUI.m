@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -84,15 +84,16 @@
     
     CGFloat contentOffsetY = self.contentOffset.y;
     
-    if (CGRectGetMinY(rect) == self.contentOffset.y + self.textContainerInset.top) {
+    if (ABS(CGRectGetMinY(rect) - (contentOffsetY + self.textContainerInset.top)) <= 1) {
         // 命中这个条件说明已经不用调整了，直接 return，避免继续走下面的判断，会重复调整，导致光标跳动
+        // 一般情况下光标的 y 都比 textContainerInset.top 小1，所以这里用 <= 1 这个判断条件
         return;
     }
     
-    if (CGRectGetMinY(rect) < self.contentOffset.y + self.textContainerInset.top) {
+    if (CGRectGetMinY(rect) < contentOffsetY + self.textContainerInset.top) {
         // 光标在可视区域上方，往下滚动
         contentOffsetY = CGRectGetMinY(rect) - self.textContainerInset.top - self.contentInset.top;
-    } else if (CGRectGetMaxY(rect) > self.contentOffset.y + CGRectGetHeight(self.bounds) - self.textContainerInset.bottom - self.contentInset.bottom) {
+    } else if (CGRectGetMaxY(rect) > contentOffsetY + CGRectGetHeight(self.bounds) - self.textContainerInset.bottom - self.contentInset.bottom) {
         // 光标在可视区域下方，往上滚动
         contentOffsetY = CGRectGetMaxY(rect) - CGRectGetHeight(self.bounds) + self.textContainerInset.bottom + self.contentInset.bottom;
     } else {

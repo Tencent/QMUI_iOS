@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -144,6 +144,12 @@ NS_ASSUME_NONNULL_BEGIN
  *  获取当前系统的默认 tintColor 色值
  */
 @property(class, nonatomic, strong, readonly) UIColor *qmui_systemTintColor;
+
+/**
+ 获取两个颜色之间的差异程度，0表示相同，值越大表示差距越大，例如纯白和纯黑会返回 86，如果遇到异常情况（例如传进来的 color 为 nil，则会返回 CGFLOAT_MAX）。
+ 原理是将两个颜色摆放在 HSB(HSV) 模型内，取两个点之间的距离。由于 HSB(HSV) 没有 alpha 的概念，所以色值相同半透明程度不同的两个颜色会返回 0，也即相等。
+ */
+- (CGFloat)qmui_distanceBetweenColor:(UIColor *)color;
 
 /**
  *  计算两个颜色叠加之后的最终色（注意区分前景色后景色的顺序）<br/>

@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -26,13 +26,19 @@ typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
 };
 
 /**
+ *  用于 `QMUIButton.cornerRadius` 属性，当 `cornerRadius` 为 `QMUIButtonCornerRadiusAdjustsBounds` 时，`QMUIButton` 会在高度变化时自动调整 `cornerRadius`，使其始终保持为高度的 1/2。
+ */
+extern const CGFloat QMUIButtonCornerRadiusAdjustsBounds;
+
+/**
  *  提供以下功能：
- *  1. 支持让文字和图片自动跟随 tintColor 变化（系统的 UIButton 默认是不响应 tintColor 的）
- *  2. highlighted、disabled 状态均通过改变整个按钮的alpha来表现，无需分别设置不同 state 下的 titleColor、image。alpha 的值可在配置表里修改 ButtonHighlightedAlpha、ButtonDisabledAlpha。
- *  3. 支持点击时改变背景色颜色（highlightedBackgroundColor）
- *  4. 支持点击时改变边框颜色（highlightedBorderColor）
- *  5. 支持设置图片相对于 titleLabel 的位置（imagePosition）
- *  6. 支持设置图片和 titleLabel 之间的间距，无需自行调整 titleEdgeInests、imageEdgeInsets（spacingBetweenImageAndTitle）
+ *  1. 支持让文字和图片自动跟随 tintColor 变化（系统的 UIButton 默认是不响应 tintColor 的）。
+ *  2. 支持自动将圆角值保持为按钮高度的一半。
+ *  3. highlighted、disabled 状态均通过改变整个按钮的alpha来表现，无需分别设置不同 state 下的 titleColor、image。alpha 的值可在配置表里修改 ButtonHighlightedAlpha、ButtonDisabledAlpha。
+ *  4. 支持点击时改变背景色颜色（highlightedBackgroundColor）。
+ *  5. 支持点击时改变边框颜色（highlightedBorderColor）。
+ *  6. 支持设置图片相对于 titleLabel 的位置（imagePosition）。
+ *  7. 支持设置图片和 titleLabel 之间的间距，无需自行调整 titleEdgeInests、imageEdgeInsets（spacingBetweenImageAndTitle）。
  *  @warning QMUIButton 重新定义了 UIButton.titleEdgeInests、imageEdgeInsets、contentEdgeInsets 这三者的布局逻辑，sizeThatFits: 里会把 titleEdgeInests 和 imageEdgeInsets 也考虑在内（UIButton 不会），以使这三个接口的使用更符合直觉。
  */
 @interface QMUIButton : UIButton
@@ -98,6 +104,8 @@ typedef NS_ENUM(NSUInteger, QMUIButtonImagePosition) {
  * @warning 会与 imageEdgeInsets、 titleEdgeInsets、 contentEdgeInsets 共同作用。
  */
 @property(nonatomic, assign) IBInspectable CGFloat spacingBetweenImageAndTitle;
+
+@property(nonatomic, assign) IBInspectable CGFloat cornerRadius UI_APPEARANCE_SELECTOR;// 默认为 0。将其设置为 QMUIButtonCornerRadiusAdjustsBounds 可自动保持圆角为按钮高度的一半。
 
 @end
 

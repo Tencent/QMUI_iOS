@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -207,9 +207,10 @@
 }
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
-    NSAssert(index < self.length, @"index out of bounds");
-    if (index >= self.length) return @"";
-    index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;
+    NSUInteger length = countingNonASCIICharacterAsTwo ? self.qmui_lengthWhenCountingNonASCIICharacterAsTwo : self.length;
+    NSAssert(index < length, @"index out of bounds");
+    if (index >= length) return @"";
+    index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index];
     BOOL matchedCharacterSequence = range.length > 1;
     return [self substringFromIndex:matchedCharacterSequence && lessValue ? NSMaxRange(range) : range.location];
@@ -220,9 +221,10 @@
 }
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
-    NSAssert(index <= self.length, @"index out of bounds");
-    if (index == 0 || index > self.length) return @"";
-    index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;
+    NSUInteger length = countingNonASCIICharacterAsTwo ? self.qmui_lengthWhenCountingNonASCIICharacterAsTwo : self.length;
+    NSAssert(index <= length, @"index out of bounds");
+    if (index == 0 || index > length) return @"";
+    index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index - 1];
     BOOL matchedCharacterSequence = range.length > 1;
     return [self substringToIndex:matchedCharacterSequence && lessValue ? range.location + 1 : NSMaxRange(range)];
@@ -233,7 +235,7 @@
 }
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesWithRange:(NSRange)range lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
-    range = countingNonASCIICharacterAsTwo ? [self transformRangeToDefaultModeWithRange:range] : range;
+    range = countingNonASCIICharacterAsTwo ? [self transformRangeToDefaultModeWithRange:range] : range;// 实际计算都按照系统默认的 length 规则来
     NSRange characterSequencesRange = lessValue ? [self downRoundRangeOfComposedCharacterSequencesForRange:range] : [self rangeOfComposedCharacterSequencesForRange:range];
     NSString *resultString = [self substringWithRange:characterSequencesRange];
     return resultString;

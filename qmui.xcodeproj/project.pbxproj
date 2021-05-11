@@ -55,6 +55,8 @@
 		CD4EA57E228C443B00A55066 /* UIColorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = CD4EA57D228C443B00A55066 /* UIColorTests.m */; };
 		CD6631DB1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6631D91FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD6631DC1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6631DA1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m */; };
+		CD669A0D25F79DA40036D6B2 /* UICollectionViewCell+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD669A0B25F79DA40036D6B2 /* UICollectionViewCell+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD669A0E25F79DA40036D6B2 /* UICollectionViewCell+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CD669A0C25F79DA40036D6B2 /* UICollectionViewCell+QMUI.m */; };
 		CD6BE14E2058C64E00BE093E /* QMUICellHeightKeyCache.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6BE14C2058C64E00BE093E /* QMUICellHeightKeyCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD6BE14F2058C64E00BE093E /* QMUICellHeightKeyCache.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6BE14D2058C64E00BE093E /* QMUICellHeightKeyCache.m */; };
 		CD6BE1562058C73600BE093E /* UITableView+QMUICellHeightKeyCache.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6BE1542058C73600BE093E /* UITableView+QMUICellHeightKeyCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -390,6 +392,8 @@
 		CD4EA57D228C443B00A55066 /* UIColorTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UIColorTests.m; sourceTree = "<group>"; };
 		CD6631D91FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUITableViewHeaderFooterView.h; sourceTree = "<group>"; };
 		CD6631DA1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUITableViewHeaderFooterView.m; sourceTree = "<group>"; };
+		CD669A0B25F79DA40036D6B2 /* UICollectionViewCell+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UICollectionViewCell+QMUI.h"; sourceTree = "<group>"; };
+		CD669A0C25F79DA40036D6B2 /* UICollectionViewCell+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UICollectionViewCell+QMUI.m"; sourceTree = "<group>"; };
 		CD6BE14C2058C64E00BE093E /* QMUICellHeightKeyCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUICellHeightKeyCache.h; sourceTree = "<group>"; };
 		CD6BE14D2058C64E00BE093E /* QMUICellHeightKeyCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUICellHeightKeyCache.m; sourceTree = "<group>"; };
 		CD6BE1542058C73600BE093E /* UITableView+QMUICellHeightKeyCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UITableView+QMUICellHeightKeyCache.h"; sourceTree = "<group>"; };
@@ -919,6 +923,8 @@
 				CDB8CA9F1DCC870700769DF0 /* UIButton+QMUI.m */,
 				CDB8CAA01DCC870700769DF0 /* UICollectionView+QMUI.h */,
 				CDB8CAA11DCC870700769DF0 /* UICollectionView+QMUI.m */,
+				CD669A0B25F79DA40036D6B2 /* UICollectionViewCell+QMUI.h */,
+				CD669A0C25F79DA40036D6B2 /* UICollectionViewCell+QMUI.m */,
 				CDB8CAA21DCC870700769DF0 /* UIColor+QMUI.h */,
 				CDB8CAA31DCC870700769DF0 /* UIColor+QMUI.m */,
 				CDB8CAA41DCC870700769DF0 /* UIControl+QMUI.h */,
@@ -1257,6 +1263,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD669A0D25F79DA40036D6B2 /* UICollectionViewCell+QMUI.h in Headers */,
 				D033BC0F2549A32D00674526 /* UINavigationItem+QMUI.h in Headers */,
 				D09D4BDB24BF1561002D29FF /* UIVisualEffectView+QMUI.h in Headers */,
 				D03102B524A8CB410095C232 /* UIView+QMUIBorder.h in Headers */,
@@ -1655,6 +1662,7 @@
 				CDC870171F68D63B000E8829 /* QMUIPopupContainerView.m in Sources */,
 				CDC163C7204D441000E4CC13 /* QMUILogManagerViewController.m in Sources */,
 				CDC870191F68D63B000E8829 /* QMUIEmotionInputManager.m in Sources */,
+				CD669A0E25F79DA40036D6B2 /* UICollectionViewCell+QMUI.m in Sources */,
 				CDC8701A1F68D63B000E8829 /* QMUISearchBar.m in Sources */,
 				CDC8701B1F68D63B000E8829 /* QMUISearchController.m in Sources */,
 				D031843C22C287EA00B43520 /* UIViewController+QMUITheme.m in Sources */,
@@ -1762,7 +1770,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 			};
@@ -1810,7 +1818,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -1834,7 +1842,7 @@
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = QMUIKitTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1863,7 +1871,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				INFOPLIST_FILE = QMUIKitTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1908,7 +1916,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.2.2;
+				MARKETING_VERSION = 4.2.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1952,7 +1960,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.2.2;
+				MARKETING_VERSION = 4.2.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";

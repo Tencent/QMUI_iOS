@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -20,6 +20,7 @@
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
 #import "UINavigationController+QMUI.h"
+#import "UIVisualEffectView+QMUI.h"
 
 NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 NSString *const kShouldCheckTabBarHiddenKey = @"kShouldCheckTabBarHiddenKey";
@@ -29,6 +30,8 @@ NSString *const kShouldCheckTabBarHiddenKey = @"kShouldCheckTabBarHiddenKey";
 @property(nonatomic, assign) BOOL canItemRespondDoubleTouch;
 @property(nonatomic, assign) NSInteger lastTouchedTabBarItemViewIndex;
 @property(nonatomic, assign) NSInteger tabBarItemViewTouchCount;
+@property(nonatomic, assign) BOOL qmuitb_hasSetEffect;
+@property(nonatomic, assign) BOOL qmuitb_hasSetEffectForegroundColor;
 @end
 
 @implementation UITabBar (QMUI)
@@ -36,6 +39,8 @@ NSString *const kShouldCheckTabBarHiddenKey = @"kShouldCheckTabBarHiddenKey";
 QMUISynthesizeBOOLProperty(canItemRespondDoubleTouch, setCanItemRespondDoubleTouch)
 QMUISynthesizeNSIntegerProperty(lastTouchedTabBarItemViewIndex, setLastTouchedTabBarItemViewIndex)
 QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouchCount)
+QMUISynthesizeBOOLProperty(qmuitb_hasSetEffect, setQmuitb_hasSetEffect)
+QMUISynthesizeBOOLProperty(qmuitb_hasSetEffectForegroundColor, setQmuitb_hasSetEffectForegroundColor)
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -318,14 +323,21 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
                                     // 系统的逻辑就是，在 push N 个 vc 的过程中，只要其中出现任意一个 vc.hidesBottomBarWhenPushed = YES，则 tabBar 不会再出现（不管后续有没有 vc.hidesBottomBarWhenPushed = NO），所以在 pop 回去的时候也要遵循这个规则
                                     if (animated && weakNavigationController.tabBarController && !appearingViewController.hidesBottomBarWhenPushed) {
                                         BOOL systemShouldHideTabBar = NO;
-                                        NSArray<UIViewController *> *viewControllers = [weakNavigationController.viewControllers subarrayWithRange:NSMakeRange(0, [weakNavigationController.viewControllers indexOfObject:appearingViewController] + 1)];
-                                        for (UIViewController *vc in viewControllers) {
-                                            if (vc.hidesBottomBarWhenPushed) {
-                                                systemShouldHideTabBar = YES;
+                                        
+                                        // setViewControllers 可能出现当前 vc 不存在已有 viewControllers 数组内的情况，要保护
+                                        // https://github.com/Tencent/QMUI_iOS/issues/1177
+                                        NSUInteger index = [weakNavigationController.viewControllers indexOfObject:appearingViewController];
+                                        
+                                        if (index != NSNotFound) {
+                                            NSArray<UIViewController *> *viewControllers = [weakNavigationController.viewControllers subarrayWithRange:NSMakeRange(0, index + 1)];
+                                            for (UIViewController *vc in viewControllers) {
+                                                if (vc.hidesBottomBarWhenPushed) {
+                                                    systemShouldHideTabBar = YES;
+                                                }
                                             }
-                                        }
-                                        if (!systemShouldHideTabBar) {
-                                            [weakNavigationController qmui_bindBOOL:YES forKey:kShouldCheckTabBarHiddenKey];
+                                            if (!systemShouldHideTabBar) {
+                                                [weakNavigationController qmui_bindBOOL:YES forKey:kShouldCheckTabBarHiddenKey];
+                                            }
                                         }
                                     }
                                 }
@@ -477,6 +489,111 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
 - (void)revertTabBarItemTouch {
     self.lastTouchedTabBarItemViewIndex = kLastTouchedTabBarItemIndexNone;
     self.tabBarItemViewTouchCount = 0;
+}
+
+- (UIVisualEffectView *)qmui_effectView {
+    for (UIView *subview in self.qmui_backgroundView.subviews) {
+        if ([subview isMemberOfClass:UIVisualEffectView.class]) {
+            return (UIVisualEffectView *)subview;
+        }
+    }
+    return nil;
+}
+
+- (void)qmuitb_swizzleBackgroundView {
+    [QMUIHelper executeBlock:^{
+        Class backgroundClass = NSClassFromString(@"_UIBarBackground");
+        OverrideImplementation(backgroundClass, @selector(didAddSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject, UIView *subview) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, subview);
+                
+                // 注意可能存在多个 UIVisualEffectView，例如用于 shadowImage 的 _UIBarBackgroundShadowView，需要过滤掉
+                if ([selfObject.superview isKindOfClass:UITabBar.class] && [subview isMemberOfClass:UIVisualEffectView.class]) {
+                    UITabBar *tabBar = (UITabBar *)selfObject.superview;
+                    if (tabBar.qmuitb_hasSetEffect || tabBar.qmuitb_hasSetEffectForegroundColor) {
+                        [tabBar qmuitb_updateEffect];
+                    }
+                }
+            };
+        });
+        // 系统会在任意可能的时机去刷新 backgroundEffects，为了避免被系统的值覆盖，这里需要重写它
+        OverrideImplementation(UIVisualEffectView.class, NSSelectorFromString(@"setBackgroundEffects:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIVisualEffectView *selfObject, NSArray<UIVisualEffect *> *firstArgv) {
+                
+                if ([selfObject.superview isKindOfClass:backgroundClass] && [selfObject.superview.superview isKindOfClass:UITabBar.class]) {
+                    UITabBar *tabBar = (UITabBar *)selfObject.superview.superview;
+                    if (tabBar.qmui_effectView == selfObject) {
+                        if (tabBar.qmuitb_hasSetEffect) {
+                            firstArgv = tabBar.qmuitb_backgroundEffects;
+                        }
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, NSArray<UIVisualEffect *> *);
+                originSelectorIMP = (void (*)(id, SEL, NSArray<UIVisualEffect *> *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
+    } oncePerIdentifier:@"UITabBar (QMUI) effect"];
+}
+
+- (void)qmuitb_updateEffect {
+    if (self.qmuitb_hasSetEffect) {
+        // 这里对 iOS 13 不使用 UITabBarAppearance.backgroundEffect 来修改，是因为反正不管 iOS 10 还是 13，最终都是 setBackgroundEffects: 在起作用，而且不用 UITabBarAppearance 还可以规避与 UIAppearance 机制的冲突
+        NSArray<UIVisualEffect *> *effects = self.qmuitb_backgroundEffects;
+        [self.qmui_effectView qmui_performSelector:NSSelectorFromString(@"setBackgroundEffects:") withArguments:&effects, nil];
+    }
+    if (self.qmuitb_hasSetEffectForegroundColor) {
+        self.qmui_effectView.qmui_foregroundColor = self.qmui_effectForegroundColor;
+    }
+}
+
+// UITabBar、UIVisualEffectView  都有一个私有的方法 backgroundEffects，当 UIVisualEffectView 应用于 UITabBar 场景时，磨砂的效果实际上被放在 backgroundEffects 内，而不是公开接口的 effect 属性里，这里为了方便，将 UITabBar (QMUI).effect 转成可用于 backgroundEffects 的数组
+- (NSArray<UIVisualEffect *> *)qmuitb_backgroundEffects {
+    if (self.qmuitb_hasSetEffect) {
+        return self.qmui_effect ? @[self.qmui_effect] : nil;
+    }
+    return nil;
+}
+
+static char kAssociatedObjectKey_effect;
+- (void)setQmui_effect:(UIBlurEffect *)qmui_effect {
+    if (qmui_effect) {
+        [self qmuitb_swizzleBackgroundView];
+    }
+    
+    BOOL valueChanged = self.qmui_effect != qmui_effect;
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_effect, qmui_effect, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (valueChanged) {
+        self.qmuitb_hasSetEffect = YES;// QMUITheme 切换时会重新赋值，所以可能出现本来就是 nil，还给它又赋值了 nil，这种场景不应该导致 hasSet 标志位改变，所以要把标志位的设置放在 if (valueChanged) 里
+        [self qmuitb_updateEffect];
+    }
+}
+
+- (UIBlurEffect *)qmui_effect {
+    return (UIBlurEffect *)objc_getAssociatedObject(self, &kAssociatedObjectKey_effect);
+}
+
+static char kAssociatedObjectKey_effectForegroundColor;
+- (void)setQmui_effectForegroundColor:(UIColor *)qmui_effectForegroundColor {
+    if (qmui_effectForegroundColor) {
+        [self qmuitb_swizzleBackgroundView];
+    }
+    BOOL valueChanged = ![self.qmui_effectForegroundColor isEqual:qmui_effectForegroundColor];
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_effectForegroundColor, qmui_effectForegroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (valueChanged) {
+        self.qmuitb_hasSetEffectForegroundColor = YES;// QMUITheme 切换时会重新赋值，所以可能出现本来就是 nil，还给它又赋值了 nil，这种场景不应该导致 hasSet 标志位改变，所以要把标志位的设置放在 if (valueChanged) 里
+        [self qmuitb_updateEffect];
+    }
+}
+
+- (UIColor *)qmui_effectForegroundColor {
+    return (UIColor *)objc_getAssociatedObject(self, &kAssociatedObjectKey_effectForegroundColor);
 }
 
 @end

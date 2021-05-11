@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -181,6 +181,29 @@
 
 - (void)testColorFromTo {
     XCTAssertEqualObjects([UIColor qmui_colorFromColor:[UIColor blackColor] toColor:[[UIColor blackColor] colorWithAlphaComponent:0] progress:.5], [UIColor colorWithRed:0 green:0 blue:0 alpha:.5]);
+}
+
+- (void)testDistanceOfColors {
+    UIColor *white = [UIColor colorWithRed:1 green:1 blue:1 alpha:1];
+    
+    // 检测不同色彩空间是否能进行比较
+    XCTAssertTrue([white qmui_distanceBetweenColor:UIColor.whiteColor] == 0);
+    
+    // 检测同一个对象是否相等
+    XCTAssertTrue([white qmui_distanceBetweenColor:[UIColor colorWithRed:1 green:1 blue:1 alpha:1]] == 0);
+    
+    CGFloat whiteAndGray = [white qmui_distanceBetweenColor:[UIColor colorWithRed:225.0/255.0 green:225.0/255.0 blue:225.0/255.0 alpha:1]];
+    CGFloat whiteAndBlack = [white qmui_distanceBetweenColor:UIColor.blackColor];
+    XCTAssertTrue(whiteAndGray > 0);
+    XCTAssertTrue(whiteAndBlack > 0);
+    // 灰色应该比纯黑更接近白色
+    XCTAssertTrue(whiteAndGray < whiteAndBlack);
+    
+    // 测试反色
+    UIColor *red = [UIColor colorWithRed:1 green:0 blue:0 alpha:1];
+    UIColor *blue = [UIColor colorWithRed:0 green:1 blue:1 alpha:1];
+    CGFloat redAndBlue = [red qmui_distanceBetweenColor:blue];
+    XCTAssertTrue(redAndBlue > 0);
 }
 
 - (void)testRadomColor {

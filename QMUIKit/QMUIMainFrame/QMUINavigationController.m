@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -312,13 +312,16 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         animated = NO;
     }
     
-    // 增加一个 presentedViewController 作为判断条件是因为这个 issue：https://github.com/Tencent/QMUI_iOS/issues/261
-    if (!self.presentedViewController && animated) {
-        self.isViewControllerTransiting = YES;
-    }
-    
-    if (self.presentedViewController) {
-        QMUILogWarn(NSStringFromClass(self.class), @"push 的时候 navigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
+    if (self.isViewLoaded) {
+        if (self.view.window) {
+            // 增加 self.view.window 作为判断条件是因为当 UINavigationController 不可见时（例如上面盖着一个 prenset 起来的 vc，或者 nav 所在的 tabBar 切到别的 tab 去了），pushViewController 会被执行，但 navigationController:didShowViewController:animated: 的 delegate 不会被触发，导致 isViewControllerTransiting 的标志位无法正确恢复，所以做个保护。
+            // https://github.com/Tencent/QMUI_iOS/issues/261
+            if (animated) {
+                self.isViewControllerTransiting = YES;
+            }
+        } else {
+            QMUILogWarn(NSStringFromClass(self.class), @"push 的时候 navigationController 不可见（例如上面盖着一个 prenset vc，或者切到别的 tab，可能导致一些 UINavigationControllerDelegate 不会被调用");
+        }
     }
     
     // 在 push 前先设置好返回按钮的文字
@@ -374,9 +377,8 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 - (void)handleInteractivePopGestureRecognizer:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
     UIGestureRecognizerState state = gestureRecognizer.state;
     
-    // TODO: molice 看一下这里的 self.viewControllerPopping 能否通过 transition 获取，这样就不用增加 property 去保存引用了
-    UIViewController *viewControllerWillDisappear = self.viewControllerPopping;
-    UIViewController *viewControllerWillAppear = self.topViewController;
+    UIViewController<QMUINavigationControllerTransitionDelegate> *viewControllerWillDisappear = [self.transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
+    UIViewController<QMUINavigationControllerTransitionDelegate> *viewControllerWillAppear = [self.transitionCoordinator viewControllerForKey:UITransitionContextToViewControllerKey];
     
     viewControllerWillDisappear.qmui_poppingByInteractivePopGestureRecognizer = YES;
     viewControllerWillDisappear.qmui_willAppearByInteractivePopGestureRecognizer = NO;
@@ -396,16 +398,25 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     }
     
     if (state == UIGestureRecognizerStateEnded) {
-        if (CGRectGetMinX(self.topViewController.view.superview.frame) < 0) {
-            // by molice:只是碰巧发现如果是手势返回取消时，不管在哪个位置取消，self.topViewController.view.superview.frame.orgin.x必定是-112，所以用这个<0的条件来判断
+        if (self.transitionCoordinator.cancelled) {
             QMUILog(NSStringFromClass(self.class), @"手势返回放弃了");
-            viewControllerWillDisappear = self.topViewController;
-            viewControllerWillAppear = self.viewControllerPopping;
+            UIViewController<QMUINavigationControllerTransitionDelegate> *temp = viewControllerWillDisappear;
+            viewControllerWillDisappear = viewControllerWillAppear;
+            viewControllerWillAppear = temp;
         } else {
             QMUILog(NSStringFromClass(self.class), @"执行手势返回");
         }
     }
     
+    if ([viewControllerWillDisappear respondsToSelector:@selector(navigationController:poppingByInteractiveGestureRecognizer:isCancelled:viewControllerWillDisappear:viewControllerWillAppear:)]) {
+        [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewControllerWillDisappear) navigationController:self poppingByInteractiveGestureRecognizer:gestureRecognizer isCancelled:self.transitionCoordinator.cancelled viewControllerWillDisappear:viewControllerWillDisappear viewControllerWillAppear:viewControllerWillAppear];
+    }
+    
+    if ([viewControllerWillAppear respondsToSelector:@selector(navigationController:poppingByInteractiveGestureRecognizer:isCancelled:viewControllerWillDisappear:viewControllerWillAppear:)]) {
+        [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewControllerWillAppear) navigationController:self poppingByInteractiveGestureRecognizer:gestureRecognizer isCancelled:self.transitionCoordinator.cancelled viewControllerWillDisappear:viewControllerWillDisappear viewControllerWillAppear:viewControllerWillAppear];
+    }
+    
+    BeginIgnoreDeprecatedWarning
     if ([viewControllerWillDisappear respondsToSelector:@selector(navigationController:poppingByInteractiveGestureRecognizer:viewControllerWillDisappear:viewControllerWillAppear:)]) {
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewControllerWillDisappear) navigationController:self poppingByInteractiveGestureRecognizer:gestureRecognizer viewControllerWillDisappear:viewControllerWillDisappear viewControllerWillAppear:viewControllerWillAppear];
     }
@@ -413,6 +424,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     if ([viewControllerWillAppear respondsToSelector:@selector(navigationController:poppingByInteractiveGestureRecognizer:viewControllerWillDisappear:viewControllerWillAppear:)]) {
         [((UIViewController<QMUINavigationControllerTransitionDelegate> *)viewControllerWillAppear) navigationController:self poppingByInteractiveGestureRecognizer:gestureRecognizer viewControllerWillDisappear:viewControllerWillDisappear viewControllerWillAppear:viewControllerWillAppear];
     }
+    EndIgnoreDeprecatedWarning
 }
 
 - (void)qmui_viewControllerDidInvokeViewWillAppear:(UIViewController *)viewController {

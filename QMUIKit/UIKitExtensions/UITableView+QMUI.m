@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -15,6 +15,7 @@
 
 #import "UIView+QMUI.h"
 #import "UITableView+QMUI.h"
+#import "UITableViewCell+QMUI.h"
 #import "QMUICore.h"
 #import "UIScrollView+QMUI.h"
 #import "QMUILog.h"
@@ -25,6 +26,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 
 @interface UITableView ()
 @property(nonatomic, assign, readwrite) UITableViewStyle qmui_style;
+@property(nonatomic, assign, readonly) CGRect qmui_indexFrame;
 @end
 
 @implementation UITableView (QMUI)
@@ -101,6 +103,102 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
                 void (*originSelectorIMP)(id, SEL, NSIndexPath *, UITableViewScrollPosition, BOOL);
                 originSelectorIMP = (void (*)(id, SEL, NSIndexPath *, UITableViewScrollPosition, BOOL))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, indexPath, scrollPosition, animated);
+            };
+        });
+        
+        // [UIKit Bug] 将 UISearchBar 作为 tableHeaderView 使用的 UITableView，如果同时设置了 estimatedRowHeight，则 contentSize 会错乱，导致滚动异常
+        // https://github.com/Tencent/QMUI_iOS/issues/1161
+        void (^fixBugOfTableViewContentSize)(UITableView *) = ^void(UITableView *tableView) {
+            BOOL estimatesRowHeight = NO;
+            [tableView qmui_performSelector:NSSelectorFromString(@"_estimatesRowHeights") withPrimitiveReturnValue:&estimatesRowHeight];
+            if (estimatesRowHeight && [tableView.tableHeaderView isKindOfClass:UISearchBar.class]) {
+                BeginIgnorePerformSelectorLeaksWarning
+                [tableView performSelector:NSSelectorFromString(@"_updateContentSize")];
+                EndIgnorePerformSelectorLeaksWarning
+            }
+        };
+        if (@available(iOS 11.0, *)) {
+            /* - (void)_coalesceContentSizeUpdateWithDelta:(double)arg1; */
+            OverrideImplementation([UITableView class], NSSelectorFromString(@"_coalesceContentSizeUpdateWithDelta:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UITableView *selfObject, CGFloat firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, CGFloat);
+                    originSelectorIMP = (void (*)(id, SEL, CGFloat))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if (fixBugOfTableViewContentSize) {
+                        fixBugOfTableViewContentSize(selfObject);
+                    }
+                };
+            });
+        } else {
+            /* - (void)_applyContentSizeDeltaForEstimatedHeightAdjustments:(double)arg1; */
+            OverrideImplementation([UITableView class], NSSelectorFromString(@"_applyContentSizeDeltaForEstimatedHeightAdjustments:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UITableView *selfObject, CGFloat firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, CGFloat);
+                    originSelectorIMP = (void (*)(id, SEL, CGFloat))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if (fixBugOfTableViewContentSize) {
+                        fixBugOfTableViewContentSize(selfObject);
+                    }
+                };
+            });
+        }
+        
+        // [UIKit Bug] 将 UISearchBar 作为 tableHeaderView 使用的 UITableView，在 tableView 尚未添加到 window 上就同时进行了 setTableHeaderView:、reloadData 的操作，会导致滚动异常
+        // https://github.com/Tencent/QMUI_iOS/issues/1215
+        if (@available(iOS 11.0, *)) {
+            OverrideImplementation([UITableView class], @selector(reloadData), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UITableView *selfObject) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD);
+                    
+                    // 简单用“存在 superview 却不存在 window”的方式来区分该 UITableView 是 UIViewController 里的还是 UITableViewController 里的
+                    if (!selfObject.window && selfObject.superview && [selfObject.tableHeaderView isKindOfClass:UISearchBar.class]) {
+                        [selfObject qmui_bindBOOL:YES forKey:@"kShouldFixContentSizeBugKey"];
+                    }
+                };
+            });
+            OverrideImplementation([UITableView class], @selector(didMoveToWindow), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UITableView *selfObject) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD);
+                    
+                    if ([selfObject qmui_getBoundBOOLForKey:@"kShouldFixContentSizeBugKey"]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [selfObject reloadData];
+                        });
+                        [selfObject qmui_bindBOOL:NO forKey:@"kShouldFixContentSizeBugKey"];
+                    }
+                };
+            });
+        }
+        
+        // [UIKit Bug] UISearchBar 作为 tableHeaderView 使用时，切换 tableView 的 sectionIndex 的显隐，searchBar 的布局可能无法刷新
+        // https://github.com/Tencent/QMUI_iOS/issues/1213
+        OverrideImplementation([UITableView class], NSSelectorFromString(@"_removeIndex"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITableView *selfObject) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+                
+                UISearchBar *searchBar = (UISearchBar *)selfObject.tableHeaderView;
+                if ([searchBar isKindOfClass:UISearchBar.class]) {
+                    // UISearchBar 内部通过这个私有方法来根据 UITableView 的状态刷新自身的 inset，这里手动调用一次
+                    [searchBar qmui_performSelector:NSSelectorFromString(@"_updateInsetsForTableView:") withArguments:&selfObject, nil];
+                }
             };
         });
     });
@@ -342,7 +440,11 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 }
 
 - (CGFloat)qmui_validContentWidth {
-    return CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets) - (self.qmui_style == QMUITableViewStyleInsetGrouped ? self.qmui_insetGroupedHorizontalInset * 2 : 0);
+    CGRect indexFrame = self.qmui_indexFrame;
+    CGFloat rightInset = MAX(self.qmui_safeAreaInsets.right + (self.qmui_style == QMUITableViewStyleInsetGrouped ? self.qmui_insetGroupedHorizontalInset : 0), CGRectGetWidth(indexFrame));
+    CGFloat leftInset = self.qmui_safeAreaInsets.left + (self.qmui_style == QMUITableViewStyleInsetGrouped ? self.qmui_insetGroupedHorizontalInset : 0);
+    CGFloat width = CGRectGetWidth(self.bounds) - leftInset - rightInset;
+    return width;
 }
 
 - (CGSize)qmui_realContentSize {
@@ -407,6 +509,12 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     }
 }
 
+- (CGRect)qmui_indexFrame {
+    CGRect indexFrame = CGRectZero;
+    [self qmui_performSelector:NSSelectorFromString(@"indexFrame") withPrimitiveReturnValue:&indexFrame];
+    return indexFrame;
+}
+
 @end
 
 @interface UITableViewCell (QMUI_Private)
@@ -457,6 +565,10 @@ const UITableViewStyle QMUITableViewStyleInsetGrouped = UITableViewStyleGrouped 
                         cell.layer.masksToBounds = YES;
                     }
                     cell.layer.cornerRadius = cornerRadius;
+                }
+                
+                if (cell.qmui_configureStyleBlock) {
+                    cell.qmui_configureStyleBlock(selfObject, cell, indexPath);
                 }
             };
         });

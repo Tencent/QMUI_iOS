@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -23,6 +23,7 @@ const UIEdgeInsets QMUITableViewCellSeparatorInsetsNone = {INFINITY, INFINITY, I
 
 @interface UITableViewCell ()
 
+@property(nonatomic, copy) NSString *qmuiTbc_cachedAddToTableViewBlockKey;
 @property(nonatomic, strong) CALayer *qmuiTbc_separatorLayer;
 @property(nonatomic, strong) CALayer *qmuiTbc_topSeparatorLayer;
 @end
@@ -30,6 +31,8 @@ const UIEdgeInsets QMUITableViewCellSeparatorInsetsNone = {INFINITY, INFINITY, I
 @implementation UITableViewCell (QMUI)
 
 QMUISynthesizeNSIntegerProperty(qmui_style, setQmui_style)
+QMUISynthesizeIdCopyProperty(qmuiTbc_cachedAddToTableViewBlockKey, setQmuiTbc_cachedAddToTableViewBlockKey)
+QMUISynthesizeIdCopyProperty(qmui_configureStyleBlock, setQmui_configureStyleBlock)
 QMUISynthesizeIdStrongProperty(qmuiTbc_separatorLayer, setQmuiTbc_separatorLayer)
 QMUISynthesizeIdStrongProperty(qmuiTbc_topSeparatorLayer, setQmuiTbc_topSeparatorLayer)
 QMUISynthesizeIdCopyProperty(qmui_separatorInsetsBlock, setQmui_separatorInsetsBlock)
@@ -49,6 +52,11 @@ QMUISynthesizeIdCopyProperty(qmui_setSelectedBlock, setQmui_setSelectedBlock)
                 
                 // 系统虽然有私有 API - (UITableViewCellStyle)style; 可以用，但该方法在 init 内得到的永远是 0，只有 init 执行完成后才可以得到正确的值，所以这里只能自己记录
                 result.qmui_style = firstArgv;
+                
+                if (@available(iOS 13.0, *)) {
+                    [selfObject qmuiTbc_callAddToTableViewBlockIfCan];
+                }
+                
                 return result;
             };
         });
@@ -79,6 +87,18 @@ QMUISynthesizeIdCopyProperty(qmui_setSelectedBlock, setQmui_setSelectedBlock)
                 });
             }
         }
+        
+        OverrideImplementation([UITableViewCell class], NSSelectorFromString(@"_setTableView:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITableViewCell *selfObject, UITableView *firstArgv) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UITableView *);
+                originSelectorIMP = (void (*)(id, SEL, UITableView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                [selfObject qmuiTbc_callAddToTableViewBlockIfCan];
+            };
+        });
     });
 }
 
@@ -95,6 +115,24 @@ static char kAssociatedObjectKey_cellPosition;
 
 - (QMUITableViewCellPosition)qmui_cellPosition {
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_cellPosition)) integerValue];
+}
+
+static char kAssociatedObjectKey_didAddToTableViewBlock;
+- (void)setQmui_didAddToTableViewBlock:(void (^)(__kindof UITableView * _Nonnull, __kindof UITableViewCell * _Nonnull))qmui_didAddToTableViewBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_didAddToTableViewBlock, qmui_didAddToTableViewBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    [self qmuiTbc_callAddToTableViewBlockIfCan];
+}
+
+- (void (^)(__kindof UITableView * _Nonnull, __kindof UITableViewCell * _Nonnull))qmui_didAddToTableViewBlock {
+    return (void (^)(__kindof UITableView * _Nonnull, __kindof UITableViewCell * _Nonnull))objc_getAssociatedObject(self, &kAssociatedObjectKey_didAddToTableViewBlock);
+}
+
+- (void)qmuiTbc_callAddToTableViewBlockIfCan {
+    if (!self.qmui_tableView || !self.qmui_didAddToTableViewBlock) return;
+    NSString *key = [NSString stringWithFormat:@"%p%p", self.qmui_tableView, self.qmui_didAddToTableViewBlock];
+    if ([key isEqualToString:self.qmuiTbc_cachedAddToTableViewBlockKey]) return;
+    self.qmui_didAddToTableViewBlock(self.qmui_tableView, self);
+    self.qmuiTbc_cachedAddToTableViewBlockKey = key;
 }
 
 - (void)qmuiTbc_swizzleLayoutSubviews {
@@ -178,7 +216,7 @@ static char kAssociatedObjectKey_cellPosition;
 }
 
 - (UITableView *)qmui_tableView {
-    return [self valueForKey:@"tableView"];
+    return [self valueForKey:@"_tableView"];
 }
 
 static char kAssociatedObjectKey_selectedBackgroundColor;
@@ -344,7 +382,9 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
                 
                 UITableView *tableView = selfObject.qmui_tableView;
                 if (tableView && tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
-                    firstArgv = CGRectMake(tableView.qmui_safeAreaInsets.left + tableView.qmui_insetGroupedHorizontalInset, CGRectGetMinY(firstArgv), CGRectGetWidth(firstArgv) - UIEdgeInsetsGetHorizontalValue(tableView.qmui_safeAreaInsets) - tableView.qmui_insetGroupedHorizontalInset * 2, CGRectGetHeight(firstArgv));
+                    // 以下的宽度不基于 firstArgv 来改，而是直接获取 tableView 的内容宽度，是因为 iOS 12 及以下的系统，在 cell 拖拽排序时，frame 会基于上一个 frame 计算，导致宽度不断减小，所以这里每次都用 tableView 的内容宽度来算
+                    // https://github.com/Tencent/QMUI_iOS/issues/1216
+                    firstArgv = CGRectMake(tableView.qmui_safeAreaInsets.left + tableView.qmui_insetGroupedHorizontalInset, CGRectGetMinY(firstArgv), tableView.qmui_validContentWidth, CGRectGetHeight(firstArgv));
                 }
                 
                 // call super

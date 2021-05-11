@@ -1,6 +1,6 @@
 /**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -214,7 +214,9 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                             // 如果用自定义 titleView 则没这种问题，只是为了代码简单，时机的选择不区分是否自定义 title
                             [appearingViewController renderNavigationTitleStyleAnimated:animated];
                             [weakNavigationController qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
-                                [appearingViewController renderNavigationTitleStyleAnimated:animated];
+                                // 这里要重新获取 topViewController，因为触发 pop 有两种：1. 普通完整的 pop；2.手势返回又取消。后者在 completion 里拿到的 topViewController 已经不是 completion 外面那个 appearingViewController 了，只有重新获取的 topViewController 才能代表最终可视的那个界面
+                                // https://github.com/Tencent/QMUI_iOS/issues/1210
+                                [weakNavigationController.topViewController renderNavigationTitleStyleAnimated:animated];
                             }];
                         }
                     }
@@ -472,7 +474,9 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     BOOL shouldRenderTitle = YES;
     if (@available(iOS 13.0, *)) {
     } else {
-        shouldRenderTitle = navigationController.qmui_navigationAction >= QMUINavigationActionWillPush && navigationController.qmui_navigationAction <= QMUINavigationActionPushCompleted;
+        // push/pop 时如果 animated 为 NO，那么走到这里时 push/pop 已经结束了，action 处于 unknown 状态，所以这里要把 unknown 也包含进去
+        // https://github.com/Tencent/QMUI_iOS/issues/1190
+        shouldRenderTitle = navigationController.qmui_navigationAction >= QMUINavigationActionUnknow && navigationController.qmui_navigationAction <= QMUINavigationActionPushCompleted;
     }
     if (shouldRenderTitle) {
         [vc renderNavigationTitleStyleAnimated:animated];

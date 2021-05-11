@@ -20,17 +20,17 @@ for index in range(len(infoDictList)):
 if versionString.startswith('$'):
   versionEnvName = versionString[2:-1]
   versionString = os.getenv(versionEnvName)
-  print 'umbrella creator: bundle versions string is %s, env name is %s' % (versionString, versionEnvName)
+  print('umbrella creator: bundle versions string is %s, env name is %s' % (versionString, versionEnvName))
 
 # 读取头文件准备生成 umbrella file
 publicHeaderFilePath = str(os.getenv('BUILT_PRODUCTS_DIR')) + '/' + os.getenv('PUBLIC_HEADERS_FOLDER_PATH') 
-print 'umbrella creator: publicHeaderFilePath = ' + publicHeaderFilePath 
+print('umbrella creator: publicHeaderFilePath = ' + publicHeaderFilePath)
 umbrellaHeaderFileName = 'QMUIKit.h'
 umbrellaHeaderFilePath = str(os.getenv('SRCROOT')) + '/QMUIKit/' + umbrellaHeaderFileName
-print 'umbrella creator: umbrellaHeaderFilePath = ' + umbrellaHeaderFilePath
+print('umbrella creator: umbrellaHeaderFilePath = ' + umbrellaHeaderFilePath)
 umbrellaFileContent = '''/**
  * Tencent is pleased to support the open source community by making QMUI_iOS available.
- * Copyright (C) 2016-2020 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2016-2021 THL A29 Limited, a Tencent company. All rights reserved.
  * Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
@@ -65,10 +65,10 @@ f = open(umbrellaHeaderFilePath, 'r+')
 f.seek(0)
 oldFileContent = f.read().strip()
 if oldFileContent == umbrellaFileContent:
-  print 'umbrella creator: ' + umbrellaHeaderFileName + '的内容没有变化，不需要重写'
+  print('umbrella creator: ' + umbrellaHeaderFileName + '的内容没有变化，不需要重写')
 else:
-  print 'umbrella creator: ' + umbrellaHeaderFileName + '的内容发生变化，开始重写'
-  print 'umbrella creator: umbrellaFileContent = ' + umbrellaFileContent
+  print('umbrella creator: ' + umbrellaHeaderFileName + '的内容发生变化，开始重写')
+  print('umbrella creator: umbrellaFileContent = ' + umbrellaFileContent)
 
   f.seek(0)
   f.write(umbrellaFileContent)
