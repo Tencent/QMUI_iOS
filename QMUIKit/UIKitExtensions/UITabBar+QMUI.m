@@ -282,7 +282,9 @@ QMUISynthesizeBOOLProperty(qmuitb_hasSetEffectForegroundColor, setQmuitb_hasSetE
                     if ([font respondsToSelector:selectorForCSSFontFamily]) {
                         BOOL forWebKit = YES;
                         NSString *fontFamily = [font qmui_performSelector:selectorForCSSFontFamily withArguments:&forWebKit, nil];
-                        if ([fontFamily containsString:@"UICTFontTextStyleFootnote"]) {
+                        if ([fontFamily containsString:@"UICTFontTextStyleFootnote"]
+                            || [fontFamily containsString:@"system-ui"]
+                            || [fontFamily containsString:@"Times New Roman"]) {
                             static UILabel *standardLabel;
                             if (!standardLabel) {
                                 standardLabel = [[UILabel alloc] init];
