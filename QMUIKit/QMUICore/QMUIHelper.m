@@ -24,6 +24,18 @@
 #import <math.h>
 #import <sys/utsname.h>
 
+@interface _QMUIFixIssue1263ViewController : UIViewController
+
+@end
+
+@implementation _QMUIFixIssue1263ViewController
+
+- (BOOL)shouldAutorotate {
+    return NO;
+}
+
+@end
+
 const CGPoint QMUIBadgeInvalidateOffset = {-1000, -1000};
 NSString *const kQMUIResourcesBundleName = @"QMUIResources";
 
@@ -482,7 +494,8 @@ static NSInteger isNotchedScreen = -1;
                     UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
                     peripheryInsets = window.safeAreaInsets;
                     if (peripheryInsets.bottom <= 0) {
-                        UIViewController *viewController = [UIViewController new];
+                        /// https://github.com/Tencent/QMUI_iOS/issues/1263
+                        _QMUIFixIssue1263ViewController *viewController = [_QMUIFixIssue1263ViewController new];
                         window.rootViewController = viewController;
                         if (CGRectGetMinY(viewController.view.frame) > 20) {
                             peripheryInsets.bottom = 1;

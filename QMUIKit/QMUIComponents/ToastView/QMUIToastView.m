@@ -90,6 +90,13 @@ static NSMutableArray <QMUIToastView *> *kToastViews = nil;
         if (![kToastViews containsObject:self]) {
             [kToastViews addObject:self];
         }
+        /// https://github.com/Tencent/QMUI_iOS/issues/1186
+        self.translatesAutoresizingMaskIntoConstraints = NO;
+        NSLayoutConstraint *top = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.superview attribute:NSLayoutAttributeTop multiplier:1 constant:0];
+        NSLayoutConstraint *leading = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeLeading relatedBy:NSLayoutRelationEqual toItem:self.superview attribute:NSLayoutAttributeLeading multiplier:1 constant:0];
+        NSLayoutConstraint *bottom = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self.superview attribute:NSLayoutAttributeBottom multiplier:1 constant:0];
+        NSLayoutConstraint *trailing = [NSLayoutConstraint constraintWithItem:self attribute:NSLayoutAttributeTrailing relatedBy:NSLayoutRelationEqual toItem:self.superview attribute:NSLayoutAttributeTrailing multiplier:1 constant:0];
+        [self.superview addConstraints:@[top, leading, bottom, trailing]];
     } else {
         // hide
         if ([kToastViews containsObject:self]) {
@@ -143,7 +150,6 @@ static NSMutableArray <QMUIToastView *> *kToastViews = nil;
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    self.frame = self.parentView.bounds;
     self.maskView.frame = self.bounds;
     
     CGFloat contentWidth = CGRectGetWidth(self.parentView.bounds);
@@ -328,7 +334,6 @@ static NSMutableArray <QMUIToastView *> *kToastViews = nil;
     BOOL result = NO;
     for (QMUIToastView *toastView in toastViews) {
         result = YES;
-        toastView.removeFromSuperViewWhenHide = YES;
         [toastView hideAnimated:animated];
     }
     return result;
