@@ -494,6 +494,7 @@ static NSInteger isNotchedScreen = -1;
                     UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
                     peripheryInsets = window.safeAreaInsets;
                     if (peripheryInsets.bottom <= 0) {
+                        /// https://github.com/Tencent/QMUI_iOS/issues/1263
                         _QMUIFixIssue1263ViewController *viewController = [_QMUIFixIssue1263ViewController new];
                         window.rootViewController = viewController;
                         if (CGRectGetMinY(viewController.view.frame) > 20) {
