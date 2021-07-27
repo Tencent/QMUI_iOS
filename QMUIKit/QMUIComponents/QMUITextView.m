@@ -66,6 +66,22 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     return self;
 }
 
+- (instancetype)initWithFrame:(CGRect)frame textContainer:(NSTextContainer *)textContainer {
+    self = [super initWithFrame:frame textContainer:textContainer];
+    if (self) {
+        [self didInitialize];
+        if (QMUICMIActivated) {
+            UIColor *textColor = TextFieldTextColor;
+            if (textColor) {
+                self.textColor = textColor;
+            }
+            
+            self.tintColor = TextFieldTintColor;
+        }
+    }
+    return self;
+}
+
 - (instancetype)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
         [self didInitialize];
