@@ -18,36 +18,51 @@
 #import "NSParagraphStyle+QMUI.h"
 #import "NSObject+QMUI.h"
 #import "NSNumber+QMUI.h"
+#import "CALayer+QMUI.h"
+#import "UIView+QMUI.h"
 
 const CGFloat QMUILineHeightIdentity = -1000;
+
+@interface UILabel ()
+
+@property(nonatomic, strong) CAShapeLayer *qmuilb_principalLineLayer;
+@end
 
 @implementation UILabel (QMUI)
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExchangeImplementations([self class], @selector(setText:), @selector(qmui_setText:));
-        ExchangeImplementations([self class], @selector(setAttributedText:), @selector(qmui_setAttributedText:));
+        SEL selectors[] = {
+            @selector(setText:),
+            @selector(setAttributedText:),
+            @selector(setLineBreakMode:),
+        };
+        for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
+            SEL originalSelector = selectors[index];
+            SEL swizzledSelector = NSSelectorFromString([@"qmuilb_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
+            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+        }
     });
 }
 
-- (void)qmui_setText:(NSString *)text {
+- (void)qmuilb_setText:(NSString *)text {
     if (!text) {
-        [self qmui_setText:text];
+        [self qmuilb_setText:text];
         return;
     }
     if (!self.qmui_textAttributes.count && ![self _hasSetQmuiLineHeight]) {
-        [self qmui_setText:text];
+        [self qmuilb_setText:text];
         return;
     }
     NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:text attributes:self.qmui_textAttributes];
-    [self qmui_setAttributedText:[self attributedStringWithKernAndLineHeightAdjusted:attributedString]];
+    [self qmuilb_setAttributedText:[self attributedStringWithKernAndLineHeightAdjusted:attributedString]];
 }
 
 // 在 qmui_textAttributes 样式基础上添加用户传入的 attributedString 中包含的新样式。换句话说，如果这个方法里有样式冲突，则以 attributedText 为准
-- (void)qmui_setAttributedText:(NSAttributedString *)text {
+- (void)qmuilb_setAttributedText:(NSAttributedString *)text {
     if (!text || (!self.qmui_textAttributes.count && ![self _hasSetQmuiLineHeight])) {
-        [self qmui_setAttributedText:text];
+        [self qmuilb_setAttributedText:text];
         return;
     }
     NSMutableAttributedString *attributedString = [[NSMutableAttributedString alloc] initWithString:text.string attributes:self.qmui_textAttributes];
@@ -55,7 +70,7 @@ const CGFloat QMUILineHeightIdentity = -1000;
     [text enumerateAttributesInRange:NSMakeRange(0, text.length) options:0 usingBlock:^(NSDictionary<NSString *,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
         [attributedString addAttributes:attrs range:range];
     }];
-    [self qmui_setAttributedText:attributedString];
+    [self qmuilb_setAttributedText:attributedString];
 }
 
 static char kAssociatedObjectKey_textAttributes;
@@ -103,7 +118,7 @@ static char kAssociatedObjectKey_textAttributes;
         [string addAttributes:qmui_textAttributes range:fullRange];
     }
     // 不能调用 setAttributedText: ，否则若遇到样式冲突，那个方法会让用户传进来的 NSAttributedString 样式覆盖 qmui_textAttributes 的样式
-    [self qmui_setAttributedText:[self attributedStringWithKernAndLineHeightAdjusted:string]];
+    [self qmuilb_setAttributedText:[self attributedStringWithKernAndLineHeightAdjusted:string]];
 }
 
 - (NSDictionary *)qmui_textAttributes {
@@ -142,9 +157,25 @@ static char kAssociatedObjectKey_textAttributes;
     if (shouldAdjustLineHeight) {
         NSMutableParagraphStyle *paraStyle = [NSMutableParagraphStyle qmui_paragraphStyleWithLineHeight:self.qmui_lineHeight lineBreakMode:self.lineBreakMode textAlignment:self.textAlignment];
         [attributedString addAttribute:NSParagraphStyleAttributeName value:paraStyle range:NSMakeRange(0, attributedString.length)];
+        
+        // iOS 默认文字底对齐，改了行高要自己调整才能保证文字一直在 label 里垂直居中
+        CGFloat baselineOffset = (self.qmui_lineHeight - self.font.lineHeight) / 4;// 实际测量得知，baseline + 1，文字会往上移动 2pt，所以这里为了垂直居中，需要 / 4。
+        [attributedString addAttribute:NSBaselineOffsetAttributeName value:@(baselineOffset) range:NSMakeRange(0, attributedString.length)];
     }
     
     return attributedString;
+}
+
+- (void)qmuilb_setLineBreakMode:(NSLineBreakMode)lineBreakMode {
+    [self qmuilb_setLineBreakMode:lineBreakMode];
+    if (!self.qmui_textAttributes) return;
+    if (self.qmui_textAttributes[NSParagraphStyleAttributeName]) {
+        NSMutableParagraphStyle *p = ((NSParagraphStyle *)self.qmui_textAttributes[NSParagraphStyleAttributeName]).mutableCopy;
+        p.lineBreakMode = lineBreakMode;
+        NSMutableDictionary<NSAttributedStringKey, id> *attrs = self.qmui_textAttributes.mutableCopy;
+        attrs[NSParagraphStyleAttributeName] = p.copy;
+        self.qmui_textAttributes = attrs.copy;
+    }
 }
 
 static char kAssociatedObjectKey_lineHeight;
@@ -221,6 +252,62 @@ static char kAssociatedObjectKey_lineHeight;
     self.opaque = YES;// 本来默认就是YES，这里还是明确写一下
     self.backgroundColor = color;
     self.clipsToBounds = YES;// 只 clip 不使用 cornerRadius就不会触发offscreen render
+}
+
+@end
+
+@implementation UILabel (QMUI_Debug)
+
+QMUISynthesizeIdStrongProperty(qmuilb_principalLineLayer, setQmuilb_principalLineLayer)
+QMUISynthesizeIdStrongProperty(qmui_principalLineColor, setQmui_principalLineColor)
+
+static char kAssociatedObjectKey_showPrincipalLines;
+- (void)setQmui_showPrincipalLines:(BOOL)qmui_showPrincipalLines {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_showPrincipalLines, @(qmui_showPrincipalLines), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (qmui_showPrincipalLines && !self.qmuilb_principalLineLayer) {
+        self.qmuilb_principalLineLayer = [CAShapeLayer layer];
+        [self.qmuilb_principalLineLayer qmui_removeDefaultAnimations];
+        self.qmuilb_principalLineLayer.strokeColor = (self.qmui_principalLineColor ?: UIColorTestRed).CGColor;
+        self.qmuilb_principalLineLayer.lineWidth = PixelOne;
+        [self.layer addSublayer:self.qmuilb_principalLineLayer];
+        
+        if (!self.qmui_layoutSubviewsBlock) {
+            self.qmui_layoutSubviewsBlock = ^(UILabel * _Nonnull label) {
+                if (!label.qmuilb_principalLineLayer || label.qmuilb_principalLineLayer.hidden)  return;
+                
+                label.qmuilb_principalLineLayer.frame  = label.bounds;
+                
+                NSRange range = NSMakeRange(0, label.attributedText.length);
+                CGFloat baselineOffset = [[label.attributedText attribute:NSBaselineOffsetAttributeName atIndex:0 effectiveRange:&range] doubleValue];
+                CGFloat lineOffset = baselineOffset * 2;
+                UIFont *font = label.font;
+                CGFloat maxX = CGRectGetWidth(label.bounds);
+                CGFloat maxY = CGRectGetHeight(label.bounds);
+                CGFloat descenderY = maxY + font.descender - lineOffset;
+                CGFloat xHeightY = maxY - (font.xHeight - font.descender) - lineOffset;
+                CGFloat capHeightY = maxY - (font.capHeight - font.descender) - lineOffset;
+                CGFloat lineHeightY = maxY - font.lineHeight - lineOffset;
+                
+                void (^addLineAtY)(UIBezierPath *, CGFloat) = ^void(UIBezierPath *p, CGFloat y) {
+                    CGFloat offset = PixelOne / 2;
+                    y = flat(y) - offset;
+                    [p moveToPoint:CGPointMake(0, y)];
+                    [p addLineToPoint:CGPointMake(maxX, y)];
+                };
+                UIBezierPath *path = [UIBezierPath bezierPath];
+                addLineAtY(path, descenderY);
+                addLineAtY(path, xHeightY);
+                addLineAtY(path, capHeightY);
+                addLineAtY(path, lineHeightY);
+                label.qmuilb_principalLineLayer.path = path.CGPath;
+            };
+        }
+    }
+    self.qmuilb_principalLineLayer.hidden = !qmui_showPrincipalLines;
+}
+
+- (BOOL)qmui_showPrincipalLines {
+    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_showPrincipalLines)) boolValue];
 }
 
 @end

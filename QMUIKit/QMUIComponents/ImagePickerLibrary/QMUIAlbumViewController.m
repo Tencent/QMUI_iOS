@@ -227,7 +227,7 @@
     if (!self.imagePickerViewController) {
         self.imagePickerViewController = [self.albumViewControllerDelegate imagePickerViewControllerForAlbumViewController:self];
     }
-    NSAssert(self.imagePickerViewController, @"self.%@ 必须实现 %@ 并返回一个 %@ 对象", NSStringFromSelector(@selector(albumViewControllerDelegate)), NSStringFromSelector(@selector(imagePickerViewControllerForAlbumViewController:)), NSStringFromClass([QMUIImagePickerViewController class]));
+    QMUIAssert(!!self.imagePickerViewController, NSStringFromClass(self.class), NSStringFromClass(self.class), @"self.%@ 必须实现 %@ 并返回一个 %@ 对象", NSStringFromSelector(@selector(albumViewControllerDelegate)), NSStringFromSelector(@selector(imagePickerViewControllerForAlbumViewController:)), NSStringFromClass([QMUIImagePickerViewController class]));
     
     [self.imagePickerViewController refreshWithAssetsGroup:assetsGroup];
     self.imagePickerViewController.title = [assetsGroup name];

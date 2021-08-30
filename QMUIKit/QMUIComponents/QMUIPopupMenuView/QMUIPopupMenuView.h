@@ -62,6 +62,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets padding UI_APPEARANCE_SELECTOR;
 
 /// 每个 item 的统一高度，默认为 44。如果某个 item 设置了自己的 height，则不受 itemHeight 属性的约束。
+/// 如果将 itemHeight 设置为 QMUIViewSelfSizingHeight 则会以 item sizeThatFits: 返回的结果作为最终的 item 高度。
 @property(nonatomic, assign) CGFloat itemHeight UI_APPEARANCE_SELECTOR;
 
 /// 批量设置 item 的样式

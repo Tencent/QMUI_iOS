@@ -16,10 +16,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface NSMutableParagraphStyle (QMUI)
+@interface NSParagraphStyle (QMUI)
 
 /**
- *  快速创建一个NSMutableParagraphStyle，等同于`qmui_paragraphStyleWithLineHeight:lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentLeft`
+ *  快速创建一个NSMutableParagraphStyle，等同于`qmui_paragraphStyleWithLineHeight:lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentLeft`。
+ *  注意 NSParagraphStyle.lineBreakMode 默认值为 NSLineBreakByWordWrapping，而 UILabel.lineBreakMode 默认值为 NSLineBreakByTruncatingTail。如果 UILabel.attributedText 里显式设置了 NSParagraphStyle，则 UILabel.lineBreakMode 返回的值会由 attributedText 里的 NSParagraphStyle.lineBreakMode 决定。
  *  @param  lineHeight      行高
  *  @return 一个NSMutableParagraphStyle对象
  */

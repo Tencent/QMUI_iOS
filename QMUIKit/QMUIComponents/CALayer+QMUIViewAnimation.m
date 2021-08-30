@@ -81,7 +81,7 @@
 
 static char kAssociatedObjectKey_qmuiviewAnimationEnabled;
 - (void)setQmui_viewAnimationEnabled:(BOOL)qmui_viewAnimationEnabled {
-    NSAssert(!self.qmui_isRootLayerOfView, @"UIView 本身的 Layer 无须开启该属性");
+    QMUIAssert(!self.qmui_isRootLayerOfView, @"CALayer (QMUIViewAnimation)", @"UIView 本身的 Layer 无须开启 %s", __func__);
     objc_setAssociatedObject(self, &kAssociatedObjectKey_qmuiviewAnimationEnabled, @(qmui_viewAnimationEnabled), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (qmui_viewAnimationEnabled) {
         self.qmui_multipleDelegatesEnabled = YES;

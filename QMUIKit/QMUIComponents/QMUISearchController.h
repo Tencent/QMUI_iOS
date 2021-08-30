@@ -57,7 +57,13 @@
 @interface QMUISearchController : QMUICommonViewController<UISearchResultsUpdating, UISearchControllerDelegate>
 
 /**
- *  在某个指定的UIViewController上创建一个与其绑定的searchController
+ *  在某个指定的 UIViewController 上创建一个与其绑定的 searchController，并指定结果列表的 style。
+ *  @param viewController 要在哪个viewController上添加搜索功能
+ */
+- (instancetype)initWithContentsViewController:(UIViewController *)viewController resultsTableViewStyle:(UITableViewStyle)resultsTableViewStyle;
+
+/**
+ *  在某个指定的 UIViewController 上创建一个与其绑定的 searchController
  *  @param viewController 要在哪个viewController上添加搜索功能
  */
 - (instancetype)initWithContentsViewController:(UIViewController *)viewController;
@@ -72,6 +78,10 @@
 
 /// 在搜索文字为空时会展示的一个 view，通常用于实现“最近搜索”之类的功能。launchView 最终会被布局为撑满搜索框以下的所有空间。
 @property(nonatomic, strong) UIView *launchView;
+
+/// 升起键盘时的半透明遮罩，nil 表示用系统的，非 nil 则用自己的。默认为 nil。
+/// @note 如果使用了 launchView 则该属性无效。
+@property(nonatomic, strong) UIColor *dimmingColor;
 
 /// 控制以无动画的形式进入/退出搜索状态
 @property(nonatomic, assign, getter=isActive) BOOL active;

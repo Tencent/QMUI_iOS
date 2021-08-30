@@ -367,7 +367,7 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
 @implementation UITableView (QMUILayoutCell)
 
 - (__kindof UITableViewCell *)templateCellForReuseIdentifier:(NSString *)identifier {
-    NSAssert(identifier.length > 0, @"Expect a valid identifier - %@", identifier);
+    QMUIAssert(identifier.length > 0, @"QMUICellHeightCache", @"%s 需要一个合法的 identifier", __func__);
     NSMutableDictionary *templateCellsByIdentifiers = objc_getAssociatedObject(self, _cmd);
     if (!templateCellsByIdentifiers) {
         templateCellsByIdentifiers = @{}.mutableCopy;
@@ -383,7 +383,7 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
         // 没有的话，则需要通过register来注册一个cell，否则会crash
         if (!templateCell) {
             templateCell = [self dequeueReusableCellWithIdentifier:identifier];
-            NSAssert(templateCell != nil, @"Cell must be registered to table view for identifier - %@", identifier);
+            QMUIAssert(templateCell != nil, @"QMUICellHeightCache", @"通过 %s %@ 无法得到一个 cell 对象", __func__, identifier);
         }
         templateCell.contentView.translatesAutoresizingMaskIntoConstraints = NO;
         templateCellsByIdentifiers[identifier] = templateCell;
@@ -671,9 +671,8 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
 @implementation UICollectionView (QMUILayoutCell)
 
 - (__kindof UICollectionViewCell *)templateCellForReuseIdentifier:(NSString *)identifier cellClass:(Class)cellClass {
-    NSAssert(identifier.length > 0, @"Expect a valid identifier - %@", identifier);
-    NSAssert([self.collectionViewLayout isKindOfClass:[UICollectionViewFlowLayout class]], @"only flow layout accept");
-    NSAssert([cellClass isSubclassOfClass:[UICollectionViewCell class]], @"must be uicollection view cell");
+    QMUIAssert(identifier.length > 0, @"QMUICellHeightCache", @"%s 需要一个合法的 identifier", __func__);
+    QMUIAssert([self.collectionViewLayout isKindOfClass:[UICollectionViewFlowLayout class]], @"QMUICellHeightCache", @"只支持 %@", NSStringFromClass(UICollectionViewFlowLayout.class));
     NSMutableDictionary *templateCellsByIdentifiers = objc_getAssociatedObject(self, _cmd);
     if (!templateCellsByIdentifiers) {
         templateCellsByIdentifiers = @{}.mutableCopy;
@@ -684,7 +683,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
         // CollecionView 跟 TableView 不太一样，无法通过 dequeueReusableCellWithReuseIdentifier:forIndexPath: 来拿到cell（如果这样做，首先indexPath不知道传什么值，其次是这样做会已知crash，说数组越界），所以只能通过传一个class来通过init方法初始化一个cell，但是也有缓存来复用cell。
         // templateCell = [self dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
         templateCell = [[cellClass alloc] initWithFrame:CGRectZero];
-        NSAssert(templateCell != nil, @"Cell must be registered to collection view for identifier - %@", identifier);
+        QMUIAssert(templateCell != nil, @"QMUICellHeightCache", @"通过 %s %@ 无法得到一个 cell 对象", __func__, identifier);
     }
     templateCell.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     templateCellsByIdentifiers[identifier] = templateCell;
@@ -692,7 +691,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
 }
 
 - (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth configuration:(void (^)(__kindof UICollectionViewCell *cell))configuration {
-    if (!identifier || CGRectIsEmpty(self.bounds)) {
+    if (!identifier || CGRectGetWidth(self.bounds) <= 0) {
         return 0;
     }
     UICollectionViewCell *cell = [self templateCellForReuseIdentifier:identifier cellClass:cellClass];
@@ -707,7 +706,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
 
 // 通过indexPath缓存高度
 - (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth cacheByIndexPath:(NSIndexPath *)indexPath configuration:(void (^)(__kindof UICollectionViewCell *cell))configuration {
-    if (!identifier || !indexPath || CGRectIsEmpty(self.bounds)) {
+    if (!identifier || !indexPath || CGRectGetWidth(self.bounds) <= 0) {
         return 0;
     }
     if ([self.qmui_indexPathHeightCache existsHeightAtIndexPath:indexPath]) {
@@ -720,7 +719,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
 
 // 通过key缓存高度
 - (CGFloat)qmui_heightForCellWithIdentifier:(NSString *)identifier cellClass:(Class)cellClass itemWidth:(CGFloat)itemWidth cacheByKey:(id<NSCopying>)key configuration:(void (^)(__kindof UICollectionViewCell *cell))configuration {
-    if (!identifier || !key || CGRectIsEmpty(self.bounds)) {
+    if (!identifier || !key || CGRectGetWidth(self.bounds) <= 0) {
         return 0;
     }
     if ([self.qmui_keyedHeightCache existsHeightForKey:key]) {

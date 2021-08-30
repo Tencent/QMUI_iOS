@@ -15,6 +15,7 @@
 
 #import "NSString+QMUI.h"
 #import <CommonCrypto/CommonDigest.h>
+#import "QMUICore.h"
 #import "NSArray+QMUI.h"
 #import "NSCharacterSet+QMUI.h"
 
@@ -74,7 +75,7 @@
 }
 
 + (NSString *)hexLetterStringWithInteger:(NSInteger)integer {
-    NSAssert(integer < 16, @"要转换的数必须是16进制里的个位数，也即小于16，但你传给我是%@", @(integer));
+    QMUIAssert(integer < 16, @"NSString (QMUI)", @"%s 参数仅接受小于16的值，当前传入的是 %@", __func__, @(integer));
     
     NSString *letter = nil;
     switch (integer) {
@@ -208,7 +209,7 @@
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
     NSUInteger length = countingNonASCIICharacterAsTwo ? self.qmui_lengthWhenCountingNonASCIICharacterAsTwo : self.length;
-    NSAssert(index < length, @"index out of bounds");
+    QMUIAssert(index < length, @"NSString (QMUI)", @"%s, index out of bounds.", __func__);
     if (index >= length) return @"";
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index];
@@ -222,7 +223,7 @@
 
 - (NSString *)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
     NSUInteger length = countingNonASCIICharacterAsTwo ? self.qmui_lengthWhenCountingNonASCIICharacterAsTwo : self.length;
-    NSAssert(index <= length, @"index out of bounds");
+    QMUIAssert(index < length, @"NSString (QMUI)", @"%s, index out of bounds.", __func__);
     if (index == 0 || index > length) return @"";
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultModeWithIndex:index] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [self rangeOfComposedCharacterSequenceAtIndex:index - 1];
@@ -268,9 +269,34 @@
 }
 
 - (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern {
-    NSRange range = [self rangeOfString:pattern options:NSRegularExpressionSearch|NSCaseInsensitiveSearch];
-    if (range.location != NSNotFound) {
+    return [self qmui_stringMatchedByPattern:pattern groupIndex:0];
+}
+
+- (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupIndex:(NSInteger)index {
+    if (pattern.length <= 0 || index < 0) return nil;
+    
+    NSRegularExpression *regx = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
+    NSTextCheckingResult *result = [regx firstMatchInString:self options:NSMatchingReportCompletion range:NSMakeRange(0, self.length)];
+    if (result.numberOfRanges > index) {
+        NSRange range = [result rangeAtIndex:index];
         return [self substringWithRange:range];
+    }
+    return nil;
+}
+
+- (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupName:(NSString *)name {
+    if (@available(iOS 11.0, *)) {
+        if (pattern.length <= 0) return nil;
+        
+        NSRegularExpression *regx = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
+        NSTextCheckingResult *result = [regx firstMatchInString:self options:NSMatchingReportCompletion range:NSMakeRange(0, self.length)];
+        if (result.numberOfRanges > 1) {
+            NSRange range = [result rangeWithName:name];
+            QMUIAssert(range.location != NSNotFound, @"NSString (QMUI)", @"%s, 不存在名为 %@ 的 group name", __func__, name);
+            if (range.location != NSNotFound) {
+                return [self substringWithRange:range];
+            }
+        }
     }
     return nil;
 }

@@ -48,7 +48,7 @@
 }
 
 - (void)qmui_addSizeObserverForWindow:(UIWindow *)window handler:(QMUIWindowSizeObserverHandler)handler {
-    NSAssert(window != nil, @"window is nil!");
+    QMUIAssert(window != nil, @"NSObject (QMUIWindowSizeMonitor)", @"%s, window should not be nil.", __func__);
     
     struct Block_literal {
         void *isa;

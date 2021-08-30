@@ -18,6 +18,10 @@
 
 @implementation UITextView (QMUI)
 
+- (NSRange)qmui_selectedRange {
+    return [self qmui_convertNSRangeFromUITextRange:self.selectedTextRange];
+}
+
 - (NSRange)qmui_convertNSRangeFromUITextRange:(UITextRange *)textRange {
     NSInteger location = [self offsetFromPosition:self.beginningOfDocument toPosition:textRange.start];
     NSInteger length = [self offsetFromPosition:textRange.start toPosition:textRange.end];

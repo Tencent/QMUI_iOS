@@ -112,8 +112,8 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 }
 
 - (id<QMUI_viewWillAppearNotifyDelegate>)qmui_viewWillAppearNotifyDelegate {
-    id weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate);
-    if ([weakContainer isKindOfClass:[QMUIWeakObjectContainer class]]) {
+    QMUIWeakObjectContainer *weakContainer = objc_getAssociatedObject(self, &kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate);
+    if (weakContainer.isQMUIWeakObjectContainer) {
         id notifyDelegate = [weakContainer object];
         return notifyDelegate;
     }
@@ -307,8 +307,8 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated {
     if (!viewController) return;
     
-    if (self.isViewControllerTransiting) {
-        QMUILogWarn(NSStringFromClass(self.class), @"%@, 上一次界面切换的动画尚未结束就试图进行新的 push 操作，为了避免产生 bug，拦截了这次 push。\n%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@", NSStringFromClass(self.class),  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
+    if (self.isViewControllerTransiting && animated) {
+        QMUILogWarn(NSStringFromClass(self.class), @"%@, 上一次界面切换的动画尚未结束就试图进行新的 push 操作，为了避免产生 bug，将本次 push 改为非动画形式。\n%s, isViewControllerTransiting = %@, viewController = %@, self.viewControllers = %@", NSStringFromClass(self.class),  __func__, StringFromBOOL(self.isViewControllerTransiting), viewController, self.viewControllers);
         animated = NO;
     }
     
@@ -341,8 +341,8 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     
     // 如果某个 viewController 显式声明了返回按钮的文字，则无视配置表 NeedsBackBarButtonItemTitle 的值
     UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)nextViewController;
-    if ([vc respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
-        NSString *title = [vc backBarButtonItemTitleWithPreviousViewController:currentViewController];
+    if ([vc respondsToSelector:@selector(qmui_backBarButtonItemTitleWithPreviousViewController:)]) {
+        NSString *title = [vc qmui_backBarButtonItemTitleWithPreviousViewController:currentViewController];
         currentViewController.navigationItem.backBarButtonItem = title ? [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStylePlain target:nil action:NULL] : nil;
         return;
     }
@@ -577,7 +577,7 @@ QMUISynthesizeIdStrongProperty(qmuibbbt_backItem, setQmuibbbt_backItem);
                     if ([navigationBar.items containsObject:selfObject]
                         && (navigationBar.topItem != selfObject || navigationController.qmui_isPushing || navigationController.qmui_isPopping)
                         && (!selfObject.qmuibbbt_backItem || selfObject.qmuibbbt_backItem != backBarButtonItem)) {
-                        // 当前 vc 存在子界面，此时要修改 backBarButtonItem，根据优先级，应该先判断子界面是否使用了 backBarButtonItemTitleWithPreviousViewController:
+                        // 当前 vc 存在子界面，此时要修改 backBarButtonItem，根据优先级，应该先判断子界面是否使用了 qmui_backBarButtonItemTitleWithPreviousViewController:
                         UIViewController *currentViewController = nil;
                         UIViewController *nextViewController = nil;
                         NSInteger indexForChildViewController = [navigationBar.items indexOfObject:selfObject] + 1;
@@ -589,8 +589,8 @@ QMUISynthesizeIdStrongProperty(qmuibbbt_backItem, setQmuibbbt_backItem);
                             nextViewController = [navigationController.transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
                             currentViewController = [navigationController.transitionCoordinator viewControllerForKey:UITransitionContextToViewControllerKey];
                         }
-                        if ([nextViewController respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
-                            NSAssert(!!currentViewController, @"currentViewController 和 nextViewController 必须同时存在");
+                        if ([nextViewController respondsToSelector:@selector(qmui_backBarButtonItemTitleWithPreviousViewController:)]) {
+                            QMUIAssert(!!currentViewController, @"UINavigationItem (QMUIBackBarButtonItemTitle)", @"currentViewController 和 nextViewController 必须同时存在");
                             selfObject.qmuibbbt_backItem = backBarButtonItem;
                             return;
                         } else if (!nextViewController) {
@@ -644,8 +644,8 @@ QMUISynthesizeIdStrongProperty(qmuibbbt_backItem, setQmuibbbt_backItem);
                 originSelectorIMP(selfObject, originCMD, titleView);
                 
                 if ([titleView isKindOfClass:QMUINavigationTitleView.class]) {
-                    if ([selfObject.qmui_viewController respondsToSelector:@selector(titleViewTintColor)]) {
-                        titleView.tintColor = ((id<QMUINavigationControllerDelegate>)selfObject.qmui_viewController).titleViewTintColor;
+                    if ([selfObject.qmui_viewController respondsToSelector:@selector(qmui_titleViewTintColor)]) {
+                        titleView.tintColor = ((id<QMUINavigationControllerDelegate>)selfObject.qmui_viewController).qmui_titleViewTintColor;
                     }
                 }
             };

@@ -40,6 +40,12 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
 
 @interface UIViewController (QMUI)
 
+/// 当前 UIViewController.class 是否为系统默认的几个 container viewController（也即 UINavigationController、UITabBarController、UISplitViewController）。
+@property(class, nonatomic, assign, readonly) BOOL qmui_isSystemContainerViewController;
+
+/// 当前 UIViewController 是否为系统默认的几个 container viewController（也即 UINavigationController、UITabBarController、UISplitViewController）。
+@property(nonatomic, assign, readonly) BOOL qmui_isSystemContainerViewController;
+
 /** 获取和自身处于同一个UINavigationController里的上一个UIViewController */
 @property(nullable, nonatomic, weak, readonly) UIViewController *qmui_previousViewController;
 

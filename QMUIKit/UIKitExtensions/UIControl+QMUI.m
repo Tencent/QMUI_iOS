@@ -186,10 +186,18 @@ static char kAssociatedObjectKey_setHighlightedBlock;
     objc_setAssociatedObject(self, &kAssociatedObjectKey_setHighlightedBlock, qmui_setHighlightedBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
     if (qmui_setHighlightedBlock) {
         [QMUIHelper executeBlock:^{
-            ExtendImplementationOfVoidMethodWithSingleArgument([UIControl class], @selector(setHighlighted:), BOOL, ^(UIControl *selfObject, BOOL highlighted) {
-                if (selfObject.qmui_setHighlightedBlock) {
-                    selfObject.qmui_setHighlightedBlock(highlighted);
-                }
+            OverrideImplementation([UIControl class], @selector(setHighlighted:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, BOOL highlighted) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, highlighted);
+                    
+                    if (selfObject.qmui_setHighlightedBlock) {
+                        selfObject.qmui_setHighlightedBlock(highlighted);
+                    }
+                };
             });
         } oncePerIdentifier:@"UIControl setHighlighted:"];
     }
@@ -197,6 +205,62 @@ static char kAssociatedObjectKey_setHighlightedBlock;
 
 - (void (^)(BOOL))qmui_setHighlightedBlock {
     return (void (^)(BOOL))objc_getAssociatedObject(self, &kAssociatedObjectKey_setHighlightedBlock);
+}
+
+#pragma mark - Selected Block
+
+static char kAssociatedObjectKey_setSelectedBlock;
+- (void)setQmui_setSelectedBlock:(void (^)(BOOL))qmui_setSelectedBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_setSelectedBlock, qmui_setSelectedBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_setSelectedBlock) {
+        [QMUIHelper executeBlock:^{
+            OverrideImplementation([UIControl class], @selector(setSelected:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, BOOL selected) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, selected);
+                    
+                    if (selfObject.qmui_setSelectedBlock) {
+                        selfObject.qmui_setSelectedBlock(selected);
+                    }
+                };
+            });
+        } oncePerIdentifier:@"UIControl setSelected:"];
+    }
+}
+
+- (void (^)(BOOL))qmui_setSelectedBlock {
+    return (void (^)(BOOL))objc_getAssociatedObject(self, &kAssociatedObjectKey_setSelectedBlock);
+}
+
+#pragma mark - Enabled Block
+
+static char kAssociatedObjectKey_setEnabledBlock;
+- (void)setQmui_setEnabledBlock:(void (^)(BOOL))qmui_setEnabledBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_setEnabledBlock, qmui_setEnabledBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_setEnabledBlock) {
+        [QMUIHelper executeBlock:^{
+            OverrideImplementation([UIControl class], @selector(setEnabled:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIControl *selfObject, BOOL enabled) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, enabled);
+                    
+                    if (selfObject.qmui_setEnabledBlock) {
+                        selfObject.qmui_setEnabledBlock(enabled);
+                    }
+                };
+            });
+        } oncePerIdentifier:@"UIControl setEnabled:"];
+    }
+}
+
+- (void (^)(BOOL))qmui_setEnabledBlock {
+    return (void (^)(BOOL))objc_getAssociatedObject(self, &kAssociatedObjectKey_setEnabledBlock);
 }
 
 #pragma mark - Tap Block

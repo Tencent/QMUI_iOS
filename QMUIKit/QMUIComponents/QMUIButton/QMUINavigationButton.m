@@ -278,9 +278,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             if (previousViewController.navigationItem.backBarButtonItem) {
                 // 如果前一个界面有主动设置返回按钮的文字，则取这个文字
                 backTitle = previousViewController.navigationItem.backBarButtonItem.title;
-            } else if ([viewController respondsToSelector:@selector(backBarButtonItemTitleWithPreviousViewController:)]) {
+            } else if ([viewController respondsToSelector:@selector(qmui_backBarButtonItemTitleWithPreviousViewController:)]) {
                 // 否则看是否有通过 QMUI 提供的接口来设置返回按钮的文字，有就用它的值
-                backTitle = [((UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController) backBarButtonItemTitleWithPreviousViewController:previousViewController];
+                backTitle = [((UIViewController<QMUINavigationControllerAppearanceDelegate> *)viewController) qmui_backBarButtonItemTitleWithPreviousViewController:previousViewController];
             } else if (previousViewController.title) {
                 // 否则取上一个界面的标题
                 backTitle = previousViewController.title;

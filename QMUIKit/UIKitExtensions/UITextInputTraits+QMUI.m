@@ -33,20 +33,35 @@ QMUISynthesizeBOOLProperty(qti_setKeyboardAppearanceByQMUITheme, setQti_setKeybo
         if (!inputClasses) inputClasses = @[UITextField.class, UITextView.class, UISearchBar.class];
         [inputClasses enumerateObjectsUsingBlock:^(Class  _Nonnull inputClass, NSUInteger idx, BOOL * _Nonnull stop) {
             
-            ExtendImplementationOfNonVoidMethodWithSingleArgument(inputClass, @selector(initWithFrame:), CGRect, UIView<UITextInputTraits> *, ^UIView<UITextInputTraits> *(UIView<UITextInputTraits> *selfObject, CGRect firstArgv, UIView<UITextInputTraits> *originReturnValue) {
-                if ([selfObject isKindOfClass:NSClassFromString(@"TUIEmojiSearchTextField")]) {
-                    // https://github.com/Tencent/QMUI_iOS/issues/1042 iOS 14 开始，系统的 emoji 键盘内部有一个搜索框 TUIEmojiSearchTextField，这个搜索框如果在 init 的时候设置 keyboardAppearance 会导致再次创建触发死循环，在这里过滤掉它
-                    // 另外它属于 emoji 键盘内部的 TextFied，其 keyboardAppearance 应该由业务的 UITextField、UITextView 驱动，因此 QMUI 也不应该去干预他
-                    return originReturnValue;
-                }
-                if (QMUICMIActivated) selfObject.keyboardAppearance = KeyboardAppearance;
-                selfObject.qti_didInitialize = YES;
-                return originReturnValue;
+            OverrideImplementation(inputClass, @selector(initWithFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^UIView<UITextInputTraits> *(UIView<UITextInputTraits> *selfObject, CGRect firstArgv) {
+                    
+                    // call super
+                    UIView<UITextInputTraits> * (*originSelectorIMP)(id, SEL, CGRect);
+                    originSelectorIMP = (UIView<UITextInputTraits> * (*)(id, SEL, CGRect))originalIMPProvider();
+                    UIView<UITextInputTraits> * result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if ([selfObject isKindOfClass:NSClassFromString(@"TUIEmojiSearchTextField")]) {
+                        // https://github.com/Tencent/QMUI_iOS/issues/1042 iOS 14 开始，系统的 emoji 键盘内部有一个搜索框 TUIEmojiSearchTextField，这个搜索框如果在 init 的时候设置 keyboardAppearance 会导致再次创建触发死循环，在这里过滤掉它
+                        // 另外它属于 emoji 键盘内部的 TextFied，其 keyboardAppearance 应该由业务的 UITextField、UITextView 驱动，因此 QMUI 也不应该去干预他
+                        return result;
+                    }
+                    if (QMUICMIActivated) selfObject.keyboardAppearance = KeyboardAppearance;
+                    selfObject.qti_didInitialize = YES;
+                    return result;
+                };
             });
             
-            ExtendImplementationOfNonVoidMethodWithSingleArgument(inputClass, @selector(initWithCoder:), NSCoder *, UIView<UITextInputTraits> *, ^UIView<UITextInputTraits> *(UIView<UITextInputTraits> *selfObject, NSCoder *aDecoder, UIView<UITextInputTraits> *originReturnValue) {
-                selfObject.qti_didInitialize = YES;
-                return originReturnValue;
+            OverrideImplementation([inputClasses class], @selector(initWithCoder:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^UIView<UITextInputTraits> *(UIView<UITextInputTraits> *selfObject, NSCoder *firstArgv) {
+                    
+                    // call super
+                    UIView<UITextInputTraits> * (*originSelectorIMP)(id, SEL, NSCoder *);
+                    originSelectorIMP = (UIView<UITextInputTraits> * (*)(id, SEL, NSCoder *))originalIMPProvider();
+                    UIView<UITextInputTraits> * result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                    result.qti_didInitialize = YES;
+                    return result;
+                };
             });
             
             // 当输入框聚焦并显示了键盘的情况下，keyboardAppearance 发生变化了，立即刷新键盘的外观

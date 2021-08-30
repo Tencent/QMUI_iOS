@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "QMUIKit"
-  s.version          = "4.2.3"
+  s.version          = "4.3.0"
   s.summary          = "致力于提高项目 UI 开发效率的解决方案"
   s.description      = <<-DESC
                        QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设计目的是用于辅助快速搭建一个具备基本设计还原效果的 iOS 项目，同时利用自身提供的丰富控件及兼容处理， 让开发者能专注于业务需求而无需耗费精力在基础代码的设计上。不管是新项目的创建，或是已有项目的维护，均可使开发效率和项目质量得到大幅度提升。
@@ -89,11 +89,6 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
     end
 
-    ss.subspec 'QMUILinkButton' do |sss|
-      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUILinkButton.{h,m}'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
-    end
-
     ss.subspec 'QMUINavigationButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUINavigationButton.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
@@ -125,6 +120,7 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIKeyboardManager' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIKeyboardManager.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIAppearance'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
     # 从这里开始就是非必须的组件
@@ -140,6 +136,7 @@ Pod::Spec.new do |s|
 			sss.dependency 'QMUIKit/QMUIComponents/QMUITextField'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
 			sss.dependency 'QMUIKit/QMUIComponents/QMUIAppearance'
+			sss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
     end
 
     ss.subspec 'QMUIAppearance' do |sss|
@@ -314,7 +311,6 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIFillButton'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIGhostButton'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUILinkButton'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIConsole'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmotionView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
@@ -326,7 +322,6 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUISlider'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITextField'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITextView'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUIVisualEffectView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIToastView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIModalPresentationViewController'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIBadge'
@@ -338,11 +333,6 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIToastView'
     end
     
-    ss.subspec 'QMUIVisualEffectView' do |sss|
-      sss.source_files = 'QMUIKit/QMUIComponents/QMUIVisualEffectView.{h,m}'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUICALayerExtension'
-    end
-
     ss.subspec 'QMUIWindowSizeMonitor' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIWindowSizeMonitor.{h,m}'
     end
@@ -406,7 +396,6 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIToastView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/ToastView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIKeyboardManager'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUIVisualEffectView'
     end
 
     ss.subspec 'QMUIStaticTableView' do |sss|

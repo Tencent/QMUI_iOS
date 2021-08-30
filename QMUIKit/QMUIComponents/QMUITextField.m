@@ -175,7 +175,7 @@
         }
         
         if (NSMaxRange(range) > textField.text.length) {
-            // 如果 range 越界了，继续返回 YES 会造成 rash
+            // 如果 range 越界了，继续返回 YES 会造成 crash
             // https://github.com/Tencent/QMUI_iOS/issues/377
             // https://github.com/Tencent/QMUI_iOS/issues/1170
             // 这里的做法是本次返回 NO，并将越界的 range 缩减到没有越界的范围，再手动做该范围的替换。
@@ -195,6 +195,12 @@
                 NSString *allowedText = [string qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:textField.shouldCountingNonASCIICharacterAsTwo];
                 if ([textField lengthWithString:allowedText] <= substringLength) {
                     textField.text = [textField.text stringByReplacingCharactersInRange:range withString:allowedText];
+                    // 通过代码 setText: 修改的文字，默认光标位置会在插入的文字开头，通常这不符合预期，因此这里将光标定位到插入的那段字符串的末尾
+                    // 注意由于粘贴后系统也会在下一个 runloop 去修改光标位置，所以我们这里也要 dispatch 到下一个 runloop 才能生效，否则会被系统的覆盖
+                    // https://github.com/Tencent/QMUI_iOS/issues/1282
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        textField.qmui_selectedRange = NSMakeRange(range.location + allowedText.length, 0);
+                    });
                     
                     if (!textField.shouldResponseToProgrammaticallyTextChanges) {
                         [textField fireTextDidChangeEventForTextField:textField];

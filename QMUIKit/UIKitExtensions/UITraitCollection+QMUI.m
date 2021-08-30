@@ -48,7 +48,7 @@ static NSString * const kQMUIUserInterfaceStyleWillChangeSelectorsKey = @"qmui_u
             if ([observer respondsToSelector:selector]) {
                 NSMethodSignature *methodSignature = [observer methodSignatureForSelector:selector];
                 NSUInteger numberOfArguments = [methodSignature numberOfArguments] - 2; // 减去 self cmd 隐形参数剩下的参数数量
-                NSAssert(numberOfArguments <= 1, @"observer 的 selector 参数超过 1 个");
+                QMUIAssert(numberOfArguments <= 1, @"UITraitCollection (QMUI)", @"observer 的 selector 参数超过 1 个");
                 BeginIgnorePerformSelectorLeaksWarning
                 if (numberOfArguments == 0) {
                     [observer performSelector:selector];
@@ -76,9 +76,18 @@ static id (*directTraitCollectionIMP)(id, SEL) = NULL;
                     if (directTraitCollectionIMP == NULL) {
                         NSArray *address = [NSThread callStackReturnAddresses];
                         Dl_info info;
-                        dladdr((void *)[address[1] longLongValue], &info);
-                        if (strncmp(info.dli_sname, "-[UIWindow traitCollection]", 27) == 0) {
-                            directTraitCollectionIMP = info.dli_saddr;
+                        if (IS_SIMULATOR) {
+                            dladdr((void *)[address[1] longLongValue], &info);
+                            if (strncmp(info.dli_sname, "-[UIWindow traitCollection]", 27) == 0) {
+                                directTraitCollectionIMP = info.dli_saddr;
+                            }
+                        } else {
+                            // 真机下拿不到系统私方法的 dli_sname，所以直接看 address[2]，如果他的 IMP 是 _qmui_overrideTraitCollectionMethodIfNeeded，说明 address[1] 是 -[UIWindow traitCollection]
+                            dladdr((void *)[address[2] longLongValue], &info);
+                            if ([[NSString stringWithUTF8String:info.dli_sname] containsString:@"+[UITraitCollection(QMUI) _qmui_overrideTraitCollectionMethodIfNeeded]"]) {
+                                dladdr((void *)[address[1] longLongValue], &info);
+                                directTraitCollectionIMP = info.dli_saddr;
+                            }
                         }
                     }
                     id (*originSelectorIMP)(id, SEL, BOOL arg1);
@@ -121,6 +130,11 @@ static id (*directTraitCollectionIMP)(id, SEL) = NULL;
                         UIWindow *firstValidatedWindow = nil;
                         for (NSUInteger i = 0, count = windows.count; i < count; i++) {
                             UIWindow *window = [windows pointerAtIndex:i];
+                            // 例如用 UIWindow 方式显示的弹窗，在消失后，在 windows 数组里会残留一个 nil 的位置，这里过滤掉，否则会导致 App 从桌面唤醒时无法立即显示正确的 style
+                            if (!window) {
+                                continue;;
+                            }
+                            
                             // 由于 Keyboard 可以通过 keyboardAppearance 来控制 userInterfaceStyle 的 Dark/Light，不一定和系统一样，这里要过滤掉
                             if ([window isKindOfClass:NSClassFromString(@"UIRemoteKeyboardWindow")] || [window isKindOfClass:NSClassFromString(@"UITextEffectsWindow")]) {
                                 continue;

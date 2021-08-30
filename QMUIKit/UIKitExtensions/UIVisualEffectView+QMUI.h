@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  以 UINavigationBar 为例，当我们通过 UINavigationBar.barTintColor 或者 UINavigationBarAppearance.backgroundEffect/backgroundColor 实现磨砂效果时，我们设置上去的 barTintColor 最终会被系统进行一些运算后产生另一个色值，最终显示出来的色值和我们设置的 barTintColor 是相似但不相等的，如果希望有精准的色值调整，就可以自己获取 UINavigationBar 内部的 UIVisualEffectView，再修改它的 qmui_foregroundColor。
  
  @note 注意这个颜色需要是半透明的，才能透出背后的磨砂，如果设置不透明的色值，就失去了磨砂效果了。
+ @note 注意如果开启了系统的“降低透明度”辅助功能开关，此时 qmui_foregroundColor 的效果会变得比较怪异，因此默认会监听 UIAccessibilityIsReduceTransparencyEnabled 的变化，当开启时会强制把 qmui_foregroundColor 改为不透明的，从而屏蔽磨砂的效果。
  */
 @property(nonatomic, strong, nullable) UIColor *qmui_foregroundColor;
 @end

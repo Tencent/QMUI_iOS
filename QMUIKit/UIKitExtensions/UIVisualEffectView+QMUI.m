@@ -63,8 +63,14 @@ static char kAssociatedObjectKey_foregroundColor;
         self.qmuive_foregroundLayer = [CALayer layer];
         [self.qmuive_foregroundLayer qmui_removeDefaultAnimations];
         [self.layer addSublayer:self.qmuive_foregroundLayer];
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:UIAccessibilityReduceTransparencyStatusDidChangeNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleReduceTransparencyStatusDidChangeNotification:) name:UIAccessibilityReduceTransparencyStatusDidChangeNotification object:nil];
     }
     if (self.qmuive_foregroundLayer) {
+        if (UIAccessibilityIsReduceTransparencyEnabled()) {
+            qmui_foregroundColor = [qmui_foregroundColor colorWithAlphaComponent:1];
+        }
         self.qmuive_foregroundLayer.backgroundColor = qmui_foregroundColor.CGColor;
         self.qmuive_foregroundLayer.hidden = !qmui_foregroundColor;
         [self qmuive_updateSubviews];
@@ -99,6 +105,12 @@ static char kAssociatedObjectKey_foregroundColor;
                 subview.qmuive_keepHidden = !self.qmuive_foregroundLayer.hidden;
             }
         }];
+    }
+}
+
+- (void)handleReduceTransparencyStatusDidChangeNotification:(NSNotification *)notification {
+    if (self.qmui_foregroundColor) {
+        self.qmui_foregroundColor = self.qmui_foregroundColor;
     }
 }
 

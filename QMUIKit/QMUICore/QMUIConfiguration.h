@@ -100,7 +100,6 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - UISwitch
 @property(nonatomic, strong, nullable) UIColor  *switchOnTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchOffTintColor;
-@property(nonatomic, strong, nullable) UIColor  *switchTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchThumbTintColor;
 @property(nonatomic, strong, nullable) UIImage  *switchOnImage;
 @property(nonatomic, strong, nullable) UIImage  *switchOffImage;

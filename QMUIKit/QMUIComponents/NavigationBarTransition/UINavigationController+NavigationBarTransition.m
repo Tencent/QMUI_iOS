@@ -197,6 +197,13 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                         BOOL shouldCustomNavigationBarTransition = [weakNavigationController shouldCustomTransitionAutomaticallyForOperation:UINavigationControllerOperationPop firstViewController:disappearingViewController secondViewController:appearingViewController];
                         if (shouldCustomNavigationBarTransition) {
                             [disappearingViewController addTransitionNavigationBarIfNeeded];
+                            
+                            // 在 pop 过程中，前一个界面的 transitionNavigationBar 是在该界面的 viewWillLayoutSubviews 里加上的，但 pop 过程中前一个界面的 view 默认不会触发 viewWillLayoutSubviews（用空项目验证过），所以需要显式保证必定会触发一次。 
+                            // https://github.com/Tencent/QMUI_iOS/issues/1253
+                            if (appearingViewController.isViewLoaded) {
+                                [appearingViewController.view setNeedsLayout];
+                            }
+                            
                             if (appearingViewController.transitionNavigationBar) {
                                 // 假设从A→B→C，其中A设置了bar的样式，B跟随A所以B里没有设置bar样式的代码，C又把样式改为另一种，此时从C返回B时，由于B没有设置bar的样式的代码，所以bar的样式依然会保留C的，这就错了，所以每次都要手动改回来才保险
                                 [UIViewController replaceStyleForNavigationBar:appearingViewController.transitionNavigationBar withNavigationBar:weakNavigationController.navigationBar];
@@ -244,7 +251,9 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         OverrideImplementation([UIViewController class], @selector(viewDidAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIViewController *selfObject, BOOL firstArgv) {
                 
-                [selfObject clearTransitionNavigationBarAndReplaceStyle:YES];
+                if (!selfObject.qmui_isSystemContainerViewController) {
+                    [selfObject clearTransitionNavigationBarAndReplaceStyle:YES];
+                }
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, BOOL);
@@ -256,7 +265,9 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         OverrideImplementation([UIViewController class], @selector(viewDidDisappear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIViewController *selfObject, BOOL firstArgv) {
                 
-                [selfObject clearTransitionNavigationBarAndReplaceStyle:NO];
+                if (!selfObject.qmui_isSystemContainerViewController) {
+                    [selfObject clearTransitionNavigationBarAndReplaceStyle:NO];
+                }
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, BOOL);
@@ -267,6 +278,22 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         
         OverrideImplementation([UIViewController class], @selector(viewWillLayoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIViewController *selfObject) {
+                // call super
+                void (^callSuperBlock)(void) = ^void(void) {
+                    void (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD);
+                };
+                
+                if (selfObject.qmui_isSystemContainerViewController
+                    // UIInputWindowController
+                    || [NSStringFromClass(selfObject.class) isEqualToString:[NSString qmui_stringByConcat:@"UI", @"Input", @"WindowController", nil]]
+                    // UIEditingOverlayViewController
+                    || [NSStringFromClass(selfObject.class) isEqualToString:[NSString qmui_stringByConcat:@"UI", @"EditingOverlay", @"ViewController", nil]]) {
+                    callSuperBlock();
+                    return;
+                }
+                
                 id<UIViewControllerTransitionCoordinator> transitionCoordinator = selfObject.transitionCoordinator;
                 UIViewController *fromViewController = [transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
                 UIViewController *toViewController = [transitionCoordinator viewControllerForKey:UITransitionContextToViewControllerKey];
@@ -283,38 +310,31 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                     
                     if (shouldCustomNavigationBarTransition) {
                         if (!selfObject.transitionNavigationBar) {
-                            UINavigationControllerOperation operation = toViewController.navigationController.qmui_isPushing ? UINavigationControllerOperationPush: UINavigationControllerOperationPop;
-                            if ([selfObject shouldCustomTransitionAutomaticallyForOperation:operation firstViewController:fromViewController secondViewController:toViewController]) {
-                                shouldCustomNavigationBarTransition = YES;
+                            if (selfObject.navigationController.navigationBar.translucent) {
+                                // 如果原生bar是半透明的，需要给containerView加个背景色，否则有可能会看到下面的默认黑色背景色
+                                toViewController.originContainerViewBackgroundColor = [transitionCoordinator containerView].backgroundColor;
+                                [transitionCoordinator containerView].backgroundColor = [selfObject containerViewBackgroundColor];
                             }
-                            if (shouldCustomNavigationBarTransition) {
-                                if (selfObject.navigationController.navigationBar.translucent) {
-                                    // 如果原生bar是半透明的，需要给containerView加个背景色，否则有可能会看到下面的默认黑色背景色
-                                    toViewController.originContainerViewBackgroundColor = [transitionCoordinator containerView].backgroundColor;
-                                    [transitionCoordinator containerView].backgroundColor = [selfObject containerViewBackgroundColor];
-                                }
-                                [selfObject addTransitionNavigationBarIfNeeded];
-                                [selfObject resizeTransitionNavigationBarFrame];
-                                selfObject.navigationController.navigationBar.transitionNavigationBar = selfObject.transitionNavigationBar;
-                                selfObject.prefersNavigationBarBackgroundViewHidden = YES;
-                            }
+                            [selfObject addTransitionNavigationBarIfNeeded];
+                            [selfObject resizeTransitionNavigationBarFrame];
+                            selfObject.navigationController.navigationBar.transitionNavigationBar = selfObject.transitionNavigationBar;
+                            selfObject.prefersNavigationBarBackgroundViewHidden = YES;
                         }
                     } else {
                         [fromViewController clearTransitionNavigationBarAndReplaceStyle:NO];
                         [toViewController clearTransitionNavigationBarAndReplaceStyle:NO];
                     }
                 }
-                // call super
-                void (*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD);
+                
+                callSuperBlock();
             };
         });
         
         // 修复 UISearchController push 到导航栏隐藏的界面时，会强制把导航栏重新显示出来的 bug
         // https://github.com/Tencent/QMUI_iOS/issues/479
+        // _navigationControllerWillShowViewController:
         SEL selector = NSSelectorFromString([NSString stringWithFormat:@"_%@%@:", @"navigationController", @"WillShowViewController"]);
-        NSAssert([[UISearchController class] instancesRespondToSelector:selector], @"iOS 版本更新导致 UISearchController 无法响应方法 %@", NSStringFromSelector(selector));
+        QMUIAssert([[UISearchController class] instancesRespondToSelector:selector], @"UIViewController (NavigationBarTransition)", @"iOS 版本更新导致 UISearchController 无法响应方法 %@", NSStringFromSelector(selector));
         OverrideImplementation([UISearchController class], selector, ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UISearchController *selfObject, NSNotification *firstArgv) {
                 UIViewController *nextViewController = firstArgv.userInfo[@"UINavigationControllerNextVisibleViewController"];
@@ -413,39 +433,39 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     }
     
     // 导航栏的背景色
-    if ([vc respondsToSelector:@selector(navigationBarBarTintColor)]) {
-        UIColor *barTintColor = [vc navigationBarBarTintColor];
+    if ([vc respondsToSelector:@selector(qmui_navigationBarBarTintColor)]) {
+        UIColor *barTintColor = [vc qmui_navigationBarBarTintColor];
         navigationController.navigationBar.barTintColor = barTintColor;
     } else if (QMUICMIActivated) {
         navigationController.navigationBar.barTintColor = UINavigationBar.qmui_appearanceConfigured.barTintColor;
     }
     
     // 导航栏的背景
-    if ([vc respondsToSelector:@selector(navigationBarBackgroundImage)]) {
-        UIImage *backgroundImage = [vc navigationBarBackgroundImage];
+    if ([vc respondsToSelector:@selector(qmui_navigationBarBackgroundImage)]) {
+        UIImage *backgroundImage = [vc qmui_navigationBarBackgroundImage];
         [navigationController.navigationBar setBackgroundImage:backgroundImage forBarMetrics:UIBarMetricsDefault];
     } else if (QMUICMIActivated) {
         [navigationController.navigationBar setBackgroundImage:[UINavigationBar.qmui_appearanceConfigured backgroundImageForBarMetrics:UIBarMetricsDefault] forBarMetrics:UIBarMetricsDefault];
     }
     
     //  导航栏的 style
-    if ([vc respondsToSelector:@selector(navigationBarStyle)]) {
-        UIBarStyle barStyle = [vc navigationBarStyle];
+    if ([vc respondsToSelector:@selector(qmui_navigationBarStyle)]) {
+        UIBarStyle barStyle = [vc qmui_navigationBarStyle];
         navigationController.navigationBar.barStyle = barStyle;
     } else if (QMUICMIActivated) {
         navigationController.navigationBar.barStyle = UINavigationBar.qmui_appearanceConfigured.barStyle;
     }
     
     // 导航栏底部的分隔线
-    if ([vc respondsToSelector:@selector(navigationBarShadowImage)]) {
-        navigationController.navigationBar.shadowImage = [vc navigationBarShadowImage];
+    if ([vc respondsToSelector:@selector(qmui_navigationBarShadowImage)]) {
+        navigationController.navigationBar.shadowImage = [vc qmui_navigationBarShadowImage];
     } else if (QMUICMIActivated) {
         navigationController.navigationBar.shadowImage = NavBarShadowImage;
     }
     
     // 导航栏上控件的主题色
     UIColor *tintColor =
-    [vc respondsToSelector:@selector(navigationBarTintColor)] ? [vc navigationBarTintColor] :
+    [vc respondsToSelector:@selector(qmui_navigationBarTintColor)] ? [vc qmui_navigationBarTintColor] :
                                              QMUICMIActivated ? NavBarTintColor : nil;
     if (tintColor) {
         if (@available(iOS 11, *)) {
@@ -499,8 +519,8 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     UINavigationController *navigationController = vc.navigationController;
     
     // 导航栏title的颜色
-    if ([vc respondsToSelector:@selector(titleViewTintColor)]) {
-        UIColor *tintColor = [vc titleViewTintColor];
+    if ([vc respondsToSelector:@selector(qmui_titleViewTintColor)]) {
+        UIColor *tintColor = [vc qmui_titleViewTintColor];
         if ([vc.navigationItem.titleView isKindOfClass:QMUINavigationTitleView.class]) {
             ((QMUINavigationTitleView *)vc.navigationItem.titleView).tintColor = tintColor;
         } else if (!vc.navigationItem.titleView) {
@@ -614,8 +634,8 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     
 
     
-    UIImage *bg1 = [vc1 respondsToSelector:@selector(navigationBarBackgroundImage)] ? [vc1 navigationBarBackgroundImage] : [UINavigationBar.qmui_appearanceConfigured backgroundImageForBarMetrics:UIBarMetricsDefault];
-    UIImage *bg2 = [vc2 respondsToSelector:@selector(navigationBarBackgroundImage)] ? [vc2 navigationBarBackgroundImage] : [UINavigationBar.qmui_appearanceConfigured backgroundImageForBarMetrics:UIBarMetricsDefault];
+    UIImage *bg1 = [vc1 respondsToSelector:@selector(qmui_navigationBarBackgroundImage)] ? [vc1 qmui_navigationBarBackgroundImage] : [UINavigationBar.qmui_appearanceConfigured backgroundImageForBarMetrics:UIBarMetricsDefault];
+    UIImage *bg2 = [vc2 respondsToSelector:@selector(qmui_navigationBarBackgroundImage)] ? [vc2 qmui_navigationBarBackgroundImage] : [UINavigationBar.qmui_appearanceConfigured backgroundImageForBarMetrics:UIBarMetricsDefault];
     if (bg1 || bg2) {
         if (!bg1 || !bg2) {
             return YES;// 一个有一个没有，则需要自定义
@@ -627,8 +647,8 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     
     // 如果存在 backgroundImage，则 barTintColor、barStyle 就算存在也不会被显示出来，所以这里只判断两个 backgroundImage 都不存在的时候
     if (!bg1 && !bg2) {
-        UIColor *barTintColor1 = [vc1 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc1 navigationBarBarTintColor] : UINavigationBar.qmui_appearanceConfigured.barTintColor;
-        UIColor *barTintColor2 = [vc2 respondsToSelector:@selector(navigationBarBarTintColor)] ? [vc2 navigationBarBarTintColor] : UINavigationBar.qmui_appearanceConfigured.barTintColor;
+        UIColor *barTintColor1 = [vc1 respondsToSelector:@selector(qmui_navigationBarBarTintColor)] ? [vc1 qmui_navigationBarBarTintColor] : UINavigationBar.qmui_appearanceConfigured.barTintColor;
+        UIColor *barTintColor2 = [vc2 respondsToSelector:@selector(qmui_navigationBarBarTintColor)] ? [vc2 qmui_navigationBarBarTintColor] : UINavigationBar.qmui_appearanceConfigured.barTintColor;
         if (barTintColor1 || barTintColor2) {
             if (!barTintColor1 || !barTintColor2) {
                 return YES;
@@ -638,15 +658,15 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
             }
         }
         
-        UIBarStyle barStyle1 = [vc1 respondsToSelector:@selector(navigationBarStyle)] ? [vc1 navigationBarStyle] : UINavigationBar.qmui_appearanceConfigured.barStyle;
-        UIBarStyle barStyle2 = [vc2 respondsToSelector:@selector(navigationBarStyle)] ? [vc2 navigationBarStyle] : UINavigationBar.qmui_appearanceConfigured.barStyle;
+        UIBarStyle barStyle1 = [vc1 respondsToSelector:@selector(qmui_navigationBarStyle)] ? [vc1 qmui_navigationBarStyle] : UINavigationBar.qmui_appearanceConfigured.barStyle;
+        UIBarStyle barStyle2 = [vc2 respondsToSelector:@selector(qmui_navigationBarStyle)] ? [vc2 qmui_navigationBarStyle] : UINavigationBar.qmui_appearanceConfigured.barStyle;
         if (barStyle1 != barStyle2) {
             return YES;
         }
     }
     
-    UIImage *shadowImage1 = [vc1 respondsToSelector:@selector(navigationBarShadowImage)] ? [vc1 navigationBarShadowImage] : (vc1.navigationController.navigationBar ? vc1.navigationController.navigationBar.shadowImage : (QMUICMIActivated ? NavBarShadowImage : nil));
-    UIImage *shadowImage2 = [vc2 respondsToSelector:@selector(navigationBarShadowImage)] ? [vc2 navigationBarShadowImage] : (vc2.navigationController.navigationBar ? vc2.navigationController.navigationBar.shadowImage : (QMUICMIActivated ? NavBarShadowImage : nil));
+    UIImage *shadowImage1 = [vc1 respondsToSelector:@selector(qmui_navigationBarShadowImage)] ? [vc1 qmui_navigationBarShadowImage] : (vc1.navigationController.navigationBar ? vc1.navigationController.navigationBar.shadowImage : (QMUICMIActivated ? NavBarShadowImage : nil));
+    UIImage *shadowImage2 = [vc2 respondsToSelector:@selector(qmui_navigationBarShadowImage)] ? [vc2 qmui_navigationBarShadowImage] : (vc2.navigationController.navigationBar ? vc2.navigationController.navigationBar.shadowImage : (QMUICMIActivated ? NavBarShadowImage : nil));
     if (shadowImage1 || shadowImage2) {
         if (!shadowImage1 || !shadowImage2) {
             return YES;

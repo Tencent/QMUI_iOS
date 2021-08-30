@@ -108,25 +108,25 @@ poppingByInteractiveGestureRecognizer:(nullable UIScreenEdgePanGestureRecognizer
 @optional
 
 /// 设置 titleView 的 tintColor
-- (nullable UIColor *)titleViewTintColor;
+- (nullable UIColor *)qmui_titleViewTintColor;
 
 /// 设置导航栏的背景图，默认为 NavBarBackgroundImage
-- (nullable UIImage *)navigationBarBackgroundImage;
+- (nullable UIImage *)qmui_navigationBarBackgroundImage;
 
 /// 设置导航栏底部的分隔线图片，默认为 NavBarShadowImage，必须在 navigationBar 设置了背景图后才有效（系统限制如此）
-- (nullable UIImage *)navigationBarShadowImage;
+- (nullable UIImage *)qmui_navigationBarShadowImage;
 
 /// 设置当前导航栏的 barTintColor，默认为 NavBarBarTintColor
-- (nullable UIColor *)navigationBarBarTintColor;
+- (nullable UIColor *)qmui_navigationBarBarTintColor;
 
 /// 设置当前导航栏的 barStyle，默认为 NavBarStyle
-- (UIBarStyle)navigationBarStyle;
+- (UIBarStyle)qmui_navigationBarStyle;
 
 /// 设置当前导航栏的 UIBarButtonItem 的 tintColor，默认为NavBarTintColor
-- (nullable UIColor *)navigationBarTintColor;
+- (nullable UIColor *)qmui_navigationBarTintColor;
 
 /// 设置系统返回按钮title，如果返回nil则使用系统默认的返回按钮标题。当实现了这个方法时，会无视配置表 NeedsBackBarButtonItemTitle 的值
-- (nullable NSString *)backBarButtonItemTitleWithPreviousViewController:(nullable UIViewController *)viewController;
+- (nullable NSString *)qmui_backBarButtonItemTitleWithPreviousViewController:(nullable UIViewController *)viewController;
 
 @end
 

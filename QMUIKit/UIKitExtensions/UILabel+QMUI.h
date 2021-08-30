@@ -58,7 +58,6 @@ extern const CGFloat QMUILineHeightIdentity;
  *  @warning 除上述情况外，计算的数值都可能不准确，会返回 0。
  *
  */
-
 @property(nonatomic, assign) CGFloat qmui_lineHeight;
 
 /**
@@ -81,6 +80,21 @@ extern const CGFloat QMUILineHeightIdentity;
  */
 - (void)qmui_avoidBlendedLayersIfShowingChineseWithBackgroundColor:(UIColor *)color;
 
+@end
+
+@interface UILabel (QMUI_Debug)
+
+/**
+ 调试功能，打开后会在 label 第一行文字里把 descender、xHeight、capHeight、lineHeight 所在的位置以线条的形式标记出来。
+ 对这些属性的解释可以看这篇文章 https://www.rightpoint.com/rplabs/ios-tracking-typography
+ */
+@property(nonatomic, assign) BOOL qmui_showPrincipalLines;
+
+/**
+ 当打开 qmui_showPrincipalLines 时，通过这个属性控制线条的颜色，默认为 nil。
+ 当该属性为 nil 时，将会用 UIColorTestRed 作为线条的颜色。
+ */
+@property(nullable, nonatomic, strong) UIColor *qmui_principalLineColor;
 @end
 
 NS_ASSUME_NONNULL_END

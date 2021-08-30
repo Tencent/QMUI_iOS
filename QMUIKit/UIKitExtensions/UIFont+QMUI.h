@@ -17,16 +17,26 @@
 
 #define UIFontLightMake(size) [UIFont qmui_lightSystemFontOfSize:size]
 #define UIFontLightWithFont(_font) [UIFont qmui_lightSystemFontOfSize:_font.pointSize]
+
+#define UIFontMediumMake(size) [UIFont qmui_mediumSystemFontOfSize:size]
+#define UIFontMediumWithFont(_font) [UIFont qmui_mediumSystemFontOfSize:_font.pointSize]
+
 #define UIDynamicFontMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightNormal italic:NO]
 #define UIDynamicFontMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightNormal italic:NO]
-#define UIDynamicFontBoldMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightBold italic:NO]
-#define UIDynamicFontBoldMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightBold italic:NO]
+
 #define UIDynamicFontLightMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightLight italic:NO]
 #define UIDynamicFontLightMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightLight italic:NO]
+
+#define UIDynamicFontMediumMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightMedium italic:NO]
+#define UIDynamicFontMediumMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightMedium italic:NO]
+
+#define UIDynamicFontBoldMake(_pointSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize weight:QMUIFontWeightBold italic:NO]
+#define UIDynamicFontBoldMakeWithLimit(_pointSize, _upperLimitSize, _lowerLimitSize) [UIFont qmui_dynamicSystemFontOfSize:_pointSize upperLimitSize:_upperLimitSize lowerLimitSize:_lowerLimitSize weight:QMUIFontWeightBold italic:NO]
 
 typedef NS_ENUM(NSUInteger, QMUIFontWeight) {
     QMUIFontWeightLight,    // 对应 UIFontWeightLight
     QMUIFontWeightNormal,   // 对应 UIFontWeightRegular
+    QMUIFontWeightMedium,   // 对应 UIFontWeightMedium
     QMUIFontWeightBold      // 对应 UIFontWeightSemibold
 };
 
@@ -38,8 +48,19 @@ typedef NS_ENUM(NSUInteger, QMUIFontWeight) {
  *  @param fontSize 字体大小
  *
  *  @return 变细的系统字体的 UIFont 对象
+ *  @see UIFontLightMake
  */
 + (UIFont *)qmui_lightSystemFontOfSize:(CGFloat)fontSize;
+
+/**
+ *  返回系统 Medium 字重的字体
+ *
+ *  @param fontSize 字体大小
+ *
+ *  @return Medium 系统字体的 UIFont 对象
+ *  @see UIFontMediumMake
+ */
++ (UIFont *)qmui_mediumSystemFontOfSize:(CGFloat)fontSize;
 
 /**
  *  根据需要生成一个 UIFont 对象并返回

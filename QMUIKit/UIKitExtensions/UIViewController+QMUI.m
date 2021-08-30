@@ -87,6 +87,7 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
         // https://github.com/Tencent/QMUI_iOS/issues/218
         if (@available(iOS 11, *)) {
             if (!QMUICMIActivated || ShouldFixTabBarSafeAreaInsetsBug) {
+                // -[UIViewController _setContentOverlayInsets:andLeftMargin:rightMargin:]
                 OverrideImplementation([UIViewController class], NSSelectorFromString([NSString stringWithFormat:@"_%@:%@:%@:",@"setContentOverlayInsets", @"andLeftMargin", @"rightMargin"]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                     return ^(UIViewController *selfObject, UIEdgeInsets insets, CGFloat leftMargin, CGFloat rightMargin) {
 
@@ -241,6 +242,19 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
     }
     [string appendString:@"\t\t\t\t\t\t)"];
     return [string copy];
+}
+
++ (BOOL)qmui_isSystemContainerViewController {
+    for (Class clz in @[UINavigationController.class, UITabBarController.class, UISplitViewController.class]) {
+        if ([self isSubclassOfClass:clz]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
+- (BOOL)qmui_isSystemContainerViewController {
+    return self.class.qmui_isSystemContainerViewController;
 }
 
 static char kAssociatedObjectKey_visibleState;
@@ -452,7 +466,7 @@ static char kAssociatedObjectKey_visibleState;
 
 - (BOOL)qmui_prefersLargeTitleDisplayed {
     if (@available(iOS 11.0, *)) {
-        NSAssert(self.navigationController, @"必现在 navigationController 栈内才能正确判断");
+        QMUIAssert(self.navigationController, @"UIViewController (QMUI)", @"%s 必现在 navigationController 栈内才能正确判断", __func__);
         UINavigationBar *navigationBar = self.navigationController.navigationBar;
         if (!navigationBar.prefersLargeTitles) {
             return NO;

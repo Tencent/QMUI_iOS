@@ -74,7 +74,7 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
         [self addThemeIdentifier:currentThemeIdentifier theme:theme];
     }
     
-    NSAssert([self._themeIdentifiers containsObject:currentThemeIdentifier], @"%@ should be added to QMUIThemeManager.themes before it becomes current theme identifier.", currentThemeIdentifier);
+    QMUIAssert([self._themeIdentifiers containsObject:currentThemeIdentifier], @"QMUIThemeManager", @"%@ should be added to QMUIThemeManager.themes before it becomes current theme identifier.", currentThemeIdentifier);
     
     BOOL themeChanged = _currentThemeIdentifier && ![_currentThemeIdentifier isEqual:currentThemeIdentifier];
     
@@ -92,7 +92,7 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
         [self addThemeIdentifier:identifier theme:currentTheme];
     }
     
-    NSAssert([self._themes containsObject:currentTheme], @"%@ should be added to QMUIThemeManager.themes before it becomes current theme.", currentTheme);
+    QMUIAssert([self._themes containsObject:currentTheme], @"QMUIThemeManager", @"%@ should be added to QMUIThemeManager.themes before it becomes current theme.", currentTheme);
     
     BOOL themeChanged = _currentTheme && ![_currentTheme isEqual:currentTheme];
     
@@ -125,8 +125,8 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
 }
 
 - (void)addThemeIdentifier:(NSObject<NSCopying> *)identifier theme:(NSObject *)theme {
-    NSAssert(![self._themeIdentifiers containsObject:identifier], @"unable to add duplicate theme identifier");
-    NSAssert(![self._themes containsObject:theme], @"unable to add duplicate theme");
+    QMUIAssert(![self._themeIdentifiers containsObject:identifier], @"QMUIThemeManager", @"unable to add duplicate theme identifier");
+    QMUIAssert(![self._themes containsObject:theme], @"QMUIThemeManager", @"unable to add duplicate theme");
     
     [self._themeIdentifiers addObject:identifier];
     [self._themes addObject:theme];

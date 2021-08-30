@@ -23,6 +23,7 @@
 
 @property(nonatomic, strong, readwrite) NSPointerArray *delegates;
 @property(nonatomic, strong) NSInvocation *forwardingInvocation;
+@property(nonatomic, assign) SEL inquiringSelector;
 @end
 
 @implementation QMUIMultipleDelegates
@@ -127,6 +128,18 @@
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
+    
+    if (self.inquiringSelector == aSelector) {
+        /**
+         这个判断是为了避免类似 RACDelegateProxy 的处理导致的死循环：
+         RACDelegateProxy 会做以下事情：
+          1.保存之前的代理
+          2.把对象代理修改为 RACDelegateProxy
+         由于 QMUIMultipleDelegates 会拦截操作 2，保持原始代理一直是 QMUIMultipleDelegates 不被修改，同时把 RACDelegateProxy 添加到 delegates，而 RACDelegateProxy 操作 1 又保存了 QMUIMultipleDelegates 实例，当对其调用 respondsToSelector 时，又会转发到 QMUIMultipleDelegates 造成死循环，所以要做这个保护。
+         */
+        return NO;
+    }
+    
     if ([super respondsToSelector:aSelector]) {
         return YES;
     }
@@ -140,7 +153,9 @@
         // 对 QMUIMultipleDelegates 额外处理的解释在这里：https://github.com/Tencent/QMUI_iOS/issues/357
         BOOL delegateCanRespondToSelector;
         if ([delegate isProxy] || [delegate isKindOfClass:QMUIMultipleDelegates.class]) {
+            self.inquiringSelector = aSelector;
             delegateCanRespondToSelector = [delegate respondsToSelector:aSelector];
+            self.inquiringSelector = NULL;
         } else {
             delegateCanRespondToSelector = class_respondsToSelector(object_getClass(delegate), aSelector);
         }

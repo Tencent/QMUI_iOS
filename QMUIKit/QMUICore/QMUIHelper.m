@@ -27,6 +27,26 @@
 const CGPoint QMUIBadgeInvalidateOffset = {-1000, -1000};
 NSString *const kQMUIResourcesBundleName = @"QMUIResources";
 
+@interface _QMUIPortraitViewController : UIViewController
+@end
+
+@implementation _QMUIPortraitViewController
+
+- (BOOL)shouldAutorotate {
+    return NO;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskPortrait;
+}
+
+@end
+
+@interface QMUIHelper ()
+
+@property(nonatomic, assign) BOOL shouldPreventAppearanceUpdating;
+@end
+
 @implementation QMUIHelper (Bundle)
 
 + (UIImage *)imageWithName:(NSString *)name {
@@ -201,22 +221,17 @@ static CGFloat pixelOne = -1.0f;
 
 + (void)inspectContextSize:(CGSize)size {
     if (!CGSizeIsValidated(size)) {
-        NSAssert(NO, @"QMUI CGPostError, %@:%d %s, 非法的size：%@\n%@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, __PRETTY_FUNCTION__, NSStringFromCGSize(size), [NSThread callStackSymbols]);
+        QMUIAssert(NO, @"QMUIHelper (UIGraphic)", @"QMUI CGPostError, %@:%d %s, 非法的size：%@\n%@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, __PRETTY_FUNCTION__, NSStringFromCGSize(size), [NSThread callStackSymbols]);
     }
 }
 
-+ (void)inspectContextIfInvalidatedInDebugMode:(CGContextRef)context {
++ (BOOL)inspectContextIfInvalidated:(CGContextRef)context {
     if (!context) {
-        // crash了就找zhoon或者molice
-        NSAssert(NO, @"QMUI CGPostError, %@:%d %s, 非法的context：%@\n%@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, __PRETTY_FUNCTION__, context, [NSThread callStackSymbols]);
+        // crash 了就找 molice
+        QMUIAssert(NO, @"QMUIHelper (UIGraphic)", @"QMUI CGPostError, %@:%d %s, 非法的context：%@\n%@", [[NSString stringWithUTF8String:__FILE__] lastPathComponent], __LINE__, __PRETTY_FUNCTION__, context, [NSThread callStackSymbols]);
+        return NO;
     }
-}
-
-+ (BOOL)inspectContextIfInvalidatedInReleaseMode:(CGContextRef)context {
-    if (context) {
-        return YES;
-    }
-    return NO;
+    return YES;
 }
 
 @end
@@ -482,7 +497,9 @@ static NSInteger isNotchedScreen = -1;
                     UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
                     peripheryInsets = window.safeAreaInsets;
                     if (peripheryInsets.bottom <= 0) {
-                        UIViewController *viewController = [UIViewController new];
+                        // 使用一个强制竖屏的 rootViewController，避免一个仅支持竖屏的 App 在横屏启动时会受这里创建的 window 的影响，导致状态栏、safeAreaInsets 等错乱
+                        // https://github.com/Tencent/QMUI_iOS/issues/1263
+                        _QMUIPortraitViewController *viewController = [_QMUIPortraitViewController new];
                         window.rootViewController = viewController;
                         if (CGRectGetMinY(viewController.view.frame) > 20) {
                             peripheryInsets.bottom = 1;
@@ -814,6 +831,23 @@ static NSInteger isHighPerformanceDevice = -1;
         return UIStatusBarStyleDefault;
 }
 
+- (void)handleAppWillEnterForeground:(NSNotification *)notification {
+    QMUIHelper.sharedInstance.shouldPreventAppearanceUpdating = NO;
+}
+
+- (void)handleAppEnterBackground:(NSNotification *)notification {
+    QMUIHelper.sharedInstance.shouldPreventAppearanceUpdating = YES;
+}
+
++ (BOOL)canUpdateAppearance {
+    // 当配置表被触发时，尚未走到 handleAppDidFinishLaunching，而由于 Objective-C 的 BOOL 类型默认是 NO，所以这里刚好会返回 YES。至于 App 完全启动完成后，就由 notification 的回调来管理 shouldPreventAppearanceUpdating 的值。
+    BOOL shouldPrevent = QMUIHelper.sharedInstance.shouldPreventAppearanceUpdating;
+    if (shouldPrevent) {
+        return NO;
+    }
+    return YES;
+}
+
 @end
 
 @implementation QMUIHelper (Animation)
@@ -882,6 +916,9 @@ static NSInteger isHighPerformanceDevice = -1;
         [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleKeyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleAppSizeWillChange:) name:QMUIAppSizeWillChangeNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleDeviceOrientationNotification:) name:UIDeviceOrientationDidChangeNotification object:nil];
+        
+        [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleAppWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:instance selector:@selector(handleAppEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
     });
     return instance;
 }

@@ -796,7 +796,7 @@
             return;
         }
         
-        NSAssert(viewController.navigationController == self, @"navigationController is nil");
+        QMUIAssert(viewController.navigationController == self, @"QMUINavigationTitleView", @"不存在 UINavigationController");
         
         QMUINavigationTitleView *navigationTitleView = (QMUINavigationTitleView *)titleView;
         UIView *largeTitleView = self.navigationBar.qmui_largeTitleView;

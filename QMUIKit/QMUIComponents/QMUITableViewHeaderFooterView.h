@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger, QMUITableViewHeaderFooterViewType) {
 @property(nonatomic, assign) QMUITableViewHeaderFooterViewType type;
 
 @property(nonatomic, strong, readonly) UILabel *titleLabel;
-@property(nonatomic, strong) UIView *accessoryView;
+@property(nonatomic, strong) __kindof UIView *accessoryView;
 
 @property(nonatomic, assign) UIEdgeInsets contentEdgeInsets;
 @property(nonatomic, assign) UIEdgeInsets accessoryViewMargins;

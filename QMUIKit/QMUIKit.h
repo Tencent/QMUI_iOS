@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.2.3";
+static NSString * const QMUI_VERSION = @"4.3.0";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -243,10 +243,6 @@ static NSString * const QMUI_VERSION = @"4.2.3";
 #import "QMUILabel.h"
 #endif
 
-#if __has_include("QMUILinkButton.h")
-#import "QMUILinkButton.h"
-#endif
-
 #if __has_include("QMUILog+QMUIConsole.h")
 #import "QMUILog+QMUIConsole.h"
 #endif
@@ -439,10 +435,6 @@ static NSString * const QMUI_VERSION = @"4.2.3";
 #import "QMUIToolbarButton.h"
 #endif
 
-#if __has_include("QMUIVisualEffectView.h")
-#import "QMUIVisualEffectView.h"
-#endif
-
 #if __has_include("QMUIWeakObjectContainer.h")
 #import "QMUIWeakObjectContainer.h"
 #endif
@@ -457,6 +449,10 @@ static NSString * const QMUI_VERSION = @"4.2.3";
 
 #if __has_include("UIActivityIndicatorView+QMUI.h")
 #import "UIActivityIndicatorView+QMUI.h"
+#endif
+
+#if __has_include("UIApplication+QMUI.h")
+#import "UIApplication+QMUI.h"
 #endif
 
 #if __has_include("UIBarItem+QMUI.h")

@@ -24,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// item 里的文字
 @property(nonatomic, copy, nullable) NSString *title;
 
-/// item 的高度，默认为 -1。小于 0 的值均表示高度以 QMUIPopupMenuView.itemHeight 为准，当需要给某个 item 指定特定高度时才需要用这个 height 属性。
+/// item 的高度，默认为 -1，-1 表示高度以 QMUIPopupMenuView.itemHeight 为准。如果设置为 QMUIViewSelfSizingHeight，则表示高度由 -[self sizeThatFits:] 返回的值决定。
 @property(nonatomic, assign) CGFloat height;
 
 /// item 被点击时的事件处理，需要在内部自行隐藏 QMUIPopupMenuView。

@@ -30,6 +30,9 @@
 /// 指定每一行的高度，默认为 0
 @property(nonatomic, assign) IBInspectable CGFloat rowHeight;
 
+/// 内部的 padding，默认为 UIEdgeInsetsZero
+@property(nonatomic, assign) UIEdgeInsets padding;
+
 /// 指定 item 之间的分隔线宽度，默认为 0
 @property(nonatomic, assign) IBInspectable CGFloat separatorWidth;
 

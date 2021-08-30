@@ -243,11 +243,15 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 }
 
 - (UIImage *)resizableImageWithCapInsets:(UIEdgeInsets)capInsets {
-    return [self.qmui_rawImage resizableImageWithCapInsets:capInsets];
+    return [UIImage qmui_imageWithThemeProvider:^UIImage * _Nonnull(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme) {
+        return [self.qmui_rawImage resizableImageWithCapInsets:capInsets];
+    }];
 }
 
 - (UIImage *)resizableImageWithCapInsets:(UIEdgeInsets)capInsets resizingMode:(UIImageResizingMode)resizingMode {
-    return [self.qmui_rawImage resizableImageWithCapInsets:capInsets resizingMode:resizingMode];
+    return [UIImage qmui_imageWithThemeProvider:^UIImage * _Nonnull(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme) {
+        return [self.qmui_rawImage resizableImageWithCapInsets:capInsets resizingMode:resizingMode];
+    }];
 }
 
 - (UIEdgeInsets)capInsets {

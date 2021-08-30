@@ -43,7 +43,7 @@
 - (void)setCellDataSections:(NSArray<NSArray<QMUIStaticTableViewCellData *> *> *)cellDataSections {
 #ifdef DEBUG
     [cellDataSections qmui_enumerateNestedArrayWithBlock:^(QMUIStaticTableViewCellData *obj, BOOL * _Nonnull stop) {
-        NSAssert([obj isKindOfClass:QMUIStaticTableViewCellData.class], @"cellDataSections 内只允许出现 QMUIStatictableViewCellData 类型的元素");
+        QMUIAssert([obj isKindOfClass:QMUIStaticTableViewCellData.class], NSStringFromClass(self.class), @"cellDataSections 内只允许出现 QMUIStatictableViewCellData 类型的元素");
     }];
 #endif
     _cellDataSections = cellDataSections;

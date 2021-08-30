@@ -837,7 +837,7 @@
     appearance.preferLayoutDirection = QMUIPopupContainerViewLayoutDirectionAbove;
     appearance.distanceBetweenSource = 5;
     appearance.safetyMarginsOfSuperview = UIEdgeInsetsMake(10, 10, 10, 10);
-    appearance.backgroundColor = UIColorWhite;
+    appearance.backgroundColor = UIColorWhite;// 如果先设置了 UIView.appearance.backgroundColor，再使用最传统的 method_exchangeImplementations 交换 UIView.setBackgroundColor 方法，则会 crash。QMUI 这里是在 +initialize 时设置的，业务如果要 hook -[UIView setBackgroundColor:] 则需要比 +initialize 更早才行
     appearance.maskViewBackgroundColor = UIColorMask;
     appearance.highlightedBackgroundColor = nil;
     appearance.shadowColor = UIColorMakeWithRGBA(0, 0, 0, .1);

@@ -38,6 +38,12 @@
 /// setHighlighted: 方法的回调 block
 @property(nonatomic, copy) void (^qmui_setHighlightedBlock)(BOOL highlighted);
 
+/// setSelected: 方法的回调 block
+@property(nonatomic, copy) void (^qmui_setSelectedBlock)(BOOL selected);
+
+/// setEnabled: 方法的回调 block
+@property(nonatomic, copy) void (^qmui_setEnabledBlock)(BOOL enabled);
+
 /// 等同于 addTarget:action:forControlEvents:UIControlEventTouchUpInside
 @property(nonatomic, copy) void (^qmui_tapBlock)(__kindof UIControl *sender);
 

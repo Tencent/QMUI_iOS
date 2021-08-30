@@ -22,9 +22,6 @@
     dispatch_once(&onceToken, ^{
         ExtendImplementationOfNonVoidMethodWithSingleArgument([UISwitch class], @selector(initWithFrame:), CGRect, UISwitch *, ^UISwitch *(UISwitch *selfObject, CGRect firstArgv, UISwitch *originReturnValue) {
             if (QMUICMIActivated) {
-                if (SwitchTintColor) {
-                    selfObject.tintColor = SwitchTintColor;
-                }
                 if (SwitchOffTintColor) {
                     selfObject.qmui_offTintColor = SwitchOffTintColor;
                 }

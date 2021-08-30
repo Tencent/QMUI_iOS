@@ -197,6 +197,17 @@ extern const CGFloat QMUIViewSelfSizingHeight;
 /// 等价于 CGRectGetHeight(frame)
 @property(nonatomic, assign) CGFloat qmui_height;
 
+/// 等价于 self.frame.size
+@property(nonatomic, assign) CGSize qmui_size;
+
+extern const CGSize QMUIViewFixedSizeNone;
+
+/// 把当前 view 的大小设置为某个值并且固定下来（保证 setFrame:、setBounds: 等操作也无法影响它的 size），sizeThatFits: 返回的结果也以这个为准（但如果业务重写了就以业务的为准）
+/// 默认为 QMUIViewFixedSizeNone，也即不处理（如果你设置过 fixedSize，后续又希望去掉这个特性，也可把 fixedSize 赋值为 QMUIViewFixedSizeNone 来清空）。
+/// @example 例如 UIButton 的 imageView 是无法固定大小的，但如果你要把一张网络上下载的图（大小 不确定）作为 image 放到 button 里，就可以用 qmui_fixedSize 将 imageView 限制为某个尺寸，从而兼容不同的网络图片。
+/// @warning 内部使用 qmui_sizeThatFitsBlock 实现（因为某些系统的 View 重写了 UIView 的 sizeThatFits，为了保证 qmui_fixedSize 生效，只能用 qmui_sizeThatFitsBlock），所以不要同时使用两者。
+@property(nonatomic, assign) CGSize qmui_fixedSize;
+
 /// 保持其他三个边缘的位置不变的情况下，将顶边缘拓展到某个指定的位置，注意高度会跟随变化。
 @property(nonatomic, assign) CGFloat qmui_extendToTop;
 
@@ -243,8 +254,6 @@ extern const CGFloat QMUIViewSelfSizingHeight;
 @property(nonatomic, assign) BOOL qmui_shouldShowDebugColor;
 /// 是否每个view的背景色随机，如果不随机则统一使用半透明红色，默认NO
 @property(nonatomic, assign) BOOL qmui_needsDifferentDebugColor;
-/// 标记一个view是否已经被添加了debug背景色，外部一般不使用
-@property(nonatomic, assign, readonly) BOOL qmui_hasDebugColor;
 
 @end
 

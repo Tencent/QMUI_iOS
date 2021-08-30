@@ -75,7 +75,6 @@
 
 - (void)startAnimation {
     if (!self.displayLink) {
-        NSAssert(NO, @"QMUIDisplayLinkAnimation 使用错误，当前没有 CADisplayLink 对象，请查看头文件再试试。");
         return;
     }
     if (self.displayLink.paused) {
@@ -109,7 +108,6 @@
 
 - (void)handleDisplayLink:(CADisplayLink *)displayLink {
     if (!self.animation && !self.animations) {
-        NSAssert(NO, @"没有动画Block");
         return;
     }
     NSTimeInterval oneFrame = 1.0 / [self preferredFramesPerSecond];

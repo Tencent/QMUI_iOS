@@ -32,6 +32,10 @@
     return [[self alloc] initWithObject:object];
 }
 
+- (BOOL)isQMUIWeakObjectContainer {
+    return YES;
+}
+
 - (id)forwardingTargetForSelector:(SEL)selector {
     return _object;
 }
@@ -46,6 +50,9 @@
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
+    if (aSelector == @selector(isQMUIWeakObjectContainer)) {
+        return YES;
+    }
     return [_object respondsToSelector:aSelector];
 }
 

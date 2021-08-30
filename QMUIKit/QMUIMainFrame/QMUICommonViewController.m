@@ -249,23 +249,23 @@
     UINavigationBar *navigationBar = self.navigationController.navigationBar;
     if (!navigationBar) return;
     
-    if ([self respondsToSelector:@selector(navigationBarBackgroundImage)]) {
-        [navigationBar setBackgroundImage:[self navigationBarBackgroundImage] forBarMetrics:UIBarMetricsDefault];
+    if ([self respondsToSelector:@selector(qmui_navigationBarBackgroundImage)]) {
+        [navigationBar setBackgroundImage:[self qmui_navigationBarBackgroundImage] forBarMetrics:UIBarMetricsDefault];
     }
-    if ([self respondsToSelector:@selector(navigationBarBarTintColor)]) {
-        navigationBar.barTintColor = [self navigationBarBarTintColor];
+    if ([self respondsToSelector:@selector(qmui_navigationBarBarTintColor)]) {
+        navigationBar.barTintColor = [self qmui_navigationBarBarTintColor];
     }
-    if ([self respondsToSelector:@selector(navigationBarStyle)]) {
-        navigationBar.barStyle = [self navigationBarStyle];
+    if ([self respondsToSelector:@selector(qmui_navigationBarStyle)]) {
+        navigationBar.barStyle = [self qmui_navigationBarStyle];
     }
-    if ([self respondsToSelector:@selector(navigationBarShadowImage)]) {
-        navigationBar.shadowImage = [self navigationBarShadowImage];
+    if ([self respondsToSelector:@selector(qmui_navigationBarShadowImage)]) {
+        navigationBar.shadowImage = [self qmui_navigationBarShadowImage];
     }
-    if ([self respondsToSelector:@selector(navigationBarTintColor)]) {
-        navigationBar.tintColor = [self navigationBarTintColor];
+    if ([self respondsToSelector:@selector(qmui_navigationBarTintColor)]) {
+        navigationBar.tintColor = [self qmui_navigationBarTintColor];
     }
-    if ([self respondsToSelector:@selector(titleViewTintColor)]) {
-        self.titleView.tintColor = [self titleViewTintColor];
+    if ([self respondsToSelector:@selector(qmui_titleViewTintColor)]) {
+        self.titleView.tintColor = [self qmui_titleViewTintColor];
     }
 }
 

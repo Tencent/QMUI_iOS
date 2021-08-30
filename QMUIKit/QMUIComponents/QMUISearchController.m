@@ -52,11 +52,22 @@ BeginIgnoreDeprecatedWarning
     }
 }
 
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    if ([self.delegate isKindOfClass:QMUISearchController.class]) {
+        QMUISearchController *searchController = (QMUISearchController *)self.delegate;
+        if (searchController.emptyViewShowing) {
+            [searchController layoutEmptyView];
+        }
+    }
+}
+
 @end
 
 @interface QMUICustomSearchController : UISearchController
 
 @property(nonatomic, strong) UIView *customDimmingView;
+@property(nonatomic, strong) UIColor *dimmingColor;
 @end
 
 @implementation QMUICustomSearchController
@@ -117,14 +128,14 @@ BeginIgnoreDeprecatedWarning
 
 @implementation QMUISearchController
 
-- (instancetype)initWithContentsViewController:(UIViewController *)viewController {
+- (instancetype)initWithContentsViewController:(UIViewController *)viewController resultsTableViewStyle:(UITableViewStyle)resultsTableViewStyle {
     if (self = [self initWithNibName:nil bundle:nil]) {
         // 将 definesPresentationContext 置为 YES 有两个作用：
         // 1、保证从搜索结果界面进入子界面后，顶部的searchBar不会依然停留在navigationBar上
         // 2、使搜索结果界面的tableView的contentInset.top正确适配searchBar
         viewController.definesPresentationContext = YES;
         
-        QMUISearchResultsTableViewController *searchResultsViewController = [[QMUISearchResultsTableViewController alloc] init];
+        QMUISearchResultsTableViewController *searchResultsViewController = [[QMUISearchResultsTableViewController alloc] initWithStyle:resultsTableViewStyle];
         searchResultsViewController.delegate = self;
         self.searchController = [[QMUICustomSearchController alloc] initWithSearchResultsController:searchResultsViewController];
         self.searchController.searchResultsUpdater = self;
@@ -141,6 +152,10 @@ BeginIgnoreDeprecatedWarning
     return self;
 }
 
+- (instancetype)initWithContentsViewController:(UIViewController *)viewController {
+    return [self initWithContentsViewController:viewController resultsTableViewStyle:UITableViewStylePlain];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // 主动触发 loadView，如果不这么做，那么有可能直到 QMUISearchController 被销毁，这期间 self.searchController 都没有被触发 loadView，然后在 dealloc 时就会报错，提示尝试在释放 self.searchController 时触发了 self.searchController 的 loadView
@@ -151,6 +166,41 @@ BeginIgnoreDeprecatedWarning
     _searchResultsDelegate = searchResultsDelegate;
     self.tableView.dataSource = _searchResultsDelegate;
     self.tableView.delegate = _searchResultsDelegate;
+}
+
+- (void)setDimmingColor:(UIColor *)dimmingColor {
+    _dimmingColor = dimmingColor;
+    self.searchController.dimmingColor = dimmingColor;
+    [QMUIHelper executeBlock:^{
+        // - [UIDimmingView updateBackgroundColor]
+        OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"UI", @"Dimming", @"View", nil]), NSSelectorFromString([NSString qmui_stringByConcat:@"update", @"Background", @"Color", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject) {
+                
+                for (UIView *subview in selfObject.superview.subviews) {
+                    if ([NSStringFromClass(subview.class) isEqualToString:[NSString qmui_stringByConcat:@"_", @"UISearchController", @"View", nil]]) {
+                        UISearchController *searchController = subview.qmui_viewController;
+                        if ([searchController isKindOfClass:UISearchController.class]) {
+                            if ([searchController respondsToSelector:@selector(dimmingColor)]) {
+                                BeginIgnorePerformSelectorLeaksWarning
+                                UIColor *color = [searchController performSelector:@selector(dimmingColor)];
+                                EndIgnorePerformSelectorLeaksWarning
+                                if (color) {
+                                    [selfObject qmui_performSelector:@selector(setDimmingColor:) withArguments:&color, nil];
+                                }
+                            }
+                        }
+                        
+                        break;
+                    }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+            };
+        });
+    } oncePerIdentifier:@"QMUISearchController dimmingColor"];
 }
 
 - (BOOL)isActive {
@@ -213,7 +263,7 @@ BeginIgnoreDeprecatedWarning
         UIView *superview = self.searchController.searchResultsController.view;
         [superview addSubview:self.emptyView];
     } else {
-        NSAssert(NO, @"QMUISearchController无法为emptyView找到合适的superview");
+        QMUIAssert(NO, NSStringFromClass(self.class), @"QMUISearchController 无法为 emptyView 找到合适的 superview");
     }
     
     [self layoutEmptyView];

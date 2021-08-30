@@ -32,7 +32,6 @@
 #import "QMUIButton.h"
 #import "QMUIFillButton.h"
 #import "QMUIGhostButton.h"
-#import "QMUILinkButton.h"
 #import "QMUIConsole.h"
 #import "QMUIEmotionView.h"
 #import "QMUIEmptyView.h"
@@ -45,7 +44,6 @@
 #import "QMUISlider.h"
 #import "QMUITextField.h"
 #import "QMUITextView.h"
-#import "QMUIVisualEffectView.h"
 #import "QMUIToastBackgroundView.h"
 #import "QMUIBadgeProtocol.h"
 
@@ -118,7 +116,6 @@
                                        NSStringFromClass(QMUIFillButton.class):                     @[NSStringFromSelector(@selector(fillColor)),
                                                                                                       NSStringFromSelector(@selector(titleTextColor)),],
                                        NSStringFromClass(QMUIGhostButton.class):                    @[NSStringFromSelector(@selector(ghostColor)),],
-                                       NSStringFromClass(QMUILinkButton.class):                     @[NSStringFromSelector(@selector(underlineColor)),],
                                        NSStringFromClass(QMUIConsole.class):                        @[NSStringFromSelector(@selector(searchResultHighlightedBackgroundColor)),],
                                        NSStringFromClass(QMUIEmotionView.class):                    @[NSStringFromSelector(@selector(sendButtonBackgroundColor)),],
                                        NSStringFromClass(QMUIEmptyView.class):                      @[NSStringFromSelector(@selector(textLabelTextColor)),
@@ -140,7 +137,6 @@
                                                                                                       NSStringFromSelector(@selector(thumbShadowColor)),],
                                        NSStringFromClass(QMUITextField.class):                      @[NSStringFromSelector(@selector(placeholderColor)),],
                                        NSStringFromClass(QMUITextView.class):                       @[NSStringFromSelector(@selector(placeholderColor)),],
-                                       NSStringFromClass(QMUIVisualEffectView.class):               @[NSStringFromSelector(@selector(foregroundColor)),],
                                        NSStringFromClass(QMUIToastBackgroundView.class):            @[NSStringFromSelector(@selector(styleColor)),],
                                        
                                        // UITextField 支持富文本，因此不能重新设置 textColor 那些属性，会令原有的富文本信息丢失，所以这里直接把文字重新赋值进去即可
@@ -449,7 +445,8 @@
                             }
                         }];
                     }
-                    if (attributedTextContainsDynamicColor) return YES;
+                    BOOL textColorIsDynamicColor = selfObject.textColor.qmui_isQMUIDynamicColor;
+                    if (attributedTextContainsDynamicColor || textColorIsDynamicColor) return YES;
                     
                     BOOL (*originSelectorIMP)(id, SEL);
                     originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();

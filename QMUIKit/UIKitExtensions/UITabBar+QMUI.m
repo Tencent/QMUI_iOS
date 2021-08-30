@@ -21,6 +21,7 @@
 #import "UIView+QMUI.h"
 #import "UINavigationController+QMUI.h"
 #import "UIVisualEffectView+QMUI.h"
+#import "UIApplication+QMUI.h"
 
 NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 NSString *const kShouldCheckTabBarHiddenKey = @"kShouldCheckTabBarHiddenKey";
@@ -120,23 +121,32 @@ QMUISynthesizeBOOLProperty(qmuitb_hasSetEffectForegroundColor, setQmuitb_hasSetE
         
         OverrideImplementation([UITabBar class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UITabBar *selfObject, CGRect frame) {
-                if (QMUICMIActivated && ShouldFixTabBarTransitionBugInIPhoneX && IOS_VERSION < 11.2 && IS_58INCH_SCREEN) {
-                    if (CGRectGetHeight(frame) == TabBarHeight && CGRectGetMaxY(frame) < CGRectGetHeight(selfObject.superview.bounds)) {
-                        // iOS 11 在界面 push 的过程中 tabBar 会瞬间往上跳，所以做这个修复。这个 bug 在 iOS 11.2 里已被系统修复。
-                        // https://github.com/Tencent/QMUI_iOS/issues/217
-                        frame = CGRectSetY(frame, CGRectGetHeight(selfObject.superview.bounds) - CGRectGetHeight(frame));
-                    }
-                }
                 
-                // 修复这个 bug：https://github.com/Tencent/QMUI_iOS/issues/309
-                if (@available(iOS 11, *)) {
-                    if (IS_NOTCHED_SCREEN && ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32))) {// 只关注全面屏设备下的这两种非正常的 tabBar 高度即可
-                        CGFloat bottomSafeAreaInsets = selfObject.safeAreaInsets.bottom > 0 ? selfObject.safeAreaInsets.bottom : selfObject.superview.safeAreaInsets.bottom;// 注意，如果只是拿 selfObject.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
-                        if (bottomSafeAreaInsets == CGRectGetHeight(selfObject.frame)) {
-                            return;// 由于这个系统 bug https://github.com/Tencent/QMUI_iOS/issues/446，这里先暂时屏蔽本次 frame 变化
+                if (UIApplication.sharedApplication.qmui_didFinishLaunching) {
+                    if (QMUICMIActivated && ShouldFixTabBarTransitionBugInIPhoneX && IOS_VERSION < 11.2 && IS_58INCH_SCREEN) {
+                        if (CGRectGetHeight(frame) == TabBarHeight && CGRectGetMaxY(frame) < CGRectGetHeight(selfObject.superview.bounds)) {
+                            // iOS 11 在界面 push 的过程中 tabBar 会瞬间往上跳，所以做这个修复。这个 bug 在 iOS 11.2 里已被系统修复。
+                            // https://github.com/Tencent/QMUI_iOS/issues/217
+                            frame = CGRectSetY(frame, CGRectGetHeight(selfObject.superview.bounds) - CGRectGetHeight(frame));
                         }
-                        frame.size.height += bottomSafeAreaInsets;
-                        frame.origin.y -= bottomSafeAreaInsets;
+                    }
+                    
+                    // [UIKit Bug] iOS 11-12，opaque 的 tabBar 在某些情况下会高度塌陷
+                    // https://github.com/Tencent/QMUI_iOS/issues/309
+                    // [UIKit Bug] iOS 11-12，全面屏设备下，带 TabBar 的界面在 push/pop 后，UIScrollView 的滚动位置可能发生变化
+                    // https://github.com/Tencent/QMUI_iOS/issues/934
+                    if (@available(iOS 13.0, *)) {
+                    } else {
+                        if (@available(iOS 11, *)) {
+                            if (IS_NOTCHED_SCREEN && ((CGRectGetHeight(frame) == 49 || CGRectGetHeight(frame) == 32))) {// 只关注全面屏设备下的这两种非正常的 tabBar 高度即可
+                                CGFloat bottomSafeAreaInsets = selfObject.safeAreaInsets.bottom > 0 ? selfObject.safeAreaInsets.bottom : selfObject.superview.safeAreaInsets.bottom;// 注意，如果只是拿 selfObject.safeAreaInsets 判断，会肉眼看到高度的跳变，因此引入 superview 的值（虽然理论上 tabBar 不一定都会布局到 UITabBarController.view 的底部）
+                                if (bottomSafeAreaInsets == CGRectGetHeight(selfObject.frame)) {
+                                    return;// 由于这个系统 bug https://github.com/Tencent/QMUI_iOS/issues/446，这里先暂时屏蔽本次 frame 变化
+                                }
+                                frame.size.height += bottomSafeAreaInsets;
+                                frame.origin.y -= bottomSafeAreaInsets;
+                            }
+                        }
                     }
                 }
                 
@@ -249,55 +259,34 @@ QMUISynthesizeBOOLProperty(qmuitb_hasSetEffectForegroundColor, setQmuitb_hasSetE
             });   
         }
         
-        // iOS 13 下如果以 UITabBarAppearance 的方式将 UITabBarItem 的 font 大小设置为超过默认的 10，则会出现布局错误，文字被截断，所以这里做了个兼容
-        // iOS 14.0 测试过已不存在该问题
-        // https://github.com/Tencent/QMUI_iOS/issues/740
         if (@available(iOS 13.0, *)) {
-            if (@available(iOS 14.0, *)) {
-            } else {
-                OverrideImplementation(NSClassFromString(@"UITabBarButtonLabel"), @selector(setAttributedText:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                    return ^(UILabel *selfObject, NSAttributedString *firstArgv) {
-                        
-                        // call super
-                        void (*originSelectorIMP)(id, SEL, NSAttributedString *);
-                        originSelectorIMP = (void (*)(id, SEL, NSAttributedString *))originalIMPProvider();
-                        originSelectorIMP(selfObject, originCMD, firstArgv);
-                        
-                        CGFloat fontSize = selfObject.font.pointSize;
-                        if (fontSize > 10) {
-                            [selfObject sizeToFit];
-                        }
-                    };
-                });
-            }
-        }
-        
-        // iOS 14 修改 UITabBarAppearance.inlineLayoutAppearance.normal.titleTextAttributes[NSForegroundColor] 会导致 UITabBarItem 文字无法完整展示
-        // https://github.com/Tencent/QMUI_iOS/issues/1110
-        if (@available(iOS 14.0, *)) {
-            OverrideImplementation(NSClassFromString(@"UITabBarButtonLabel"), @selector(sizeThatFits:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^CGSize(UILabel *selfObject, CGSize firstArgv) {
-                    UIFont *font = selfObject.font;
-                    SEL selectorForCSSFontFamily = NSSelectorFromString(@"familyNameForCSSFontFamilyValueForWebKit:");
-                    if ([font respondsToSelector:selectorForCSSFontFamily]) {
-                        BOOL forWebKit = YES;
-                        NSString *fontFamily = [font qmui_performSelector:selectorForCSSFontFamily withArguments:&forWebKit, nil];
-                        if ([fontFamily containsString:@"UICTFontTextStyleFootnote"]) {
-                            static UILabel *standardLabel;
-                            if (!standardLabel) {
-                                standardLabel = [[UILabel alloc] init];
-                            }
-                            standardLabel.attributedText = selfObject.attributedText;
-                            CGSize result = [standardLabel sizeThatFits:firstArgv];
-                            return result;
-                        }
-                    }
+            // iOS 13 下如果以 UITabBarAppearance 的方式将 UITabBarItem 的 font 大小设置为超过默认的 10，则会出现布局错误，文字被截断，所以这里做了个兼容，iOS 14.0 测试过已不存在该问题
+            // https://github.com/Tencent/QMUI_iOS/issues/740
+            //
+            // iOS 14 修改 UITabBarAppearance.inlineLayoutAppearance.normal.titleTextAttributes[NSForegroundColor] 会导致 UITabBarItem 文字无法完整展示
+            // https://github.com/Tencent/QMUI_iOS/issues/1110
+            //
+            // [UIKit Bug] 使用 UITabBarAppearance 将 UITabBarItem 选中时的字体设置为 bold 则无法完整显示 title
+            // https://github.com/Tencent/QMUI_iOS/issues/1286
+            OverrideImplementation(NSClassFromString(@"UITabBarButtonLabel"), @selector(setAttributedText:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UILabel *selfObject, NSAttributedString *firstArgv) {
                     
                     // call super
-                    CGSize (*originSelectorIMP)(id, SEL, CGSize);
-                    originSelectorIMP = (CGSize (*)(id, SEL, CGSize))originalIMPProvider();
-                    CGSize result = originSelectorIMP(selfObject, originCMD, firstArgv);
-                    return result;
+                    void (*originSelectorIMP)(id, SEL, NSAttributedString *);
+                    originSelectorIMP = (void (*)(id, SEL, NSAttributedString *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if (@available(iOS 14.0, *)) {
+                        // iOS 14 只有在 bold 时才有问题，所以把额外的 sizeToFit 做一些判断，尽量减少调用次数
+                        UIFont *font = selfObject.font;
+                        BOOL isBold = [font.fontName containsString:@"bold"];
+                        if (isBold) {
+                            [selfObject sizeToFit];
+                        }
+                    } else {
+                        // iOS 13 加粗时有 #1286 描述的问题，不加粗时有 #740 描述的问题，所以干脆只要是 iOS 13 都加粗算了
+                        [selfObject sizeToFit];
+                    }
                 };
             });
         }

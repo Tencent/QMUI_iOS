@@ -15,30 +15,11 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface UIButton (QMUI)
 
-typedef NS_ENUM(NSUInteger, QMUICustomizeButtonPropType) {
-    QMUICustomizeButtonPropTypeTitle,
-    QMUICustomizeButtonPropTypeTitleColor,
-    QMUICustomizeButtonPropTypeTitleShadowColor,
-    QMUICustomizeButtonPropTypeImage,
-    QMUICustomizeButtonPropTypeBackgroundImage,
-    QMUICustomizeButtonPropTypeAttributedTitle
-};
-
-- (instancetype)qmui_initWithImage:(UIImage *)image title:(NSString *)title;
-
-/**
- * 判断该 button 在特定 UIControlState 下是否设置了属性
- * @note 该方法会对设置了任何 QMUICustomizeButtonPropType 都返回 YES
- */
-- (BOOL)qmui_hasCustomizedButtonPropForState:(UIControlState)state;
-
-/**
- * 判断该 button 在特定 UIControlState 下是否设置了某个 QMUICustomizeButtonPropType 属性
- * @param type 对应于 UIbutton 的 setXXX:forState 办法
- */
-- (BOOL)qmui_hasCustomizedButtonPropWithType:(QMUICustomizeButtonPropType)type forState:(UIControlState)state;
+- (instancetype)qmui_initWithImage:(nullable UIImage *)image title:(nullable NSString *)title;
 
 /**
  * 在UIButton的样式（如字体）设置完后，将button的text设置为一个测试字符，再调用sizeToFit，从而令button的高度适应字体
@@ -52,6 +33,16 @@ typedef NS_ENUM(NSUInteger, QMUICustomizeButtonPropType) {
  * @note 该方法和 setTitleColor:forState: 均可设置字体颜色，如果二者冲突，则代码顺序较后的方法定义的颜色会最终生效
  * @note 如果包含了 NSKernAttributeName ，则此方法会自动帮你去掉最后一个字的 kern 效果，否则容易导致文字整体在视觉上不居中
  */
-- (void)qmui_setTitleAttributes:(NSDictionary<NSAttributedStringKey, id> *)attributes forState:(UIControlState)state;
+- (void)qmui_setTitleAttributes:(nullable NSDictionary<NSAttributedStringKey, id> *)attributes forState:(UIControlState)state;
+
+/**
+ 为指定 state 的图片设置颜色，当使用这个方法时，会用 Core Graphic 将该状态的图片渲染成指定颜色，并修改 renderingMode 为 UIImageRenderingModeAlwaysOriginal，会有一定性能负担，所以只适用于小图场景。
+ @param color 图片的颜色，为 nil 则清空之前为该 state 指定的 imageTintColor
+ @param state 指定的状态
+ @note 先 setImage 还是先 setImageTintColor，效果都是相同的
+ */
+- (void)qmui_setImageTintColor:(nullable UIColor *)color forState:(UIControlState)state;
 
 @end
+
+NS_ASSUME_NONNULL_END

@@ -52,8 +52,8 @@ static char kAssociatedObjectKey_qmuiCacheCellHeightByKeyAutomatically;
     
     if (qmui_cacheCellHeightByKeyAutomatically) {
         
-        NSAssert(!self.delegate || [self.delegate respondsToSelector:@selector(qmui_tableView:cacheKeyForRowAtIndexPath:)], @"%@ 需要实现 %@ 方法才能自动缓存 cell 高度", self.delegate, NSStringFromSelector(@selector(qmui_tableView:cacheKeyForRowAtIndexPath:)));
-        NSAssert(self.estimatedRowHeight != 0 || [self.delegate respondsToSelector:@selector(tableView:estimatedHeightForRowAtIndexPath:)], @"必须为 estimatedRowHeight 赋一个不为0的值，或者实现 tableView:estimatedHeightForRowAtIndexPath: 方法，否则无法开启 self-sizing cells 功能");
+        QMUIAssert(!self.delegate || [self.delegate respondsToSelector:@selector(qmui_tableView:cacheKeyForRowAtIndexPath:)], @"QMUICellHeightKeyCache", @"%@ 需要实现 %@ 方法才能自动缓存 cell 高度", self.delegate, NSStringFromSelector(@selector(qmui_tableView:cacheKeyForRowAtIndexPath:)));
+        QMUIAssert(self.estimatedRowHeight != 0 || [self.delegate respondsToSelector:@selector(tableView:estimatedHeightForRowAtIndexPath:)], @"QMUICellHeightKeyCache", @"必须为 estimatedRowHeight 赋一个不为0的值，或者实现 tableView:estimatedHeightForRowAtIndexPath: 方法，否则无法开启 self-sizing cells 功能");
         
         [self replaceMethodForDelegateIfNeeded:(id<QMUITableViewDelegate>)self.delegate];
         

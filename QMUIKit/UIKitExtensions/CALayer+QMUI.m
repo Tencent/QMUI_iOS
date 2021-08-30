@@ -48,10 +48,7 @@ QMUISynthesizeCGFloatProperty(qmui_originCornerRadius, setQmui_originCornerRadiu
                 
                 // 对非法的 bounds，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
                 if (CGRectIsNaN(bounds)) {
-                    QMUILogWarn(@"CALayer (QMUI)", @"%@ setBounds:%@，参数包含 NaN，已被拦截并处理为 0。%@", selfObject, NSStringFromCGRect(bounds), [NSThread callStackSymbols]);
-                    if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
-                        NSAssert(NO, @"CALayer setBounds: 出现 NaN");
-                    }
+                    QMUIAssert(NO, @"CALayer (QMUI)", @"%@ setBounds:%@，参数包含 NaN，已被拦截并处理为 0。%@", selfObject, NSStringFromCGRect(bounds), [NSThread callStackSymbols]);
                     if (!IS_DEBUG) {
                         bounds = CGRectSafeValue(bounds);
                     }
@@ -69,10 +66,7 @@ QMUISynthesizeCGFloatProperty(qmui_originCornerRadius, setQmui_originCornerRadiu
                 
                 // 对非法的 position，Debug 下中 assert，Release 下会将其中的 NaN 改为 0，避免 crash
                 if (isnan(position.x) || isnan(position.y)) {
-                    QMUILogWarn(@"CALayer (QMUI)", @"%@ setPosition:%@，参数包含 NaN，已被拦截并处理为 0。%@", selfObject, NSStringFromCGPoint(position), [NSThread callStackSymbols]);
-                    if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {
-                        NSAssert(NO, @"CALayer setPosition: 出现 NaN");
-                    }
+                    QMUIAssert(NO, @"CALayer (QMUI)", @"%@ setPosition:%@，参数包含 NaN，已被拦截并处理为 0。%@", selfObject, NSStringFromCGPoint(position), [NSThread callStackSymbols]);
                     if (!IS_DEBUG) {
                         position = CGPointMake(CGFloatSafeValue(position.x), CGFloatSafeValue(position.y));
                     }

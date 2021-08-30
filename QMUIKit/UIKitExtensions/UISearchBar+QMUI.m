@@ -47,13 +47,11 @@ QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_ce
                 cancelButton.titleLabel.font = searchBar.qmui_cancelButtonFont;
             }
             
-            if (searchBar.qmui_cancelButtonMarginsBlock && cancelButton && !cancelButton.qmui_frameWillChangeBlock) {
+            if (cancelButton && !cancelButton.qmui_frameWillChangeBlock) {
                 __weak __typeof(searchBar)weakSearchBar = searchBar;
                 cancelButton.qmui_frameWillChangeBlock = ^CGRect(UIButton *aCancelButton, CGRect followingFrame) {
                     return [weakSearchBar qmuisb_adjustCancelButtonFrame:followingFrame];
                 };
-            } else if (!searchBar.qmui_cancelButtonMarginsBlock) {
-                cancelButton.qmui_frameWillChangeBlock = nil;
             }
         };
         
@@ -62,7 +60,7 @@ QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_ce
             ExtendImplementationOfVoidMethodWithoutArguments(NSClassFromString(@"_UISearchBarVisualProviderIOS"), NSSelectorFromString(@"setUpCancelButton"), ^(NSObject *selfObject) {
                 UIButton *cancelButton = [selfObject qmui_valueForKey:@"cancelButton"];
                 UISearchBar *searchBar = (UISearchBar *)cancelButton.superview.superview.superview;
-                NSAssert([searchBar isKindOfClass:UISearchBar.class], @"Can not find UISearchBar from cancelButton");
+                QMUIAssert([searchBar isKindOfClass:UISearchBar.class], @"UISearchBar (QMUI)", @"Can not find UISearchBar from cancelButton");
                 setupCancelButtonBlock(searchBar, cancelButton);
             });
         } else {
@@ -80,8 +78,8 @@ QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_ce
                 } else {
                     searchBar = (UISearchBar *)selfObject.superview.superview;
                 }
-                NSAssert(!searchBar || [searchBar isKindOfClass:UISearchBar.class], @"Can not find UISearchBar from cancelButton");
-                if (searchBar.qmui_alwaysEnableCancelButton && !searchBar.qmui_searchController) {
+                
+                if ([searchBar isKindOfClass:UISearchBar.class] && searchBar.qmui_alwaysEnableCancelButton && !searchBar.qmui_searchController) {
                     firstArgv = YES;
                 }
                 
@@ -132,7 +130,7 @@ QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_ce
 
                     UISearchBar *searchBar = (UISearchBar *)((UIView *)[selfObject qmui_valueForKey:[NSString stringWithFormat:@"_%@",@"searchBarBackground"]]).superview.superview;
                     
-                    NSAssert(searchBar == nil || [searchBar isKindOfClass:[UISearchBar class]], @"not a searchBar");
+                    QMUIAssert(searchBar == nil || [searchBar isKindOfClass:[UISearchBar class]], @"UISearchBar (QMUI)", @"not a searchBar");
 
                     if (searchBar && searchBar.qmui_searchController.isBeingDismissed && searchBar.qmui_usedAsTableHeaderView) {
                         CGRect previousRect = searchBar.qmui_backgroundView.frame;
@@ -180,7 +178,7 @@ QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_ce
                     searchBar = (UISearchBar *)textField.superview.superview;
                 }
                 
-                NSAssert(searchBar == nil || [searchBar isKindOfClass:[UISearchBar class]], @"not a searchBar");
+                QMUIAssert(searchBar == nil || [searchBar isKindOfClass:[UISearchBar class]], @"UISearchBar (QMUI)", @"not a searchBar");
                 
                 if (searchBar) {
                     frame = [searchBar qmuisb_adjustedSearchTextFieldFrameByOriginalFrame:frame];

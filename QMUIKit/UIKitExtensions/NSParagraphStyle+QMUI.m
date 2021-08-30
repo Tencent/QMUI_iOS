@@ -15,7 +15,7 @@
 
 #import "NSParagraphStyle+QMUI.h"
 
-@implementation NSMutableParagraphStyle (QMUI)
+@implementation NSParagraphStyle (QMUI)
 
 + (instancetype)qmui_paragraphStyleWithLineHeight:(CGFloat)lineHeight {
     return [self qmui_paragraphStyleWithLineHeight:lineHeight lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentLeft];
@@ -26,7 +26,8 @@
 }
 
 + (instancetype)qmui_paragraphStyleWithLineHeight:(CGFloat)lineHeight lineBreakMode:(NSLineBreakMode)lineBreakMode textAlignment:(NSTextAlignment)textAlignment {
-    NSMutableParagraphStyle *paragraphStyle = [[self alloc] init];
+    Class className = ![self isMemberOfClass:NSMutableParagraphStyle.class] ? NSMutableParagraphStyle.class : self;// 保证如果有 NSMutableParagraphStyle 的子类来调用这个方法，也可以用子类的 Class 去初始化
+    NSMutableParagraphStyle *paragraphStyle = [[className alloc] init];
     paragraphStyle.minimumLineHeight = lineHeight;
     paragraphStyle.maximumLineHeight = lineHeight;
     paragraphStyle.lineBreakMode = lineBreakMode;

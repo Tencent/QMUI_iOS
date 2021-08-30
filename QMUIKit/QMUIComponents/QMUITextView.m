@@ -228,9 +228,9 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     CGFloat limitWidth = size.width - UIEdgeInsetsGetHorizontalValue(allInsets);
     CGFloat limitHeight = size.height - UIEdgeInsetsGetVerticalValue(allInsets);
     CGSize labelSize = [self.placeholderLabel sizeThatFits:CGSizeMake(limitWidth, limitHeight)];
-    labelSize.width = MIN(limitWidth, labelSize.width);
+    labelSize.width = limitWidth == CGFLOAT_MAX ? MIN(limitWidth, labelSize.width) : limitWidth;// 当 limitWidth 为 CGFLOAT_MAX 时，意味着此时是 sizeToFit 触发的 sizeThatFits:，从而调用到这里，此时语义上希望得到 placeholder 的实际内容宽高，于是拿 labelSize.width 作为返回值。如果不是那边过来的，则让 placeholderLabel 宽度撑满，从而适配 NSTextAlignmentRight。
     labelSize.height = MIN(limitHeight, labelSize.height);
-    return CGRectFlatMake(labelMargins.left, labelMargins.top, limitWidth, labelSize.height);
+    return CGRectFlatMake(labelMargins.left, labelMargins.top, labelSize.width, labelSize.height);
 }
 
 - (void)handleTextChanged:(id)sender {

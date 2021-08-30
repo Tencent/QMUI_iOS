@@ -220,7 +220,7 @@
         UIImage *indicatorImage = TableViewCellDisclosureIndicatorImage;
         
         if (detailButtonImage) {
-            NSAssert(!!indicatorImage, @"TableViewCellDetailButtonImage 和 TableViewCellDisclosureIndicatorImage 必须同时使用，但目前后者为 nil");
+            QMUIAssert(!!indicatorImage, NSStringFromClass(self.class), @"TableViewCellDetailButtonImage 和 TableViewCellDisclosureIndicatorImage 必须同时使用，但目前后者为 nil");
             [self initDefaultDetailDisclosureViewIfNeeded];
             [self initDefaultAccessoryButtonIfNeeded];
             [self.defaultAccessoryButton setImage:detailButtonImage forState:UIControlStateNormal];
@@ -232,7 +232,7 @@
         }
         
         if (indicatorImage) {
-            NSAssert(!!detailButtonImage, @"TableViewCellDetailButtonImage 和 TableViewCellDisclosureIndicatorImage 必须同时使用，但目前前者为 nil");
+            QMUIAssert(!!detailButtonImage, NSStringFromClass(self.class), @"TableViewCellDetailButtonImage 和 TableViewCellDisclosureIndicatorImage 必须同时使用，但目前前者为 nil");
             [self initDefaultDetailDisclosureViewIfNeeded];
             [self initDefaultAccessoryImageViewIfNeeded];
             self.defaultAccessoryImageView.image = indicatorImage;

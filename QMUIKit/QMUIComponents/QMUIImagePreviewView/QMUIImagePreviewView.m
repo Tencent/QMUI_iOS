@@ -251,7 +251,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     if ([zoomImageView.superview.superview isKindOfClass:[QMUIImagePreviewCell class]]) {
         return [self.collectionView indexPathForCell:(QMUIImagePreviewCell *)zoomImageView.superview.superview].item;
     } else {
-        NSAssert(NO, @"尝试通过 %s 获取 QMUIZoomImageView 所在的 index，但找不到 QMUIZoomImageView 所在的 cell，index 获取失败。%@", __func__, zoomImageView);
+        QMUIAssert(NO, @"QMUIImagePreviewView (QMUIZoomImageView)", @"尝试通过 %s 获取 QMUIZoomImageView 所在的 index，但找不到 QMUIZoomImageView 所在的 cell，index 获取失败。%@", __func__, zoomImageView);
     }
     return NSNotFound;
 }
@@ -265,7 +265,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
 #ifdef DEBUG
     [NSObject qmui_enumerateProtocolMethods:@protocol(QMUIZoomImageViewDelegate) usingBlock:^(SEL selector) {
         if (![self respondsToSelector:selector]) {
-            NSAssert(NO, @"%@ 需要响应 %@ 的方法 -%@", NSStringFromClass([self class]), NSStringFromProtocol(@protocol(QMUIZoomImageViewDelegate)), NSStringFromSelector(selector));
+            QMUIAssert(NO, @"QMUIImagePreviewView (QMUIZoomImageView)", @"%@ 需要响应 %@ 的方法 -%@", NSStringFromClass([self class]), NSStringFromProtocol(@protocol(QMUIZoomImageViewDelegate)), NSStringFromSelector(selector));
         }
     }];
 #endif

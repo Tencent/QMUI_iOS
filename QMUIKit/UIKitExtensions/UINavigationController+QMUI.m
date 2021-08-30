@@ -16,7 +16,6 @@
 #import "UINavigationController+QMUI.h"
 #import "QMUICore.h"
 #import "QMUILog.h"
-#import "QMUIWeakObjectContainer.h"
 #import "UIViewController+QMUI.h"
 
 @interface _QMUINavigationInteractiveGestureDelegator : NSObject <UIGestureRecognizerDelegate>
@@ -207,6 +206,11 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                     QMUILogWarn(NSStringFromClass(originClass), @"push 的时候 UINavigationController 存在一个盖在上面的 presentedViewController，可能导致一些 UINavigationControllerDelegate 不会被调用");
                 }
                 
+                if ([selfObject.viewControllers containsObject:viewController]) {
+                    QMUIAssert(NO, @"UINavigationController (QMUI)", @"不允许重复 push 相同的 viewController 实例，会产生 crash。当前 viewController：%@", viewController);
+                    return;
+                }
+                
                 // call super
                 void (^callSuperBlock)(void) = ^void(void) {
                     void (*originSelectorIMP)(id, SEL, UIViewController *, BOOL);
@@ -249,7 +253,11 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                     return result;
                 };
                 
-                BOOL willPopActually = selfObject.viewControllers.count > 1;// 系统文档里说 rootViewController 是不能被 pop 的，当只剩下 rootViewController 时当前方法什么事都不会做
+                QMUINavigationAction action = selfObject.qmui_navigationAction;
+                if (action != QMUINavigationActionUnknow) {
+                    QMUILogWarn(@"UINavigationController (QMUI)", @"popViewController 时上一次的转场尚未完成，系统会忽略本次 pop，等上一次转场完成后再重新执行 pop, viewControllers = %@", selfObject.viewControllers);
+                }
+                BOOL willPopActually = selfObject.viewControllers.count > 1 && action == QMUINavigationActionUnknow;// 系统文档里说 rootViewController 是不能被 pop 的，当只剩下 rootViewController 时当前方法什么事都不会做
                 
                 if (!willPopActually) {
                     return callSuperBlock();
@@ -264,7 +272,7 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                 
                 // UINavigationController 不可见时 return 值可能为 nil
                 // https://github.com/Tencent/QMUI_iOS/issues/1180
-                NSAssert(result && disappearingViewControllers && disappearingViewControllers.firstObject == result, @"QMUI 认为 popViewController 会成功，但实际上失败了");
+                QMUIAssert(result && disappearingViewControllers && disappearingViewControllers.firstObject == result, @"UINavigationController (QMUI)", @"QMUI 认为 popViewController 会成功，但实际上失败了，result = %@, disappearingViewControllers = %@", result, disappearingViewControllers);
                 disappearingViewControllers = result ? @[result] : disappearingViewControllers;
                 
                 [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
@@ -290,7 +298,11 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                     return poppedViewControllers;
                 };
                 
-                BOOL willPopActually = selfObject.viewControllers.count > 1 && [selfObject.viewControllers containsObject:viewController] && selfObject.topViewController != viewController;// 系统文档里说 rootViewController 是不能被 pop 的，当只剩下 rootViewController 时当前方法什么事都不会做
+                QMUINavigationAction action = selfObject.qmui_navigationAction;
+                if (action != QMUINavigationActionUnknow) {
+                    QMUILogWarn(@"UINavigationController (QMUI)", @"popToViewController 时上一次的转场尚未完成，系统会忽略本次 pop，等上一次转场完成后再重新执行 pop, currentViewControllers = %@, viewController = %@", selfObject.viewControllers, viewController);
+                }
+                BOOL willPopActually = selfObject.viewControllers.count > 1 && [selfObject.viewControllers containsObject:viewController] && selfObject.topViewController != viewController && action == QMUINavigationActionUnknow;// 系统文档里说 rootViewController 是不能被 pop 的，当只剩下 rootViewController 时当前方法什么事都不会做
                 
                 if (!willPopActually) {
                     return callSuperBlock();
@@ -307,7 +319,7 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                 
                 NSArray<UIViewController *> *result = callSuperBlock();
                 
-                NSAssert(!(selfObject.isViewLoaded && selfObject.view.window) || [result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToViewController 结果和系统的不一致");
+                QMUIAssert(!(selfObject.isViewLoaded && selfObject.view.window) || [result isEqualToArray:disappearingViewControllers], @"UINavigationController (QMUI)", @"QMUI 计算得到的 popToViewController 结果和系统的不一致");
                 disappearingViewControllers = result ?: disappearingViewControllers;
                 
                 [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
@@ -333,7 +345,11 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                     return result;
                 };
                 
-                BOOL willPopActually = selfObject.viewControllers.count > 1;
+                QMUINavigationAction action = selfObject.qmui_navigationAction;
+                if (action != QMUINavigationActionUnknow) {
+                    QMUILogWarn(@"UINavigationController (QMUI)", @"popToRootViewController 时上一次的转场尚未完成，系统会忽略本次 pop，等上一次转场完成后再重新执行 pop, viewControllers = %@", selfObject.viewControllers);
+                }
+                BOOL willPopActually = selfObject.viewControllers.count > 1 && action == QMUINavigationActionUnknow;
                 
                 if (!willPopActually) {
                     return callSuperBlock();
@@ -348,7 +364,7 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                 
                 // UINavigationController 不可见时 return 值可能为 nil
                 // https://github.com/Tencent/QMUI_iOS/issues/1180
-                NSAssert(!(selfObject.isViewLoaded && selfObject.view.window) || [result isEqualToArray:disappearingViewControllers], @"QMUI 计算得到的 popToRootViewController 结果和系统的不一致");
+                QMUIAssert(!(selfObject.isViewLoaded && selfObject.view.window) || [result isEqualToArray:disappearingViewControllers], @"UINavigationController (QMUI)", @"QMUI 计算得到的 popToRootViewController 结果和系统的不一致");
                 disappearingViewControllers = result ?: disappearingViewControllers;
                 
                 [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
@@ -365,6 +381,11 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
 #pragma mark - setViewControllers:animated:
         OverrideImplementation([UINavigationController class], @selector(setViewControllers:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UINavigationController *selfObject, NSArray<UIViewController *> *viewControllers, BOOL animated) {
+                
+                if (viewControllers.count != [NSSet setWithArray:viewControllers].count) {
+                    QMUIAssert(NO, @"UINavigationController (QMUI)", @"setViewControllers 数组里不允许出现重复元素：%@", viewControllers);
+                    viewControllers = [NSOrderedSet orderedSetWithArray:viewControllers].array;// 这里会保留该 vc 第一次出现的位置不变
+                }
 
                 UIViewController *appearingViewController = selfObject.topViewController != viewControllers.lastObject ? viewControllers.lastObject : nil;// setViewControllers 执行前后 topViewController 没有变化，则赋值为 nil，表示没有任何界面有“重新显示”，这个 nil 的值也用于在 QMUINavigationController 里实现 viewControllerKeepingAppearWhenSetViewControllersWithAnimated:
                 NSMutableArray<UIViewController *> *disappearingViewControllers = selfObject.viewControllers.mutableCopy;

@@ -723,7 +723,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     [super viewDidLayoutSubviews];
     // 全部基于 contentView 布局即可
     
-    NSAssert(self.mutableTitleLabels.count == self.mutableTextFields.count && self.mutableTextFields.count == self.mutableSeparatorLayers.count, @"%@ 里的标题、输入框、分隔线数量不匹配", NSStringFromClass(self.class));
+    QMUIAssert(self.mutableTitleLabels.count == self.mutableTextFields.count && self.mutableTextFields.count == self.mutableSeparatorLayers.count, NSStringFromClass(self.class), @"标题、输入框、分隔线的数量不匹配");
     
     CGFloat minY = 0;
     

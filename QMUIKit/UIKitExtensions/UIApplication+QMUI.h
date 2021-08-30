@@ -5,18 +5,21 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-
 //
-//  QMUIVisualEffectView.h
+//  UIApplication+QMUI.h
 //  QMUIKit
 //
-//  Created by QMUI Team on 2018/6/19.
+//  Created by MoLice on 2021/8/30.
 //
 
 #import <UIKit/UIKit.h>
 
-@interface QMUIVisualEffectView : UIVisualEffectView
+NS_ASSUME_NONNULL_BEGIN
 
-@property(nonatomic, strong) UIColor *foregroundColor UI_APPEARANCE_SELECTOR;
+@interface UIApplication (QMUI)
 
+/// 判断当前的 App 是否已经完全启动
+@property(nonatomic, assign, readonly) BOOL qmui_didFinishLaunching;
 @end
+
+NS_ASSUME_NONNULL_END

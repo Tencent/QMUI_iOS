@@ -16,7 +16,6 @@
 #import "UIBarItem+QMUI.h"
 #import "QMUICore.h"
 #import "UIView+QMUI.h"
-#import "QMUIWeakObjectContainer.h"
 
 @interface UIBarItem ()
 

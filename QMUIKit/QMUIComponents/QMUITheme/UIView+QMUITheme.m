@@ -93,8 +93,8 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
         SEL getter = NSSelectorFromString(getterString);
         SEL setter = setterWithGetter(getter);
         NSString *setterString = NSStringFromSelector(setter);
-        NSAssert([self respondsToSelector:getter], @"register theme color fails, %@ does not have method called %@", NSStringFromClass(self.class), getterString);
-        NSAssert([self respondsToSelector:setter], @"register theme color fails, %@ does not have method called %@", NSStringFromClass(self.class), setterString);
+        QMUIAssert([self respondsToSelector:getter], @"UIView (QMUITheme)", @"register theme color fails, %@ does not have method called %@", NSStringFromClass(self.class), getterString);
+        QMUIAssert([self respondsToSelector:setter], @"UIView (QMUITheme)", @"register theme color fails, %@ does not have method called %@", NSStringFromClass(self.class), setterString);
         
         if (!self.qmuiTheme_themeColorProperties) {
             self.qmuiTheme_themeColorProperties = NSMutableDictionary.new;
@@ -169,13 +169,20 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
     }];
     
     // 输入框、搜索框的键盘跟随主题变化
-    if (QMUICMIActivated && [self conformsToProtocol:@protocol(UITextInputTraits)]) {
-        NSObject<UITextInputTraits> *input = (NSObject<UITextInputTraits> *)self;
-        if ([input respondsToSelector:@selector(keyboardAppearance)]) {
-            if (input.keyboardAppearance != KeyboardAppearance && !input.qmui_hasCustomizedKeyboardAppearance) {
-                input.qmui_keyboardAppearance = KeyboardAppearance;
+    if (QMUICMIActivated) {
+        static NSArray<Class> *inputClasses = nil;
+        if (!inputClasses) inputClasses = @[UITextField.class, UITextView.class, UISearchBar.class];// 这里的 Class 与 UITextInputTraits(QMUI) 对齐
+        [inputClasses enumerateObjectsUsingBlock:^(Class  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            if ([self isKindOfClass:obj]) {
+                NSObject<UITextInputTraits> *input = (NSObject<UITextInputTraits> *)self;
+                if ([input respondsToSelector:@selector(keyboardAppearance)]) {
+                    if (input.keyboardAppearance != KeyboardAppearance && !input.qmui_hasCustomizedKeyboardAppearance) {
+                        input.qmui_keyboardAppearance = KeyboardAppearance;
+                    }
+                }
+                *stop = YES;
             }
-        }
+        }];
     }
     
     /** 这里去掉动画有 2 个原因：

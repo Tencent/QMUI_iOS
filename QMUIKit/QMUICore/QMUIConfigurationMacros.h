@@ -92,7 +92,6 @@
 #pragma mark - UISwitch
 #define SwitchOnTintColor               [QMUICMI switchOnTintColor]                 // UISwitch 打开时的背景色（除了圆点外的其他颜色）
 #define SwitchOffTintColor              [QMUICMI switchOffTintColor]                // UISwitch 关闭时的背景色（除了圆点外的其他颜色）
-#define SwitchTintColor                 [QMUICMI switchTintColor]                   // UISwitch 关闭时的周围边框颜色
 #define SwitchThumbTintColor            [QMUICMI switchThumbTintColor]              // UISwitch 中间的操控圆点的颜色
 
 #pragma mark - NavigationBar

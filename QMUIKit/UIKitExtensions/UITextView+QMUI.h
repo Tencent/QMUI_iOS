@@ -20,6 +20,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UITextView (QMUI)
 
+
+/**
+ *  UITextView 只有 selectedTextRange 属性（在<UITextInput>协议里定义），这里拓展了一个方法可以将 UITextRange 类型的 selectedTextRange 转换为 NSRange 类型的 selectedRange
+ */
+@property(nonatomic, assign, readonly) NSRange qmui_selectedRange;
+
 /**
  *  convert UITextRange to NSRange, for example, [self qmui_convertNSRangeFromUITextRange:self.markedTextRange]
  */
