@@ -251,9 +251,9 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         [self updatePlaceholderLabelHidden];
     }
     
-    // 系统的三指撤销在文本框达到最大字符长度限制时可能引发 crash
+    // 系统的三指撤销或者重做在文本框达到最大字符长度限制时可能引发 crash
     // https://github.com/Tencent/QMUI_iOS/issues/1168
-    if (textView.maximumTextLength < NSUIntegerMax && textView.undoManager.undoing) {
+    if (textView.maximumTextLength < NSUIntegerMax && (textView.undoManager.undoing || textView.undoManager.redoing)) {
         return;
     }
     
