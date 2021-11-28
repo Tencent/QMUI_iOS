@@ -8,8 +8,8 @@ Pod::Spec.new do |s|
   s.homepage         = "https://qmuiteam.com/ios"
   s.license          = 'MIT'
   s.author           = {"qmuiteam" => "contact@qmuiteam.com"}
-  s.source           = {:git => "https://github.com/Tencent/QMUI_iOS.git", :tag => s.version.to_s}
-  #s.source           = {:git => "https://github.com/Tencent/QMUI_iOS.git", :branch => 'master'}
+  #s.source           = {:git => "https://github.com/Tencent/QMUI_iOS.git", :tag => s.version.to_s}
+  s.source           = {:git => "https://github.com/Tencent/QMUI_iOS.git", :branch => 'master'}
   s.social_media_url = 'https://github.com/Tencent/QMUI_iOS'
   s.requires_arc     = true
   s.documentation_url = 'https://qmuiteam.com/ios/page/document.html'
