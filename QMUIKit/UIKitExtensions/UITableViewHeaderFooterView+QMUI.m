@@ -53,7 +53,7 @@
                                 
                                 BOOL shouldChangeWidth = view.qmui_tableView && view.qmui_tableView.qmui_style == QMUITableViewStyleInsetGrouped;
                                 if (shouldChangeWidth) {
-                                    size.width = size.width - UIEdgeInsetsGetHorizontalValue(view.qmui_tableView.qmui_safeAreaInsets) - view.qmui_tableView.qmui_insetGroupedHorizontalInset * 2;
+                                    size.width = size.width - UIEdgeInsetsGetHorizontalValue(view.qmui_tableView.safeAreaInsets) - view.qmui_tableView.qmui_insetGroupedHorizontalInset * 2;
                                 }
                                 
                                 // call super
@@ -74,42 +74,25 @@
         // iOS 13 都交给系统处理，下面的逻辑不需要
         if (@available(iOS 13.0, *)) return;
         
-        if (@available(iOS 11.0, *)) {
-            // 系统通过这个方法返回值来决定 contentView 的布局
-            OverrideImplementation([UITableViewHeaderFooterView class], NSSelectorFromString(@"_contentRectForWidth:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^CGRect(UITableViewHeaderFooterView *selfObject, CGFloat firstArgv) {
-                    BOOL shouldChangeWidth = firstArgv > 0 && selfObject.qmui_tableView && selfObject.qmui_tableView.qmui_style == QMUITableViewStyleInsetGrouped;
-                    if (shouldChangeWidth) {
-                        firstArgv -= UIEdgeInsetsGetHorizontalValue(selfObject.qmui_tableView.qmui_safeAreaInsets) + selfObject.qmui_tableView.qmui_insetGroupedHorizontalInset * 2;
-                    }
-                    
-                    // call super
-                    CGRect (*originSelectorIMP)(id, SEL, CGFloat);
-                    originSelectorIMP = (CGRect (*)(id, SEL, CGFloat))originalIMPProvider();
-                    CGRect result = originSelectorIMP(selfObject, originCMD, firstArgv);
-                    
-                    if (shouldChangeWidth) {
-                        result = CGRectSetX(result, selfObject.qmui_tableView.qmui_safeAreaInsets.left + selfObject.qmui_tableView.qmui_insetGroupedHorizontalInset);
-                    }
-                    return result;
-                };
-            });
-        } else {
-            // TODO: molice iOS 10 及以下是另一套实现方式，暂时不知道怎么修改 textLabel 的布局
-            OverrideImplementation([UITableViewHeaderFooterView class], @selector(layoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UITableViewHeaderFooterView *selfObject) {
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL);
-                    originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD);
-                    
-                    if (selfObject.qmui_tableView && selfObject.qmui_tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
-                        selfObject.contentView.frame = CGRectMake(selfObject.qmui_tableView.qmui_safeAreaInsets.left + selfObject.qmui_tableView.qmui_insetGroupedHorizontalInset, CGRectGetMinY(selfObject.contentView.frame), selfObject.qmui_tableView.qmui_validContentWidth, CGRectGetHeight(selfObject.bounds));
-                    }
-                };
-            });
-        }
+        // 系统通过这个方法返回值来决定 contentView 的布局
+        OverrideImplementation([UITableViewHeaderFooterView class], NSSelectorFromString(@"_contentRectForWidth:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^CGRect(UITableViewHeaderFooterView *selfObject, CGFloat firstArgv) {
+                BOOL shouldChangeWidth = firstArgv > 0 && selfObject.qmui_tableView && selfObject.qmui_tableView.qmui_style == QMUITableViewStyleInsetGrouped;
+                if (shouldChangeWidth) {
+                    firstArgv -= UIEdgeInsetsGetHorizontalValue(selfObject.qmui_tableView.safeAreaInsets) + selfObject.qmui_tableView.qmui_insetGroupedHorizontalInset * 2;
+                }
+                
+                // call super
+                CGRect (*originSelectorIMP)(id, SEL, CGFloat);
+                originSelectorIMP = (CGRect (*)(id, SEL, CGFloat))originalIMPProvider();
+                CGRect result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                if (shouldChangeWidth) {
+                    result = CGRectSetX(result, selfObject.qmui_tableView.safeAreaInsets.left + selfObject.qmui_tableView.qmui_insetGroupedHorizontalInset);
+                }
+                return result;
+            };
+        });
     });
 }
 

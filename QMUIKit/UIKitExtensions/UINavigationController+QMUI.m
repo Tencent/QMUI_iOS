@@ -144,49 +144,24 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
             }
         });
         
-        if (@available(iOS 11.0, *)) {
-            OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil]), NSSelectorFromString(@"__backButtonAction:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UIView *selfObject, id firstArgv) {
-                    
-                    if ([selfObject.superview isKindOfClass:UINavigationBar.class]) {
-                        UINavigationBar *bar = (UINavigationBar *)selfObject.superview;
-                        if ([bar.delegate isKindOfClass:UINavigationController.class]) {
-                            UINavigationController *navController = (UINavigationController *)bar.delegate;
-                            BOOL canPopViewController = [navController canPopViewController:navController.topViewController byPopGesture:NO];
-                            if (!canPopViewController) return;
-                        }
+        OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil]), NSSelectorFromString(@"__backButtonAction:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject, id firstArgv) {
+                
+                if ([selfObject.superview isKindOfClass:UINavigationBar.class]) {
+                    UINavigationBar *bar = (UINavigationBar *)selfObject.superview;
+                    if ([bar.delegate isKindOfClass:UINavigationController.class]) {
+                        UINavigationController *navController = (UINavigationController *)bar.delegate;
+                        BOOL canPopViewController = [navController canPopViewController:navController.topViewController byPopGesture:NO];
+                        if (!canPopViewController) return;
                     }
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, id);
-                    originSelectorIMP = (void (*)(id, SEL, id))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, firstArgv);
-                };
-            });
-        } else {
-            OverrideImplementation([UINavigationBar class], NSSelectorFromString(@"_shouldPopForTouchAtPoint:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^BOOL(UINavigationBar *selfObject, CGPoint firstArgv) {
-
-                    // call super
-                    BOOL (*originSelectorIMP)(id, SEL, CGPoint);
-                    originSelectorIMP = (BOOL (*)(id, SEL, CGPoint))originalIMPProvider();
-                    BOOL result = originSelectorIMP(selfObject, originCMD, firstArgv);
-
-                    // 点击 navigationBar 任意地方都会触发这个方法，只有点到返回按钮时 result 才可能是 YES
-                    if (result) {
-                        if ([selfObject.delegate isKindOfClass:UINavigationController.class]) {
-                            UINavigationController *navController = (UINavigationController *)selfObject.delegate;
-                            BOOL canPopViewController = [navController canPopViewController:navController.topViewController byPopGesture:NO];
-                            if (!canPopViewController) {
-                                return NO;
-                            }
-                        }
-                    }
-
-                    return result;
-                };
-            });
-        }
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, id);
+                originSelectorIMP = (void (*)(id, SEL, id))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+            };
+        });
         
         OverrideImplementation([UINavigationController class], NSSelectorFromString(@"navigationTransitionView:didEndTransition:fromView:toView:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^void(UINavigationController *selfObject, UIView *transitionView, NSInteger transition, UIView *fromView, UIView *toView) {

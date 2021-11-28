@@ -24,7 +24,7 @@
 @property(nonatomic, assign, readonly) BOOL qmui_alreadyAtBottom;
 
 /// UIScrollView 的真正 inset，在 iOS11 以后需要用到 adjustedContentInset 而在 iOS11 以前只需要用 contentInset
-@property(nonatomic, assign, readonly) UIEdgeInsets qmui_contentInset;
+@property(nonatomic, assign, readonly) UIEdgeInsets qmui_contentInset DEPRECATED_MSG_ATTRIBUTE("请使用系统的 adjustedContentInset，QMUI 4.4.0 开始已不再支持 iOS 10，没必要提供该兼容性质的属性了，后续会删除。");
 
 /**
  UIScrollView 默认的 contentInset，会自动将 contentInset 和 scrollIndicatorInsets 都设置为这个值并且调用一次 qmui_scrollToTopUponContentInsetTopChange 设置默认的 contentOffset，一般用于 UIScrollViewContentInsetAdjustmentNever 的列表。

@@ -17,6 +17,7 @@
 #import "QMUICore.h"
 #import "NSString+QMUI.h"
 #import "UIImage+QMUI.h"
+#import "QMUIStringPrivate.h"
 
 NSAttributedStringKey const QMUIImageMarginsAttributeName = @"QMUI_attributedImageMargins";
 NSString *const kQMUIImageOriginalAttributedStringKey = @"QMUI_attributedString";
@@ -55,10 +56,6 @@ NSString *const kQMUIImageOriginalAttributedStringKey = @"QMUI_attributedString"
             };
         });
     });
-}
-
-- (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
-    return self.string.qmui_lengthWhenCountingNonASCIICharacterAsTwo;
 }
 
 + (instancetype)qmui_attributedStringWithImage:(UIImage *)image {
@@ -100,6 +97,44 @@ NSString *const kQMUIImageOriginalAttributedStringKey = @"QMUI_attributedString"
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return [self qmui_attributedStringWithImage:image];
+}
+
+#pragma mark - <QMUIStringProtocol>
+
+- (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
+    return self.string.qmui_lengthWhenCountingNonASCIICharacterAsTwo;
+}
+
+- (instancetype)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+    return [QMUIStringPrivate substring:self avoidBreakingUpCharacterSequencesFromIndex:index lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+}
+
+- (instancetype)qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:(NSUInteger)index {
+    return [self qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:index lessValue:YES countingNonASCIICharacterAsTwo:NO];
+}
+
+- (instancetype)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+    return [QMUIStringPrivate substring:self avoidBreakingUpCharacterSequencesToIndex:index lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+}
+
+- (instancetype)qmui_substringAvoidBreakingUpCharacterSequencesToIndex:(NSUInteger)index {
+    return [self qmui_substringAvoidBreakingUpCharacterSequencesToIndex:index lessValue:YES countingNonASCIICharacterAsTwo:NO];
+}
+
+- (instancetype)qmui_substringAvoidBreakingUpCharacterSequencesWithRange:(NSRange)range lessValue:(BOOL)lessValue countingNonASCIICharacterAsTwo:(BOOL)countingNonASCIICharacterAsTwo {
+    return [QMUIStringPrivate substring:self avoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+}
+
+- (instancetype)qmui_substringAvoidBreakingUpCharacterSequencesWithRange:(NSRange)range {
+    return [self qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:YES countingNonASCIICharacterAsTwo:NO];
+}
+
+- (instancetype)qmui_stringByRemoveCharacterAtIndex:(NSUInteger)index {
+    return [QMUIStringPrivate string:self avoidBreakingUpCharacterSequencesByRemoveCharacterAtIndex:index];
+}
+
+- (instancetype)qmui_stringByRemoveLastCharacter {
+    return [self qmui_stringByRemoveCharacterAtIndex:self.length - 1];
 }
 
 @end

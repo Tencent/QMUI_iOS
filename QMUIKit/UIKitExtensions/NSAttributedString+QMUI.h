@@ -16,18 +16,14 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "QMUIHelper.h"
+#import "NSString+QMUI.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 /// 如果某个 NSAttributedString 是通过 +[NSAttributedString qmui_attributedStringWithImage:margins:] 创建的，则该 string 会被添加以这个 name 为 key 的 attribute，值为 NSValue 包裹的 UIEdgeInsets。
 UIKIT_EXTERN NSAttributedStringKey const QMUIImageMarginsAttributeName;
 
-@interface NSAttributedString (QMUI)
-
-/**
- *  按照中文 2 个字符、英文 1 个字符的方式来计算文本长度
- */
-- (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo;
+@interface NSAttributedString (QMUI)<QMUIStringProtocol>
 
 /**
  * @brief 将指定 image 作为 NSTextAttachment 用以生成一段 NSAttributedString。

@@ -16,6 +16,8 @@
 #import <UIKit/UIKit.h>
 #import "UIControl+QMUI.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
     QMUIPopupContainerViewLayoutDirectionAbove,
     QMUIPopupContainerViewLayoutDirectionBelow,
@@ -48,7 +50,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  */
 @interface QMUIPopupContainerView : UIControl {
     CAShapeLayer    *_backgroundLayer;
-    CALayer         *_arrowImageLayer;
+    UIImageView     *_arrowImageView;
     CGFloat         _arrowMinX;
     CGFloat         _arrowMinY;
 }
@@ -59,14 +61,23 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 默认为 NO，也即需要手动调用代码去隐藏浮层。
 @property(nonatomic, assign) BOOL automaticallyHidesWhenUserTap;
 
-/// 所有subview都应该添加到contentView上，默认contentView.userInteractionEnabled = NO，需要事件操作时自行打开
+/// 所有 subview 都应该添加到 contentView 上，subviews 占据的大小通过 sizeThatFitsInContentView: 或者 contentViewSizeThatFitsBlock 来返回，subviews 的布局通过重写 layoutSubviews 或 qmui_layoutSubviewsBlock 来布局，注意布局时应该基于 contentView。
 @property(nonatomic, strong, readonly) UIView *contentView;
 
+/**
+ 与 sizeThatFitsInContentView: 等价，用于告诉组件，添加到 contentView 上的 subviews 的大小
+
+ @param size 浮层里除去 safetyMarginsOfSuperview、arrowSize、contentEdgeInsets 之外后，留给内容的实际大小，计算 subview 大小时均应使用这个参数来计算
+ @return 自定义内容实际占据的大小
+ @note 计算结果不需要操心 maximumWidth、minimumWidth，这些会由组件统一处理，你只需要在这个 block 里返回内容的实际大小即可。
+ */
+@property(nonatomic, copy, nullable) CGSize (^contentViewSizeThatFitsBlock)(CGSize size);
+
 /// 预提供的UIImageView，默认为nil，调用到的时候才初始化
-@property(nonatomic, strong, readonly) UIImageView *imageView;
+@property(nonatomic, strong, readonly, nullable) UIImageView *imageView;
 
 /// 预提供的UILabel，默认为nil，调用到的时候才初始化。默认支持多行。
-@property(nonatomic, strong, readonly) UILabel *textLabel;
+@property(nonatomic, strong, readonly, nullable) UILabel *textLabel;
 
 /// 圆角矩形气泡内的padding（不包括三角箭头），默认是(8, 8, 8, 8)
 @property(nonatomic, assign) UIEdgeInsets contentEdgeInsets UI_APPEARANCE_SELECTOR;
@@ -82,7 +93,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 
 /// 三角箭头的图片，通常用于默认的三角样式不满足需求时。当使用了 arrowImage 后，arrowSize 将会被固定为 arrowImage.size。
 /// 图片必须为箭头向下的方向
-@property(nonatomic, strong) UIImage *arrowImage UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong, nullable) UIImage *arrowImage UI_APPEARANCE_SELECTOR;
 
 /// 最大宽度（指整个控件的宽度，而不是contentView部分），默认为CGFLOAT_MAX
 @property(nonatomic, assign) CGFloat maximumWidth UI_APPEARANCE_SELECTOR;
@@ -108,26 +119,30 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 最终布局时与父节点的边缘的临界点，默认为(10, 10, 10, 10)
 @property(nonatomic, assign) UIEdgeInsets safetyMarginsOfSuperview UI_APPEARANCE_SELECTOR;
 
-/// 浮层的背景色，作用区域为箭头+圆角矩形区域
-@property(nonatomic, strong) UIColor *backgroundColor UI_APPEARANCE_SELECTOR;
+/// 允许用一个自定的 view 作为背景，会自动将其 mask 为圆角带箭头的造型，当同时使用 backgroundView 和 arrowImage 时，arrowImage 只作为遮罩使用（也即使用它的造型，不显示它的图片内容）。
+/// 默认为 nil。
+@property(nonatomic, strong, nullable) UIView *backgroundView;
+
+/// 浮层的背景色，作用区域为箭头+圆角矩形区域，当同时使用 backgroundView 和 backgroundColor 时，backgroundView 会盖在 backgroundColor 上方。
+@property(nonatomic, strong, nullable) UIColor *backgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 浮层点击 highlighted 时的背景色，作用区域为箭头+圆角矩形区域
-@property(nonatomic, strong) UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong, nullable) UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 当使用方法 2 显示并且打开了 automaticallyHidesWhenUserTap 时，可修改背景遮罩的颜色，默认为 UIColorMask，若非使用方法 2，或者没有打开 automaticallyHidesWhenUserTap，则背景遮罩为透明（可视为不存在背景遮罩）
-@property(nonatomic, strong) UIColor *maskViewBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong, nullable) UIColor *maskViewBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 浮层的阴影，默认包含箭头的形状，如果使用了 @c arrowImage 则不包含箭头。当不需要阴影时可将其置为 nil。
-@property(nonatomic, strong) UIColor *shadowColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong, nullable) UIColor *shadowColor UI_APPEARANCE_SELECTOR;
 
-@property(nonatomic, strong) UIColor *borderColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong, nullable) UIColor *borderColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat cornerRadius UI_APPEARANCE_SELECTOR;
 
 /// 可以是 UINavigationBar、UIToolbar 上的 UIBarButtonItem，或者 UITabBar 上的 UITabBarItem
-@property(nonatomic, weak) __kindof UIBarItem *sourceBarItem;
+@property(nonatomic, weak, nullable) __kindof UIBarItem *sourceBarItem;
 
-@property(nonatomic, weak) __kindof UIView *sourceView;
+@property(nonatomic, weak, nullable) __kindof UIView *sourceView;
 
 /// rect 需要处于 QMUIPopupContainerView 所在的坐标系内，例如如果 popup 使用 addSubview: 的方式添加到界面，则 sourceRect 应该是 superview 坐标系内的；如果 popup 使用 window 的方式展示，则 sourceRect 需要转换为 window 坐标系内。
 @property(nonatomic, assign) CGRect sourceRect;
@@ -136,9 +151,9 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 - (void)updateLayout;
 
 - (void)showWithAnimated:(BOOL)animated;
-- (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+- (void)showWithAnimated:(BOOL)animated completion:(void (^ __nullable)(BOOL finished))completion;
 - (void)hideWithAnimated:(BOOL)animated;
-- (void)hideWithAnimated:(BOOL)animated completion:(void (^)(BOOL finished))completion;
+- (void)hideWithAnimated:(BOOL)animated completion:(void (^ __nullable)(BOOL finished))completion;
 - (BOOL)isShowing;
 
 /**
@@ -146,20 +161,20 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  *  注：如果需要使用例如 didShowBlock 的时机，请使用 @showWithAnimated:completion: 的 completion 参数来实现。
  *  @argv animated 是否需要动画
  */
-@property(nonatomic, copy) void (^willShowBlock)(BOOL animated);
+@property(nonatomic, copy, nullable) void (^willShowBlock)(BOOL animated);
 
 /**
  *  即将隐藏时的回调
  *  @argv hidesByUserTap 用于区分此次隐藏是否因为用户手动点击空白区域导致浮层被隐藏
  *  @argv animated 是否需要动画
  */
-@property(nonatomic, copy) void (^willHideBlock)(BOOL hidesByUserTap, BOOL animated);
+@property(nonatomic, copy, nullable) void (^willHideBlock)(BOOL hidesByUserTap, BOOL animated);
 
 /**
  *  已经隐藏后的回调
  *  @argv hidesByUserTap 用于区分此次隐藏是否因为用户手动点击空白区域导致浮层被隐藏
  */
-@property(nonatomic, copy) void (^didHideBlock)(BOOL hidesByUserTap);
+@property(nonatomic, copy, nullable) void (^didHideBlock)(BOOL hidesByUserTap);
 
 @end
 
@@ -169,11 +184,13 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 - (void)didInitialize NS_REQUIRES_SUPER;
 
 /**
- 子类重写，告诉父类subviews的合适大小
+ 子类重写，用于告诉父类添加到 contentView 上的 subviews 的大小
 
  @param size 浮层里除去 safetyMarginsOfSuperview、arrowSize、contentEdgeInsets 之外后，留给内容的实际大小，计算 subview 大小时均应使用这个参数来计算
  @return 自定义内容实际占据的大小
- @note 计算结果不需要进行 MIN() 的保护操作，溢出与否会由父类统一处理，子类在这个方法里只需要告诉父类内容实际的大小即可。
+ @note 计算结果不需要操心 maximumWidth、minimumWidth，这些会由组件统一处理，你只需要在这个方法里返回内容的实际大小即可。
  */
 - (CGSize)sizeThatFitsInContentView:(CGSize)size;
 @end
+
+NS_ASSUME_NONNULL_END

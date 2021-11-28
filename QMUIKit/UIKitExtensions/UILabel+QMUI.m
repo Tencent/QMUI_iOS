@@ -37,6 +37,7 @@ const CGFloat QMUILineHeightIdentity = -1000;
             @selector(setText:),
             @selector(setAttributedText:),
             @selector(setLineBreakMode:),
+            @selector(setTextAlignment:),
         };
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
@@ -172,6 +173,18 @@ static char kAssociatedObjectKey_textAttributes;
     if (self.qmui_textAttributes[NSParagraphStyleAttributeName]) {
         NSMutableParagraphStyle *p = ((NSParagraphStyle *)self.qmui_textAttributes[NSParagraphStyleAttributeName]).mutableCopy;
         p.lineBreakMode = lineBreakMode;
+        NSMutableDictionary<NSAttributedStringKey, id> *attrs = self.qmui_textAttributes.mutableCopy;
+        attrs[NSParagraphStyleAttributeName] = p.copy;
+        self.qmui_textAttributes = attrs.copy;
+    }
+}
+
+- (void)qmuilb_setTextAlignment:(NSTextAlignment)textAlignment {
+    [self qmuilb_setTextAlignment:textAlignment];
+    if (!self.qmui_textAttributes) return;
+    if (self.qmui_textAttributes[NSParagraphStyleAttributeName]) {
+        NSMutableParagraphStyle *p = ((NSParagraphStyle *)self.qmui_textAttributes[NSParagraphStyleAttributeName]).mutableCopy;
+        p.alignment = textAlignment;
         NSMutableDictionary<NSAttributedStringKey, id> *attrs = self.qmui_textAttributes.mutableCopy;
         attrs[NSParagraphStyleAttributeName] = p.copy;
         self.qmui_textAttributes = attrs.copy;

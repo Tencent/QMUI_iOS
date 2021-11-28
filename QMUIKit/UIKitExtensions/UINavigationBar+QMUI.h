@@ -22,7 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  UINavigationBar 在 iOS 11 下所有的 item 都会由 contentView 管理，只要在 UINavigationController init 完成后就能拿到 qmui_contentView 的值
  */
-@property(nonatomic, strong, readonly, nullable) UIView *qmui_contentView API_AVAILABLE(ios(11.0));
+@property(nonatomic, strong, readonly, nullable) UIView *qmui_contentView;
 
 /**
  UINavigationBar 的背景 view，可能显示磨砂、背景图，顶部有一部分溢出到 UINavigationBar 外。

@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.3.0";
+static NSString * const QMUI_VERSION = @"4.4.0-beta";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -183,16 +183,8 @@ static NSString * const QMUI_VERSION = @"4.3.0";
 #import "QMUIEmptyView.h"
 #endif
 
-#if __has_include("QMUIFillButton.h")
-#import "QMUIFillButton.h"
-#endif
-
 #if __has_include("QMUIFloatLayoutView.h")
 #import "QMUIFloatLayoutView.h"
-#endif
-
-#if __has_include("QMUIGhostButton.h")
-#import "QMUIGhostButton.h"
 #endif
 
 #if __has_include("QMUIGridView.h")
@@ -467,6 +459,10 @@ static NSString * const QMUI_VERSION = @"4.3.0";
 #import "UIBezierPath+QMUI.h"
 #endif
 
+#if __has_include("UIBlurEffect+QMUI.h")
+#import "UIBlurEffect+QMUI.h"
+#endif
+
 #if __has_include("UIButton+QMUI.h")
 #import "UIButton+QMUI.h"
 #endif
@@ -529,10 +525,6 @@ static NSString * const QMUI_VERSION = @"4.3.0";
 
 #if __has_include("UINavigationBar+QMUI.h")
 #import "UINavigationBar+QMUI.h"
-#endif
-
-#if __has_include("UINavigationBar+Transition.h")
-#import "UINavigationBar+Transition.h"
 #endif
 
 #if __has_include("UINavigationController+NavigationBarTransition.h")
@@ -601,6 +593,10 @@ static NSString * const QMUI_VERSION = @"4.3.0";
 
 #if __has_include("UITextView+QMUI.h")
 #import "UITextView+QMUI.h"
+#endif
+
+#if __has_include("UIToolbar+QMUI.h")
+#import "UIToolbar+QMUI.h"
 #endif
 
 #if __has_include("UITraitCollection+QMUI.h")

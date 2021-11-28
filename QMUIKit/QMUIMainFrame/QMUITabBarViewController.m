@@ -55,7 +55,7 @@
 // 只有 childViewController 没声明自己的状态栏样式时才会走到这里
 - (UIStatusBarStyle)preferredStatusBarStyle {
     if (QMUICMIActivated) {
-        return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+        return DefaultStatusBarStyle;
     }
     return [super preferredStatusBarStyle];
 }

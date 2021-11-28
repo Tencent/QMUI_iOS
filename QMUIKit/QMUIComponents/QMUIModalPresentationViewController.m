@@ -50,7 +50,7 @@
 
 @interface QMUIModalPresentationViewController ()<QMUIKeyboardManagerDelegate>
 
-@property(nonatomic, strong) QMUIModalPresentationWindow *containerWindow;
+@property(nonatomic, strong, readwrite) QMUIModalPresentationWindow *window;
 @property(nonatomic, weak) UIWindow *previousKeyWindow;
 
 @property(nonatomic, assign, readwrite, getter=isVisible) BOOL visible;
@@ -96,6 +96,7 @@
 - (void)didInitialize {
     [self qmui_applyAppearance];
     
+    self.shouldDimmedAppAutomatically = YES;
     self.onlyRespondsToKeyboardEventFromDescendantViews = YES;
     self.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     self.modalPresentationStyle = UIModalPresentationCustom;
@@ -121,7 +122,7 @@
 }
 
 - (void)dealloc {
-    self.containerWindow = nil;
+    self.window = nil;
 }
 
 - (BOOL)shouldAutomaticallyForwardAppearanceMethods {
@@ -169,10 +170,6 @@
         return;
     }
     
-    if (self.isShownInWindowMode) {
-        [QMUIHelper dimmedApplicationWindow];
-    }
-    
     void (^didShownCompletion)(BOOL finished) = ^(BOOL finished) {
         if (self.contentViewController) {
             [self.contentViewController endAppearanceTransition];
@@ -198,6 +195,12 @@
                 contentViewFrame = self.contentView.frame;
             }
             self.showingAnimation(self.dimmingView, self.view.bounds, self.keyboardHeight, contentViewFrame, didShownCompletion);
+            
+            if (self.shouldDimmedAppAutomatically) {
+                [UIView animateWithDuration:.25 delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+                    [QMUIHelper dimmedApplicationWindow];
+                } completion:nil];
+            }
         } else {
             self.contentView.frame = contentViewFrame;
             [self.contentView setNeedsLayout];
@@ -206,6 +209,9 @@
             [self showingAnimationWithCompletion:didShownCompletion];
         }
     } else {
+        if (self.shouldDimmedAppAutomatically) {
+            [QMUIHelper dimmedApplicationWindow];
+        }
         CGRect contentViewFrame = [self contentViewFrameForShowing];
         self.contentView.frame = contentViewFrame;
         [self.view addSubview:self.contentView];
@@ -260,15 +266,11 @@
         return;
     }
     
-    if (self.isShownInWindowMode) {
-        [QMUIHelper resetDimmedApplicationWindow];
-    }
-    
     void (^didHiddenCompletion)(BOOL finished) = ^(BOOL finished) {
         
         if (self.shownInWindowMode) {
             // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/90
-            if (UIApplication.sharedApplication.keyWindow == self.containerWindow) {
+            if (UIApplication.sharedApplication.keyWindow == self.window) {
                 if (self.previousKeyWindow.hidden) {
                     // 保护了这个 issue 记录的情况，避免主 window 丢失 keyWindow https://github.com/Tencent/QMUI_iOS/issues/315
                     [UIApplication.sharedApplication.delegate.window makeKeyWindow];
@@ -276,8 +278,8 @@
                     [self.previousKeyWindow makeKeyWindow];
                 }
             }
-            self.containerWindow.hidden = YES;
-            self.containerWindow.rootViewController = nil;
+            self.window.hidden = YES;
+            self.window.rootViewController = nil;
             self.previousKeyWindow = nil;
             [self endAppearanceTransition];
         }
@@ -317,10 +319,18 @@
     if (animated) {
         if (self.hidingAnimation) {
             self.hidingAnimation(self.dimmingView, self.view.bounds, self.keyboardHeight, didHiddenCompletion);
+            if (self.shouldDimmedAppAutomatically) {
+                [UIView animateWithDuration:.25 delay:0 options:QMUIViewAnimationOptionsCurveIn animations:^{
+                    [QMUIHelper resetDimmedApplicationWindow];
+                } completion:nil];
+            }
         } else {
             [self hidingAnimationWithCompletion:didHiddenCompletion];
         }
     } else {
+        if (self.shouldDimmedAppAutomatically) {
+            [QMUIHelper resetDimmedApplicationWindow];
+        }
         didHiddenCompletion(YES);
     }
 }
@@ -340,6 +350,10 @@
         [self.view setNeedsLayout];
         [self.view layoutIfNeeded];
     }
+}
+
+- (BOOL)shouldDimmedAppAutomatically {
+    return _shouldDimmedAppAutomatically && self.isShownInWindowMode;
 }
 
 #pragma mark - Dimming View
@@ -441,6 +455,9 @@
         [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 1.0;
             self.contentView.alpha = 1.0;
+            if (self.shouldDimmedAppAutomatically) {
+                [QMUIHelper dimmedApplicationWindow];
+            }
         } completion:^(BOOL finished) {
             if (completion) {
                 completion(finished);
@@ -453,6 +470,9 @@
         [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 1.0;
             self.contentView.transform = CGAffineTransformMakeScale(1, 1);
+            if (self.shouldDimmedAppAutomatically) {
+                [QMUIHelper dimmedApplicationWindow];
+            }
         } completion:^(BOOL finished) {
             self.contentView.transform = CGAffineTransformIdentity;
             if (completion) {
@@ -466,6 +486,9 @@
         [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 1.0;
             self.contentView.transform = CGAffineTransformIdentity;
+            if (self.shouldDimmedAppAutomatically) {
+                [QMUIHelper dimmedApplicationWindow];
+            }
         } completion:^(BOOL finished) {
             if (completion) {
                 completion(finished);
@@ -482,14 +505,14 @@
     self.appearAnimated = animated;
     self.appearCompletionBlock = completion;
     self.previousKeyWindow = UIApplication.sharedApplication.keyWindow;
-    if (!self.containerWindow) {
-        self.containerWindow = [[QMUIModalPresentationWindow alloc] init];
-        self.containerWindow.windowLevel = UIWindowLevelQMUIAlertView;
-        self.containerWindow.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
-        [self updateContainerWindowStatusBarCapture];
+    if (!self.window) {
+        self.window = [[QMUIModalPresentationWindow alloc] init];
+        self.window.windowLevel = UIWindowLevelQMUIAlertView;
+        self.window.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
+        [self updateWindowStatusBarCapture];
     }
-    self.containerWindow.rootViewController = self;
-    [self.containerWindow makeKeyAndVisible];
+    self.window.rootViewController = self;
+    [self.window makeKeyAndVisible];
 }
 
 - (void)hidingAnimationWithCompletion:(void (^)(BOOL))completion {
@@ -497,6 +520,9 @@
         [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 0.0;
             self.contentView.alpha = 0.0;
+            if (self.shouldDimmedAppAutomatically) {
+                [QMUIHelper resetDimmedApplicationWindow];
+            }
         } completion:^(BOOL finished) {
             if (completion) {
                 self.dimmingView.alpha = 1.0;
@@ -508,6 +534,9 @@
         [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 0.0;
             self.contentView.transform = CGAffineTransformMakeScale(0.0, 0.0);
+            if (self.shouldDimmedAppAutomatically) {
+                [QMUIHelper resetDimmedApplicationWindow];
+            }
         } completion:^(BOOL finished) {
             if (completion) {
                 self.dimmingView.alpha = 1.0;
@@ -519,6 +548,9 @@
         [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 0.0;
             self.contentView.transform = CGAffineTransformMakeTranslation(0, CGRectGetHeight(self.view.bounds) - CGRectGetMinY(self.contentView.frame));
+            if (self.shouldDimmedAppAutomatically) {
+                [QMUIHelper resetDimmedApplicationWindow];
+            }
         } completion:^(BOOL finished) {
             if (completion) {
                 self.dimmingView.alpha = 1.0;
@@ -617,7 +649,7 @@
 }
 
 - (BOOL)isShownInWindowMode {
-    return !!self.containerWindow;
+    return !!self.window;
 }
 
 - (BOOL)isShownInPresentedMode {
@@ -670,19 +702,19 @@
 
 - (void)setQmui_prefersStatusBarHiddenBlock:(BOOL (^)(void))qmui_prefersStatusBarHiddenBlock {
     [super setQmui_prefersStatusBarHiddenBlock:qmui_prefersStatusBarHiddenBlock];
-    [self updateContainerWindowStatusBarCapture];
+    [self updateWindowStatusBarCapture];
 }
 
 - (void)setQmui_preferredStatusBarStyleBlock:(UIStatusBarStyle (^)(void))qmui_preferredStatusBarStyleBlock {
     [super setQmui_preferredStatusBarStyleBlock:qmui_preferredStatusBarStyleBlock];
-    [self updateContainerWindowStatusBarCapture];
+    [self updateWindowStatusBarCapture];
 }
 
-- (void)updateContainerWindowStatusBarCapture {
-    if (!self.containerWindow) return;
+- (void)updateWindowStatusBarCapture {
+    if (!self.window) return;
     // 当以 window 的方式显示浮层时，状态栏交给 QMUIModalPresentationViewController 控制
-    self.containerWindow.qmui_capturesStatusBarAppearance = self.qmui_prefersStatusBarHiddenBlock || self.qmui_preferredStatusBarStyleBlock;
-    if (self.containerWindow.qmui_capturesStatusBarAppearance) {
+    self.window.qmui_capturesStatusBarAppearance = self.qmui_prefersStatusBarHiddenBlock || self.qmui_preferredStatusBarStyleBlock;
+    if (self.window.qmui_capturesStatusBarAppearance) {
         [self setNeedsStatusBarAppearanceUpdate];
     }
 }

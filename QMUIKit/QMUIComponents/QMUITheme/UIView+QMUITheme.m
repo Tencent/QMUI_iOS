@@ -160,12 +160,12 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
     
     // 特殊的 view 特殊处理
     // iOS 10-11 里当 UILabel.attributedText 的文字颜色都相同时，也无法使用 setNeedsDisplay 刷新样式，但只要某个 range 颜色不同就没问题，iOS 9、12-13 也没问题，这个通过 UILabel (QMUIThemeCompatibility) 兼容。
-    // iOS 9-13，当 UITextField 没有聚焦时，不需要调用 setNeedsDisplay 系统都可以自动更新文字样式，但聚焦时调用 setNeedsDisplay 也无法更新样式，这里依赖了 UITextField (QMUIThemeCompatibility) 对 setNeedsDisplay 做的兼容实现了更新
-    // 注意，iOS 11 及以下的 UITextView 直接调用 setNeedsDisplay 是无法刷新文字样式的，这里依赖了 UITextView (QMUIThemeCompatibility) 里通过 swizzle 实现了兼容，iOS 12 及以上没问题。
     static NSArray<Class> *needsDisplayClasses = nil;
-    if (!needsDisplayClasses) needsDisplayClasses = @[UILabel.class, UITextField.class, UITextView.class];
+    if (!needsDisplayClasses) needsDisplayClasses = @[UILabel.class, UITextView.class];
     [needsDisplayClasses enumerateObjectsUsingBlock:^(Class  _Nonnull class, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([self isKindOfClass:class]) [self setNeedsDisplay];
+        if ([self isKindOfClass:class]) {
+            [self setNeedsDisplay];
+        }
     }];
     
     // 输入框、搜索框的键盘跟随主题变化

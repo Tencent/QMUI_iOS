@@ -49,9 +49,7 @@
     [self qmui_applyAppearance];
     
     self.scrollView = [[UIScrollView alloc] init];
-    if (@available(iOS 11, *)) {
-        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+    self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     self.scrollView.showsVerticalScrollIndicator = NO;
     self.scrollView.showsHorizontalScrollIndicator = NO;
     self.scrollView.scrollsToTop = NO;

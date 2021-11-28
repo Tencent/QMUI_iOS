@@ -155,9 +155,9 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
     
     if (self.debugLayer) {
         if (self.scrollDirection == UICollectionViewScrollDirectionVertical) {
-            self.debugLayer.frame = CGRectFlatMake(0, self.collectionView.qmui_contentInset.top + self.sectionInset.top + _finalItemSize.height / 2, CGRectGetWidth(self.collectionView.bounds), PixelOne);
+            self.debugLayer.frame = CGRectFlatMake(0, self.collectionView.adjustedContentInset.top + self.sectionInset.top + _finalItemSize.height / 2, CGRectGetWidth(self.collectionView.bounds), PixelOne);
         } else {
-            self.debugLayer.frame = CGRectFlatMake(self.collectionView.qmui_contentInset.left + self.sectionInset.left + _finalItemSize.width / 2, 0, PixelOne, CGRectGetHeight(self.collectionView.bounds));
+            self.debugLayer.frame = CGRectFlatMake(self.collectionView.adjustedContentInset.left + self.sectionInset.left + _finalItemSize.width / 2, 0, PixelOne, CGRectGetHeight(self.collectionView.bounds));
         }
     }
 }
@@ -232,7 +232,7 @@ const CGFloat QMUICollectionViewPagingLayoutRotationRadiusAutomatic = -1.0;
     
     CGSize contentSize = self.collectionViewContentSize;
     CGSize frameSize = self.collectionView.bounds.size;
-    UIEdgeInsets contentInset = self.collectionView.qmui_contentInset;
+    UIEdgeInsets contentInset = self.collectionView.adjustedContentInset;
     
     BOOL scrollingToRight = proposedContentOffset.x < self.collectionView.contentOffset.x;// 代表 collectionView 期望的实际滚动方向是向右，但不代表手指拖拽的方向是向右，因为有可能此时已经在左边的尽头，继续往右拖拽，松手的瞬间由于回弹，这里会判断为是想向左滚动，但其实你的手指是向右拖拽
     BOOL scrollingToBottom = proposedContentOffset.y < self.collectionView.contentOffset.y;

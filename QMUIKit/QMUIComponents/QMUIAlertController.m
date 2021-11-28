@@ -1188,9 +1188,7 @@ static NSUInteger alertControllerCount = 0;
     if (!_headerScrollView) {
         _headerScrollView = [[UIScrollView alloc] init];
         _headerScrollView.scrollsToTop = NO;
-        if (@available(iOS 11, *)) {
-            _headerScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        }
+        _headerScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         [self updateHeaderBackgrondColor];
     }
     return _headerScrollView;
@@ -1200,9 +1198,7 @@ static NSUInteger alertControllerCount = 0;
     if (!_buttonScrollView) {
         _buttonScrollView = [[UIScrollView alloc] init];
         _buttonScrollView.scrollsToTop = NO;
-        if (@available(iOS 11, *)) {
-            _buttonScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        }
+        _buttonScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     }
     return _buttonScrollView;
 }

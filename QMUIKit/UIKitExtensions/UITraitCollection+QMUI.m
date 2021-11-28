@@ -61,106 +61,59 @@ static NSString * const kQMUIUserInterfaceStyleWillChangeSelectorsKey = @"qmui_u
     }
 }
 
-
-#ifdef DEBUG
-static id (*directTraitCollectionIMP)(id, SEL) = NULL;
-+ (void)load {
-    // 以下代码只会在 DEBUG 生效，主要是屏蔽 Main Thread Checker 对 QMUI swizzle traitCollection 的检测
-    // iOS 14 首次弹起键盘，UIKit 内部会在在子线程访问 -[UIWindow traitCollection]，该方法一旦被 swizzle，Main Thread Checker 就会误判为业务在子线程主动调用 UIKit 方法从而引发卡顿和警告。 https://github.com/Tencent/QMUI_iOS/issues/1087
-    // Main Thread Checker 的原理是在启动的时候替换相关方法的实现为 Main Thread Checker 自身的 trampoline，触发相关方法时会先在 trampoline 中实现线程检测逻辑并告警，所以这里唯一可行的屏蔽方法就是获取原始的 IMP 实现，并直接调用从而绕过 Main Thread Checker, 由于 QMUI 在 +load 到时候已经晚于这个时机，无法获取原始的实现方法，观察发现 -[UIWindow traitCollection] 内部会调用 -[UIWindow _updateWindowTraitsAndNotify:]，因此可以借助该方法回溯到 traitCollection 的真实地址。
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (qmui_exists_dyld_image("libMainThreadChecker.dylib")) {
-            OverrideImplementation([UIWindow class] , NSSelectorFromString(@"_updateWindowTraitsAndNotify:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^void(UIWindow *selfObject, BOOL arg1) {
-                    if (directTraitCollectionIMP == NULL) {
-                        NSArray *address = [NSThread callStackReturnAddresses];
-                        Dl_info info;
-                        if (IS_SIMULATOR) {
-                            dladdr((void *)[address[1] longLongValue], &info);
-                            if (strncmp(info.dli_sname, "-[UIWindow traitCollection]", 27) == 0) {
-                                directTraitCollectionIMP = info.dli_saddr;
-                            }
-                        } else {
-                            // 真机下拿不到系统私方法的 dli_sname，所以直接看 address[2]，如果他的 IMP 是 _qmui_overrideTraitCollectionMethodIfNeeded，说明 address[1] 是 -[UIWindow traitCollection]
-                            dladdr((void *)[address[2] longLongValue], &info);
-                            if ([[NSString stringWithUTF8String:info.dli_sname] containsString:@"+[UITraitCollection(QMUI) _qmui_overrideTraitCollectionMethodIfNeeded]"]) {
-                                dladdr((void *)[address[1] longLongValue], &info);
-                                directTraitCollectionIMP = info.dli_saddr;
-                            }
-                        }
-                    }
-                    id (*originSelectorIMP)(id, SEL, BOOL arg1);
-                    originSelectorIMP = (id (*)(id, SEL, BOOL))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, arg1);
-                };
-            });
-        }
-    });
-}
-#endif
-
-
 + (void)_qmui_overrideTraitCollectionMethodIfNeeded {
     if (@available(iOS 13.0, *)) {
         [QMUIHelper executeBlock:^{
-            static BOOL _isOverridedMethodProcessing = NO;
             static UIUserInterfaceStyle qmui_lastNotifiedUserInterfaceStyle;
             qmui_lastNotifiedUserInterfaceStyle = [UITraitCollection currentTraitCollection].userInterfaceStyle;
-            OverrideImplementation([UIWindow class] , @selector(traitCollection), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^UITraitCollection *(UIWindow *selfObject) {
-                    id (*originSelectorIMP)(id, SEL);
-#ifdef DEBUG
-                    originSelectorIMP = directTraitCollectionIMP ? : (id (*)(id, SEL))originalIMPProvider();
-#else
-                    originSelectorIMP = (id (*)(id, SEL))originalIMPProvider();
-#endif
-                    UITraitCollection *traitCollection = originSelectorIMP(selfObject, originCMD);
-                    if (_isOverridedMethodProcessing || !NSThread.isMainThread) {
-                        // 防止业务在接收到通知后，再次触发 traitCollection 造成递归
-                        return traitCollection;
-                    }
-                    _isOverridedMethodProcessing = YES;
+            
+            // - (void) _willTransitionToTraitCollection:(id)arg1 withTransitionCoordinator:(id)arg2; (0x7fff24711d49)
+            OverrideImplementation([UIWindow class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"willTransitionToTraitCollection:", @"withTransitionCoordinator:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIWindow *selfObject, UITraitCollection *traitCollection, id <UIViewControllerTransitionCoordinator> coordinator) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UITraitCollection *, id <UIViewControllerTransitionCoordinator>);
+                    originSelectorIMP = (void (*)(id, SEL, UITraitCollection *, id <UIViewControllerTransitionCoordinator>))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, traitCollection, coordinator);
                     
                     BOOL snapshotFinishedOnBackground = traitCollection.userInterfaceLevel == UIUserInterfaceLevelElevated && UIApplication.sharedApplication.applicationState == UIApplicationStateBackground;
                     // 进入后台且完成截图了就不继续去响应 style 变化（实测 iOS 13.0 iPad 进入后台并完成截图后，仍会多次改变 style，但是系统并没有调用界面的相关刷新方法）
                     if (selfObject.windowScene && !snapshotFinishedOnBackground) {
-                        NSPointerArray *windows = [[selfObject windowScene] valueForKeyPath:@"_contextBinder._attachedBindables"];
-                        // 系统会按照这个数组的顺序去更新 window 的 traitCollection，找出最先响应样式更新的 window
                         UIWindow *firstValidatedWindow = nil;
-                        for (NSUInteger i = 0, count = windows.count; i < count; i++) {
-                            UIWindow *window = [windows pointerAtIndex:i];
-                            // 例如用 UIWindow 方式显示的弹窗，在消失后，在 windows 数组里会残留一个 nil 的位置，这里过滤掉，否则会导致 App 从桌面唤醒时无法立即显示正确的 style
-                            if (!window) {
-                                continue;;
+                        
+                        if ([NSStringFromClass(selfObject.class) containsString:@"_UIWindowSceneUserInterfaceStyle"]) { // _UIWindowSceneUserInterfaceStyleAnimationSnapshotWindow
+                            firstValidatedWindow = selfObject;
+                        } else {
+                            // 系统会按照这个数组的顺序去更新 window 的 traitCollection，找出最先响应样式更新的 window
+                            NSPointerArray *windows = [[selfObject windowScene] valueForKeyPath:@"_contextBinder._attachedBindables"];
+                            for (NSUInteger i = 0, count = windows.count; i < count; i++) {
+                                UIWindow *window = [windows pointerAtIndex:i];
+                                // 例如用 UIWindow 方式显示的弹窗，在消失后，在 windows 数组里会残留一个 nil 的位置，这里过滤掉，否则会导致 App 从桌面唤醒时无法立即显示正确的 style
+                                if (!window) {
+                                    continue;;
+                                }
+                                
+                                // 由于 Keyboard 可以通过 keyboardAppearance 来控制 userInterfaceStyle 的 Dark/Light，不一定和系统一样，这里要过滤掉
+                                if ([window isKindOfClass:NSClassFromString(@"UIRemoteKeyboardWindow")] || [window isKindOfClass:NSClassFromString(@"UITextEffectsWindow")]) {
+                                    continue;
+                                }
+                                if (window.overrideUserInterfaceStyle != UIUserInterfaceStyleUnspecified) {
+                                    // 这里需要获取到和系统样式同步的 UserInterfaceStyle（所以指定 overrideUserInterfaceStyle 需要跳过）
+                                    // 所以当全部 window.overrideUserInterfaceStyle 都指定为非 UIUserInterfaceStyleUnspecified 时将无法获得当前系统的外观
+                                    continue;
+                                }
+                                firstValidatedWindow = window;
+                                break;
                             }
-                            
-                            // 由于 Keyboard 可以通过 keyboardAppearance 来控制 userInterfaceStyle 的 Dark/Light，不一定和系统一样，这里要过滤掉
-                            if ([window isKindOfClass:NSClassFromString(@"UIRemoteKeyboardWindow")] || [window isKindOfClass:NSClassFromString(@"UITextEffectsWindow")]) {
-                                continue;
-                            }
-                            if (window.overrideUserInterfaceStyle != UIUserInterfaceStyleUnspecified) {
-                                // 这里需要获取到和系统样式同步的 UserInterfaceStyle（所以指定 overrideUserInterfaceStyle 需要跳过）
-                                continue;
-                            }
-                            firstValidatedWindow = window;
-                            break;
                         }
+                        
                         if (selfObject == firstValidatedWindow) {
                             if (qmui_lastNotifiedUserInterfaceStyle != traitCollection.userInterfaceStyle) {
                                 qmui_lastNotifiedUserInterfaceStyle = traitCollection.userInterfaceStyle;
                                 [self _qmui_notifyUserInterfaceStyleWillChangeEvents:traitCollection];
                             }
-                        } else if (!firstValidatedWindow) {
-                            // 没有 firstValidatedWindow 有以下方法来拿到当前的外观：
-                            // 1、创建一个 window 来判断，但是发现在某些场景下，traitCollection 会被频繁调用，导致短时间内创建大量 window 造成性能下降。
-                            // 2、 [UITraitCollection currentTraitCollection] 但是 becomeFirstResponder 的过程中该会得到错误的结果。
-                            // 终上，这种情况暂时不处理，因此当全部 window.overrideUserInterfaceStyle 都指定为非 UIUserInterfaceStyleUnspecified 的值，将无法获得当前系统的外观。
                         }
                     }
-                    _isOverridedMethodProcessing = NO;
-                    return traitCollection;
-                    
                 };
             });
         } oncePerIdentifier:@"UITraitCollection addUserInterfaceStyleWillChangeObserver"];

@@ -70,15 +70,13 @@
     if (QMUICMIActivated) {
         self.hidesBottomBarWhenPushed = HidesBottomBarWhenPushedInitially;
         self.qmui_preferredStatusBarStyleBlock = ^UIStatusBarStyle{
-            return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+            return DefaultStatusBarStyle;
         };
     }
     
-    if (@available(iOS 11.0, *)) {
-        self.qmui_prefersHomeIndicatorAutoHiddenBlock = ^BOOL{
-            return NO;
-        };
-    }
+    self.qmui_prefersHomeIndicatorAutoHiddenBlock = ^BOOL{
+        return NO;
+    };
 
     
     // 动态字体notification
@@ -112,10 +110,8 @@
     [super viewDidAppear:animated];
     // fix iOS 11 and later, shouldHideKeyboardWhenTouchInView: will not work when calling becomeFirstResponder in UINavigationController.rootViewController.viewDidLoad
     // https://github.com/Tencent/QMUI_iOS/issues/495
-    if (@available(iOS 11.0, *)) {
-        if (self.hideKeyboardManager && [QMUIKeyboardManager isKeyboardVisible]) {
-            self.hideKeyboardTapGestureRecognizer.enabled = YES;
-        }
+    if (self.hideKeyboardManager && [QMUIKeyboardManager isKeyboardVisible]) {
+        self.hideKeyboardTapGestureRecognizer.enabled = YES;
     }
 }
 

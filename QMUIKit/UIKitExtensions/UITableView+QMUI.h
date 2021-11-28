@@ -122,7 +122,7 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
  @param updates insert/delete/reload/move calls
  @param completion completion callback
  */
-- (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion;
+- (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion DEPRECATED_MSG_ATTRIBUTE("请使用系统的 -[UITableView performBatchUpdates:completion:]，QMUI 4.4.0 已不再支持 iOS 10，没必要提供该兼容性之的接口了，后续会删除。");
 
 @end
 
@@ -141,9 +141,15 @@ extern const UITableViewStyle QMUITableViewStyleInsetGrouped;
 @interface UITableView (QMUI_InsetGrouped)
 
 /**
- 获取当前 UITableView 的 style，在 iOS 13 下同系统自带的 style 属性，在 iOS 12 下由于 QMUI 会把 QMUITableViewStyleInsetGrouped 转换成 UITableViewStyleGrouped，所以不能直接使用系统 style 属性的值，所以提供这个新属性用于获取业务设置的 style。如果 tableView 没使用 QMUITableViewStyleInsetGrouped 则可忽略这个属性的存在。
+ 对于代码的使用场景，通过这个属性可以获取当前 UITableView 的 style（如果当前 tableView 没有使用 InsetGrouped 则可以忽略这个属性的存在）。
+ 对于 Interface Builder 的使用场景，如果你的 App 最低版本从 iOS 13 开始，则直接用系统自带的 style 选项框去修改 style 即可，但如果你的 App
+ 最低版本包含 iOS 12 及以下，则需要在 Interface Builder 里把 qmui_style 修改为“2”来使用 QMUITableViewStyleInsetGrouped（选中 TableView 节点后在“User Defined Runtime Attributes”里添加名为“qmui_style”，类型为“Number”，值为“2”的条目）。
  */
+#if TARGET_INTERFACE_BUILDER
+@property(nonatomic, assign, readwrite) IBInspectable UITableViewStyle qmui_style;
+#else
 @property(nonatomic, assign, readonly) UITableViewStyle qmui_style;
+#endif
 
 /// 当使用 QMUITableViewStyleInsetGrouped 时可通过这个属性修改 cell 的圆角值，默认值为 10，也即 iOS 13 系统默认表现。如果要为不同 indexPath 指定不同圆角值，可在 -[UITableViewDelegate tableView:willDisplayCell:forRowAtIndexPath:] 内修改 cell.layer.cornerRadius 的值。
 @property(nonatomic, assign) CGFloat qmui_insetGroupedCornerRadius UI_APPEARANCE_SELECTOR;

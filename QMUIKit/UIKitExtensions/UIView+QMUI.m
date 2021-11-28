@@ -64,10 +64,7 @@ QMUISynthesizeIdCopyProperty(qmui_frameDidChangeBlock, setQmui_frameDidChangeBlo
 }
 
 - (UIEdgeInsets)qmui_safeAreaInsets {
-    if (@available(iOS 11.0, *)) {
-        return self.safeAreaInsets;
-    }
-    return UIEdgeInsetsZero;
+    return self.safeAreaInsets;
 }
 
 - (void)qmui_removeAllSubviews {
@@ -286,13 +283,7 @@ static char kAssociatedObjectKey_viewController;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         ExtendImplementationOfVoidMethodWithoutArguments([UIViewController class], @selector(viewDidLoad), ^(UIViewController *selfObject) {
-            if (@available(iOS 11.0, *)) {
-                selfObject.view.qmui_viewController = selfObject;
-            } else {
-                // 临时修复 iOS 10.0.2 上在输入框内切换输入法可能引发死循环的 bug，待查
-                // https://github.com/Tencent/QMUI_iOS/issues/471
-                ((UIView *)[selfObject qmui_valueForKey:@"_view"]).qmui_viewController = selfObject;
-            }
+            selfObject.view.qmui_viewController = selfObject;
         });
     });
 }

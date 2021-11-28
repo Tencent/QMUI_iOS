@@ -71,18 +71,6 @@
 #define ButtonDisabledAlpha             [QMUICMI buttonDisabledAlpha]              // 按钮Disabled状态的透明度
 #define ButtonTintColor                 [QMUICMI buttonTintColor]                  // 普通按钮的颜色
 
-#define GhostButtonColorBlue            [QMUICMI ghostButtonColorBlue]              // QMUIGhostButtonColorBlue的颜色
-#define GhostButtonColorRed             [QMUICMI ghostButtonColorRed]               // QMUIGhostButtonColorRed的颜色
-#define GhostButtonColorGreen           [QMUICMI ghostButtonColorGreen]             // QMUIGhostButtonColorGreen的颜色
-#define GhostButtonColorGray            [QMUICMI ghostButtonColorGray]              // QMUIGhostButtonColorGray的颜色
-#define GhostButtonColorWhite           [QMUICMI ghostButtonColorWhite]             // QMUIGhostButtonColorWhite的颜色
-
-#define FillButtonColorBlue             [QMUICMI fillButtonColorBlue]              // QMUIFillButtonColorBlue的颜色
-#define FillButtonColorRed              [QMUICMI fillButtonColorRed]               // QMUIFillButtonColorRed的颜色
-#define FillButtonColorGreen            [QMUICMI fillButtonColorGreen]             // QMUIFillButtonColorGreen的颜色
-#define FillButtonColorGray             [QMUICMI fillButtonColorGray]              // QMUIFillButtonColorGray的颜色
-#define FillButtonColorWhite            [QMUICMI fillButtonColorWhite]             // QMUIFillButtonColorWhite的颜色
-
 #pragma mark - TextInput
 #define TextFieldTextColor              [QMUICMI textFieldTextColor]               // QMUITextField、QMUITextView 的文字颜色
 #define TextFieldTintColor              [QMUICMI textFieldTintColor]               // QMUITextField、QMUITextView 的tintColor
@@ -96,12 +84,14 @@
 
 #pragma mark - NavigationBar
 
+#define NavBarUsesStandardAppearanceOnly                [QMUICMI navBarUsesStandardAppearanceOnly]
 #define NavBarContainerClasses                          [QMUICMI navBarContainerClasses]
 #define NavBarHighlightedAlpha                          [QMUICMI navBarHighlightedAlpha]
 #define NavBarDisabledAlpha                             [QMUICMI navBarDisabledAlpha]
 #define NavBarButtonFont                                [QMUICMI navBarButtonFont]
 #define NavBarButtonFontBold                            [QMUICMI navBarButtonFontBold]
 #define NavBarBackgroundImage                           [QMUICMI navBarBackgroundImage]
+#define NavBarRemoveBackgroundEffectAutomatically       [QMUICMI navBarRemoveBackgroundEffectAutomatically]
 #define NavBarShadowImage                               [QMUICMI navBarShadowImage]
 #define NavBarShadowImageColor                          [QMUICMI navBarShadowImageColor]
 #define NavBarBarTintColor                              [QMUICMI navBarBarTintColor]
@@ -124,8 +114,10 @@
 
 #pragma mark - TabBar
 
+#define TabBarUsesStandardAppearanceOnly                [QMUICMI tabBarUsesStandardAppearanceOnly]
 #define TabBarContainerClasses                          [QMUICMI tabBarContainerClasses]
 #define TabBarBackgroundImage                           [QMUICMI tabBarBackgroundImage]
+#define TabBarRemoveBackgroundEffectAutomatically       [QMUICMI tabBarRemoveBackgroundEffectAutomatically]
 #define TabBarBarTintColor                              [QMUICMI tabBarBarTintColor]
 #define TabBarShadowImageColor                          [QMUICMI tabBarShadowImageColor]
 #define TabBarStyle                                     [QMUICMI tabBarStyle]
@@ -138,6 +130,7 @@
 
 #pragma mark - Toolbar
 
+#define ToolBarUsesStandardAppearanceOnly               [QMUICMI toolBarUsesStandardAppearanceOnly]
 #define ToolBarContainerClasses                         [QMUICMI toolBarContainerClasses]
 #define ToolBarHighlightedAlpha                         [QMUICMI toolBarHighlightedAlpha]
 #define ToolBarDisabledAlpha                            [QMUICMI toolBarDisabledAlpha]
@@ -145,6 +138,7 @@
 #define ToolBarTintColorHighlighted                     [QMUICMI toolBarTintColorHighlighted]
 #define ToolBarTintColorDisabled                        [QMUICMI toolBarTintColorDisabled]
 #define ToolBarBackgroundImage                          [QMUICMI toolBarBackgroundImage]
+#define ToolBarRemoveBackgroundEffectAutomatically      [QMUICMI toolBarRemoveBackgroundEffectAutomatically]
 #define ToolBarBarTintColor                             [QMUICMI toolBarBarTintColor]
 #define ToolBarShadowImageColor                         [QMUICMI toolBarShadowImageColor]
 #define ToolBarStyle                                    [QMUICMI toolBarStyle]
@@ -197,6 +191,7 @@
 #define TableViewSectionFooterAccessoryMargins          [QMUICMI tableViewSectionFooterAccessoryMargins]
 #define TableViewSectionHeaderContentInset              [QMUICMI tableViewSectionHeaderContentInset]
 #define TableViewSectionFooterContentInset              [QMUICMI tableViewSectionFooterContentInset]
+#define TableViewSectionHeaderTopPadding                [QMUICMI tableViewSectionHeaderTopPadding]
 
 #define TableViewGroupedBackgroundColor                 [QMUICMI tableViewGroupedBackgroundColor]               // Grouped 类型的 QMUITableView 的背景色
 #define TableViewGroupedSeparatorColor                  [QMUICMI tableViewGroupedSeparatorColor]                // Grouped 类型的 QMUITableView 分隔线颜色
@@ -215,6 +210,7 @@
 #define TableViewGroupedSectionFooterDefaultHeight      [QMUICMI tableViewGroupedSectionFooterDefaultHeight]
 #define TableViewGroupedSectionHeaderContentInset       [QMUICMI tableViewGroupedSectionHeaderContentInset]
 #define TableViewGroupedSectionFooterContentInset       [QMUICMI tableViewGroupedSectionFooterContentInset]
+#define TableViewGroupedSectionHeaderTopPadding         [QMUICMI tableViewGroupedSectionHeaderTopPadding]
 
 #define TableViewInsetGroupedCornerRadius               [QMUICMI tableViewInsetGroupedCornerRadius] // InsetGrouped 类型的 UITableView 内 cell 的圆角值
 #define TableViewInsetGroupedHorizontalInset            [QMUICMI tableViewInsetGroupedHorizontalInset] // InsetGrouped 类型的 UITableView 内的左右缩进值
@@ -235,6 +231,7 @@
 #define TableViewInsetGroupedSectionFooterDefaultHeight      [QMUICMI tableViewInsetGroupedSectionFooterDefaultHeight]
 #define TableViewInsetGroupedSectionHeaderContentInset       [QMUICMI tableViewInsetGroupedSectionHeaderContentInset]
 #define TableViewInsetGroupedSectionFooterContentInset       [QMUICMI tableViewInsetGroupedSectionFooterContentInset]
+#define TableViewInsetGroupedSectionHeaderTopPadding         [QMUICMI tableViewInsetGroupedSectionHeaderTopPadding]
 
 #pragma mark - UIWindowLevel
 #define UIWindowLevelQMUIAlertView                      [QMUICMI windowLevelQMUIAlertView]
@@ -268,7 +265,7 @@
 #define AutomaticCustomNavigationBarTransitionStyle [QMUICMI automaticCustomNavigationBarTransitionStyle] // 界面 push/pop 时是否要自动根据两个界面的 barTintColor/backgroundImage/shadowImage 的样式差异来决定是否使用自定义的导航栏效果
 #define SupportedOrientationMask                        [QMUICMI supportedOrientationMask]          // 默认支持的横竖屏方向
 #define AutomaticallyRotateDeviceOrientation            [QMUICMI automaticallyRotateDeviceOrientation]  // 是否在界面切换或 viewController.supportedOrientationMask 发生变化时自动旋转屏幕，默认为 NO
-#define StatusbarStyleLightInitially                    [QMUICMI statusbarStyleLightInitially]      // 默认的状态栏内容是否使用白色，默认为 NO，在 iOS 13 下会自动根据是否 Dark Mode 而切换样式，iOS 12 及以前则为黑色
+#define DefaultStatusBarStyle                           [QMUICMI defaultStatusBarStyle]      // 默认的状态栏样式，默认值为 UIStatusBarStyleDefault，也即在 iOS 12 及以前是黑色文字，iOS 13 及以后会自动根据当前 App 是否处于 Dark Mode 切换颜色。如果你希望固定为白色，请设置为 UIStatusBarStyleLightContent，固定黑色则设置为 QMUIStatusBarStyleDarkContent。
 #define NeedsBackBarButtonItemTitle                     [QMUICMI needsBackBarButtonItemTitle]       // 全局是否需要返回按钮的title，不需要则只显示一个返回image
 #define HidesBottomBarWhenPushedInitially               [QMUICMI hidesBottomBarWhenPushedInitially] // QMUICommonViewController.hidesBottomBarWhenPushed 的初始值，默认为 NO，以保持与系统默认值一致，但通常建议改为 YES，因为一般只有 tabBar 首页那几个界面要求为 NO
 #define PreventConcurrentNavigationControllerTransitions [QMUICMI preventConcurrentNavigationControllerTransitions] // PreventConcurrentNavigationControllerTransitions : 自动保护 QMUINavigationController 在上一次 push/pop 尚未结束的时候就进行下一次 push/pop 的行为，避免产生 crash

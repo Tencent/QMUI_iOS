@@ -239,15 +239,13 @@ QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_ce
         
         // [UIKit Bug] 将 UISearchBar 作为 UITableView.tableHeaderView 使用时，如果列表内容不满一屏，可能出现搜索框不可视的问题
         // https://github.com/Tencent/QMUI_iOS/issues/1207
-        if (@available(iOS 11.0, *)) {
-            ExtendImplementationOfVoidMethodWithoutArguments([UISearchBar class], @selector(didMoveToSuperview), ^(UISearchBar *selfObject) {
-                if (selfObject.superview && CGRectGetHeight(selfObject.subviews.firstObject.frame) != CGRectGetHeight(selfObject.bounds)) {
-                    BeginIgnorePerformSelectorLeaksWarning
-                    [selfObject.qmui_searchController performSelector:NSSelectorFromString([NSString stringWithFormat:@"%@%@MaskIfNecessary", @"_update", @"SearchBar"])];
-                    EndIgnorePerformSelectorLeaksWarning
-                }
-            });
-        }
+        ExtendImplementationOfVoidMethodWithoutArguments([UISearchBar class], @selector(didMoveToSuperview), ^(UISearchBar *selfObject) {
+            if (selfObject.superview && CGRectGetHeight(selfObject.subviews.firstObject.frame) != CGRectGetHeight(selfObject.bounds)) {
+                BeginIgnorePerformSelectorLeaksWarning
+                [selfObject.qmui_searchController performSelector:NSSelectorFromString([NSString stringWithFormat:@"%@%@MaskIfNecessary", @"_update", @"SearchBar"])];
+                EndIgnorePerformSelectorLeaksWarning
+            }
+        });
         
         ExtendImplementationOfNonVoidMethodWithSingleArgument([UISearchBar class], @selector(initWithFrame:), CGRect, UISearchBar *, ^UISearchBar *(UISearchBar *selfObject, CGRect firstArgv, UISearchBar *originReturnValue) {
             [originReturnValue qmuisb_didInitialize];
@@ -686,10 +684,7 @@ static char kAssociatedObjectKey_rightAccessoryViewMargins;
 }
 
 - (BOOL)qmuisb_shouldFixLayoutWhenUsedAsTableHeaderView {
-    if (@available(iOS 11, *)) {
-        return self.qmui_usedAsTableHeaderView && self.qmui_searchController.hidesNavigationBarDuringPresentation;
-    }
-    return NO;
+    return self.qmui_usedAsTableHeaderView && self.qmui_searchController.hidesNavigationBarDuringPresentation;
 }
 
 - (CGRect)qmuisb_adjustCancelButtonFrame:(CGRect)followingFrame {

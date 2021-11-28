@@ -417,31 +417,12 @@ static char kAssociatedObjectKey_updatesIndicatorView;
     // TODO: molice 等废弃 qmui_badgeCenterOffset 系列接口后再删除
     if (!offsetByTopRight) return nil;
     
-    if (@available(iOS 11.0, *)) {
-        if ([classString isEqualToString:@"_UIButtonBarButton"]) {
-            for (UIView *subview in self.subviews) {
-                if ([subview isKindOfClass:UIButton.class]) {
-                    UIView *imageView = ((UIButton *)subview).imageView;
-                    if (imageView && !imageView.hidden) {
-                        return imageView;
-                    }
-                }
-            }
-        }
-    } else {
-        if ([classString isEqualToString:@"UINavigationButton"]) {
-            UIView *imageView = ((UIButton *)self).imageView;
-            if (imageView && !imageView.hidden) {
-                return imageView;
-            }
-        }
-        if ([classString isEqualToString:@"UIToolbarButton"]) {
-            for (UIView *subview in self.subviews) {
-                if ([subview isKindOfClass:UIButton.class]) {
-                    UIView *imageView = ((UIButton *)subview).imageView;
-                    if (imageView && !imageView.hidden) {
-                        return imageView;
-                    }
+    if ([classString isEqualToString:@"_UIButtonBarButton"]) {
+        for (UIView *subview in self.subviews) {
+            if ([subview isKindOfClass:UIButton.class]) {
+                UIView *imageView = ((UIButton *)subview).imageView;
+                if (imageView && !imageView.hidden) {
+                    return imageView;
                 }
             }
         }

@@ -30,8 +30,6 @@
 #import "QMUIImagePickerCollectionViewCell.h"
 #import "QMUIAlertController.h"
 #import "QMUIButton.h"
-#import "QMUIFillButton.h"
-#import "QMUIGhostButton.h"
 #import "QMUIConsole.h"
 #import "QMUIEmotionView.h"
 #import "QMUIEmptyView.h"
@@ -98,6 +96,7 @@
                                        NSStringFromClass(UISearchBar.class):                        @[NSStringFromSelector(@selector(barTintColor)),
                                                                                                       NSStringFromSelector(@selector(qmui_placeholderColor)),
                                                                                                       NSStringFromSelector(@selector(qmui_textColor)),],
+                                       NSStringFromClass(UITextField.class):                        @[NSStringFromSelector(@selector(attributedText)),],
                                        NSStringFromClass(UIView.class):                             @[NSStringFromSelector(@selector(tintColor)),
                                                                                                       NSStringFromSelector(@selector(backgroundColor)),
                                                                                                       NSStringFromSelector(@selector(qmui_borderColor)),
@@ -113,9 +112,6 @@
                                        NSStringFromClass(QMUIButton.class):                         @[NSStringFromSelector(@selector(tintColorAdjustsTitleAndImage)),
                                                                                                       NSStringFromSelector(@selector(highlightedBackgroundColor)),
                                                                                                       NSStringFromSelector(@selector(highlightedBorderColor)),],
-                                       NSStringFromClass(QMUIFillButton.class):                     @[NSStringFromSelector(@selector(fillColor)),
-                                                                                                      NSStringFromSelector(@selector(titleTextColor)),],
-                                       NSStringFromClass(QMUIGhostButton.class):                    @[NSStringFromSelector(@selector(ghostColor)),],
                                        NSStringFromClass(QMUIConsole.class):                        @[NSStringFromSelector(@selector(searchResultHighlightedBackgroundColor)),],
                                        NSStringFromClass(QMUIEmotionView.class):                    @[NSStringFromSelector(@selector(sendButtonBackgroundColor)),],
                                        NSStringFromClass(QMUIEmptyView.class):                      @[NSStringFromSelector(@selector(textLabelTextColor)),
@@ -138,10 +134,6 @@
                                        NSStringFromClass(QMUITextField.class):                      @[NSStringFromSelector(@selector(placeholderColor)),],
                                        NSStringFromClass(QMUITextView.class):                       @[NSStringFromSelector(@selector(placeholderColor)),],
                                        NSStringFromClass(QMUIToastBackgroundView.class):            @[NSStringFromSelector(@selector(styleColor)),],
-                                       
-                                       // UITextField 支持富文本，因此不能重新设置 textColor 那些属性，会令原有的富文本信息丢失，所以这里直接把文字重新赋值进去即可
-                                       // 注意，UITextField 在未聚焦时，切换主题时系统能自动刷新文字颜色，但在聚焦时系统不会自动刷新颜色，所以需要在这里手动刷新
-//                                       NSStringFromClass(UITextField.class):                        @[NSStringFromSelector(@selector(attributedText)),],
                                        
                                        // 以下的 class 的更新依赖于 UIView (QMUITheme) 内的 setNeedsDisplay，这里不专门调用 setter
 //                                       NSStringFromClass(UILabel.class):                            @[NSStringFromSelector(@selector(textColor)),
@@ -190,21 +182,6 @@
                 };
             });
         }
-        
-        OverrideImplementation([UIView class], @selector(setBackgroundColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^void(UIView *selfObject, UIColor *color) {
-                
-                if (selfObject.backgroundColor.qmui_isQMUIDynamicColor || color.qmui_isQMUIDynamicColor) {
-                    // -[UIView setBackgroundColor:] 会同步修改 layer 的 backgroundColor，但它内部又有一个判断条件即：如果参入传入的 color.CGColor 和当前的 self.layr.backgroundColor 一样，就不会重新设置，而如果 layer.backgroundColor 如果关联了 QMUI 的动态色，忽略这个设置，就会导致前后不一致的问题，这里要强制把 layer.backgroundColor 清空，让每次都调用 -[CALayer setBackgroundColor:] 方法
-                    selfObject.layer.backgroundColor = nil;
-                }
-                
-                void (*originSelectorIMP)(id, SEL, UIColor *);
-                originSelectorIMP = (void (*)(id, SEL, UIColor *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, color);
-                
-            };
-        });
         
         // iOS 12 及以下的版本，[UIView setBackgroundColor:] 并不会保存传进来的 color，所以要自己用个变量保存起来，不然 QMUIThemeColor 对象就会被丢弃
         if (@available(iOS 13.0, *)) {
@@ -380,30 +357,6 @@
 
 @end
 
-@implementation UITableViewCell (QMUIThemeCompatibility)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (@available(iOS 13.0, *)) {
-        } else {
-            //  iOS 12 及以下，-[UITableViewCell setBackgroundColor:] 被调用时，如果参数的 backgroundColor 与当前的 backgroundColor 指针相同，则不会真正去执行颜色设置的逻辑，但这对于 dynamic color 而言是不满足需求的（同一个 dynamic color 实例在任何时候返回的 rawColor 都有可能发生变化），所以这里主动为其做一次 copy 操作，规避指针地址判断的问题
-            OverrideImplementation([UITableViewCell class], @selector(setBackgroundColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UITableViewCell *selfObject, UIColor *backgroundColor) {
-                     if (backgroundColor.qmui_isQMUIDynamicColor && backgroundColor == selfObject.backgroundColor) backgroundColor = backgroundColor.copy;
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, UIColor *);
-                    originSelectorIMP = (void (*)(id, SEL, UIColor *))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, backgroundColor);
-                };
-            });
-        }
-    });
-}
-
-@end
-
 @implementation UIVisualEffectView (QMUIThemeCompatibility)
 
 + (void)load {
@@ -454,30 +407,6 @@
                 };
             });
         }
-    });
-}
-
-@end
-
-@implementation UITextField (QMUIThemeCompatibility)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        
-        // 当 UITextField 没聚焦时系统会自动更新文字颜色（即便不手动调用 setNeedsDisplay），但聚焦的时候调用 setNeedsDisplay 也无法自动更新，因此做了这个兼容
-        // https://github.com/Tencent/QMUI_iOS/issues/777
-        ExtendImplementationOfVoidMethodWithoutArguments([UITextField class], @selector(setNeedsDisplay), ^(UITextView *selfObject) {
-            if (selfObject.isFirstResponder) {
-                UIView *fieldEditor = [selfObject qmui_valueForKey:@"_fieldEditor"];
-                if (fieldEditor) {
-                    UIView *contentView = [fieldEditor qmui_valueForKey:@"_contentView"];
-                    if (contentView) {
-                        [contentView setNeedsDisplay];
-                    }
-                }
-            }
-        });
     });
 }
 

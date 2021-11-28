@@ -79,16 +79,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) CGFloat            buttonHighlightedAlpha;
 @property(nonatomic, assign) CGFloat            buttonDisabledAlpha;
 @property(nonatomic, strong, nullable)  UIColor *buttonTintColor;
-@property(nonatomic, strong) UIColor            *ghostButtonColorBlue;
-@property(nonatomic, strong) UIColor            *ghostButtonColorRed;
-@property(nonatomic, strong) UIColor            *ghostButtonColorGreen;
-@property(nonatomic, strong) UIColor            *ghostButtonColorGray;
-@property(nonatomic, strong) UIColor            *ghostButtonColorWhite;
-@property(nonatomic, strong) UIColor            *fillButtonColorBlue;
-@property(nonatomic, strong) UIColor            *fillButtonColorRed;
-@property(nonatomic, strong) UIColor            *fillButtonColorGreen;
-@property(nonatomic, strong) UIColor            *fillButtonColorGray;
-@property(nonatomic, strong) UIColor            *fillButtonColorWhite;
 
 #pragma mark - UITextField & UITextView
 
@@ -101,17 +91,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *switchOnTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchOffTintColor;
 @property(nonatomic, strong, nullable) UIColor  *switchThumbTintColor;
-@property(nonatomic, strong, nullable) UIImage  *switchOnImage;
-@property(nonatomic, strong, nullable) UIImage  *switchOffImage;
 
 #pragma mark - NavigationBar
 
+@property(nonatomic, assign) BOOL               navBarUsesStandardAppearanceOnly API_AVAILABLE(ios(15.0));
 @property(nonatomic, copy, nullable) NSArray<Class<UIAppearanceContainer>> *navBarContainerClasses;
 @property(nonatomic, assign) CGFloat            navBarHighlightedAlpha;
 @property(nonatomic, assign) CGFloat            navBarDisabledAlpha;
 @property(nonatomic, strong, nullable) UIFont   *navBarButtonFont;
 @property(nonatomic, strong, nullable) UIFont   *navBarButtonFontBold;
 @property(nonatomic, strong, nullable) UIImage  *navBarBackgroundImage;
+@property(nonatomic, assign) BOOL               navBarRemoveBackgroundEffectAutomatically API_AVAILABLE(ios(15.0));
 @property(nonatomic, strong, nullable) UIImage  *navBarShadowImage;
 @property(nonatomic, strong, nullable) UIColor  *navBarShadowImageColor;
 @property(nonatomic, strong, nullable) UIColor  *navBarBarTintColor;
@@ -133,8 +123,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - TabBar
 
+@property(nonatomic, assign) BOOL               tabBarUsesStandardAppearanceOnly API_AVAILABLE(ios(15.0));
 @property(nonatomic, copy, nullable) NSArray<Class<UIAppearanceContainer>> *tabBarContainerClasses;
 @property(nonatomic, strong, nullable) UIImage  *tabBarBackgroundImage;
+@property(nonatomic, assign) BOOL               tabBarRemoveBackgroundEffectAutomatically API_AVAILABLE(ios(15.0));
 @property(nonatomic, strong, nullable) UIColor  *tabBarBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *tabBarShadowImageColor;
 @property(nonatomic, assign) UIBarStyle         tabBarStyle;
@@ -147,6 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Toolbar
 
+@property(nonatomic, assign) BOOL               toolBarUsesStandardAppearanceOnly API_AVAILABLE(ios(15.0));
 @property(nonatomic, copy, nullable) NSArray<Class<UIAppearanceContainer>> *toolBarContainerClasses;
 @property(nonatomic, assign) CGFloat            toolBarHighlightedAlpha;
 @property(nonatomic, assign) CGFloat            toolBarDisabledAlpha;
@@ -154,6 +147,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) UIColor  *toolBarTintColorHighlighted;
 @property(nonatomic, strong, nullable) UIColor  *toolBarTintColorDisabled;
 @property(nonatomic, strong, nullable) UIImage  *toolBarBackgroundImage;
+@property(nonatomic, assign) BOOL               toolBarRemoveBackgroundEffectAutomatically API_AVAILABLE(ios(15.0));
 @property(nonatomic, strong, nullable) UIColor  *toolBarBarTintColor;
 @property(nonatomic, strong, nullable) UIColor  *toolBarShadowImageColor;
 @property(nonatomic, assign) UIBarStyle         toolBarStyle;
@@ -205,6 +199,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterAccessoryMargins;
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewSectionFooterContentInset;
+@property(nonatomic, assign) CGFloat            tableViewSectionHeaderTopPadding API_AVAILABLE(ios(15.0));
 
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor  *tableViewGroupedSeparatorColor;
@@ -223,6 +218,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) CGFloat            tableViewGroupedSectionFooterDefaultHeight;
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewGroupedSectionFooterContentInset;
+@property(nonatomic, assign) CGFloat            tableViewGroupedSectionHeaderTopPadding API_AVAILABLE(ios(15.0));
 
 @property(nonatomic, assign) CGFloat            tableViewInsetGroupedCornerRadius;
 @property(nonatomic, assign) CGFloat            tableViewInsetGroupedHorizontalInset;
@@ -243,6 +239,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionFooterDefaultHeight;
 @property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionHeaderContentInset;
 @property(nonatomic, assign) UIEdgeInsets       tableViewInsetGroupedSectionFooterContentInset;
+@property(nonatomic, assign) CGFloat            tableViewInsetGroupedSectionHeaderTopPadding API_AVAILABLE(ios(15.0));
 
 #pragma mark - UIWindowLevel
 
@@ -279,7 +276,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               automaticCustomNavigationBarTransitionStyle;
 @property(nonatomic, assign) UIInterfaceOrientationMask supportedOrientationMask;
 @property(nonatomic, assign) BOOL               automaticallyRotateDeviceOrientation;
-@property(nonatomic, assign) BOOL               statusbarStyleLightInitially;
+@property(nonatomic, assign) UIStatusBarStyle   defaultStatusBarStyle;
 @property(nonatomic, assign) BOOL               needsBackBarButtonItemTitle;
 @property(nonatomic, assign) BOOL               hidesBottomBarWhenPushedInitially;
 @property(nonatomic, assign) BOOL               preventConcurrentNavigationControllerTransitions;

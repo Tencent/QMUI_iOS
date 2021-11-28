@@ -56,7 +56,6 @@ const CGFloat QMUIImagePreviewViewControllerCornerRadiusAutomaticDimension = -1;
 
 - (void)didInitialize {
     [super didInitialize];
-    self.automaticallyAdjustsScrollViewInsets = NO;
     
     self.sourceImageCornerRadius = QMUIImagePreviewViewControllerCornerRadiusAutomaticDimension;
     
@@ -64,11 +63,9 @@ const CGFloat QMUIImagePreviewViewControllerCornerRadiusAutomaticDimension = -1;
     
     [self qmui_applyAppearance];
     
-    if (@available(iOS 11.0, *)) {
-        self.qmui_prefersHomeIndicatorAutoHiddenBlock = ^BOOL{
-            return YES;
-        };
-    }
+    self.qmui_prefersHomeIndicatorAutoHiddenBlock = ^BOOL{
+        return YES;
+    };
 
     
     // present style

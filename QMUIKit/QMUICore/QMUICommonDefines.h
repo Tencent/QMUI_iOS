@@ -29,6 +29,8 @@
 #define IS_DEBUG NO
 #endif
 
+#define IS_XCTEST (!!NSProcessInfo.processInfo.environment[@"XCTestConfigurationFilePath"])
+
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 90000
 /// 当前编译使用的 Base SDK 版本为 iOS 9.0 及以上
 #define IOS9_SDK_ALLOWED YES
@@ -57,6 +59,11 @@
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
 /// 当前编译使用的 Base SDK 版本为 iOS 14.0 及以上
 #define IOS14_SDK_ALLOWED YES
+#endif
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 150000
+/// 当前编译使用的 Base SDK 版本为 iOS 15.0 及以上
+#define IOS15_SDK_ALLOWED YES
 #endif
 
 #pragma mark - Clang
@@ -129,7 +136,7 @@
 /// iPhone XS Max
 #define IS_65INCH_SCREEN [QMUIHelper is65InchScreen]
 /// iPhone 12 / 12 Pro
-#define IS_61INCH_SCREEN_AND_IPHONE12 [QMUIHelper is61InchScreenAndiPhone12]
+#define IS_61INCH_SCREEN_AND_IPHONE12 [QMUIHelper is61InchScreenAndiPhone12Later]
 /// iPhone XR
 #define IS_61INCH_SCREEN [QMUIHelper is61InchScreen]
 /// iPhone X/XS

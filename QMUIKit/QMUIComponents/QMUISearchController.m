@@ -43,9 +43,7 @@ BeginIgnoreDeprecatedWarning
 
 - (void)initTableView {
     [super initTableView];
-    if (@available(iOS 11, *)) {
-        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+    self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     if ([self.delegate respondsToSelector:@selector(didLoadTableViewInSearchResultsTableViewController:)]) {
         [self.delegate didLoadTableViewInSearchResultsTableViewController:self];

@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL qmui_usedAsTableHeaderView;
 
 /// 是否让搜索框的 search icon、placeholder 在非搜索状态下居中（iOS 11 及以上，系统默认是居左的，iOS 10 及以下版本，系统默认就是居中），默认为 NO，也即维持系统默认表现不变。
-@property(nonatomic, assign) BOOL qmui_centerPlaceholder UI_APPEARANCE_SELECTOR API_AVAILABLE(ios(11.0));
+@property(nonatomic, assign) BOOL qmui_centerPlaceholder UI_APPEARANCE_SELECTOR;
 
 /// 输入框内 placeholder 的颜色
 @property(nullable, nonatomic, strong) UIColor *qmui_placeholderColor UI_APPEARANCE_SELECTOR;

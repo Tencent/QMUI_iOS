@@ -96,7 +96,7 @@
 - (float)progress {
     UIScrollView *scrollView = self.scrollView;
     CGFloat contentOffsetY = flat(scrollView.contentOffset.y);
-    CGFloat offsetYToStartAnimation = flat(self.offsetYToStartAnimation + (self.adjustsOffsetYWithInsetTopAutomatically ? -scrollView.qmui_contentInset.top : 0));
+    CGFloat offsetYToStartAnimation = flat(self.offsetYToStartAnimation + (self.adjustsOffsetYWithInsetTopAutomatically ? -scrollView.adjustedContentInset.top : 0));
     if (contentOffsetY < offsetYToStartAnimation) {
         return 0;
     }

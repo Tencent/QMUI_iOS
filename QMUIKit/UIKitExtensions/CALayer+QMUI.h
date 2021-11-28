@@ -39,7 +39,7 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
  *  @warning 使用 qmui 方法，则超出 layer 范围内的内容都会被 clip 掉，系统的则不会
  *  @warning 如果使用这个接口设置圆角，那么需要获取圆角的值需要用 qmui_originCornerRadius，否则 iOS 11 以下获取到的都是 0
  */
-@property(nonatomic, assign) QMUICornerMask qmui_maskedCorners;
+@property(nonatomic, assign) QMUICornerMask qmui_maskedCorners DEPRECATED_MSG_ATTRIBUTE("请使用系统的 CALayer.maskedCorners，QMUI 4.4.0 开始不再支持 iOS 10，该属性无意义了，后续会删除。");
 
 /// iOS11 以下 layer 自身的 cornerRadius 一直都是 0，圆角的是通过 mask 做的，qmui_originCornerRadius 保存了当前的圆角
 @property(nonatomic, assign, readonly) CGFloat qmui_originCornerRadius;

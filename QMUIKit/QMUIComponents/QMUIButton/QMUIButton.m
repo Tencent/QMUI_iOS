@@ -522,7 +522,7 @@ const CGFloat QMUIButtonCornerRadiusAdjustsBounds = -1;
         }
         self.highlightedBackgroundLayer.frame = self.bounds;
         self.highlightedBackgroundLayer.cornerRadius = self.layer.cornerRadius;
-        self.highlightedBackgroundLayer.qmui_maskedCorners = self.layer.qmui_maskedCorners;
+        self.highlightedBackgroundLayer.maskedCorners = self.layer.maskedCorners;
         self.highlightedBackgroundLayer.backgroundColor = self.highlighted ? self.highlightedBackgroundColor.CGColor : UIColorClear.CGColor;
     }
     

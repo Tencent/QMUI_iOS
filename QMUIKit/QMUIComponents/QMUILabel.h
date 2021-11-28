@@ -15,6 +15,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 /**
  * `QMUILabel`支持通过`contentEdgeInsets`属性来实现类似padding的效果。
  *
@@ -25,12 +27,15 @@
 /// 控制label内容的padding，默认为UIEdgeInsetsZero
 @property(nonatomic,assign) UIEdgeInsets contentEdgeInsets;
 
+/// 支持在 label 无法显示完整文字时在 label 的末尾显示一个自定义的 View（通常用来实现点击展开更多的交互）
+@property(nonatomic, strong, nullable) __kindof UIView *truncatingTailView;
+
 /// 是否需要长按复制的功能，默认为 NO。
 /// 长按时的背景色通过`highlightedBackgroundColor`设置。
 @property(nonatomic,assign) IBInspectable BOOL canPerformCopyAction;
 
 /// 当 canPerformCopyAction 开启时，长按出来的菜单上的复制按钮的文本，默认为 nil，nil 时 menuItem 上的文字为“复制”
-@property(nonatomic, copy) IBInspectable NSString *menuItemTitleForCopyAction;
+@property(nonatomic, copy, nullable) IBInspectable NSString *menuItemTitleForCopyAction;
 
 /**
  label 在 highlighted 时的背景色，通常用于两种场景：
@@ -39,9 +44,11 @@
  
  默认为 nil
 */
-@property(nonatomic,strong) IBInspectable UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic,strong, nullable) IBInspectable UIColor *highlightedBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 点击了“复制”后的回调
-@property(nonatomic, copy) void (^didCopyBlock)(QMUILabel *label, NSString *stringCopied);
+@property(nonatomic, copy, nullable) void (^didCopyBlock)(QMUILabel *label, NSString *stringCopied);
 
 @end
+
+NS_ASSUME_NONNULL_END

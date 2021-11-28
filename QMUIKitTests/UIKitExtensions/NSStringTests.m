@@ -30,18 +30,223 @@
     XCTAssertNil([string qmui_stringMatchedByPattern:@"str" groupIndex:1]);
     XCTAssertEqualObjects([string qmui_stringMatchedByPattern:@"ing([\\d\\.]+)" groupIndex:1], @"0.05");
     
-    if (@available(iOS 11.0, *)) {
-        XCTAssertNil([string qmui_stringMatchedByPattern:@"str" groupName:@"number"]);
-        XCTAssertEqualObjects([string qmui_stringMatchedByPattern:@"ing(?<number>[\\d\\.]+)" groupName:@"number"], @"0.05");
-        XCTAssertThrows([string qmui_stringMatchedByPattern:@"ing(?<number>[\\d\\.]+)" groupName:@"num"]);
-    }
+    XCTAssertNil([string qmui_stringMatchedByPattern:@"str" groupName:@"number"]);
+    XCTAssertEqualObjects([string qmui_stringMatchedByPattern:@"ing(?<number>[\\d\\.]+)" groupName:@"number"], @"0.05");
+    XCTAssertNil([string qmui_stringMatchedByPattern:@"ing(?<number>[\\d\\.]+)" groupName:@"num"]);
 }
 
-//- (void)testPerformanceExample {
-//    // This is an example of a performance test case.
-//    [self measureBlock:^{
-//        // Put the code you want to measure the time of here.
-//    }];
-//}
+- (void)testSubstring1 {
+    NSString *text = @"01234567890123456789"; // length = 20, 20
+    NSString *zh = @"零一二三四五六七八九"; // length = 10, 20;
+    NSString *emoji = @"😊😊😊😊😊😊😊😊😊😊";// length = 20, 20
+    
+    NSInteger toIndex = 7;
+    BOOL lessValue = YES;// 系统的 substring 默认就是 lessValue = YES，也即 toIndex 所在位置的字符是不包含在返回结果里的
+    BOOL countingNonASCIICharacterAsTwo = NO;
+    
+    NSString *text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, toIndex);
+    
+    NSString *zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.length, toIndex);
+    NSString *zh3 = [zh substringToIndex:toIndex];
+    XCTAssertTrue((lessValue && zh2.length == zh3.length) || (!lessValue && zh2.length > zh3.length));
+    
+    NSString *emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    NSString *emoji3 = [emoji substringToIndex:[emoji rangeOfComposedCharacterSequenceAtIndex:toIndex].location];
+    XCTAssertTrue((lessValue && emoji2.length == emoji3.length) || (!lessValue && emoji2.length > emoji3.length));
+}
+
+- (void)testSubstring2 {
+    NSString *text = @"01234567890123456789"; // length = 20, 20
+    NSString *zh = @"零一二三四五六七八九"; // length = 10, 20;
+    NSString *emoji = @"😊😊😊😊😊😊😊😊😊😊";// length = 20, 20
+    
+    NSInteger toIndex = 14;
+    BOOL lessValue = YES;
+    BOOL countingNonASCIICharacterAsTwo = YES;
+    
+    NSString *text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, toIndex);
+    
+    NSString *zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.qmui_lengthWhenCountingNonASCIICharacterAsTwo, (toIndex / 2) * 2);
+    NSString *zh3 = [zh substringToIndex:toIndex / 2];
+    XCTAssertTrue(zh2.length == zh3.length && zh2.qmui_lengthWhenCountingNonASCIICharacterAsTwo == zh3.length * 2);
+    
+    NSString *emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    NSString *emoji3 = [emoji substringToIndex:[emoji rangeOfComposedCharacterSequenceAtIndex:toIndex / 2].location];
+    XCTAssertTrue((lessValue && emoji2.length == emoji3.length) || (!lessValue && emoji2.length > emoji3.length));
+}
+
+- (void)testSubstring3 {
+    NSString *text = @"01234567890123456789"; // length = 20, 20
+    NSString *zh = @"零一二三四五六七八九"; // length = 10, 20;
+    NSString *emoji = @"😊😊😊😊😊😊😊😊😊😊";// length = 20, 20
+    
+    NSInteger toIndex = 15;
+    BOOL lessValue = YES;
+    BOOL countingNonASCIICharacterAsTwo = YES;
+    
+    NSString *text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, toIndex);
+    
+    NSString *zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.qmui_lengthWhenCountingNonASCIICharacterAsTwo, (toIndex / 2) * 2);
+    NSString *zh3 = [zh substringToIndex:toIndex / 2];
+    XCTAssertTrue(zh2.length == zh3.length && zh2.qmui_lengthWhenCountingNonASCIICharacterAsTwo == zh3.length * 2);
+    
+    NSString *emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    NSString *emoji3 = [emoji substringToIndex:[emoji rangeOfComposedCharacterSequenceAtIndex:toIndex / 2].location];
+    XCTAssertTrue((lessValue && emoji2.length == emoji3.length) || (!lessValue && emoji2.length > emoji3.length));
+}
+
+- (void)testSubstring4 {
+    NSString *text = @"01234567890123456789"; // length = 20, 20
+    NSString *zh = @"零一二三四五六七八九"; // length = 10, 20;
+    NSString *emoji = @"😊😊😊😊😊😊😊😊😊😊";// length = 20, 20
+    
+    NSInteger toIndex = 7;
+    BOOL lessValue = NO;
+    BOOL countingNonASCIICharacterAsTwo = NO;
+    
+    NSString *text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, toIndex + 1);
+    
+    NSString *zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.length, toIndex + 1);
+    NSString *zh3 = [zh substringToIndex:toIndex];
+    XCTAssertTrue((lessValue && zh2.length == zh3.length) || (!lessValue && zh2.length > zh3.length));
+    
+    NSString *emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    NSString *emoji3 = [emoji substringToIndex:[emoji rangeOfComposedCharacterSequenceAtIndex:toIndex].location];
+    XCTAssertTrue((lessValue && emoji2.length == emoji3.length) || (!lessValue && emoji2.length > emoji3.length));
+}
+
+- (void)testSubstring5 {
+    NSString *text = @"01234567890123456789"; // length = 20, 20
+    NSString *zh = @"零一二三四五六七八九"; // length = 10, 20;
+    NSString *emoji = @"😊😊😊😊😊😊😊😊😊😊";// length = 20, 20
+    
+    NSInteger toIndex = 14;
+    BOOL lessValue = NO;
+    BOOL countingNonASCIICharacterAsTwo = YES;
+    
+    NSString *text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, toIndex + 1);
+    
+    NSString *zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.qmui_lengthWhenCountingNonASCIICharacterAsTwo, (toIndex / 2 + 1) * 2);
+    NSString *zh3 = [zh substringToIndex:toIndex / 2];
+    XCTAssertTrue(zh2.length == zh3.length + 1);
+    XCTAssertEqual(zh2.qmui_lengthWhenCountingNonASCIICharacterAsTwo, (zh3.length + 1) * 2);
+    
+    NSString *emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    NSString *emoji3 = [emoji substringToIndex:[emoji rangeOfComposedCharacterSequenceAtIndex:toIndex].location];
+    XCTAssertEqual(emoji2.length, emoji3.length / 2 + 1);
+}
+
+- (void)testSubstring6 {
+    NSString *emoji = @"😡😊😞😊😊😊😊😊😊😊";// length = 20, 20
+    NSRange range = NSMakeRange(1, 6);
+    BOOL lessValue = YES;
+    BOOL countingNonASCIICharacterAsTwo = NO;
+    NSString *emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(emoji2.length, 4);
+    
+    lessValue = NO;
+    emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(emoji2.length, 8);
+    
+    range = NSMakeRange(0, 6);
+    lessValue = YES;
+    emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(emoji2.length, 6);
+    
+    lessValue = NO;
+    emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(emoji2.length, 6);
+    
+    range = NSMakeRange(0, 1);
+    lessValue = YES;
+    emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(emoji2.length, 0);
+    
+    lessValue = NO;
+    emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(emoji2.length, 2);
+    
+    NSString *text = @"01234567890123456789"; // length = 20, 20
+    NSString *zh = @"零一二三四五六七八九"; // length = 10, 20;
+    range = NSMakeRange(3, 5);
+    lessValue = YES;
+    NSString *text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, range.length);
+    
+    NSString *zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.length, range.length);
+    NSString *zh3 = [zh substringWithRange:range];
+    XCTAssertTrue(zh2.length == zh3.length);
+    
+    countingNonASCIICharacterAsTwo = YES;
+    
+    text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, range.length);
+    
+    zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.length, 2);
+    
+    range = NSMakeRange(3, 6);
+    
+    text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, range.length);
+    
+    zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.length, 2);
+    
+    lessValue = NO;
+    
+    text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(text2.length, range.length);
+    
+    zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.length, 4);
+    
+    zh = @"零一二三4五六七八九"; // length = 10, 19;
+    lessValue = YES;
+    
+    zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesWithRange:range lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
+    XCTAssertEqual(zh2.length, 3);
+}
+
+// NSAttributedString 的简单处理，只要和 NSString 一致就行了
+- (void)testAttributedString {
+    NSArray<NSAttributedString *> *strs = @[
+        [[NSAttributedString alloc] initWithString:@"01234567890123456789"],// length = 20, 20
+        [[NSAttributedString alloc] initWithString:@"零一二三四五六七八九"],// length = 10, 20;
+        [[NSAttributedString alloc] initWithString:@"😡😊😞😊😊😊😊😊😊😊"],// length = 20, 20
+    ];
+    
+    void (^testingBlock)(NSAttributedString *, BOOL, BOOL) = ^void(NSAttributedString *str, BOOL lessValue, BOOL asTwo) {
+        XCTAssertEqualObjects(
+                              [str qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:7 lessValue:lessValue countingNonASCIICharacterAsTwo:asTwo].string,
+                              [str.string qmui_substringAvoidBreakingUpCharacterSequencesFromIndex:7 lessValue:lessValue countingNonASCIICharacterAsTwo:asTwo]);
+        
+        XCTAssertEqualObjects(
+                              [str qmui_substringAvoidBreakingUpCharacterSequencesToIndex:7 lessValue:lessValue countingNonASCIICharacterAsTwo:asTwo].string,
+                              [str.string qmui_substringAvoidBreakingUpCharacterSequencesToIndex:7 lessValue:lessValue countingNonASCIICharacterAsTwo:asTwo]);
+        
+        XCTAssertEqualObjects(
+                              [str qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(3, 6) lessValue:lessValue countingNonASCIICharacterAsTwo:asTwo].string,
+                              [str.string qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(3, 6) lessValue:lessValue countingNonASCIICharacterAsTwo:asTwo]);
+    };
+    
+    [strs enumerateObjectsUsingBlock:^(NSAttributedString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        testingBlock(obj, YES, NO);
+        testingBlock(obj, YES, YES);
+        testingBlock(obj, NO, NO);
+        testingBlock(obj, NO, YES);
+    }];
+}
 
 @end

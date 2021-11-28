@@ -644,10 +644,8 @@
                     }
                     
                     // iOS 11 之后（iOS 11 Beta 5 测试过） titleView 的布局发生了一些变化，如果不主动设置宽度，titleView 里的内容就可能无法完整展示
-                    if (@available(iOS 11, *)) {
-                        if (CGRectGetWidth(titleView.bounds) != titleViewSize.width) {
-                            titleView.frame = CGRectSetWidth(titleView.frame, titleViewSize.width);
-                        }
+                    if (CGRectGetWidth(titleView.bounds) != titleViewSize.width) {
+                        titleView.frame = CGRectSetWidth(titleView.frame, titleViewSize.width);
                     }
                 }
                 
@@ -773,38 +771,35 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        if (@available(iOS 11.0, *)) {
-            OverrideImplementation([UINavigationController class], sel_registerName("_updateTopViewFramesToMatchScrollOffsetInViewController:contentScrollView:topLayoutType:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UINavigationController *selfObject, UIViewController *viewController, UIScrollView *scrollView, NSUInteger topLayoutType) {
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, UIViewController *, UIScrollView *, NSUInteger);
-                    originSelectorIMP = (void (*)(id, SEL,  UIViewController *, UIScrollView *, NSUInteger))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, viewController, scrollView, topLayoutType);
-                    
-                    [selfObject qmui_updateTitleViewToMatchScrollOffsetInViewController:viewController contentScrollView:scrollView topLayoutType:topLayoutType];
-                };
-            });
-        }
+        // -[UINavigationController _updateTopViewFramesToMatchScrollOffsetInViewController:contentScrollView:topLayoutType:]
+        OverrideImplementation([UINavigationController class], sel_registerName("_updateTopViewFramesToMatchScrollOffsetInViewController:contentScrollView:topLayoutType:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationController *selfObject, UIViewController *viewController, UIScrollView *scrollView, NSUInteger topLayoutType) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIViewController *, UIScrollView *, NSUInteger);
+                originSelectorIMP = (void (*)(id, SEL,  UIViewController *, UIScrollView *, NSUInteger))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, viewController, scrollView, topLayoutType);
+                
+                [selfObject qmui_updateTitleViewToMatchScrollOffsetInViewController:viewController contentScrollView:scrollView topLayoutType:topLayoutType];
+            };
+        });
     });
 }
 
 - (void)qmui_updateTitleViewToMatchScrollOffsetInViewController:(UIViewController *)viewController contentScrollView:(UIScrollView *)contentScrollView topLayoutType:(NSInteger)topLayoutType {
-    if (@available(iOS 11.0, *)) {
-        UIView *titleView = viewController.navigationItem.titleView;
-        if (!titleView || ![titleView isKindOfClass:[QMUINavigationTitleView class]]) {
-            return;
-        }
-        
-        QMUIAssert(viewController.navigationController == self, @"QMUINavigationTitleView", @"不存在 UINavigationController");
-        
-        QMUINavigationTitleView *navigationTitleView = (QMUINavigationTitleView *)titleView;
-        UIView *largeTitleView = self.navigationBar.qmui_largeTitleView;
-        BOOL largeTitleLabelVisable = self.navigationBar.prefersLargeTitles && viewController.qmui_prefersLargeTitleDisplayed && largeTitleView.alpha != 0;
-        BOOL titleViewAlpha = largeTitleLabelVisable ? 0 : 1;
-        BOOL animated = contentScrollView.layer.presentationLayer && !CGRectEqualToRect(contentScrollView.layer.presentationLayer.bounds, contentScrollView.layer.bounds);
-        [navigationTitleView setAlpha:titleViewAlpha animated:animated];
+    UIView *titleView = viewController.navigationItem.titleView;
+    if (!titleView || ![titleView isKindOfClass:[QMUINavigationTitleView class]]) {
+        return;
     }
+    
+    QMUIAssert(viewController.navigationController == self, @"QMUINavigationTitleView", @"不存在 UINavigationController");
+    
+    QMUINavigationTitleView *navigationTitleView = (QMUINavigationTitleView *)titleView;
+    UIView *largeTitleView = self.navigationBar.qmui_largeTitleView;
+    BOOL largeTitleLabelVisable = self.navigationBar.prefersLargeTitles && viewController.qmui_prefersLargeTitleDisplayed && largeTitleView.alpha != 0;
+    BOOL titleViewAlpha = largeTitleLabelVisable ? 0 : 1;
+    BOOL animated = contentScrollView.layer.presentationLayer && !CGRectEqualToRect(contentScrollView.layer.presentationLayer.bounds, contentScrollView.layer.bounds);
+    [navigationTitleView setAlpha:titleViewAlpha animated:animated];
 }
 
 

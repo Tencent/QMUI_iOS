@@ -111,9 +111,7 @@
     self.textView.backgroundColor = [UIColor clearColor];
     self.textView.scrollsToTop = NO;
     self.textView.editable = NO;
-    if (@available(iOS 11, *)) {
-        self.textView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+    self.textView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     [self.contentView addSubview:self.textView];
 }
 
@@ -151,7 +149,6 @@
 
 - (void)didInitialize {
     [super didInitialize];
-    self.automaticallyAdjustsScrollViewInsets = NO;
     self.backgroundColor = [QMUIConsole appearance].backgroundColor;
     
     _dateFormatter = [[NSDateFormatter alloc] init];
@@ -184,9 +181,7 @@
         _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
         _tableView.scrollsToTop = NO;
         [_tableView registerClass:QMUIConsoleLogItemCell.class forCellReuseIdentifier:@"cell"];
-        if (@available(iOS 11, *)) {
-            _tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        }
+        _tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     }
     return _tableView;
 }
@@ -279,10 +274,10 @@
 }
 
 - (CGRect)safetyPopoverButtonFrame:(CGRect)popoverButtonFrame {
-    CGRect safetyBounds = CGRectInsetEdges(self.view.bounds, self.view.qmui_safeAreaInsets);
+    CGRect safetyBounds = CGRectInsetEdges(self.view.bounds, self.view.safeAreaInsets);
     if (!CGRectContainsRect(safetyBounds, self.popoverButton.frame)) {
-        popoverButtonFrame = CGRectSetX(popoverButtonFrame, MAX(self.view.qmui_safeAreaInsets.left, MIN(CGRectGetMaxX(safetyBounds) - CGRectGetWidth(popoverButtonFrame), CGRectGetMinX(popoverButtonFrame))));
-        popoverButtonFrame = CGRectSetY(popoverButtonFrame, MAX(self.view.qmui_safeAreaInsets.top, MIN(CGRectGetMaxY(safetyBounds) - CGRectGetHeight(popoverButtonFrame), CGRectGetMinY(popoverButtonFrame))));
+        popoverButtonFrame = CGRectSetX(popoverButtonFrame, MAX(self.view.safeAreaInsets.left, MIN(CGRectGetMaxX(safetyBounds) - CGRectGetWidth(popoverButtonFrame), CGRectGetMinX(popoverButtonFrame))));
+        popoverButtonFrame = CGRectSetY(popoverButtonFrame, MAX(self.view.safeAreaInsets.top, MIN(CGRectGetMaxY(safetyBounds) - CGRectGetHeight(popoverButtonFrame), CGRectGetMinY(popoverButtonFrame))));
     }
     return popoverButtonFrame;
 }
@@ -294,7 +289,7 @@
         if (bindObject) {
             popoverButtonOrigin = ((NSValue *)[self.popoverButton qmui_getBoundObjectForKey:@"origin"]).CGPointValue;
         } else {
-            popoverButtonOrigin = CGPointMake(16 + self.view.qmui_safeAreaInsets.left, CGRectGetHeight(self.view.bounds) * 3.0 / 4.0);
+            popoverButtonOrigin = CGPointMake(16 + self.view.safeAreaInsets.left, CGRectGetHeight(self.view.bounds) * 3.0 / 4.0);
         }
         self.popoverButton.qmui_frameApplyTransform = [self safetyPopoverButtonFrame:CGRectSetXY(self.popoverButton.frame, popoverButtonOrigin.x, popoverButtonOrigin.y)];
     } else {
@@ -312,18 +307,18 @@
     CGSize containerViewSize = CGSizeMake(CGRectGetWidth(self.view.bounds), MAX(100, CGRectGetHeight(self.view.bounds) / 3));
     self.containerView.qmui_frameApplyTransform = CGRectMake(0, CGRectGetHeight(self.view.bounds) - containerViewSize.height, containerViewSize.width, containerViewSize.height);
     
-    CGFloat toolbarHeight = 44 + self.containerView.qmui_safeAreaInsets.bottom;
+    CGFloat toolbarHeight = 44 + self.containerView.safeAreaInsets.bottom;
     self.toolbar.qmui_height = toolbarHeight;
     self.toolbar.qmui_width = self.containerView.qmui_width;
     self.toolbar.qmui_bottom = self.containerView.qmui_height;
     
     self.tableView.qmui_width = self.containerView.qmui_width;
     self.tableView.qmui_height = self.toolbar.qmui_top;
-    self.tableView.contentInset = UIEdgeInsetsMake(self.tableView.qmui_safeAreaInsets.top, self.tableView.qmui_safeAreaInsets.left, self.tableView.contentInset.bottom, self.tableView.qmui_safeAreaInsets.right);
+    self.tableView.contentInset = UIEdgeInsetsMake(self.tableView.safeAreaInsets.top, self.tableView.safeAreaInsets.left, self.tableView.contentInset.bottom, self.tableView.safeAreaInsets.right);
     self.tableView.scrollIndicatorInsets = self.tableView.contentInset;
     
     [@[self.levelMenu, self.nameMenu] enumerateObjectsUsingBlock:^(QMUIPopupMenuView *menuView, NSUInteger idx, BOOL * _Nonnull stop) {
-        menuView.safetyMarginsOfSuperview = UIEdgeInsetsConcat(UIEdgeInsetsMake(2, 2, 2, 2), self.view.qmui_safeAreaInsets);
+        menuView.safetyMarginsOfSuperview = UIEdgeInsetsConcat(UIEdgeInsetsMake(2, 2, 2, 2), self.view.safeAreaInsets);
     }];
 }
 
@@ -365,7 +360,7 @@
         [self updateToolbarButtonState];
         
         [self.tableView reloadData];
-        [self.tableView qmui_performBatchUpdates:^{
+        [self.tableView performBatchUpdates:^{
         } completion:^(BOOL finished) {
             NSArray<QMUIConsoleLogItem *> *matchedItems = [self.showingLogItems qmui_filterWithBlock:^BOOL(QMUIConsoleLogItem * _Nonnull item) {
                 return item.searchResults.count > 0;

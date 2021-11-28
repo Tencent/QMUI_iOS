@@ -377,6 +377,11 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
     }];
 }
 
+// QMUIThemeImage 一定不存在 qmui_shouldUseSystemIMP 方法，该方法是为 UIImage 提供的，所以这里强制返回 NO。不这么处理的话，当遇到 [QMUIThemeImage qmui_imageWithTintColor:QMUIThemeColor] 时，该图片会无效。
+- (BOOL)qmui_shouldUseSystemIMP {
+    return NO;
+}
+
 @end
 
 @implementation UIImage (QMUITheme)

@@ -138,6 +138,18 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nonatomic, assign) CGFloat maximumContentViewWidth UI_APPEARANCE_SELECTOR;
 
 /**
+ 如果 modal 是以 window 形式显示的话，通过这个属性可以获取内部实际在用的 window 对象。
+ */
+@property(nullable, nonatomic, strong, readonly) UIWindow *window;
+
+/**
+ 如果 modal 是以 window 形式显示的话，控制在 modal 显示时是否要自动把 App 主界面置灰。
+ 默认为 YES。
+ 该属性在非 window 形式显示的情况下无意义。
+ */
+@property(nonatomic, assign) BOOL shouldDimmedAppAutomatically;
+
+/**
  *  背景遮罩，默认为一个普通的`UIView`，背景色为`UIColorMask`，可设置为自己的view，注意`dimmingView`的大小将会盖满整个控件。
  *
  *  `QMUIModalPresentationViewController`会自动给自定义的`dimmingView`添加手势以实现点击遮罩隐藏浮层。

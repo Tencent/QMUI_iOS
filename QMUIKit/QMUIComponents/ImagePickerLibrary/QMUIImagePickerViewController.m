@@ -146,7 +146,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     if (!CGSizeEqualToSize(self.collectionView.frame.size, self.view.bounds.size)) {
         self.collectionView.frame = self.view.bounds;
     }
-    UIEdgeInsets contentInset = UIEdgeInsetsMake(self.qmui_navigationBarMaxYInViewCoordinator, self.collectionView.qmui_safeAreaInsets.left, MAX(operationToolBarViewHeight, self.collectionView.qmui_safeAreaInsets.bottom), self.collectionView.qmui_safeAreaInsets.right);
+    UIEdgeInsets contentInset = UIEdgeInsetsMake(self.qmui_navigationBarMaxYInViewCoordinator, self.collectionView.safeAreaInsets.left, MAX(operationToolBarViewHeight, self.collectionView.safeAreaInsets.bottom), self.collectionView.safeAreaInsets.right);
     if (!UIEdgeInsetsEqualToEdgeInsets(self.collectionView.contentInset, contentInset)) {
         self.collectionView.contentInset = contentInset;
         self.collectionView.scrollIndicatorInsets = UIEdgeInsetsMake(contentInset.top, 0, contentInset.bottom, 0);
@@ -273,11 +273,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
         _collectionView.backgroundColor = UIColorClear;
         [_collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
         [_collectionView registerClass:[QMUIImagePickerCollectionViewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
-        if (@available(iOS 11, *)) {
-            _collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        } else {
-            self.automaticallyAdjustsScrollViewInsets = NO;
-        }
+        _collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     }
     return _collectionView;
 }

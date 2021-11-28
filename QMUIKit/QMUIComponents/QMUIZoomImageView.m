@@ -87,9 +87,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         self.scrollView.minimumZoomScale = 0;
         self.scrollView.maximumZoomScale = self.maximumZoomScale;
         self.scrollView.delegate = self;
-        if (@available(iOS 11, *)) {
-            self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-        }
+        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         [self addSubview:self.scrollView];
         
         _emptyView = [[QMUIEmptyView alloc] init];
@@ -138,7 +136,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
     
     if (_videoToolbar) {
         _videoToolbar.frame = ({
-            UIEdgeInsets margins = UIEdgeInsetsConcat(self.videoToolbarMargins, self.qmui_safeAreaInsets);
+            UIEdgeInsets margins = UIEdgeInsetsConcat(self.videoToolbarMargins, self.safeAreaInsets);
             CGFloat width = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(margins);
             CGFloat height = [_videoToolbar sizeThatFits:CGSizeMake(width, CGFLOAT_MAX)].height;
             CGRectFlatMake(margins.left, CGRectGetHeight(self.bounds) - margins.bottom - height, width, height);

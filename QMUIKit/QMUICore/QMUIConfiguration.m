@@ -26,6 +26,8 @@ const CGSize kUINavigationBarBackIndicatorImageSize = {13, 21};
 
 @interface QMUIConfiguration ()
 
+@property(nonatomic, strong) UINavigationBarAppearance *navigationBarAppearance API_AVAILABLE(ios(15.0));
+@property(nonatomic, strong) UIToolbarAppearance *toolBarAppearance API_AVAILABLE(ios(15.0));
 @property(nonatomic, strong) UITabBarAppearance *tabBarAppearance API_AVAILABLE(ios(13.0));
 @end
 
@@ -74,7 +76,9 @@ const CGSize kUINavigationBarBackIndicatorImageSize = {13, 21};
 
 static BOOL QMUI_hasAppliedInitialTemplate;
 - (void)applyInitialTemplate {
-    if (QMUI_hasAppliedInitialTemplate) {
+    // XCTest 无法加载配置表，因此没有寻找 classes 的必要
+    // https://github.com/Tencent/QMUI_iOS/issues/1312
+    if (QMUI_hasAppliedInitialTemplate || IS_XCTEST) {
         return;
     }
     
@@ -89,7 +93,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         numberOfClasses = objc_getClassList(NULL, 0);
         classes = (__unsafe_unretained Class *)malloc(sizeof(Class) * numberOfClasses);
         objc_getClassList(classes, numberOfClasses);
-        QMUILogWarn(@"QMUIConfiguration", @"如果你看到这条提示，建议到 GitHub 上提 issue，让我们联系你查看项目的配置表使用情况");
+        NSAssert(NO, @"如果你看到这条提示，建议到 GitHub 上提 issue，让我们联系你查看项目的配置表使用情况，否则请注释掉这一行。");
     }
     for (NSInteger i = 0; i < numberOfClasses; i++) {
         Class class = classesref ? (__bridge Class)classesref[i] : classes[i];
@@ -175,18 +179,6 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.buttonDisabledAlpha = self.controlDisabledAlpha;
     self.buttonTintColor = self.blueColor;
     
-    self.ghostButtonColorBlue = self.blueColor;
-    self.ghostButtonColorRed = self.redColor;
-    self.ghostButtonColorGreen = self.greenColor;
-    self.ghostButtonColorGray = self.grayColor;
-    self.ghostButtonColorWhite = self.whiteColor;
-    
-    self.fillButtonColorBlue = self.blueColor;
-    self.fillButtonColorRed = self.redColor;
-    self.fillButtonColorGreen = self.greenColor;
-    self.fillButtonColorGray = self.grayColor;
-    self.fillButtonColorWhite = self.whiteColor;
-    
     #pragma mark - UITextField & UITextView
     
     self.textFieldTextInsets = UIEdgeInsetsMake(0, 7, 0, 7);
@@ -235,6 +227,10 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.tableViewSectionFooterAccessoryMargins = UIEdgeInsetsMake(0, 15, 0, 0);
     self.tableViewSectionHeaderContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
     self.tableViewSectionFooterContentInset = UIEdgeInsetsMake(4, 15, 4, 15);
+    if (@available(iOS 15.0, *)) {
+        self.tableViewSectionHeaderTopPadding = UITableViewAutomaticDimension;
+    }
+
     
     self.tableViewGroupedSeparatorColor = self.tableViewSeparatorColor;
     self.tableViewGroupedSectionHeaderFont = UIFontMake(12);
@@ -247,6 +243,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.tableViewGroupedSectionFooterDefaultHeight = UITableViewAutomaticDimension;
     self.tableViewGroupedSectionHeaderContentInset = UIEdgeInsetsMake(16, 15, 8, 15);
     self.tableViewGroupedSectionFooterContentInset = UIEdgeInsetsMake(8, 15, 2, 15);
+    if (@available(iOS 15.0, *)) {
+        self.tableViewInsetGroupedSectionHeaderTopPadding = UITableViewAutomaticDimension;
+    }
     
     self.tableViewInsetGroupedCornerRadius = 10;
     self.tableViewInsetGroupedHorizontalInset = PreferredValueForVisualDevice(20, 15);
@@ -261,6 +260,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.tableViewInsetGroupedSectionFooterDefaultHeight = self.tableViewGroupedSectionFooterDefaultHeight;
     self.tableViewInsetGroupedSectionHeaderContentInset = self.tableViewGroupedSectionHeaderContentInset;
     self.tableViewInsetGroupedSectionFooterContentInset = self.tableViewGroupedSectionFooterContentInset;
+    if (@available(iOS 15.0, *)) {
+        self.tableViewInsetGroupedSectionHeaderTopPadding = UITableViewAutomaticDimension;
+    }
     
     #pragma mark - UIWindowLevel
     self.windowLevelQMUIAlertView = UIWindowLevelAlert - 4.0;
@@ -325,19 +327,73 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 
 #pragma mark - NavigationBar Setter
 
+- (UINavigationBarAppearance *)navigationBarAppearance {
+    if (!_navigationBarAppearance) {
+        _navigationBarAppearance = [[UINavigationBarAppearance alloc] init];
+        [_navigationBarAppearance configureWithDefaultBackground];
+    }
+    return _navigationBarAppearance;
+}
+
+- (void)updateNavigationBarBarAppearance {
+#ifdef IOS15_SDK_ALLOWED
+    if (@available(iOS 15.0, *)) {
+        if (QMUIHelper.canUpdateAppearance) {
+            UINavigationBar.qmui_appearanceConfigured.standardAppearance = self.navigationBarAppearance;
+            if (QMUICMIActivated && NavBarUsesStandardAppearanceOnly) {
+                UINavigationBar.qmui_appearanceConfigured.scrollEdgeAppearance = self.navigationBarAppearance;
+            }
+        }
+        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
+            navigationController.navigationBar.standardAppearance = self.navigationBarAppearance;
+            if (QMUICMIActivated && NavBarUsesStandardAppearanceOnly) {
+                navigationController.navigationBar.scrollEdgeAppearance = self.navigationBarAppearance;
+            }
+        }];
+    }
+#endif
+}
+
 - (void)setNavBarButtonFont:(UIFont *)navBarButtonFont {
     [QMUIConfiguration performAction:^{
-        // by molice 2017-08-04 只要用 appearence 的方式修改 UIBarButtonItem 的 font，就会导致界面切换时 UIBarButtonItem 抖动，系统的问题，所以暂时不修改 appearance。
-        // by molice 2018-06-14 iOS 11 观察貌似又没抖动了，先试试看
         _navBarButtonFont = navBarButtonFont;
-        if (QMUIHelper.canUpdateAppearance) {
-            UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]];
-            NSDictionary<NSAttributedStringKey,id> *attributes = navBarButtonFont ? @{NSFontAttributeName: navBarButtonFont} : nil;
-            [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateNormal];
-            [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateHighlighted];
-            [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateDisabled];
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            NSMutableDictionary<NSAttributedStringKey, id> *titleTextAttributes = self.navigationBarAppearance.buttonAppearance.normal.titleTextAttributes.mutableCopy;
+            titleTextAttributes[NSFontAttributeName] = navBarButtonFont;
+            self.navigationBarAppearance.buttonAppearance.normal.titleTextAttributes = titleTextAttributes;
+            [self updateNavigationBarBarAppearance];
+        } else {
+#endif
+            // by molice 2017-08-04 只要用 appearence 的方式修改 UIBarButtonItem 的 font，就会导致界面切换时 UIBarButtonItem 抖动，系统的问题，所以暂时不修改 appearance。
+            // by molice 2018-06-14 iOS 11 观察貌似又没抖动了，先试试看
+            
+            if (QMUIHelper.canUpdateAppearance) {
+                UIBarButtonItem *barButtonItemAppearance = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UINavigationBar class]]];
+                NSDictionary<NSAttributedStringKey,id> *attributes = navBarButtonFont ? @{NSFontAttributeName: navBarButtonFont} : nil;
+                [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateNormal];
+                [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateHighlighted];
+                [barButtonItemAppearance setTitleTextAttributes:attributes forState:UIControlStateDisabled];
+            }
+#ifdef IOS15_SDK_ALLOWED
         }
+#endif
     } ifValueChanged:_navBarButtonFont newValue:navBarButtonFont];
+}
+
+- (void)setNavBarButtonFontBold:(UIFont *)navBarButtonFontBold {
+    // iOS 15 以前无法专门对 Done 类型设置样式，所以这里只对 iOS 15 生效
+    if (@available(iOS 15.0, *)) {
+        [QMUIConfiguration performAction:^{
+            _navBarButtonFontBold = navBarButtonFontBold;
+#ifdef IOS15_SDK_ALLOWED
+            NSMutableDictionary<NSAttributedStringKey, id> *titleTextAttributes = self.navigationBarAppearance.doneButtonAppearance.normal.titleTextAttributes.mutableCopy;
+            titleTextAttributes[NSFontAttributeName] = navBarButtonFontBold;
+            self.navigationBarAppearance.doneButtonAppearance.normal.titleTextAttributes = titleTextAttributes;
+            [self updateNavigationBarBarAppearance];
+#endif
+        } ifValueChanged:_navBarButtonFontBold newValue:navBarButtonFontBold];
+    }
 }
 
 - (void)setNavBarTintColor:(UIColor *)navBarTintColor {
@@ -353,28 +409,58 @@ static BOOL QMUI_hasAppliedInitialTemplate;
 - (void)setNavBarBarTintColor:(UIColor *)navBarBarTintColor {
     [QMUIConfiguration performAction:^{
         _navBarBarTintColor = navBarBarTintColor;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         if (QMUIHelper.canUpdateAppearance) {
             UINavigationBar.qmui_appearanceConfigured.barTintColor = navBarBarTintColor;
         }
-        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBarTintColor)]) {
-                navigationController.navigationBar.barTintColor = navBarBarTintColor;
-            }
-        }];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.navigationBarAppearance.backgroundColor = navBarBarTintColor;
+            [self updateNavigationBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+                if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBarTintColor)]) {
+                    navigationController.navigationBar.barTintColor = navBarBarTintColor;
+                }
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:_navBarBarTintColor newValue:navBarBarTintColor];
 }
 
 - (void)setNavBarShadowImage:(UIImage *)navBarShadowImage {
     [QMUIConfiguration performAction:^{
         _navBarShadowImage = navBarShadowImage;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         [self configureNavBarShadowImage];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.navigationBarAppearance.shadowImage = navBarShadowImage;
+            [self updateNavigationBarBarAppearance];
+        }
+#endif
     } ifValueChanged:_navBarShadowImage newValue:!navBarShadowImage ? _navBarShadowImage : navBarShadowImage];// NavBarShadowImage 特殊一点，因为它在 NavBarShadowImageColor 里又会被赋值，所以这里对常见的组合“image = nil && imageColor = xxx”做特殊处理，避免误以为 valueChanged
 }
 
 - (void)setNavBarShadowImageColor:(UIColor *)navBarShadowImageColor {
     [QMUIConfiguration performAction:^{
         _navBarShadowImageColor = navBarShadowImageColor;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         [self configureNavBarShadowImage];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.navigationBarAppearance.shadowColor = navBarShadowImageColor;
+            [self updateNavigationBarBarAppearance];
+        }
+#endif
     } ifValueChanged:_navBarShadowImageColor newValue:navBarShadowImageColor];
 }
 
@@ -396,52 +482,106 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     if (QMUIHelper.canUpdateAppearance) {
         UINavigationBar.qmui_appearanceConfigured.shadowImage = shadowImage;
     }
-    [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarShadowImage)]) {
-            navigationController.navigationBar.shadowImage = shadowImage;
-        }
-    }];
+    
+#ifdef IOS15_SDK_ALLOWED
+    if (@available(iOS 15.0, *)) {
+    } else {
+#endif
+        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarShadowImage)]) {
+                navigationController.navigationBar.shadowImage = shadowImage;
+            }
+        }];
+#ifdef IOS15_SDK_ALLOWED
+    }
+#endif
 }
 
 - (void)setNavBarStyle:(UIBarStyle)navBarStyle {
     [QMUIConfiguration performAction:^{
         _navBarStyle = navBarStyle;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         if (QMUIHelper.canUpdateAppearance) {
             UINavigationBar.qmui_appearanceConfigured.barStyle = navBarStyle;
         }
-        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarStyle)]) {
-                navigationController.navigationBar.barStyle = navBarStyle;
-            }
-        }];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.navigationBarAppearance.backgroundEffect = [UIBlurEffect effectWithStyle:navBarStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemChromeMaterialLight : UIBlurEffectStyleSystemChromeMaterialDark];
+            [self updateNavigationBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+                if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarStyle)]) {
+                    navigationController.navigationBar.barStyle = navBarStyle;
+                }
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:@(_navBarStyle) newValue:@(navBarStyle)];
 }
 
 - (void)setNavBarBackgroundImage:(UIImage *)navBarBackgroundImage {
     [QMUIConfiguration performAction:^{
         _navBarBackgroundImage = navBarBackgroundImage;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         if (QMUIHelper.canUpdateAppearance) {
             [UINavigationBar.qmui_appearanceConfigured setBackgroundImage:navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
         }
-        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBackgroundImage)]) {
-                [navigationController.navigationBar setBackgroundImage:navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-            }
-        }];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.navigationBarAppearance.backgroundImage = navBarBackgroundImage;
+            [self updateNavigationBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+                if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBackgroundImage)]) {
+                    [navigationController.navigationBar setBackgroundImage:navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+                }
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:_navBarBackgroundImage newValue:navBarBackgroundImage];
 }
 
 - (void)setNavBarTitleFont:(UIFont *)navBarTitleFont {
     [QMUIConfiguration performAction:^{
         _navBarTitleFont = navBarTitleFont;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         [self updateNavigationBarTitleAttributesIfNeeded];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            NSMutableDictionary<NSAttributedStringKey, id> *titleTextAttributes = self.navigationBarAppearance.titleTextAttributes.mutableCopy;
+            titleTextAttributes[NSFontAttributeName] = navBarTitleFont;
+            self.navigationBarAppearance.titleTextAttributes = titleTextAttributes;
+            [self updateNavigationBarBarAppearance];
+        }
+#endif
     } ifValueChanged:_navBarTitleFont newValue:navBarTitleFont];
 }
 
 - (void)setNavBarTitleColor:(UIColor *)navBarTitleColor {
     [QMUIConfiguration performAction:^{
         _navBarTitleColor = navBarTitleColor;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         [self updateNavigationBarTitleAttributesIfNeeded];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            NSMutableDictionary<NSAttributedStringKey, id> *titleTextAttributes = self.navigationBarAppearance.titleTextAttributes.mutableCopy;
+            titleTextAttributes[NSForegroundColorAttributeName] = navBarTitleColor;
+            self.navigationBarAppearance.titleTextAttributes = titleTextAttributes;
+            [self updateNavigationBarBarAppearance];
+        }
+#endif
     } ifValueChanged:_navBarTitleColor newValue:navBarTitleColor];
 }
 
@@ -459,43 +599,78 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     if (QMUIHelper.canUpdateAppearance) {
         UINavigationBar.qmui_appearanceConfigured.titleTextAttributes = titleTextAttributes;
     }
-    [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-        if (![navigationController.topViewController respondsToSelector:@selector(qmui_titleViewTintColor)]) {
-            navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
-        }
-    }];
+#ifdef IOS15_SDK_ALLOWED
+    if (@available(iOS 15.0, *)) {
+    } else {
+#endif
+        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+            if (![navigationController.topViewController respondsToSelector:@selector(qmui_titleViewTintColor)]) {
+                navigationController.navigationBar.titleTextAttributes = titleTextAttributes;
+            }
+        }];
+#ifdef IOS15_SDK_ALLOWED
+    }
+#endif
 }
 
 - (void)setNavBarLargeTitleFont:(UIFont *)navBarLargeTitleFont {
     [QMUIConfiguration performAction:^{
         _navBarLargeTitleFont = navBarLargeTitleFont;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         [self updateNavigationBarLargeTitleTextAttributesIfNeeded];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            NSMutableDictionary<NSAttributedStringKey, id> *largeTitleTextAttributes = self.navigationBarAppearance.largeTitleTextAttributes.mutableCopy;
+            largeTitleTextAttributes[NSFontAttributeName] = navBarLargeTitleFont;
+            self.navigationBarAppearance.largeTitleTextAttributes = largeTitleTextAttributes;
+            [self updateNavigationBarBarAppearance];
+        }
+#endif
     } ifValueChanged:_navBarLargeTitleFont newValue:navBarLargeTitleFont];
 }
 
 - (void)setNavBarLargeTitleColor:(UIColor *)navBarLargeTitleColor {
     [QMUIConfiguration performAction:^{
         _navBarLargeTitleColor = navBarLargeTitleColor;
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         [self updateNavigationBarLargeTitleTextAttributesIfNeeded];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            NSMutableDictionary<NSAttributedStringKey, id> *largeTitleTextAttributes = self.navigationBarAppearance.largeTitleTextAttributes.mutableCopy;
+            largeTitleTextAttributes[NSForegroundColorAttributeName] = navBarLargeTitleColor;
+            self.navigationBarAppearance.largeTitleTextAttributes = largeTitleTextAttributes;
+            [self updateNavigationBarBarAppearance];
+        }
+#endif
     } ifValueChanged:_navBarLargeTitleColor newValue:navBarLargeTitleColor];
 }
 
 - (void)updateNavigationBarLargeTitleTextAttributesIfNeeded {
-    if (@available(iOS 11, *)) {
-        NSMutableDictionary<NSString *, id> *largeTitleTextAttributes = [[NSMutableDictionary alloc] init];
-        if (self.navBarLargeTitleFont) {
-            largeTitleTextAttributes[NSFontAttributeName] = self.navBarLargeTitleFont;
-        }
-        if (self.navBarLargeTitleColor) {
-            largeTitleTextAttributes[NSForegroundColorAttributeName] = self.navBarLargeTitleColor;
-        }
-        if (QMUIHelper.canUpdateAppearance) {
-            UINavigationBar.qmui_appearanceConfigured.largeTitleTextAttributes = largeTitleTextAttributes;
-        }
+    NSMutableDictionary<NSString *, id> *largeTitleTextAttributes = [[NSMutableDictionary alloc] init];
+    if (self.navBarLargeTitleFont) {
+        largeTitleTextAttributes[NSFontAttributeName] = self.navBarLargeTitleFont;
+    }
+    if (self.navBarLargeTitleColor) {
+        largeTitleTextAttributes[NSForegroundColorAttributeName] = self.navBarLargeTitleColor;
+    }
+    if (QMUIHelper.canUpdateAppearance) {
+        UINavigationBar.qmui_appearanceConfigured.largeTitleTextAttributes = largeTitleTextAttributes;
+    }
+    
+#ifdef IOS15_SDK_ALLOWED
+    if (@available(iOS 15.0, *)) {
+    } else {
+#endif
         [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
             navigationController.navigationBar.largeTitleTextAttributes = largeTitleTextAttributes;
         }];
+#ifdef IOS15_SDK_ALLOWED
     }
+#endif
 }
 
 - (void)setSizeNavBarBackIndicatorImageAutomatically:(BOOL)sizeNavBarBackIndicatorImageAutomatically {
@@ -522,17 +697,27 @@ static BOOL QMUI_hasAppliedInitialTemplate;
                                                                                                                               systemBackIndicatorImageSize.width - customBackIndicatorImageSize.width)] imageWithRenderingMode:_navBarBackIndicatorImage.renderingMode];
             }
         }
-        
+    
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         if (QMUIHelper.canUpdateAppearance) {
             UINavigationBar *navBarAppearance = UINavigationBar.qmui_appearanceConfigured;
             navBarAppearance.backIndicatorImage = _navBarBackIndicatorImage;
             navBarAppearance.backIndicatorTransitionMaskImage = _navBarBackIndicatorImage;
         }
         
-        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-            navigationController.navigationBar.backIndicatorImage = _navBarBackIndicatorImage;
-            navigationController.navigationBar.backIndicatorTransitionMaskImage = _navBarBackIndicatorImage;
-        }];
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            [self.navigationBarAppearance setBackIndicatorImage:_navBarBackIndicatorImage transitionMaskImage:_navBarBackIndicatorImage];
+            [self updateNavigationBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+                navigationController.navigationBar.backIndicatorImage = _navBarBackIndicatorImage;
+                navigationController.navigationBar.backIndicatorTransitionMaskImage = _navBarBackIndicatorImage;
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:_navBarBackIndicatorImage newValue:navBarBackIndicatorImage];
 }
 
@@ -540,18 +725,55 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     [QMUIConfiguration performAction:^{
         _navBarBackButtonTitlePositionAdjustment = navBarBackButtonTitlePositionAdjustment;
         
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
         if (QMUIHelper.canUpdateAppearance) {
             UIBarButtonItem *backBarButtonItem = [UIBarButtonItem appearance];
             [backBarButtonItem setBackButtonTitlePositionAdjustment:_navBarBackButtonTitlePositionAdjustment forBarMetrics:UIBarMetricsDefault];
         }
         
-        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
-            [navigationController.navigationItem.backBarButtonItem setBackButtonTitlePositionAdjustment:_navBarBackButtonTitlePositionAdjustment forBarMetrics:UIBarMetricsDefault];
-        }];
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.navigationBarAppearance.backButtonAppearance.normal.titlePositionAdjustment = navBarBackButtonTitlePositionAdjustment;
+            [self updateNavigationBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
+                [navigationController.navigationItem.backBarButtonItem setBackButtonTitlePositionAdjustment:_navBarBackButtonTitlePositionAdjustment forBarMetrics:UIBarMetricsDefault];
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:[NSValue valueWithUIOffset:_navBarBackButtonTitlePositionAdjustment] newValue:[NSValue valueWithUIOffset:navBarBackButtonTitlePositionAdjustment]];
 }
 
 #pragma mark - ToolBar Setter
+
+- (UIToolbarAppearance *)toolBarAppearance {
+    if (!_toolBarAppearance) {
+        _toolBarAppearance = [[UIToolbarAppearance alloc] init];
+        [_toolBarAppearance configureWithDefaultBackground];
+    }
+    return _toolBarAppearance;
+}
+
+- (void)updateToolBarBarAppearance {
+#ifdef IOS15_SDK_ALLOWED
+    if (@available(iOS 15.0, *)) {
+        if (QMUIHelper.canUpdateAppearance) {
+            UIToolbar.qmui_appearanceConfigured.standardAppearance = self.toolBarAppearance;
+            if (QMUICMIActivated && ToolBarUsesStandardAppearanceOnly) {
+                UIToolbar.qmui_appearanceConfigured.scrollEdgeAppearance = self.toolBarAppearance;
+            }
+        }
+        [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
+            navigationController.toolbar.standardAppearance = self.toolBarAppearance;
+            if (QMUICMIActivated && ToolBarUsesStandardAppearanceOnly) {
+                navigationController.toolbar.scrollEdgeAppearance = self.toolBarAppearance;
+            }
+        }];
+    }
+#endif
+}
 
 - (void)setToolBarTintColor:(UIColor *)toolBarTintColor {
     _toolBarTintColor = toolBarTintColor;
@@ -567,9 +789,19 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (QMUIHelper.canUpdateAppearance) {
             UIToolbar.qmui_appearanceConfigured.barStyle = toolBarStyle;
         }
-        [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
-            navigationController.toolbar.barStyle = toolBarStyle;
-        }];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.toolBarAppearance.backgroundEffect = [UIBlurEffect effectWithStyle:toolBarStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemChromeMaterialLight : UIBlurEffectStyleSystemChromeMaterialDark];
+            [self updateToolBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
+                navigationController.toolbar.barStyle = toolBarStyle;
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:@(_toolBarStyle) newValue:@(toolBarStyle)];
 }
 
@@ -579,9 +811,19 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (QMUIHelper.canUpdateAppearance) {
             UIToolbar.qmui_appearanceConfigured.barTintColor = _toolBarBarTintColor;
         }
-        [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
-            navigationController.toolbar.barTintColor = _toolBarBarTintColor;
-        }];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.toolBarAppearance.backgroundColor = toolBarBarTintColor;
+            [self updateToolBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
+                navigationController.toolbar.barTintColor = _toolBarBarTintColor;
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:_toolBarBarTintColor newValue:toolBarBarTintColor];
 }
 
@@ -591,9 +833,19 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (QMUIHelper.canUpdateAppearance) {
             [UIToolbar.qmui_appearanceConfigured setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
         }
-        [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
-            [navigationController.toolbar setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
-        }];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.toolBarAppearance.backgroundImage = toolBarBackgroundImage;
+            [self updateToolBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
+                [navigationController.toolbar setBackgroundImage:_toolBarBackgroundImage forToolbarPosition:UIBarPositionAny barMetrics:UIBarMetricsDefault];
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:_toolBarBackgroundImage newValue:toolBarBackgroundImage];
 }
 
@@ -604,9 +856,19 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (QMUIHelper.canUpdateAppearance) {
             [UIToolbar.qmui_appearanceConfigured setShadowImage:shadowImage forToolbarPosition:UIBarPositionAny];
         }
-        [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
-            [navigationController.toolbar setShadowImage:shadowImage forToolbarPosition:UIBarPositionAny];
-        }];
+        
+#ifdef IOS15_SDK_ALLOWED
+        if (@available(iOS 15.0, *)) {
+            self.toolBarAppearance.shadowColor = toolBarShadowImageColor;
+            [self updateToolBarBarAppearance];
+        } else {
+#endif
+            [self.appearanceUpdatingToolbarControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
+                [navigationController.toolbar setShadowImage:shadowImage forToolbarPosition:UIBarPositionAny];
+            }];
+#ifdef IOS15_SDK_ALLOWED
+        }
+#endif
     } ifValueChanged:_toolBarShadowImageColor newValue:toolBarShadowImageColor];
 }
 
@@ -624,9 +886,23 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     if (@available(iOS 13.0, *)) {
         if (QMUIHelper.canUpdateAppearance) {
             UITabBar.qmui_appearanceConfigured.standardAppearance = self.tabBarAppearance;
+#ifdef IOS15_SDK_ALLOWED
+            if (@available(iOS 15.0, *)) {
+                if (QMUICMIActivated && TabBarUsesStandardAppearanceOnly) {
+                    UITabBar.qmui_appearanceConfigured.scrollEdgeAppearance = self.tabBarAppearance;
+                }
+            }
+#endif
         }
         [self.appearanceUpdatingTabBarControllers enumerateObjectsUsingBlock:^(UITabBarController * _Nonnull tabBarController, NSUInteger idx, BOOL * _Nonnull stop) {
             tabBarController.tabBar.standardAppearance = self.tabBarAppearance;
+#ifdef IOS15_SDK_ALLOWED
+            if (@available(iOS 15.0, *)) {
+                if (QMUICMIActivated && TabBarUsesStandardAppearanceOnly) {
+                    tabBarController.tabBar.scrollEdgeAppearance = self.tabBarAppearance;
+                }
+            }
+#endif
             [tabBarController.tabBar setNeedsLayout];// theme 不跟随系统的情况下切换 Light/Dark，tabBarAppearance.backgroundEffect 虽然值被更新了，但样式被刷新，这里手动触发一下
         }];
     }
@@ -851,8 +1127,8 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     } ifValueChanged:_tabBarItemImageColorSelected newValue:tabBarItemImageColorSelected];
 }
 
-- (void)setStatusbarStyleLightInitially:(BOOL)statusbarStyleLightInitially {
-    _statusbarStyleLightInitially = statusbarStyleLightInitially;
+- (void)setDefaultStatusBarStyle:(UIStatusBarStyle)defaultStatusBarStyle {
+    _defaultStatusBarStyle = defaultStatusBarStyle;
     [[QMUIHelper visibleViewController] setNeedsStatusBarAppearanceUpdate];
 }
 

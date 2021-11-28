@@ -149,7 +149,7 @@ static NSMutableArray <QMUIToastView *> *kToastViews = nil;
     CGFloat contentWidth = CGRectGetWidth(self.parentView.bounds);
     CGFloat contentHeight = CGRectGetHeight(self.parentView.bounds);
     
-    UIEdgeInsets marginInsets = UIEdgeInsetsConcat(self.marginInsets, self.parentView.qmui_safeAreaInsets);
+    UIEdgeInsets marginInsets = UIEdgeInsetsConcat(self.marginInsets, self.parentView.safeAreaInsets);
     
     CGFloat limitWidth = contentWidth - UIEdgeInsetsGetHorizontalValue(marginInsets);
     CGFloat limitHeight = contentHeight - UIEdgeInsetsGetVerticalValue(marginInsets);

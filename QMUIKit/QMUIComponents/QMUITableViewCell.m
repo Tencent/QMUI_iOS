@@ -21,7 +21,6 @@
 
 @interface QMUITableViewCell() <UIScrollViewDelegate>
 
-@property(nonatomic, assign) BOOL initByTableView;
 @property(nonatomic, assign, readwrite) QMUITableViewCellPosition cellPosition;
 @property(nonatomic, assign, readwrite) UITableViewCellStyle style;
 @property(nonatomic, strong) UIImageView *defaultAccessoryImageView;
@@ -33,16 +32,13 @@
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        if (!self.initByTableView) {
-            [self didInitializeWithStyle:style];
-        }
+        [self didInitializeWithStyle:style];
     }
     return self;
 }
 
 - (instancetype)initForTableView:(UITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    self.initByTableView = YES;
-    if (self = [self initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
         self.parentTableView = tableView;
         [self didInitializeWithStyle:style];// 因为设置了 parentTableView，样式可能都需要变，所以这里重新执行一次 didInitializeWithStyle: 里的 qmui_styledAsQMUITableViewCell
     }
@@ -307,7 +303,6 @@
 @implementation QMUITableViewCell(QMUISubclassingHooks)
 
 - (void)didInitializeWithStyle:(UITableViewCellStyle)style {
-    self.initByTableView = NO;
     _cellPosition = QMUITableViewCellPositionNone;
     
     _style = style;

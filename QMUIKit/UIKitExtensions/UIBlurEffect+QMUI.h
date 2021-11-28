@@ -5,25 +5,29 @@
  * http://opensource.org/licenses/MIT
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
-
 //
-//  UINavigationBar+Transition.h
-//  qmui
+//  UIBlurEffect+QMUI.h
+//  QMUIKit
 //
-//  Created by QMUI Team on 11/25/16.
+//  Created by MoLice on 2021/N/25.
 //
 
 #import <UIKit/UIKit.h>
 
-@interface UINavigationBar (Transition)
+NS_ASSUME_NONNULL_BEGIN
 
-/// 用来模仿真的navBar，配合 UINavigationController+NavigationBarTransition 在转场过程中存在的一条假navBar
-@property(nonatomic, weak) UINavigationBar *qmuinb_copyStylesToBar;
+@interface UIBlurEffect (QMUI)
+
+/**
+ 创建一个指定模糊半径的磨砂效果，注意这种方式创建的磨砂对象的 style 属性是无意义的（可以理解为系统的磨砂有两个维度：style、radius）。
+ */
++ (instancetype)qmui_effectWithBlurRadius:(CGFloat)radius;
+
+/**
+ 获取当前 UIBlurEffect 的 style，前提是该 UIBlurEffect 对象是通过 effectWithStyle: 方式创建的。如果是通过指定 radius 方式创建的，则 qmui_style 会返回一个无意义的值。
+ */
+@property(nonatomic, assign, readonly) UIBlurEffectStyle qmui_style;
+
 @end
 
-@interface _QMUITransitionNavigationBar : UINavigationBar
-
-// 建立假 bar 到真 bar 的关系，内部会通过 qmuinb_copyStylesToBar 同时设置真 bar 到假 bar 的关系
-@property(nonatomic, weak) UINavigationBar *originalNavigationBar;
-@property(nonatomic, assign) BOOL shouldPreventAppearance;
-@end
+NS_ASSUME_NONNULL_END

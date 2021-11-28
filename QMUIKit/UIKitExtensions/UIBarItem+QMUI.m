@@ -34,16 +34,6 @@
             [UIBarItem setView:firstArgv inBarButtonItem:selfObject];
         });
         
-        if (IOS_VERSION_NUMBER < 110000) {
-            // iOS 11.0 及以上，通过 setView: 调用 qmui_viewDidSetBlock 即可，10.0 及以下只能在 setToolbarItems 的时机触发
-            ExtendImplementationOfVoidMethodWithTwoArguments([UIViewController class], @selector(setToolbarItems:animated:), NSArray<__kindof UIBarButtonItem *> *, BOOL, ^(UIViewController *selfObject, NSArray<__kindof UIBarButtonItem *> *firstArgv, BOOL secondArgv) {
-                for (UIBarButtonItem *item in firstArgv) {
-                    [UIBarItem setView:item.customView inBarButtonItem:item];
-                }
-            });
-        }
-        
-        
         // UITabBarItem -setView:
         ExtendImplementationOfVoidMethodWithSingleArgument([UITabBarItem class], @selector(setView:), UIView *, ^(UITabBarItem *selfObject, UIView *firstArgv) {
             [UIBarItem setView:firstArgv inBarItem:selfObject];
@@ -84,7 +74,7 @@ static char kAssociatedObjectKey_viewLayoutDidChangeBlock;
     objc_setAssociatedObject(self, &kAssociatedObjectKey_viewLayoutDidChangeBlock, qmui_viewLayoutDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
     // 这里有个骚操作，对于 iOS 11 及以上，item.view 被放在一个 UIStackView 内，而当屏幕旋转时，通过 item.view.qmui_frameDidChangeBlock 得到的时机过早，布局尚未被更新，所以把 qmui_frameDidChangeBlock 放到 stackView 上以保证时机的准确性，但当调用 qmui_viewLayoutDidChangeBlock 时传进去的参数 view 依然要是 item.view
     UIView *view = self.qmui_view;
-    if (IOS_VERSION_NUMBER >= 110000 && [view.superview isKindOfClass:[UIStackView class]]) {
+    if ([view.superview isKindOfClass:[UIStackView class]]) {
         view = self.qmui_view.superview;
     }
     if (view) {

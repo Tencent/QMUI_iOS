@@ -378,10 +378,8 @@
     self.collectionViewLayout.minimumInteritemSpacing = 0;
     self.collectionViewLayout.sectionInset = UIEdgeInsetsZero;
     
-    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(self.qmui_safeAreaInsets.left, self.qmui_safeAreaInsets.top, CGRectGetWidth(frame) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets), CGRectGetHeight(frame) - UIEdgeInsetsGetVerticalValue(self.qmui_safeAreaInsets)) collectionViewLayout:self.collectionViewLayout];
-    if (@available(iOS 11, *)) {
-        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(self.safeAreaInsets.left, self.safeAreaInsets.top, CGRectGetWidth(frame) - UIEdgeInsetsGetHorizontalValue(self.safeAreaInsets), CGRectGetHeight(frame) - UIEdgeInsetsGetVerticalValue(self.safeAreaInsets)) collectionViewLayout:self.collectionViewLayout];
+    self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     self.collectionView.backgroundColor = UIColorClear;
     self.collectionView.scrollsToTop = NO;
     self.collectionView.pagingEnabled = YES;
@@ -392,9 +390,7 @@
     [self addSubview:self.collectionView];
     
     _verticalScrollView = [[QMUIEmotionVerticalScrollView alloc] init];
-    if (@available(iOS 11, *)) {
-        self.verticalScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+    self.verticalScrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     _verticalScrollView.delegate = self;
     _verticalScrollView.hidden = YES;
     [self addSubview:self.verticalScrollView];
@@ -432,17 +428,17 @@
     [super layoutSubviews];
     
     [self.sendButton sizeToFit];
-    self.sendButton.qmui_right = self.qmui_width - self.qmui_safeAreaInsets.right - self.sendButtonMargins.right;
-    self.sendButton.qmui_bottom = self.qmui_height - self.qmui_safeAreaInsets.bottom - self.sendButtonMargins.bottom;
+    self.sendButton.qmui_right = self.qmui_width - self.safeAreaInsets.right - self.sendButtonMargins.right;
+    self.sendButton.qmui_bottom = self.qmui_height - self.safeAreaInsets.bottom - self.sendButtonMargins.bottom;
     if (self.verticalAlignment) {
-        CGRect verticalScrollViewFrame = CGRectInsetEdges(self.bounds, UIEdgeInsetsSetBottom(self.qmui_safeAreaInsets, 0));
+        CGRect verticalScrollViewFrame = CGRectInsetEdges(self.bounds, UIEdgeInsetsSetBottom(self.safeAreaInsets, 0));
         self.verticalScrollView.frame = verticalScrollViewFrame;
         [self.verticalScrollView setEmotions:self.emotions
                                  emotionSize:self.emotionSize
              minimumEmotionHorizontalSpacing:self.minimumEmotionHorizontalSpacing
                       emotionVerticalSpacing:self.emotionVerticalSpacing
           emotionSelectedBackgroundExtension:self.emotionSelectedBackgroundExtension
-                               paddingInPage:UIEdgeInsetsSetBottom(self.paddingInPage, self.paddingInPage.bottom + self.qmui_safeAreaInsets.bottom)];
+                               paddingInPage:UIEdgeInsetsSetBottom(self.paddingInPage, self.paddingInPage.bottom + self.safeAreaInsets.bottom)];
         self.verticalScrollView.pageView.delegate = self;
         [self addSubview:self.deleteButton];
         [self.deleteButton setImage:self.deleteButtonImage forState:UIControlStateNormal];
@@ -453,7 +449,7 @@
         self.deleteButton.qmui_top = CGRectGetMinYVerticallyCenter(self.sendButton.frame, self.deleteButton.frame) + self.deleteButtonOffset.y;
         
     } else {
-        CGRect collectionViewFrame = CGRectInsetEdges(self.bounds, self.qmui_safeAreaInsets);
+        CGRect collectionViewFrame = CGRectInsetEdges(self.bounds, self.safeAreaInsets);
         BOOL collectionViewSizeChanged = !CGSizeEqualToSize(collectionViewFrame.size, self.collectionView.bounds.size);
         self.collectionViewLayout.itemSize = collectionViewFrame.size;// 先更新 itemSize 再设置 collectionView.frame，否则会触发系统的 UICollectionViewFlowLayoutBreakForInvalidSizes 断点
         self.collectionView.frame = collectionViewFrame;
@@ -464,7 +460,7 @@
         CGFloat pageControlHeight = 16;
         CGFloat pageControlMaxX = self.sendButton.qmui_left;
         CGFloat pageControlMinX = self.qmui_width - pageControlMaxX;
-        self.pageControl.frame = CGRectMake(pageControlMinX, self.qmui_height - self.qmui_safeAreaInsets.bottom - self.pageControlMarginBottom - pageControlHeight, pageControlMaxX - pageControlMinX, pageControlHeight);
+        self.pageControl.frame = CGRectMake(pageControlMinX, self.qmui_height - self.safeAreaInsets.bottom - self.pageControlMarginBottom - pageControlHeight, pageControlMaxX - pageControlMinX, pageControlHeight);
     }
 }
 

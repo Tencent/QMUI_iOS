@@ -121,7 +121,7 @@ static char kAssociatedObjectKey_foregroundColor;
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        id (^block)(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) = ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        OverrideImplementation(NSClassFromString(@"_UIVisualEffectSubview"), @selector(setHidden:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, BOOL firstArgv) {
                 
                 if (selfObject.qmuive_keepHidden) {
@@ -133,10 +133,7 @@ static char kAssociatedObjectKey_foregroundColor;
                 originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, firstArgv);
             };
-        };
-        // iOS 10 这两个 class 都有，iOS 11 开始只用第一个，后面那个不存在了
-        OverrideImplementation(NSClassFromString(@"_UIVisualEffectSubview"), @selector(setHidden:), block);
-        OverrideImplementation(NSClassFromString(@"_UIVisualEffectFilterView"), @selector(setHidden:), block);
+        });
     });
 }
 

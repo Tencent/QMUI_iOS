@@ -22,6 +22,18 @@
 
 @implementation QMUIAnimationHelper
 
++ (CGFloat)bounceFromValue:(CGFloat)fromValue toValue:(CGFloat)toValue time:(CGFloat)time coeff:(CGFloat)coeff {
+    // 以下算法来源于社区：
+    // How UIScrollView works: https://medium.com/@esskeetit/how-uiscrollview-works-e418adc47060
+    // Grant Paul's Twitter: https://twitter.com/chpwn/status/285540192096497664
+    coeff = coeff == -1 ? 0.55 : coeff;// 0.55 为系统 UIScrollView 的默认系数，这里我们也将其作为我们的默认系数
+    CGFloat d = toValue;
+    CGFloat x = (d - fromValue) * time;
+    CGFloat result = fromValue + d + 1.0 - (1.0 / (coeff * x / d + 1)) * d;
+//    NSLog(@"[%.2f-%.2f], coeff = %.2f, x = %.2f, result = %.2f", fromValue, d, coeff, x, result);
+    return result;
+}
+
 + (id)interpolateFromValue:(id)fromValue
                    toValue:(id)toValue
                       time:(CGFloat)time

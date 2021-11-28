@@ -458,7 +458,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allKeyedHeightCaches, setQmui
     if (!self.qmuiCollectionCache_allKeyedHeightCaches) {
         self.qmuiCollectionCache_allKeyedHeightCaches = [[NSMutableDictionary alloc] init];
     }
-    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.qmui_safeAreaInsets));
+    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.safeAreaInsets), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.safeAreaInsets));
     QMUICellHeightCache *cache = self.qmuiCollectionCache_allKeyedHeightCaches[[NSValue valueWithCGSize:collectionViewSize]];
     if (!cache) {
         cache = [[QMUICellHeightCache alloc] init];
@@ -484,7 +484,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
     if (!self.qmuiCollectionCache_allIndexPathHeightCaches) {
         self.qmuiCollectionCache_allIndexPathHeightCaches = [[NSMutableDictionary alloc] init];
     }
-    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_safeAreaInsets), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.qmui_safeAreaInsets));
+    CGSize collectionViewSize = CGSizeMake(CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.safeAreaInsets), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.safeAreaInsets));
     QMUICellHeightIndexPathCache *cache = self.qmuiCollectionCache_allIndexPathHeightCaches[[NSValue valueWithCGSize:collectionViewSize]];
     if (!cache) {
         cache = [[QMUICellHeightIndexPathCache alloc] init];

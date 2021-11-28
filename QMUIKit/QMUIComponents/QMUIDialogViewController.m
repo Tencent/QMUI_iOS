@@ -453,11 +453,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
     self.tableView.alwaysBounceVertical = NO;
-    if (@available(iOS 11, *)) {
-        self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
+    self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     
     // 因为要根据 tableView sizeThatFits: 算出 dialog 的高度，所以禁用 estimated 特性，不然算出来结果不准确
     self.tableView.estimatedRowHeight = 0;
@@ -662,11 +658,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     self.scrollView = [[UIScrollView alloc] init];
     self.scrollView.scrollsToTop = NO;
     self.scrollView.clipsToBounds = YES;
-    if (@available(iOS 11, *)) {
-        self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    } else {
-        self.automaticallyAdjustsScrollViewInsets = NO;
-    }
+    self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     self.contentView = self.scrollView;
     self.scrollView.backgroundColor = self.contentViewBackgroundColor;
 }
@@ -929,7 +921,7 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
         }
     }
     
-    CGFloat contentHeight = textFieldLabelHeight + textFieldHeight + separatorHeight + UIEdgeInsetsGetVerticalValue(self.scrollView.qmui_contentInset);
+    CGFloat contentHeight = textFieldLabelHeight + textFieldHeight + separatorHeight + UIEdgeInsetsGetVerticalValue(self.scrollView.adjustedContentInset);
     CGFloat contentViewVerticalMargin = UIEdgeInsetsGetVerticalValue(self.contentViewMargins);
     
     BOOL isFooterViewShowing = self.footerView && !self.footerView.hidden;

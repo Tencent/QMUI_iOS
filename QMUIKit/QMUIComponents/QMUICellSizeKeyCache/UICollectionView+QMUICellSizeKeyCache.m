@@ -140,10 +140,10 @@ static char kAssociatedObjectKey_qmuiAllKeyCaches;
 - (CGFloat)widthForCacheKey {
     UICollectionViewFlowLayout *layout = (UICollectionViewFlowLayout *)self.collectionViewLayout;
     if (layout.scrollDirection == UICollectionViewScrollDirectionHorizontal) {
-        CGFloat height = CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.qmui_contentInset) - UIEdgeInsetsGetVerticalValue(layout.sectionInset);
+        CGFloat height = CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.adjustedContentInset) - UIEdgeInsetsGetVerticalValue(layout.sectionInset);
         return height;
     }
-    CGFloat width = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset) - UIEdgeInsetsGetHorizontalValue(((UICollectionViewFlowLayout *)self.collectionViewLayout).sectionInset);
+    CGFloat width = CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.adjustedContentInset) - UIEdgeInsetsGetHorizontalValue(((UICollectionViewFlowLayout *)self.collectionViewLayout).sectionInset);
     return width;
 }
 

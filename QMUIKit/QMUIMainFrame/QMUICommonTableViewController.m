@@ -27,15 +27,9 @@
 NSString *const QMUICommonTableViewControllerSectionHeaderIdentifier = @"QMUISectionHeaderView";
 NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISectionFooterView";
 
-@interface _QMUITableViewObserver : NSObject
-
-@property(nonatomic, weak) QMUICommonTableViewController *viewController;
-@end
-
 @interface QMUICommonTableViewController ()
 
 @property(nonatomic, assign) BOOL hasHideTableHeaderViewInitial;
-@property(nonatomic, strong) _QMUITableViewObserver *_qmuiTableViewObserver;
 @end
 
 
@@ -72,10 +66,6 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
     // 用下划线而不是self.xxx来访问tableView，避免dealloc时self.view尚未被加载，此时调用self.tableView反而会触发loadView
     _tableView.delegate = nil;
     _tableView.dataSource = nil;
-    
-    if (self._qmuiTableViewObserver) {
-        [_tableView removeObserver:self._qmuiTableViewObserver forKeyPath:@"contentInset"];
-    }
 }
 
 - (NSString *)description {
@@ -151,28 +141,11 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
             if (self.isViewLoaded && _tableView.superview == self.view) {
                 [_tableView removeFromSuperview];
             }
-            if (self._qmuiTableViewObserver) {
-                [_tableView removeObserver:self._qmuiTableViewObserver forKeyPath:@"contentInset"];
-            }
         }
         
         _tableView = tableView;
         [_tableView registerClass:[QMUITableViewHeaderFooterView class] forHeaderFooterViewReuseIdentifier:QMUICommonTableViewControllerSectionHeaderIdentifier];
         [_tableView registerClass:[QMUITableViewHeaderFooterView class] forHeaderFooterViewReuseIdentifier:QMUICommonTableViewControllerSectionFooterIdentifier];
-        
-        if (@available(iOS 11, *)) {
-        } else {
-            /**
-             *  监听 contentInset 的变化以及时更新 emptyView 的布局，详见 layoutEmptyView 方法的注释。
-             *  iOS 11 之前用一个对象来处理，避免把 observeValueForKeyPath:ofObject:change:context: 实现在 viewController 里，子类重写时容易遗漏调用 super。
-             *  iOS 11 及之后使用 UIScrollViewDelegate 的 scrollViewDidChangeAdjustedContentInset: 来监听。
-             */
-            if (!self._qmuiTableViewObserver) {
-                self._qmuiTableViewObserver = [[_QMUITableViewObserver alloc] init];
-                self._qmuiTableViewObserver.viewController = self;
-            }
-            [_tableView addObserver:self._qmuiTableViewObserver forKeyPath:@"contentInset" options:NSKeyValueObservingOptionOld context:nil];
-        }
         
         // 从 nib 初始化的界面，loadView 里 tableView 已经被加到 self.view 上了，但此时 loadView 尚未结束，所以 isViewLoaded 为 NO。这种场景不需要自己 addSubview，也不应该去调用 self.view 触发 loadView
         // https://github.com/Tencent/QMUI_iOS/issues/1156
@@ -186,7 +159,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 - (void)hideTableHeaderViewInitialIfCanWithAnimated:(BOOL)animated force:(BOOL)force {
     if (self.tableView.tableHeaderView && [self shouldHideTableHeaderViewInitial] && (force || !self.hasHideTableHeaderViewInitial)) {
-        CGPoint contentOffset = CGPointMake(self.tableView.contentOffset.x, -self.tableView.qmui_contentInset.top + CGRectGetHeight(self.tableView.tableHeaderView.frame));
+        CGPoint contentOffset = CGPointMake(self.tableView.contentOffset.x, -self.tableView.adjustedContentInset.top + CGRectGetHeight(self.tableView.tableHeaderView.frame));
         [self.tableView setContentOffset:contentOffset animated:animated];
         self.hasHideTableHeaderViewInitial = YES;
     }
@@ -218,7 +191,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
         return NO;
     }
     
-    UIEdgeInsets insets = self.tableView.qmui_contentInset;
+    UIEdgeInsets insets = self.tableView.adjustedContentInset;
     
     // 当存在 tableHeaderView 时，emptyView 的高度为 tableView 的高度减去 headerView 的高度
     if (self.tableView.tableHeaderView) {
@@ -315,7 +288,6 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 /**
  *  监听 contentInset 的变化以及时更新 emptyView 的布局，详见 layoutEmptyView 方法的注释
- *  该 delegate 方法仅在 iOS 11 及之后存在，之前的 iOS 版本使用 KVO 的方式实现监听，详见 initTableView 方法里的相关代码
  */
 - (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView *)scrollView {
     if (_tableView != scrollView) return;
@@ -344,16 +316,6 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
 
 - (BOOL)shouldHideTableHeaderViewInitial {
     return NO;
-}
-
-@end
-
-@implementation _QMUITableViewObserver
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
-    if ([keyPath isEqualToString:@"contentInset"]) {
-        [self.viewController handleTableViewContentInsetChangeEvent];
-    }
 }
 
 @end

@@ -349,13 +349,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     
     // 全局屏蔽返回按钮的文字
     if (QMUICMIActivated && !NeedsBackBarButtonItemTitle) {
-#ifdef IOS14_SDK_ALLOWED
         if (@available(iOS 14.0, *)) {
             // 用新 API 来屏蔽返回按钮的文字，才能保证 iOS 14 长按返回按钮时能正确出现 viewController title
             currentViewController.navigationItem.backButtonDisplayMode = UINavigationItemBackButtonDisplayModeMinimal;
             return;
         }
-#endif
         // 业务自己设置的 backBarButtonItem 优先级高于配置表
         if (!currentViewController.navigationItem.backBarButtonItem) {
             currentViewController.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:NULL];
@@ -474,11 +472,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     return childViewController;
 }
 
-- (UIViewController *)childViewControllerForStatusBarHidden {
-    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
-        return vc.qmui_prefersStatusBarHiddenBlock || [vc qmui_hasOverrideUIKitMethod:@selector(prefersStatusBarHidden)];
-    }];
-}
+//- (UIViewController *)childViewControllerForStatusBarHidden {
+//    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
+//        return vc.qmui_prefersStatusBarHiddenBlock || [vc qmui_hasOverrideUIKitMethod:@selector(prefersStatusBarHidden)];
+//    }];
+//}
 
 - (UIViewController *)childViewControllerForStatusBarStyle {
     return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
@@ -494,7 +492,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     }
     
     if (QMUICMIActivated) {
-        return StatusbarStyleLightInitially ? UIStatusBarStyleLightContent : UIStatusBarStyleDefault;
+        return DefaultStatusBarStyle;
     }
     return [super preferredStatusBarStyle];
 }

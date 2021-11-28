@@ -166,12 +166,13 @@ static BOOL strendswith(const char *str, const char *suffix) {
 
 static const headerType *getProjectImageHeader() {
     const uint32_t imageCount = _dyld_image_count();
-    const char *target_image_name = ((NSString *)[[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleExecutableKey]).UTF8String;
-    if (!target_image_name || strlen(target_image_name) <= 0) return nil;
+    NSString *executablePath = NSBundle.mainBundle.executablePath;
+    if (!executablePath) return nil;
     const headerType *target_image_header = 0;
     for (uint32_t i = 0; i < imageCount; i++) {
         const char *image_name = _dyld_get_image_name(i);// name 是一串完整的文件路径，以 image 名结尾
-        if (strendswith(image_name, target_image_name)) {
+        NSString *imagePath = [NSString stringWithUTF8String:image_name];
+        if ([imagePath isEqualToString:executablePath]) {
             target_image_header = (headerType *)_dyld_get_image_header(i);
             break;
         }

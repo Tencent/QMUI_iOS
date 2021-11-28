@@ -113,8 +113,8 @@
     
     UIEdgeInsets paddings = UIEdgeInsetsMake(8, 8, 8, 8);
     
-    CGFloat x = paddings.left + self.qmui_safeAreaInsets.left;
-    CGFloat contentHeight = CGRectGetHeight(self.bounds) - self.qmui_safeAreaInsets.bottom - UIEdgeInsetsGetVerticalValue(paddings);
+    CGFloat x = paddings.left + self.safeAreaInsets.left;
+    CGFloat contentHeight = CGRectGetHeight(self.bounds) - self.safeAreaInsets.bottom - UIEdgeInsetsGetVerticalValue(paddings);
     
     self.levelButton.frame = CGRectMake(x, paddings.top, contentHeight, contentHeight);
     x = CGRectGetMaxX(self.levelButton.frame);
@@ -122,7 +122,7 @@
     self.nameButton.frame = CGRectSetX(self.levelButton.frame, CGRectGetMaxX(self.levelButton.frame));
     x = CGRectGetMaxX(self.nameButton.frame);
     
-    self.clearButton.frame = CGRectSetX(self.levelButton.frame, CGRectGetWidth(self.bounds) - self.qmui_safeAreaInsets.right - paddings.right - contentHeight);
+    self.clearButton.frame = CGRectSetX(self.levelButton.frame, CGRectGetWidth(self.bounds) - self.safeAreaInsets.right - paddings.right - contentHeight);
     
     CGFloat searchTextFieldMarginHorizontal = 8;
     CGFloat searchTextFieldMinX = x + searchTextFieldMarginHorizontal;

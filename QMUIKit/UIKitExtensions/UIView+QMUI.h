@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  在 iOS 11 及之后的版本，此属性将返回系统已有的 self.safeAreaInsets。在之前的版本此属性返回 UIEdgeInsetsZero
  */
-@property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets;
+@property(nonatomic, assign, readonly) UIEdgeInsets qmui_safeAreaInsets DEPRECATED_MSG_ATTRIBUTE("请使用系统的 UIView.safeAreaInsets，QMUI 4.4.0 已不再支持 iOS 10，没必要提供该兼容性之的接口了，后续会删除。");
 
 /**
  有修改过 tintColor，则不会再受 superview.tintColor 的影响

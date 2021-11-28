@@ -74,7 +74,7 @@ QMUISynthesizeBOOLProperty(qmuiscroll_hasSetInitialContentInset, setQmuiscroll_h
 }
 
 - (BOOL)qmui_alreadyAtTop {
-    if (((NSInteger)self.contentOffset.y) == -((NSInteger)self.qmui_contentInset.top)) {
+    if (((NSInteger)self.contentOffset.y) == -((NSInteger)self.adjustedContentInset.top)) {
         return YES;
     }
     
@@ -86,7 +86,7 @@ QMUISynthesizeBOOLProperty(qmuiscroll_hasSetInitialContentInset, setQmuiscroll_h
         return YES;
     }
     
-    if (((NSInteger)self.contentOffset.y) == ((NSInteger)self.contentSize.height + self.qmui_contentInset.bottom - CGRectGetHeight(self.bounds))) {
+    if (((NSInteger)self.contentOffset.y) == ((NSInteger)self.contentSize.height + self.adjustedContentInset.bottom - CGRectGetHeight(self.bounds))) {
         return YES;
     }
     
@@ -94,11 +94,7 @@ QMUISynthesizeBOOLProperty(qmuiscroll_hasSetInitialContentInset, setQmuiscroll_h
 }
 
 - (UIEdgeInsets)qmui_contentInset {
-    if (@available(iOS 11, *)) {
-        return self.adjustedContentInset;
-    } else {
-        return self.contentInset;
-    }
+    return self.adjustedContentInset;
 }
 
 static char kAssociatedObjectKey_initialContentInset;
@@ -121,14 +117,14 @@ static char kAssociatedObjectKey_initialContentInset;
     if (CGSizeIsEmpty(self.bounds.size)) {
         return NO;
     }
-    BOOL canVerticalScroll = self.contentSize.height + UIEdgeInsetsGetVerticalValue(self.qmui_contentInset) > CGRectGetHeight(self.bounds);
-    BOOL canHorizontalScoll = self.contentSize.width + UIEdgeInsetsGetHorizontalValue(self.qmui_contentInset) > CGRectGetWidth(self.bounds);
+    BOOL canVerticalScroll = self.contentSize.height + UIEdgeInsetsGetVerticalValue(self.adjustedContentInset) > CGRectGetHeight(self.bounds);
+    BOOL canHorizontalScoll = self.contentSize.width + UIEdgeInsetsGetHorizontalValue(self.adjustedContentInset) > CGRectGetWidth(self.bounds);
     return canVerticalScroll || canHorizontalScoll;
 }
 
 - (void)qmui_scrollToTopForce:(BOOL)force animated:(BOOL)animated {
     if (force || (!force && [self qmui_canScroll])) {
-        [self setContentOffset:CGPointMake(-self.qmui_contentInset.left, -self.qmui_contentInset.top) animated:animated];
+        [self setContentOffset:CGPointMake(-self.adjustedContentInset.left, -self.adjustedContentInset.top) animated:animated];
     }
 }
 
@@ -149,7 +145,7 @@ static char kAssociatedObjectKey_initialContentInset;
 
 - (void)qmui_scrollToBottomAnimated:(BOOL)animated {
     if ([self qmui_canScroll]) {
-        [self setContentOffset:CGPointMake(self.contentOffset.x, self.contentSize.height + self.qmui_contentInset.bottom - CGRectGetHeight(self.bounds)) animated:animated];
+        [self setContentOffset:CGPointMake(self.contentOffset.x, self.contentSize.height + self.adjustedContentInset.bottom - CGRectGetHeight(self.bounds)) animated:animated];
     }
 }
 

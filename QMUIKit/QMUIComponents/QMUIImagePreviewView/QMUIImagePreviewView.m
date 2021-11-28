@@ -91,9 +91,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     self.collectionView.scrollsToTop = NO;
     self.collectionView.delaysContentTouches = NO;
     self.collectionView.decelerationRate = UIScrollViewDecelerationRateFast;
-    if (@available(iOS 11, *)) {
-        self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-    }
+    self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kImageOrUnknownCellIdentifier];
     [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kVideoCellIdentifier];
     [self.collectionView registerClass:[QMUIImagePreviewCell class] forCellWithReuseIdentifier:kLivePhotoCellIdentifier];

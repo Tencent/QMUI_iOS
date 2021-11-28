@@ -384,7 +384,7 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
                 if (tableView && tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
                     // 以下的宽度不基于 firstArgv 来改，而是直接获取 tableView 的内容宽度，是因为 iOS 12 及以下的系统，在 cell 拖拽排序时，frame 会基于上一个 frame 计算，导致宽度不断减小，所以这里每次都用 tableView 的内容宽度来算
                     // https://github.com/Tencent/QMUI_iOS/issues/1216
-                    firstArgv = CGRectMake(tableView.qmui_safeAreaInsets.left + tableView.qmui_insetGroupedHorizontalInset, CGRectGetMinY(firstArgv), tableView.qmui_validContentWidth, CGRectGetHeight(firstArgv));
+                    firstArgv = CGRectMake(tableView.safeAreaInsets.left + tableView.qmui_insetGroupedHorizontalInset, CGRectGetMinY(firstArgv), tableView.qmui_validContentWidth, CGRectGetHeight(firstArgv));
                 }
                 
                 // call super
@@ -407,7 +407,7 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
                                 
                                 UITableView *tableView = cell.qmui_tableView;
                                 if (tableView && tableView.qmui_style == QMUITableViewStyleInsetGrouped) {
-                                    firstArgv.width = firstArgv.width - UIEdgeInsetsGetHorizontalValue(tableView.qmui_safeAreaInsets) - tableView.qmui_insetGroupedHorizontalInset * 2;
+                                    firstArgv.width = firstArgv.width - UIEdgeInsetsGetHorizontalValue(tableView.safeAreaInsets) - tableView.qmui_insetGroupedHorizontalInset * 2;
                                 }
                                 
                                 // call super
