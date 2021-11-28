@@ -79,16 +79,6 @@ Pod::Spec.new do |s|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIButton.{h,m}'
     end
 
-    ss.subspec 'QMUIFillButton' do |sss|
-      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIFillButton.{h,m}'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
-    end
-
-    ss.subspec 'QMUIGhostButton' do |sss|
-      sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIGhostButton.{h,m}'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
-    end
-
     ss.subspec 'QMUINavigationButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUINavigationButton.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
@@ -309,8 +299,6 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUIImagePickerLibrary'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIAlertController'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUIFillButton'
-      sss.dependency 'QMUIKit/QMUIComponents/QMUIGhostButton'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIConsole'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmotionView'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIEmptyView'
