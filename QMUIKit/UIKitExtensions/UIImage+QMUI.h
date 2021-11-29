@@ -52,9 +52,10 @@ typedef NS_ENUM(NSInteger, QMUIImageResizingMode) {
 typedef NS_ENUM(NSInteger, QMUIImageGradientType) {
     QMUIImageGradientTypeHorizontal,
     QMUIImageGradientTypeVertical,
+    QMUIImageGradientTypeTopLeftToBottomRight,
+    QMUIImageGradientTypeTopRightToBottomLeft,
     QMUIImageGradientTypeRadial,
 };
-
 @interface UIImage (QMUI)
 
 /**
@@ -319,7 +320,7 @@ typedef NS_ENUM(NSInteger, QMUIImageGradientType) {
 /**
  创建一个渐变图片，支持线性、径向。
  @param colors 渐变的颜色，不能为空，数量必须与 locations 数量一致（除非 locations 为 nil）
- @param type 渐变的类型，可选为水平、垂直、径向
+ @param type 渐变的类型，可选为水平、垂直、径向、左上至右下、右上至左下
  @param locations 渐变变化的位置，数量必须与 colors 一致，值为 [0.0-1.0] 之间的 CGFloat。如果参数传 nil 则默认为 @[@0, @1]
  @param size 图片的尺寸，如果是径向渐变，宽高不相等时会变成椭圆的渐变。
  @param cornerRadius   四个角的圆角值的数组，长度必须为4，顺序分别为[左上角、左下角、右下角、右上角]

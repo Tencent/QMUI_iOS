@@ -629,8 +629,14 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             if (type == QMUIImageGradientTypeHorizontal) {
                 startPoint = CGPointMake(0, 0);
                 endPoint = CGPointMake(size.width, 0);
-            } else {
+            } else if(type == QMUIImageGradientTypeVertical) {
                 startPoint = CGPointMake(0, 0);
+                endPoint = CGPointMake(0, size.height);
+            }else if (type == QMUIImageGradientTypeTopLeftToBottomRight){
+                startPoint = CGPointMake(0, 0);
+                endPoint = CGPointMake(size.width, size.height);
+            }else if (type == QMUIImageGradientTypeTopRightToBottomLeft){
+                startPoint = CGPointMake(size.width, 0);
                 endPoint = CGPointMake(0, size.height);
             }
             CGContextDrawLinearGradient(contextRef, gradient, startPoint, endPoint, kCGGradientDrawsBeforeStartLocation);
