@@ -472,11 +472,11 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     return childViewController;
 }
 
-//- (UIViewController *)childViewControllerForStatusBarHidden {
-//    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
-//        return vc.qmui_prefersStatusBarHiddenBlock || [vc qmui_hasOverrideUIKitMethod:@selector(prefersStatusBarHidden)];
-//    }];
-//}
+- (UIViewController *)childViewControllerForStatusBarHidden {
+    return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
+        return vc.qmui_prefersStatusBarHiddenBlock || [vc qmui_hasOverrideUIKitMethod:@selector(prefersStatusBarHidden)];
+    }];
+}
 
 - (UIViewController *)childViewControllerForStatusBarStyle {
     return [self childViewControllerForStatusBarWithCustomBlock:^BOOL(UIViewController *vc) {
