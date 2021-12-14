@@ -693,11 +693,11 @@ static char kAssociatedObjectKey_layoutSubviewsBlock;
     objc_setAssociatedObject(self, &kAssociatedObjectKey_layoutSubviewsBlock, qmui_layoutSubviewsBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
     Class viewClass = self.class;
     [QMUIHelper executeBlock:^{
-        // iOS 14 iPad 悬浮键盘，项目里 hook 了 -[UIView layoutSubviews] 的同时为输入框设置 inputAccessoryView，则输入框聚焦时会触发系统布局死循环
-        // 实测只有 iOS 14 有这种问题，iOS 13、15 都没事
+        // iOS 14 及以上，iPad 悬浮键盘，项目里 hook 了 -[UIView layoutSubviews] 的同时为输入框设置 inputAccessoryView，则输入框聚焦时会触发系统布局死循环
+        // 实测只有 iOS 14 有这种问题，iOS 13、15 都没有，但现网又有用户反馈 iOS 15 也有问题，暂且放开 iOS 15
         // https://github.com/Tencent/QMUI_iOS/issues/1247
         // https://km.woa.com/group/24897/articles/show/456340
-        if (IOS_VERSION >= 14.0 && IOS_VERSION < 15.0 && IS_IPAD && viewClass == UIView.class) {
+        if (IOS_VERSION >= 14.0 && IS_IPAD && viewClass == UIView.class) {
             IMP layoutSubviewsIMPForUIKit = class_getMethodImplementation(UIView.class, @selector(layoutSubviews));
             SEL layoutSubviewSEL =  @selector(layoutSubviews);
             const char * typeEncoding = method_getTypeEncoding(class_getInstanceMethod(UIView.class, layoutSubviewSEL));
