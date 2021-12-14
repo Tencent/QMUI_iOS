@@ -697,7 +697,7 @@ static char kAssociatedObjectKey_layoutSubviewsBlock;
         // 实测只有 iOS 14 有这种问题，iOS 13、15 都没事
         // https://github.com/Tencent/QMUI_iOS/issues/1247
         // https://km.woa.com/group/24897/articles/show/456340
-        if (IOS_VERSION >= 14.0 && IOS_VERSION < 15.0 && IS_IPAD && viewClass == UIView.class)
+        if (IOS_VERSION >= 14.0 && IOS_VERSION < 15.0 && IS_IPAD && viewClass == UIView.class) {
             IMP layoutSubviewsIMPForUIKit = class_getMethodImplementation(UIView.class, @selector(layoutSubviews));
             SEL layoutSubviewSEL =  @selector(layoutSubviews);
             const char * typeEncoding = method_getTypeEncoding(class_getInstanceMethod(UIView.class, layoutSubviewSEL));
