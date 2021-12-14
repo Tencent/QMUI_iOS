@@ -118,6 +118,9 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                         if (shouldCustomNavigationBarTransition) {
                             disappearingViewController.qmuinb_shouldShowTransitionBar = YES;
                             appearingViewController.qmuinb_shouldShowTransitionBar = YES;
+                            
+                            // 只绑定即将显示的 vc 的 bar，注意可能在 setNavigationBarHidden: 里被覆盖，引起下述问题：
+                            // https://github.com/Tencent/QMUI_iOS/issues/1335
                             weakNavigationController.navigationBar.qmuinb_copyStylesToBar = appearingViewController.transitionNavigationBar;
                         }
                     }
@@ -164,7 +167,7 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                     if (hidden) {
                         [selfObject.topViewController removeTransitionNavigationBar];
                     } else {
-                        [selfObject.topViewController addTransitionNavigationBarIfNeeded];
+                        [selfObject.topViewController addTransitionNavigationBarAndBindNavigationBar:YES];
                     }
                 }
             };
@@ -214,7 +217,7 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     });
 }
 
-- (void)addTransitionNavigationBarIfNeeded {
+- (void)addTransitionNavigationBarAndBindNavigationBar:(BOOL)shouldBind {
     // add 时虽然过滤了 navigationBarHidden 的条件，但可能在 push/pop 时，新界面暂时还没刷新导航栏的显隐状态，所以还是需要在 viewWillLayoutSubviews 那边再重新根据 navigationBarHidden 的值来决定是否隐藏假 bar
     if (!self.qmuinb_shouldShowTransitionBar || self.transitionNavigationBar || !self.navigationController.navigationBar || self.navigationController.navigationBarHidden) {
         return;
@@ -234,8 +237,10 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     }
 #endif
     [self.view addSubview:customBar];
-    customBar.originalNavigationBar = self.navigationController.navigationBar;
-    
+    customBar.originalNavigationBar = self.navigationController.navigationBar;// 注意这里内部不会保留真 bar 和假 bar 的 copy 关系
+    if (shouldBind) {
+        self.navigationController.navigationBar.qmuinb_copyStylesToBar = customBar;
+    }
     [self layoutTransitionNavigationBar];
 }
 
@@ -561,7 +566,7 @@ static char kAssociatedObjectKey_shouldShowTransitionBar;
 - (void)setQmuinb_shouldShowTransitionBar:(BOOL)shouldShowTransitionBar {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_shouldShowTransitionBar, @(shouldShowTransitionBar), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (shouldShowTransitionBar) {
-        [self addTransitionNavigationBarIfNeeded];
+        [self addTransitionNavigationBarAndBindNavigationBar:NO];// 这里不绑定 bar，因为不知道此时是两个 vc 里的哪一个
         self.prefersNavigationBarBackgroundViewHidden = YES;
     } else {
         [self removeTransitionNavigationBar];

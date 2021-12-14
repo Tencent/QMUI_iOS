@@ -34,6 +34,12 @@
 - (BOOL)textViewShouldReturn:(QMUITextView *)textView;
 
 /**
+ 由于 maximumTextLength 的实现方式导致业务无法再重写自己的 shouldChangeCharacters，否则会丢失 maximumTextLength 的功能。所以这里提供一个额外的 delegate，在 QMUI 内部逻辑返回 YES 的时候会再询问一次这个 delegate，从而给业务提供一个机会去限制自己的输入内容。如果 QMUI 内部逻辑本身就返回 NO（例如超过了 maximumTextLength 的长度），则不会触发这个方法。
+ 当输入被这个方法拦截时，由于拦截逻辑是业务自己写的，业务能轻松获取到这个拦截的时机，所以此时不会调用 textView:didPreventTextChangeInRange:replacementText:。如果有类似 tips 之类的操作，可以直接在 return NO 之前处理。
+ */
+- (BOOL)textView:(QMUITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text originalValue:(BOOL)originalValue;
+
+/**
  *  配合 `maximumTextLength` 属性使用，在输入文字超过限制时被调用（此时文字已被自动裁剪到符合最大长度要求）。
  *
  *  @param textView 触发的 textView

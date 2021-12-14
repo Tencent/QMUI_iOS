@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.4.0";
+static NSString * const QMUI_VERSION = @"4.4.1";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -347,10 +347,6 @@ static NSString * const QMUI_VERSION = @"4.4.0";
 #import "QMUISegmentedControl.h"
 #endif
 
-#if __has_include("QMUISlider.h")
-#import "QMUISlider.h"
-#endif
-
 #if __has_include("QMUIStaticTableViewCellData.h")
 #import "QMUIStaticTableViewCellData.h"
 #endif
@@ -549,6 +545,10 @@ static NSString * const QMUI_VERSION = @"4.4.0";
 
 #if __has_include("UISearchController+QMUI.h")
 #import "UISearchController+QMUI.h"
+#endif
+
+#if __has_include("UISlider+QMUI.h")
+#import "UISlider+QMUI.h"
 #endif
 
 #if __has_include("UISwitch+QMUI.h")

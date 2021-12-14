@@ -21,7 +21,7 @@
 #import "UIColor+QMUI.h"
 #import "UIScrollView+QMUI.h"
 #import "QMUIButton.h"
-#import "QMUISlider.h"
+#import "UISlider+QMUI.h"
 #import "UILabel+QMUI.h"
 #import "QMUIPieProgressView.h"
 #import <QuartzCore/QuartzCore.h>
@@ -1029,11 +1029,11 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         [self.pauseButton setImage:self.pauseButtonImage forState:UIControlStateNormal];
         [self addSubview:self.pauseButton];
         
-        _slider = [[QMUISlider alloc] init];
+        _slider = [[UISlider alloc] init];
         self.slider.minimumTrackTintColor = UIColorMake(195, 195, 195);
         self.slider.maximumTrackTintColor = UIColorMake(95, 95, 95);
-        self.slider.thumbSize = CGSizeMake(12, 12);
-        self.slider.thumbColor = UIColorWhite;
+        self.slider.qmui_thumbSize = CGSizeMake(12, 12);
+        self.slider.qmui_thumbColor = UIColorWhite;
         [self addSubview:self.slider];
         
         _sliderLeftLabel = [[UILabel alloc] qmui_initWithFont:UIFontMake(12) textColor:UIColorWhite];

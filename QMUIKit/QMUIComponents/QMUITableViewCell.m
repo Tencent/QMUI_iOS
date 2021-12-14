@@ -21,6 +21,7 @@
 
 @interface QMUITableViewCell() <UIScrollViewDelegate>
 
+@property(nonatomic, assign) BOOL initByTableView;
 @property(nonatomic, assign, readwrite) QMUITableViewCellPosition cellPosition;
 @property(nonatomic, assign, readwrite) UITableViewCellStyle style;
 @property(nonatomic, strong) UIImageView *defaultAccessoryImageView;
@@ -32,13 +33,16 @@
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
-        [self didInitializeWithStyle:style];
+        if (!self.initByTableView) {
+            [self didInitializeWithStyle:style];
+        }
     }
     return self;
 }
 
 - (instancetype)initForTableView:(UITableView *)tableView withStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
-    if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
+    self.initByTableView = YES;
+    if (self = [self initWithStyle:style reuseIdentifier:reuseIdentifier]) {// 这里需要调用 self 的 initWithStyle，而不是 super，目的是为了让业务在重写 init 方法时可以沿用系统默认的思路，去重写 initWithStyle:reuseIdentifier:，但在 vc 里使用 cell 时又可以直接调用 initForTableView:withStyle:。
         self.parentTableView = tableView;
         [self didInitializeWithStyle:style];// 因为设置了 parentTableView，样式可能都需要变，所以这里重新执行一次 didInitializeWithStyle: 里的 qmui_styledAsQMUITableViewCell
     }
@@ -303,6 +307,7 @@
 @implementation QMUITableViewCell(QMUISubclassingHooks)
 
 - (void)didInitializeWithStyle:(UITableViewCellStyle)style {
+    self.initByTableView = NO;
     _cellPosition = QMUITableViewCellPositionNone;
     
     _style = style;

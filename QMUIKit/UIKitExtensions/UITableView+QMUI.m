@@ -577,7 +577,7 @@ const UITableViewStyle QMUITableViewStyleInsetGrouped = UITableViewStyleGrouped 
                                 mask = kCALayerMinXMinYCorner|kCALayerMaxXMinYCorner;
                                 break;
                             case QMUITableViewCellPositionLastInSection:
-                                mask = kCALayerMinXMaxYCorner|kCALayerMinXMaxYCorner;
+                                mask = kCALayerMinXMaxYCorner|kCALayerMaxXMaxYCorner;
                                 break;
                             default:
                                 break;

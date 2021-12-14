@@ -266,3 +266,53 @@
 }
 
 @end
+
+@implementation UILabel (QMUI_Marquee)
+
+- (void)dealloc {
+    [self qmuimq_removeObserver];
+}
+
+- (void)qmui_startNativeMarquee {
+    // 系统有 _startMarqueeIfNecessary、_startMarquee，但直接开启的方法其实是 marqueeRunning
+    BOOL running = YES;
+    self.numberOfLines = 1;
+    self.clipsToBounds = YES;
+    [self qmui_performSelector:NSSelectorFromString(@"setMarqueeEnabled:") withArguments:&running, nil];
+    [self qmui_performSelector:NSSelectorFromString(@"setMarqueeRunning:") withArguments:&running, nil];
+    [self qmuimq_removeObserver];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(qmuimq_handleApplicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+    [NSNotificationCenter.defaultCenter addObserver:self selector:@selector(qmuimq_handleApplicationDidBecomeActive:) name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+- (void)qmui_stopNativeMarquee {
+    // 系统有 _stopMarqueeWithRedisplay:，但直接关闭的方法其实是 marqueeRunning
+    BOOL running = NO;
+    [self qmui_performSelector:NSSelectorFromString(@"setMarqueeRunning:") withArguments:&running, nil];
+    [self qmui_performSelector:NSSelectorFromString(@"setMarqueeEnabled:") withArguments:&running, nil];
+    [self qmuimq_removeObserver];
+}
+
+- (BOOL)qmui_nativeMarqueeRunning {
+    BOOL running = NO;
+    [self qmui_performSelector:NSSelectorFromString(@"marqueeRunning") withPrimitiveReturnValue:&running];
+    return running;
+}
+
+- (void)qmuimq_handleApplicationDidEnterBackground:(NSNotification *)notification {
+    [self qmui_bindBOOL:self.qmui_nativeMarqueeRunning forKey:@"QMUI_Marquee_Running"];
+}
+
+- (void)qmuimq_handleApplicationDidBecomeActive:(NSNotification *)notification {
+    if ([self qmui_getBoundBOOLForKey:@"QMUI_Marquee_Running"]) {
+        [self qmui_stopNativeMarquee];// 要手动停止一次才能重新 start
+        [self qmui_startNativeMarquee];
+    }
+}
+
+- (void)qmuimq_removeObserver {
+    [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
+    [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+@end

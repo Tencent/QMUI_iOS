@@ -101,6 +101,7 @@
     NSUInteger length = countingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
     QMUIAssert(index < length, @"QMUIStringPrivate", @"%s, index %@ out of bounds. string = %@", __func__, @(index), attributedString ?: string);
     if (index == 0 || index > length) return nil;
+    if (index == length) return [aString copy];// 根据系统 -[NSString substringToIndex:] 的注释，在 index 等于 length 时会返回 self 的 copy。
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultMode:index inString:string] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [string rangeOfComposedCharacterSequenceAtIndex:index];
     index = lessValue ? range.location : NSMaxRange(range);

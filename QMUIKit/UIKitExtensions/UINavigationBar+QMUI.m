@@ -234,8 +234,13 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
                         UIImageView *backgroundImageView2 = [selfObject valueForKey:@"_colorAndImageView2"];
                         UIVisualEffectView *backgroundEffectView1 = [selfObject valueForKey:@"_effectView1"];
                         UIVisualEffectView *backgroundEffectView2 = [selfObject valueForKey:@"_effectView2"];
-                        BOOL hasImageView = (backgroundImageView1 && backgroundImageView1.superview && !backgroundImageView1.hidden) || (backgroundImageView2 && backgroundImageView2.superview && !backgroundImageView2.hidden);
-                        if (hasImageView) {
+                        
+                        // iOS 14 系统默认特性是存在 backgroundImage 则不存在其他任何背景，但如果存在 barTintColor 则磨砂 view 也可以共存。
+                        // iOS 15 系统默认特性是 backgroundImage、backgroundColor、backgroundEffect 三者都可以共存，其中前两者共用 _colorAndImageView，而我们这个开关为了符合 iOS 14 的特性，仅针对 _colorAndImageView 是因为 backgroundImage 存在而出现的情况做处理。
+                        BOOL hasBackgroundImage1 = backgroundImageView1 && backgroundImageView1.superview && !backgroundImageView1.hidden && backgroundImageView1.image;
+                        BOOL hasBackgroundImage2 = backgroundImageView2 && backgroundImageView2.superview && !backgroundImageView2.hidden && backgroundImageView2.image;
+                        BOOL shouldHideEffectView = hasBackgroundImage1 || hasBackgroundImage2;
+                        if (shouldHideEffectView) {
                             backgroundEffectView1.hidden = YES;
                             backgroundEffectView2.hidden = YES;
                         } else {

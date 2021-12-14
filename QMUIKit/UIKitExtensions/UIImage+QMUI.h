@@ -56,6 +56,7 @@ typedef NS_ENUM(NSInteger, QMUIImageGradientType) {
     QMUIImageGradientTypeTopRightToBottomLeft,
     QMUIImageGradientTypeRadial,
 };
+
 @interface UIImage (QMUI)
 
 /**

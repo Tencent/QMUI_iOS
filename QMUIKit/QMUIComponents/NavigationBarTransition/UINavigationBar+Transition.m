@@ -76,6 +76,8 @@ static char kAssociatedObjectKey_copyStylesToBar;
     weakContainer.object = copyStylesToBar;
     objc_setAssociatedObject(self, &kAssociatedObjectKey_copyStylesToBar, weakContainer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     
+    if (!copyStylesToBar) return;
+    
 #ifdef IOS15_SDK_ALLOWED
     if (@available(iOS 15.0, *)) {
         copyStylesToBar.standardAppearance = self.standardAppearance;

@@ -22,6 +22,7 @@
 #import "UINavigationController+QMUI.h"
 #import "UIVisualEffectView+QMUI.h"
 #import "UIApplication+QMUI.h"
+#import "NSArray+QMUI.h"
 
 NSInteger const kLastTouchedTabBarItemIndexNone = -1;
 NSString *const kShouldCheckTabBarHiddenKey = @"kShouldCheckTabBarHiddenKey";
@@ -484,12 +485,24 @@ QMUISynthesizeBOOLProperty(qmuitb_hasSetEffectForegroundColor, setQmuitb_hasSetE
 }
 
 - (UIVisualEffectView *)qmui_effectView {
-    for (UIView *subview in self.qmui_backgroundView.subviews) {
-        if ([subview isMemberOfClass:UIVisualEffectView.class]) {
-            return (UIVisualEffectView *)subview;
-        }
+    NSArray<UIVisualEffectView *> *visibleEffectViews = [self.qmui_effectViews qmui_filterWithBlock:^BOOL(UIVisualEffectView * _Nonnull item) {
+        return !item.hidden && item.alpha > 0.01 && item.superview;
+    }];
+    return visibleEffectViews.lastObject;
+}
+
+- (NSArray<UIVisualEffectView *> *)qmui_effectViews {
+    UIView *backgroundView = self.qmui_backgroundView;
+    UIVisualEffectView *backgroundEffectView1 = [backgroundView valueForKey:@"_effectView1"];
+    UIVisualEffectView *backgroundEffectView2 = [backgroundView valueForKey:@"_effectView2"];
+    NSMutableArray<UIVisualEffectView *> *result = NSMutableArray.new;
+    if (backgroundEffectView1) {
+        [result addObject:backgroundEffectView1];
     }
-    return nil;
+    if (backgroundEffectView2) {
+        [result addObject:backgroundEffectView2];
+    }
+    return result.count > 0 ? result : nil;
 }
 
 - (void)qmuitb_swizzleBackgroundView {

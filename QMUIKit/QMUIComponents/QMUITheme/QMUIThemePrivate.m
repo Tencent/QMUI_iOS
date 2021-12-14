@@ -17,6 +17,7 @@
 #import "UIColor+QMUI.h"
 #import "UIVisualEffect+QMUITheme.h"
 #import "UIView+QMUITheme.h"
+#import "UISlider+QMUI.h"
 #import "UIView+QMUI.h"
 #import "UISearchBar+QMUI.h"
 #import "UITableViewCell+QMUI.h"
@@ -39,7 +40,6 @@
 #import "QMUIPopupContainerView.h"
 #import "QMUIPopupMenuButtonItem.h"
 #import "QMUIPopupMenuView.h"
-#import "QMUISlider.h"
 #import "QMUITextField.h"
 #import "QMUITextView.h"
 #import "QMUIToastBackgroundView.h"
@@ -61,7 +61,9 @@
                     classRegisters = @{
                                        NSStringFromClass(UISlider.class):                   @[NSStringFromSelector(@selector(minimumTrackTintColor)),
                                                                                               NSStringFromSelector(@selector(maximumTrackTintColor)),
-                                                                                              NSStringFromSelector(@selector(thumbTintColor))],
+                                                                                              NSStringFromSelector(@selector(thumbTintColor)),
+                                                                                              NSStringFromSelector(@selector(qmui_thumbColor)),
+                                                                                              NSStringFromSelector(@selector(qmui_thumbShadowColor))],
                                        NSStringFromClass(UISwitch.class):                   @[NSStringFromSelector(@selector(onTintColor)),
                                                                                               NSStringFromSelector(@selector(thumbTintColor)),],
                                        NSStringFromClass(UIActivityIndicatorView.class):    @[NSStringFromSelector(@selector(color)),],
@@ -129,8 +131,6 @@
                                        NSStringFromClass(QMUIPopupMenuView.class):                  @[NSStringFromSelector(@selector(itemSeparatorColor)),
                                                                                                       NSStringFromSelector(@selector(sectionSeparatorColor)),
                                                                                                       NSStringFromSelector(@selector(itemTitleColor))],
-                                       NSStringFromClass(QMUISlider.class):                         @[NSStringFromSelector(@selector(thumbColor)),
-                                                                                                      NSStringFromSelector(@selector(thumbShadowColor)),],
                                        NSStringFromClass(QMUITextField.class):                      @[NSStringFromSelector(@selector(placeholderColor)),],
                                        NSStringFromClass(QMUITextView.class):                       @[NSStringFromSelector(@selector(placeholderColor)),],
                                        NSStringFromClass(QMUIToastBackgroundView.class):            @[NSStringFromSelector(@selector(styleColor)),],

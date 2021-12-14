@@ -344,12 +344,6 @@ static BOOL QMUI_hasAppliedInitialTemplate;
                 UINavigationBar.qmui_appearanceConfigured.scrollEdgeAppearance = self.navigationBarAppearance;
             }
         }
-        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController, NSUInteger idx, BOOL * _Nonnull stop) {
-            navigationController.navigationBar.standardAppearance = self.navigationBarAppearance;
-            if (QMUICMIActivated && NavBarUsesStandardAppearanceOnly) {
-                navigationController.navigationBar.scrollEdgeAppearance = self.navigationBarAppearance;
-            }
-        }];
     }
 #endif
 }
@@ -419,16 +413,14 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (@available(iOS 15.0, *)) {
             self.navigationBarAppearance.backgroundColor = navBarBarTintColor;
             [self updateNavigationBarBarAppearance];
-        } else {
-#endif
-            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-                if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBarTintColor)]) {
-                    navigationController.navigationBar.barTintColor = navBarBarTintColor;
-                }
-            }];
-#ifdef IOS15_SDK_ALLOWED
         }
 #endif
+        
+        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBarTintColor)]) {
+                navigationController.navigationBar.barTintColor = navBarBarTintColor;
+            }
+        }];
     } ifValueChanged:_navBarBarTintColor newValue:navBarBarTintColor];
 }
 
@@ -436,15 +428,16 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     [QMUIConfiguration performAction:^{
         _navBarShadowImage = navBarShadowImage;
         
-        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
-        [self configureNavBarShadowImage];
-        
 #ifdef IOS15_SDK_ALLOWED
         if (@available(iOS 15.0, *)) {
             self.navigationBarAppearance.shadowImage = navBarShadowImage;
             [self updateNavigationBarBarAppearance];
         }
 #endif
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
+        [self configureNavBarShadowImage];
+        
     } ifValueChanged:_navBarShadowImage newValue:!navBarShadowImage ? _navBarShadowImage : navBarShadowImage];// NavBarShadowImage 特殊一点，因为它在 NavBarShadowImageColor 里又会被赋值，所以这里对常见的组合“image = nil && imageColor = xxx”做特殊处理，避免误以为 valueChanged
 }
 
@@ -452,15 +445,15 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     [QMUIConfiguration performAction:^{
         _navBarShadowImageColor = navBarShadowImageColor;
         
-        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
-        [self configureNavBarShadowImage];
-        
 #ifdef IOS15_SDK_ALLOWED
         if (@available(iOS 15.0, *)) {
             self.navigationBarAppearance.shadowColor = navBarShadowImageColor;
             [self updateNavigationBarBarAppearance];
         }
 #endif
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
+        [self configureNavBarShadowImage];
+        
     } ifValueChanged:_navBarShadowImageColor newValue:navBarShadowImageColor];
 }
 
@@ -483,18 +476,11 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         UINavigationBar.qmui_appearanceConfigured.shadowImage = shadowImage;
     }
     
-#ifdef IOS15_SDK_ALLOWED
-    if (@available(iOS 15.0, *)) {
-    } else {
-#endif
-        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarShadowImage)]) {
-                navigationController.navigationBar.shadowImage = shadowImage;
-            }
-        }];
-#ifdef IOS15_SDK_ALLOWED
-    }
-#endif
+    [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+        if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarShadowImage)]) {
+            navigationController.navigationBar.shadowImage = shadowImage;
+        }
+    }];
 }
 
 - (void)setNavBarStyle:(UIBarStyle)navBarStyle {
@@ -510,16 +496,14 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (@available(iOS 15.0, *)) {
             self.navigationBarAppearance.backgroundEffect = [UIBlurEffect effectWithStyle:navBarStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemChromeMaterialLight : UIBlurEffectStyleSystemChromeMaterialDark];
             [self updateNavigationBarBarAppearance];
-        } else {
-#endif
-            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-                if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarStyle)]) {
-                    navigationController.navigationBar.barStyle = navBarStyle;
-                }
-            }];
-#ifdef IOS15_SDK_ALLOWED
         }
 #endif
+        
+        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarStyle)]) {
+                navigationController.navigationBar.barStyle = navBarStyle;
+            }
+        }];
     } ifValueChanged:@(_navBarStyle) newValue:@(navBarStyle)];
 }
 
@@ -536,25 +520,20 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (@available(iOS 15.0, *)) {
             self.navigationBarAppearance.backgroundImage = navBarBackgroundImage;
             [self updateNavigationBarBarAppearance];
-        } else {
-#endif
-            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-                if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBackgroundImage)]) {
-                    [navigationController.navigationBar setBackgroundImage:navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
-                }
-            }];
-#ifdef IOS15_SDK_ALLOWED
         }
 #endif
+        
+        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+            if (![navigationController.topViewController respondsToSelector:@selector(qmui_navigationBarBackgroundImage)]) {
+                [navigationController.navigationBar setBackgroundImage:navBarBackgroundImage forBarMetrics:UIBarMetricsDefault];
+            }
+        }];
     } ifValueChanged:_navBarBackgroundImage newValue:navBarBackgroundImage];
 }
 
 - (void)setNavBarTitleFont:(UIFont *)navBarTitleFont {
     [QMUIConfiguration performAction:^{
         _navBarTitleFont = navBarTitleFont;
-        
-        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
-        [self updateNavigationBarTitleAttributesIfNeeded];
         
 #ifdef IOS15_SDK_ALLOWED
         if (@available(iOS 15.0, *)) {
@@ -564,15 +543,15 @@ static BOOL QMUI_hasAppliedInitialTemplate;
             [self updateNavigationBarBarAppearance];
         }
 #endif
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
+        [self updateNavigationBarTitleAttributesIfNeeded];
     } ifValueChanged:_navBarTitleFont newValue:navBarTitleFont];
 }
 
 - (void)setNavBarTitleColor:(UIColor *)navBarTitleColor {
     [QMUIConfiguration performAction:^{
         _navBarTitleColor = navBarTitleColor;
-        
-        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
-        [self updateNavigationBarTitleAttributesIfNeeded];
         
 #ifdef IOS15_SDK_ALLOWED
         if (@available(iOS 15.0, *)) {
@@ -582,6 +561,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
             [self updateNavigationBarBarAppearance];
         }
 #endif
+        
+        // iOS 15 虽然不通过旧 API 设置样式，但 QMUI 里会从 appearance 的旧 API 取值作为默认值，所以这里不做 if iOS 15 的屏蔽。
+        [self updateNavigationBarTitleAttributesIfNeeded];
     } ifValueChanged:_navBarTitleColor newValue:navBarTitleColor];
 }
 
@@ -709,15 +691,13 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         if (@available(iOS 15.0, *)) {
             [self.navigationBarAppearance setBackIndicatorImage:_navBarBackIndicatorImage transitionMaskImage:_navBarBackIndicatorImage];
             [self updateNavigationBarBarAppearance];
-        } else {
-#endif
-            [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
-                navigationController.navigationBar.backIndicatorImage = _navBarBackIndicatorImage;
-                navigationController.navigationBar.backIndicatorTransitionMaskImage = _navBarBackIndicatorImage;
-            }];
-#ifdef IOS15_SDK_ALLOWED
         }
 #endif
+        
+        [self.appearanceUpdatingNavigationControllers enumerateObjectsUsingBlock:^(UINavigationController * _Nonnull navigationController,NSUInteger idx, BOOL * _Nonnull stop) {
+            navigationController.navigationBar.backIndicatorImage = _navBarBackIndicatorImage;
+            navigationController.navigationBar.backIndicatorTransitionMaskImage = _navBarBackIndicatorImage;
+        }];
     } ifValueChanged:_navBarBackIndicatorImage newValue:navBarBackIndicatorImage];
 }
 

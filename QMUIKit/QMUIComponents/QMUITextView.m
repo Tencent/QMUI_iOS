@@ -419,6 +419,11 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             return NO;
         }
         
+        if (!text.length && range.length > 0) {
+            // 允许删除，这段必须放在上面 #377、#1170 的逻辑后面
+            return YES;
+        }
+        
         NSUInteger rangeLength = textView.shouldCountingNonASCIICharacterAsTwo ? [textView.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
         BOOL textWillOutofMaximumTextLength = [textView lengthWithString:textView.text] - rangeLength + [textView lengthWithString:text] > textView.maximumTextLength;
         if (textWillOutofMaximumTextLength) {
@@ -432,6 +437,13 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             if (substringLength > 0 && [textView lengthWithString:text] > substringLength) {
                 NSString *allowedText = [text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:textView.shouldCountingNonASCIICharacterAsTwo];
                 if ([textView lengthWithString:allowedText] <= substringLength) {
+                    BOOL shouldChange = YES;
+                    if ([textView.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:originalValue:)]) {
+                        shouldChange = [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:shouldChange];
+                    }
+                    if (!shouldChange) {
+                        return NO;
+                    }
                     [textView _qmui_setTextForShouldChange:[textView.text stringByReplacingCharactersInRange:range withString:allowedText]];
                      
                     // iOS 10 修改 selectedRange 可以让光标立即移动到新位置，但 iOS 11 及以上版本需要延迟一会才可以
@@ -448,6 +460,11 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
             }
             return NO;
         }
+    }
+    
+    if ([textView.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:originalValue:)]) {
+        BOOL delegateValue = [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:YES];
+        return delegateValue;
     }
     
     return YES;

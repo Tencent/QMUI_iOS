@@ -35,8 +35,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  获取 tabBar 里面的磨砂背景，具体的 view 层级是 UITabBar → _UIBarBackground → UIVisualEffectView。仅在 tabBar 的样式确定之后系统才会创建。
+ iOS 15 及以后，tabBar 里可能会同时存在多个磨砂背景（详见 @c qmui_effectViews ），这个属性会获取其中正在显示的那个磨砂，如果两个都在显示，则取 view 层级树里更上层的那个。
  */
 @property(nullable, nonatomic, strong, readonly) UIVisualEffectView *qmui_effectView;
+
+/**
+ iOS 15 及以后，由于 bar 的样式在滚动到顶部和底部会有不同，所以可能同时存在两个 effectView。
+ */
+@property(nullable, nonatomic, strong, readonly) NSArray<UIVisualEffectView *> *qmui_effectViews;
 
 /**
  允许直接指定 tabBar 具体的磨砂样式（系统的仅在 iOS 13 及以后用 UITabBarAppearance.backgroundEffects 才可以实现）。默认为 nil，如果你没设置过这个属性，那么 nil 的行为就是维持系统的样式，但如果你主动设置过这个属性，那么后续的 nil 则表示把磨砂清空（也即可能出现背景透明的 bar）。

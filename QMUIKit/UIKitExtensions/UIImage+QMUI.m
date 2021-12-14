@@ -164,7 +164,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
 //        return [self imageWithTintColor:tintColor];
 //    }
     BOOL opaque = self.qmui_opaque ? tintColor.qmui_alpha >= 1.0 : NO;// 如果图片不透明但 tintColor 半透明，则生成的图片也应该是半透明的
-    return [UIImage qmui_imageWithSize:self.size opaque:opaque scale:self.scale actions:^(CGContextRef contextRef) {
+    UIImage *result = [UIImage qmui_imageWithSize:self.size opaque:opaque scale:self.scale actions:^(CGContextRef contextRef) {
         CGContextTranslateCTM(contextRef, 0, self.size.height);
         CGContextScaleCTM(contextRef, 1.0, -1.0);
         if (!opaque) {
@@ -174,6 +174,10 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         CGContextSetFillColorWithColor(contextRef, tintColor.CGColor);
         CGContextFillRect(contextRef, CGRectMakeWithSize(self.size));
     }];
+    if ([NSStringFromClass(tintColor.class) containsString:@"QMUIThemeColor"]) {
+        QMUIAssert([NSStringFromClass(result.class) containsString:@"QMUIThemeImage"], @"UIImage (QMUI)", @"QMUIThemeColor 生成的图片却不是 QMUIThemeImage，可能是配置表应用的时机比 UIImage+QMUITheme 里重写 qmui_imageWithColor: 的时机还早，可能导致 theme 切换时无法刷新。");
+    }
+    return result;
 }
 
 - (UIImage *)qmui_imageWithBlendColor:(UIColor *)blendColor {
@@ -560,7 +564,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
     
     color = color ? color : UIColorClear;
 	BOOL opaque = (cornerRadius == 0.0 && [color qmui_alpha] == 1.0);
-    return [UIImage qmui_imageWithSize:size opaque:opaque scale:0 actions:^(CGContextRef contextRef) {
+    UIImage *result = [UIImage qmui_imageWithSize:size opaque:opaque scale:0 actions:^(CGContextRef contextRef) {
         CGContextSetFillColorWithColor(contextRef, color.CGColor);
         
         if (cornerRadius > 0) {
@@ -571,6 +575,10 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             CGContextFillRect(contextRef, CGRectMakeWithSize(size));
         }
     }];
+    if ([NSStringFromClass(color.class) containsString:@"QMUIThemeColor"]) {
+        QMUIAssert([NSStringFromClass(result.class) containsString:@"QMUIThemeImage"], @"UIImage (QMUI)", @"QMUIThemeColor 生成的图片却不是 QMUIThemeImage，可能是配置表应用的时机比 UIImage+QMUITheme 里重写 qmui_imageWithColor: 的时机还早，可能导致 theme 切换时无法刷新。");
+    }
+    return result;
 }
 
 + (UIImage *)qmui_imageWithColor:(UIColor *)color size:(CGSize)size cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius {

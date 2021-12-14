@@ -65,3 +65,29 @@
  */
 - (BOOL)requestToStopAnimation;
 @end
+
+
+@interface UILabel (QMUI_Marquee)
+
+/**
+ 是否开启系统自带的跑马灯效果（系统的只能控制开启/关闭，无法控制速度、停顿等，更多功能可以使用 @c QMUIMarqueeLabel ，但论性能还是系统的更优。
+ 
+ 用法：
+ [label qmui_startNativeMarquee];
+ [label qmui_stopNativeMarquee]; // 当你需要停止动画时，调用这个方法（如果业务只关心什么时候开启，不关心什么时候结束，则从头到尾都可以不用调用这个方法）
+ 
+ @note 当开启该属性时，会强制把 numberOfLines 设置为1，clipsToBounds 设置为 YES。如果你是在 reuse view 内使用（例如 UITableViewCell/UICollectionViewCell），需要手动在 will display 时  start，did end display 时 stop。
+ */
+- (void)qmui_startNativeMarquee;
+
+/**
+ 停止跑马灯效果，与 @c qmui_startNativeMarquee 不需要成对出现，也即如果业务不关心什么时候停止动画，可以从头到尾都不调用这个方法。
+ */
+- (void)qmui_stopNativeMarquee;
+
+/**
+ 系统的跑马灯效果是否正在运行，默认为 NO。
+ */
+@property(nonatomic, assign, readonly) BOOL qmui_nativeMarqueeRunning;
+
+@end

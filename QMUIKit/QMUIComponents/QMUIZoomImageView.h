@@ -20,7 +20,6 @@
 @class QMUIZoomImageView;
 @class QMUIEmptyView;
 @class QMUIButton;
-@class QMUISlider;
 @class QMUIZoomImageViewVideoToolbar;
 @class QMUIPieProgressView;
 
@@ -163,7 +162,7 @@
 
 @property(nonatomic, strong, readonly) QMUIButton *playButton;
 @property(nonatomic, strong, readonly) QMUIButton *pauseButton;
-@property(nonatomic, strong, readonly) QMUISlider *slider;
+@property(nonatomic, strong, readonly) UISlider *slider;
 @property(nonatomic, strong, readonly) UILabel *sliderLeftLabel;
 @property(nonatomic, strong, readonly) UILabel *sliderRightLabel;
 

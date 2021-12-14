@@ -57,6 +57,8 @@
 		CD6BE14F2058C64E00BE093E /* QMUICellHeightKeyCache.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6BE14D2058C64E00BE093E /* QMUICellHeightKeyCache.m */; };
 		CD6BE1562058C73600BE093E /* UITableView+QMUICellHeightKeyCache.h in Headers */ = {isa = PBXBuildFile; fileRef = CD6BE1542058C73600BE093E /* UITableView+QMUICellHeightKeyCache.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD6BE1572058C73600BE093E /* UITableView+QMUICellHeightKeyCache.m in Sources */ = {isa = PBXBuildFile; fileRef = CD6BE1552058C73600BE093E /* UITableView+QMUICellHeightKeyCache.m */; };
+		CD70C43A276340B300D212F5 /* UISlider+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = CD70C438276340B300D212F5 /* UISlider+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		CD70C43B276340B300D212F5 /* UISlider+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = CD70C439276340B300D212F5 /* UISlider+QMUI.m */; };
 		CD745E2C21CA5B8F006EC132 /* QMUIImagePreviewView.h in Headers */ = {isa = PBXBuildFile; fileRef = CD745E2821CA5B8E006EC132 /* QMUIImagePreviewView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CD745E2D21CA5B8F006EC132 /* QMUIImagePreviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = CD745E2921CA5B8E006EC132 /* QMUIImagePreviewViewController.m */; };
 		CD745E2E21CA5B8F006EC132 /* QMUIImagePreviewViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = CD745E2A21CA5B8E006EC132 /* QMUIImagePreviewViewController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -177,7 +179,6 @@
 		CDC86FDD1F68D617000E8829 /* QMUISearchBar.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F831F68D5F9000E8829 /* QMUISearchBar.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FDE1F68D617000E8829 /* QMUISearchController.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F851F68D5F9000E8829 /* QMUISearchController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FDF1F68D617000E8829 /* QMUISegmentedControl.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F871F68D5F9000E8829 /* QMUISegmentedControl.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		CDC86FE01F68D617000E8829 /* QMUISlider.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F891F68D5F9000E8829 /* QMUISlider.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FE11F68D617000E8829 /* QMUITableView.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F8B1F68D5F9000E8829 /* QMUITableView.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FE21F68D617000E8829 /* QMUITableViewCell.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F8D1F68D5F9000E8829 /* QMUITableViewCell.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		CDC86FE31F68D617000E8829 /* QMUITableViewProtocols.h in Headers */ = {isa = PBXBuildFile; fileRef = CDC86F8F1F68D5F9000E8829 /* QMUITableViewProtocols.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -232,7 +233,6 @@
 		CDC8701A1F68D63B000E8829 /* QMUISearchBar.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F841F68D5F9000E8829 /* QMUISearchBar.m */; };
 		CDC8701B1F68D63B000E8829 /* QMUISearchController.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F861F68D5F9000E8829 /* QMUISearchController.m */; };
 		CDC8701C1F68D63B000E8829 /* QMUISegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F881F68D5F9000E8829 /* QMUISegmentedControl.m */; };
-		CDC8701D1F68D63B000E8829 /* QMUISlider.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F8A1F68D5F9000E8829 /* QMUISlider.m */; };
 		CDC8701E1F68D63B000E8829 /* QMUITableView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F8C1F68D5F9000E8829 /* QMUITableView.m */; };
 		CDC8701F1F68D63B000E8829 /* QMUITableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F8E1F68D5F9000E8829 /* QMUITableViewCell.m */; };
 		CDC870201F68D63B000E8829 /* QMUITestView.m in Sources */ = {isa = PBXBuildFile; fileRef = CDC86F911F68D5F9000E8829 /* QMUITestView.m */; };
@@ -396,6 +396,8 @@
 		CD6BE14D2058C64E00BE093E /* QMUICellHeightKeyCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUICellHeightKeyCache.m; sourceTree = "<group>"; };
 		CD6BE1542058C73600BE093E /* UITableView+QMUICellHeightKeyCache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UITableView+QMUICellHeightKeyCache.h"; sourceTree = "<group>"; };
 		CD6BE1552058C73600BE093E /* UITableView+QMUICellHeightKeyCache.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UITableView+QMUICellHeightKeyCache.m"; sourceTree = "<group>"; };
+		CD70C438276340B300D212F5 /* UISlider+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UISlider+QMUI.h"; sourceTree = "<group>"; };
+		CD70C439276340B300D212F5 /* UISlider+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UISlider+QMUI.m"; sourceTree = "<group>"; };
 		CD745E2821CA5B8E006EC132 /* QMUIImagePreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIImagePreviewView.h; sourceTree = "<group>"; };
 		CD745E2921CA5B8E006EC132 /* QMUIImagePreviewViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QMUIImagePreviewViewController.m; sourceTree = "<group>"; };
 		CD745E2A21CA5B8E006EC132 /* QMUIImagePreviewViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QMUIImagePreviewViewController.h; sourceTree = "<group>"; };
@@ -547,8 +549,6 @@
 		CDC86F861F68D5F9000E8829 /* QMUISearchController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUISearchController.m; sourceTree = "<group>"; };
 		CDC86F871F68D5F9000E8829 /* QMUISegmentedControl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUISegmentedControl.h; sourceTree = "<group>"; };
 		CDC86F881F68D5F9000E8829 /* QMUISegmentedControl.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUISegmentedControl.m; sourceTree = "<group>"; };
-		CDC86F891F68D5F9000E8829 /* QMUISlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUISlider.h; sourceTree = "<group>"; };
-		CDC86F8A1F68D5F9000E8829 /* QMUISlider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUISlider.m; sourceTree = "<group>"; };
 		CDC86F8B1F68D5F9000E8829 /* QMUITableView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUITableView.h; sourceTree = "<group>"; };
 		CDC86F8C1F68D5F9000E8829 /* QMUITableView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUITableView.m; sourceTree = "<group>"; };
 		CDC86F8D1F68D5F9000E8829 /* QMUITableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUITableViewCell.h; sourceTree = "<group>"; };
@@ -961,6 +961,8 @@
 				CDB8CAB51DCC870700769DF0 /* UISearchBar+QMUI.m */,
 				08230CEA233D285B00BF9CB1 /* UISearchController+QMUI.h */,
 				08230CEB233D285B00BF9CB1 /* UISearchController+QMUI.m */,
+				CD70C438276340B300D212F5 /* UISlider+QMUI.h */,
+				CD70C439276340B300D212F5 /* UISlider+QMUI.m */,
 				D02FDB6C22D880F800DB7E13 /* UISwitch+QMUI.h */,
 				D02FDB6D22D880F800DB7E13 /* UISwitch+QMUI.m */,
 				CD84F31B1E52DBEA00546111 /* UITabBar+QMUI.h */,
@@ -1074,8 +1076,6 @@
 				CDC86F861F68D5F9000E8829 /* QMUISearchController.m */,
 				CDC86F871F68D5F9000E8829 /* QMUISegmentedControl.h */,
 				CDC86F881F68D5F9000E8829 /* QMUISegmentedControl.m */,
-				CDC86F891F68D5F9000E8829 /* QMUISlider.h */,
-				CDC86F8A1F68D5F9000E8829 /* QMUISlider.m */,
 				CDC86F8B1F68D5F9000E8829 /* QMUITableView.h */,
 				CDC86F8C1F68D5F9000E8829 /* QMUITableView.m */,
 				CDC86F8D1F68D5F9000E8829 /* QMUITableViewCell.h */,
@@ -1269,6 +1269,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CD70C43A276340B300D212F5 /* UISlider+QMUI.h in Headers */,
 				CDE77517274FB9430066A767 /* UIBlurEffect+QMUI.h in Headers */,
 				CDE77513274E93CE0066A767 /* UIToolbar+QMUI.h in Headers */,
 				D02096B226DD2B180029BA78 /* UIApplication+QMUI.h in Headers */,
@@ -1378,7 +1379,6 @@
 				CDC86FDD1F68D617000E8829 /* QMUISearchBar.h in Headers */,
 				CDC86FDE1F68D617000E8829 /* QMUISearchController.h in Headers */,
 				CDC86FDF1F68D617000E8829 /* QMUISegmentedControl.h in Headers */,
-				CDC86FE01F68D617000E8829 /* QMUISlider.h in Headers */,
 				CDC86FE11F68D617000E8829 /* QMUITableView.h in Headers */,
 				CDC86FE21F68D617000E8829 /* QMUITableViewCell.h in Headers */,
 				CDC86FE31F68D617000E8829 /* QMUITableViewProtocols.h in Headers */,
@@ -1592,6 +1592,7 @@
 				CDB8CBCC1DCC870800769DF0 /* UIScrollView+QMUI.m in Sources */,
 				CDB8CBA81DCC870700769DF0 /* UICollectionView+QMUI.m in Sources */,
 				CD979996213F934700C00FDC /* QMUIRuntime.m in Sources */,
+				CD70C43B276340B300D212F5 /* UISlider+QMUI.m in Sources */,
 				CDB8CBD41DCC870800769DF0 /* UITabBarItem+QMUI.m in Sources */,
 				CD82C0B4206A82520046EED2 /* NSObject+QMUIMultipleDelegates.m in Sources */,
 				CDB8CBC01DCC870800769DF0 /* UILabel+QMUI.m in Sources */,
@@ -1677,7 +1678,6 @@
 				CD1817E42010CC4000F8CDEC /* NSNumber+QMUI.m in Sources */,
 				CD7D4030231FA2900007DF6C /* QMUIThemeManagerCenter.m in Sources */,
 				CDC8701C1F68D63B000E8829 /* QMUISegmentedControl.m in Sources */,
-				CDC8701D1F68D63B000E8829 /* QMUISlider.m in Sources */,
 				CD43CB20207B9A510090346B /* QMUIToolbarButton.m in Sources */,
 				CDC8701E1F68D63B000E8829 /* QMUITableView.m in Sources */,
 				CDC8701F1F68D63B000E8829 /* QMUITableViewCell.m in Sources */,
@@ -1924,7 +1924,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.4.0;
+				MARKETING_VERSION = 4.4.1;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1968,7 +1968,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.4.0;
+				MARKETING_VERSION = 4.4.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -44,7 +44,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property(nonatomic, assign, readonly) BOOL qmui_tintColorCustomized;
 
-/// 响应区域需要改变的大小，负值表示往外扩大，正值表示往内缩小
+/// 响应区域需要改变的大小，负值表示往外扩大，正值表示往内缩小。特别地，如果对 UISlider 使用，则扩大的是圆点的区域。
 @property(nonatomic,assign) UIEdgeInsets qmui_outsideEdge;
 
 /**

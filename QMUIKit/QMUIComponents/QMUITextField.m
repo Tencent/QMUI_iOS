@@ -208,6 +208,11 @@
             return NO;
         }
         
+        if (!string.length && range.length > 0) {
+            // 允许删除，这段必须放在上面 #377、#1170 的逻辑后面
+            return YES;
+        }
+        
         NSUInteger rangeLength = textField.shouldCountingNonASCIICharacterAsTwo ? [textField.text substringWithRange:range].qmui_lengthWhenCountingNonASCIICharacterAsTwo : range.length;
         if ([textField lengthWithString:textField.text] - rangeLength + [textField lengthWithString:string] > textField.maximumTextLength) {
             // 将要插入的文字裁剪成这么长，就可以让它插入了
@@ -215,6 +220,13 @@
             if (substringLength > 0 && [textField lengthWithString:string] > substringLength) {
                 NSString *allowedText = [string qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, substringLength) lessValue:YES countingNonASCIICharacterAsTwo:textField.shouldCountingNonASCIICharacterAsTwo];
                 if ([textField lengthWithString:allowedText] <= substringLength) {
+                    BOOL shouldChange = YES;
+                    if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
+                        shouldChange = [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:allowedText originalValue:shouldChange];
+                    }
+                    if (!shouldChange) {
+                        return NO;
+                    }
                     textField.text = [textField.text stringByReplacingCharactersInRange:range withString:allowedText];
                     // 通过代码 setText: 修改的文字，默认光标位置会在插入的文字开头，通常这不符合预期，因此这里将光标定位到插入的那段字符串的末尾
                     // 注意由于粘贴后系统也会在下一个 runloop 去修改光标位置，所以我们这里也要 dispatch 到下一个 runloop 才能生效，否则会被系统的覆盖
@@ -234,6 +246,11 @@
             }
             return NO;
         }
+    }
+    
+    if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
+        BOOL delegateValue = [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:string originalValue:YES];
+        return delegateValue;
     }
     
     return YES;
