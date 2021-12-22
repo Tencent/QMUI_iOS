@@ -16,6 +16,7 @@
 #import "QMUINavigationBarScrollingSnapAnimator.h"
 #import "UIViewController+QMUI.h"
 #import "UIScrollView+QMUI.h"
+#import "UIView+QMUI.h"
 
 @interface QMUINavigationBarScrollingSnapAnimator ()
 
@@ -32,15 +33,13 @@
         self.adjustsOffsetYWithInsetTopAutomatically = YES;
         
         self.didScrollBlock = ^(QMUINavigationBarScrollingSnapAnimator * _Nonnull animator) {
-            if (!animator.navigationBar) {
-                UINavigationBar *navigationBar = [QMUIHelper visibleViewController].navigationController.navigationBar;
-                if (navigationBar) {
-                    animator.navigationBar = navigationBar;
+            UINavigationBar *navigationBar = animator.navigationBar;
+            if (!navigationBar) {
+                navigationBar = animator.scrollView.qmui_viewController.navigationController.navigationBar;
+                if (!navigationBar) {
+                    NSLog(@"无法自动找到 UINavigationBar，或许此时 scrollView 所在的 viewController 已经不存在于 UINavigationController 里。");
+                    return;
                 }
-            }
-            if (!animator.navigationBar) {
-                NSLog(@"无法自动找到 UINavigationBar，请通过 %@.%@ 手动设置一个", NSStringFromClass(animator.class), NSStringFromSelector(@selector(navigationBar)));
-                return;
             }
             
             if (animator.animationBlock) {

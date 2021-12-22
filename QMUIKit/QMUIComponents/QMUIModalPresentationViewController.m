@@ -452,7 +452,7 @@
     if (self.animationStyle == QMUIModalPresentationAnimationStyleFade) {
         self.dimmingView.alpha = 0.0;
         self.contentView.alpha = 0.0;
-        [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 1.0;
             self.contentView.alpha = 1.0;
             if (self.shouldDimmedAppAutomatically) {
@@ -467,9 +467,9 @@
     } else if (self.animationStyle == QMUIModalPresentationAnimationStylePopup) {
         self.dimmingView.alpha = 0.0;
         self.contentView.transform = CGAffineTransformMakeScale(0, 0);
-        [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 1.0;
-            self.contentView.transform = CGAffineTransformMakeScale(1, 1);
+            self.contentView.transform = CGAffineTransformIdentity;
             if (self.shouldDimmedAppAutomatically) {
                 [QMUIHelper dimmedApplicationWindow];
             }
@@ -483,7 +483,7 @@
     } else if (self.animationStyle == QMUIModalPresentationAnimationStyleSlide) {
         self.dimmingView.alpha = 0.0;
         self.contentView.transform = CGAffineTransformMakeTranslation(0, CGRectGetHeight(self.view.bounds) - CGRectGetMinY(self.contentView.frame));
-        [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 1.0;
             self.contentView.transform = CGAffineTransformIdentity;
             if (self.shouldDimmedAppAutomatically) {
@@ -517,7 +517,7 @@
 
 - (void)hidingAnimationWithCompletion:(void (^)(BOOL))completion {
     if (self.animationStyle == QMUIModalPresentationAnimationStyleFade) {
-        [UIView animateWithDuration:.2 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 0.0;
             self.contentView.alpha = 0.0;
             if (self.shouldDimmedAppAutomatically) {
@@ -531,9 +531,9 @@
             }
         }];
     } else if (self.animationStyle == QMUIModalPresentationAnimationStylePopup) {
-        [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 0.0;
-            self.contentView.transform = CGAffineTransformMakeScale(0.0, 0.0);
+            self.contentView.transform = CGAffineTransformMakeScale(0.01, 0.01);
             if (self.shouldDimmedAppAutomatically) {
                 [QMUIHelper resetDimmedApplicationWindow];
             }
@@ -545,7 +545,7 @@
             }
         }];
     } else if (self.animationStyle == QMUIModalPresentationAnimationStyleSlide) {
-        [UIView animateWithDuration:.3 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
+        [UIView animateWithDuration:.25 delay:0.0 options:QMUIViewAnimationOptionsCurveOut animations:^{
             self.dimmingView.alpha = 0.0;
             self.contentView.transform = CGAffineTransformMakeTranslation(0, CGRectGetHeight(self.view.bounds) - CGRectGetMinY(self.contentView.frame));
             if (self.shouldDimmedAppAutomatically) {

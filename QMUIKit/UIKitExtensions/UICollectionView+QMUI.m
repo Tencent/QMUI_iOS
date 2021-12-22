@@ -26,19 +26,23 @@
         // 防止 release 版本滚动到不合法的 indexPath 会 crash
         OverrideImplementation([UICollectionView class], @selector(scrollToItemAtIndexPath:atScrollPosition:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UICollectionView *selfObject, NSIndexPath *indexPath, UICollectionViewScrollPosition scrollPosition, BOOL animated) {
-                BOOL isIndexPathLegal = YES;
-                NSInteger numberOfSections = [selfObject numberOfSections];
-                if (indexPath.section >= numberOfSections) {
-                    isIndexPathLegal = NO;
-                } else {
-                    NSInteger items = [selfObject numberOfItemsInSection:indexPath.section];
-                    if (indexPath.item >= items) {
+                // UIDatePicker 每次点开都会先调用几次 indexPath 为 nil 的 scroll，屏蔽掉
+                BOOL isUIKitClass = [NSStringFromClass(selfObject.superview.class) hasPrefix:@"_UIDatePickerCalendar"];
+                if (!isUIKitClass) {
+                    BOOL isIndexPathLegal = YES;
+                    NSInteger numberOfSections = [selfObject numberOfSections];
+                    if (indexPath.section >= numberOfSections) {
                         isIndexPathLegal = NO;
+                    } else {
+                        NSInteger items = [selfObject numberOfItemsInSection:indexPath.section];
+                        if (indexPath.item >= items) {
+                            isIndexPathLegal = NO;
+                        }
                     }
-                }
-                if (!isIndexPathLegal) {
-                    QMUIAssert(NO, @"UICollectionView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", selfObject, indexPath, [NSThread callStackSymbols]);
-                    return;
+                    if (!isIndexPathLegal) {
+                        QMUIAssert(NO, @"UICollectionView (QMUI)", @"%@ - target indexPath : %@ ，不合法的indexPath。\n%@", selfObject, indexPath, [NSThread callStackSymbols]);
+                        return;
+                    }
                 }
                 
                 // call super

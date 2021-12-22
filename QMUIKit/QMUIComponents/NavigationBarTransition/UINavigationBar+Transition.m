@@ -177,4 +177,13 @@ static char kAssociatedObjectKey_copyStylesToBar;
     self.qmui_backgroundView.frame = self.bounds;
 }
 
+// NavBarRemoveBackgroundEffectAutomatically 在开启了 AutomaticCustomNavigationBarTransitionStyle 时可能对假 bar 无效
+// https://github.com/Tencent/QMUI_iOS/issues/1330
+- (void)didAddSubview:(UIView *)subview {
+    [super didAddSubview:subview];
+    if (subview == self.qmui_backgroundView) {
+        [subview qmui_performSelector:NSSelectorFromString(@"updateBackground") withArguments:nil];
+    }
+}
+
 @end

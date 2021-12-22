@@ -458,6 +458,13 @@ BeginIgnorePerformSelectorLeaksWarning
 - (NSString *)qmui_ivarList {
     return [self performSelector:NSSelectorFromString(@"_ivarDescription")];
 }
+
+- (NSString *)qmui_viewInfo {
+    if ([self isKindOfClass:UIView.class]) {
+        return [self performSelector:NSSelectorFromString(@"recursiveDescription")];
+    }
+    return @"仅支持 UIView";
+}
 EndIgnorePerformSelectorLeaksWarning
 
 @end

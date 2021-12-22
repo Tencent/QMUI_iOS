@@ -31,15 +31,12 @@ const CGFloat QMUIButtonCornerRadiusAdjustsBounds = -1;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
+        [self didInitialize];
         self.tintColor = ButtonTintColor;
-        if (!self.adjustsTitleTintColorAutomatically) {
-            [self setTitleColor:self.tintColor forState:UIControlStateNormal];
-        }
+        [self setTitleColor:self.tintColor forState:UIControlStateNormal];// 初始化时 adjustsTitleTintColorAutomatically 还是 NO，所以这里手动把 titleColor 设置为 tintColor 的值
         
         // iOS7以后的button，sizeToFit后默认会自带一个上下的contentInsets，为了保证按钮大小即为内容大小，这里直接去掉，改为一个最小的值。
         self.contentEdgeInsets = UIEdgeInsetsMake(CGFLOAT_MIN, 0, CGFLOAT_MIN, 0);
-        
-        [self didInitialize];
     }
     return self;
 }
@@ -52,9 +49,6 @@ const CGFloat QMUIButtonCornerRadiusAdjustsBounds = -1;
 }
 
 - (void)didInitialize {
-    self.adjustsTitleTintColorAutomatically = NO;
-    self.adjustsImageTintColorAutomatically = NO;
-    
     // 默认接管highlighted和disabled的表现，去掉系统默认的表现
     self.adjustsImageWhenHighlighted = NO;
     self.adjustsImageWhenDisabled = NO;
@@ -563,7 +557,10 @@ const CGFloat QMUIButtonCornerRadiusAdjustsBounds = -1;
         for (NSNumber *number in states) {
             UIImage *image = [self imageForState:number.unsignedIntegerValue];
             if (!image) {
-                return;
+                continue;
+            }
+            if (number.unsignedIntegerValue != UIControlStateNormal && image == [self imageForState:UIControlStateNormal]) {
+                continue;
             }
             
             if (self.adjustsImageTintColorAutomatically) {

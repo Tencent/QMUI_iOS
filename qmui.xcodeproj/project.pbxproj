@@ -1924,7 +1924,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.4.1;
+				MARKETING_VERSION = 4.4.2;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1968,7 +1968,7 @@
 					"@loader_path/Frameworks",
 				);
 				MACH_O_TYPE = mh_dylib;
-				MARKETING_VERSION = 4.4.1;
+				MARKETING_VERSION = 4.4.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qmui.QMUIKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -21,6 +21,37 @@
 
 @implementation NSStringTests
 
+- (void)testStringSafety {
+    // 系统标注了 string 参数 nonnull，如果传了 nil 会 crash，QMUIStringPrivate 里对 nil 做了保护
+    BeginIgnoreClangWarning(-Wnonnull)
+    XCTAssertNoThrow([[NSAttributedString alloc] initWithString:nil]);
+    XCTAssertNoThrow([[NSAttributedString alloc] initWithString:nil attributes:nil]);
+    XCTAssertNoThrow([[NSMutableAttributedString alloc] initWithString:nil]);
+    XCTAssertNoThrow([[NSMutableAttributedString alloc] initWithString:nil attributes:nil]);
+    EndIgnoreClangWarning
+    
+    NSString *string = @"A😊B";
+    
+    XCTAssertNoThrow([string substringFromIndex:0]);
+    XCTAssertThrows([string substringFromIndex:string.length]); // 越界的识别
+    XCTAssertNoThrow([string substringFromIndex:1]);
+    XCTAssertThrows([string substringFromIndex:2]); // emoji 中间裁剪的识别
+    XCTAssertNoThrow([string substringFromIndex:3]);
+    
+    XCTAssertNoThrow([string substringToIndex:0]);
+    XCTAssertNoThrow([string substringToIndex:string.length]); // toIndex 所在的字符不包含在返回结果里，所以允许传入 string.length 的位置
+    XCTAssertThrows([string substringToIndex:string.length + 1]); // 越界的识别
+    XCTAssertNoThrow([string substringToIndex:1]);
+    XCTAssertThrows([string substringToIndex:2]);// emoji 中间裁剪的识别
+    XCTAssertNoThrow([string substringToIndex:3]);
+    
+    XCTAssertNoThrow([string substringWithRange:NSMakeRange(0, 0)]);
+    XCTAssertNoThrow([string substringWithRange:NSMakeRange(string.length, 0)]);
+    XCTAssertThrows([string substringWithRange:NSMakeRange(string.length, 1)]); // 越界的识别
+    XCTAssertNoThrow([string substringWithRange:NSMakeRange(1, 2)]);
+    XCTAssertThrows([string substringWithRange:NSMakeRange(1, 1)]); // emoji 中间裁剪的识别
+}
+
 - (void)testStringMatching {
     NSString *string = @"string0.05";
     XCTAssertNil([string qmui_stringMatchedByPattern:@""]);

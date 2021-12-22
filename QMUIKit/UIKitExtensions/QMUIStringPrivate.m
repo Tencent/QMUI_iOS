@@ -143,3 +143,163 @@
 }
 
 @end
+
+@implementation QMUIStringPrivate (Safety)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [self qmuisafety_NSString];
+        [self qmuisafety_NSAttributedString];
+    });
+}
+
++ (void)qmuisafety_NSString {
+    OverrideImplementation([NSString class], @selector(substringFromIndex:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^NSString *(NSString *selfObject, NSUInteger index) {
+            
+            // index 越界
+            {
+                BOOL isValidddatedIndex = index < selfObject.length;
+                if (!isValidddatedIndex) {
+                    NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 index: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), @(index), selfObject, @(selfObject.length)];
+                    NSAssert(NO, logString);
+                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                    return nil;// 系统 substringFromIndex: 返回值的标志是 nonnull，但返回 nil 比返回 @"" 更安全
+                }
+            }
+            
+            // 保护从 emoji 等 ComposedCharacterSequence 中间裁剪的场景
+            {
+                NSRange range = [selfObject rangeOfComposedCharacterSequenceAtIndex:index];
+                BOOL isValidddatedIndex = range.location == index || NSMaxRange(range) == index;
+                if (!isValidddatedIndex) {
+                    NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，index 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), @(index), NSStringFromRange(range)];
+                    NSAssert(NO, logString);
+                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                    index = range.location;
+                }
+            }
+            
+            // call super
+            NSString * (*originSelectorIMP)(id, SEL, NSUInteger);
+            originSelectorIMP = (NSString * (*)(id, SEL, NSUInteger))originalIMPProvider();
+            NSString * result = originSelectorIMP(selfObject, originCMD, index);
+            
+            return result;
+        };
+    });
+    
+    OverrideImplementation([NSString class], @selector(substringToIndex:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^NSString *(NSString *selfObject, NSUInteger index) {
+            
+            // index 越界
+            {
+                BOOL isValidddatedIndex = index <= selfObject.length;
+                if (!isValidddatedIndex) {
+                    NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 index: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), @(index), selfObject, @(selfObject.length)];
+                    NSAssert(NO, logString);
+                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                    return nil;// 系统 substringToIndex: 返回值的标志是 nonnull，但返回 nil 比返回 @"" 更安全
+                }
+            }
+            
+            // 保护从 emoji 等 ComposedCharacterSequence 中间裁剪的场景
+            {
+                if (index < selfObject.length) {
+                    NSRange range = [selfObject rangeOfComposedCharacterSequenceAtIndex:index];
+                    BOOL isValidddatedIndex = range.location == index;
+                    if (!isValidddatedIndex) {
+                        NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，index 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), @(index), NSStringFromRange(range)];
+                        NSAssert(NO, logString);
+                        QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                        index = range.location;
+                    }
+                }
+            }
+            
+            // call super
+            NSString * (*originSelectorIMP)(id, SEL, NSUInteger);
+            originSelectorIMP = (NSString * (*)(id, SEL, NSUInteger))originalIMPProvider();
+            NSString * result = originSelectorIMP(selfObject, originCMD, index);
+            
+            return result;
+        };
+    });
+    
+    
+    // 继承关系是 __NSCFConstantString → __NSCFString → NSMutableString → NSString，其中 __NSCFString 重写了 substringWithRange:（其他 substring 方法没任何人重写），所以这里要 hook __NSCFString 而不是 NSString
+    OverrideImplementation(NSClassFromString(@"__NSCFString"), @selector(substringWithRange:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^NSString *(NSString *selfObject, NSRange range) {
+            // range 越界
+            {
+                BOOL isValidddatedRange = NSMaxRange(range) <= selfObject.length;
+                if (!isValidddatedRange) {
+                    NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 range: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), NSStringFromRange(range), selfObject, @(selfObject.length)];
+                    NSAssert(NO, logString);
+                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                    return nil;// 系统 substringWithRange: 返回值的标志是 nonnull，但返回 nil 比返回 @"" 更安全
+                }
+            }
+            
+            // 保护从 emoji 等 ComposedCharacterSequence 中间裁剪的场景
+            {
+                if (NSMaxRange(range) < selfObject.length) {
+                    NSRange range2 = [selfObject rangeOfComposedCharacterSequencesForRange:range];
+                    BOOL isValidddatedRange = range.length == 0 || NSEqualRanges(range, range2);
+                    if (!isValidddatedRange) {
+                        NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，range 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), NSStringFromRange(range), NSStringFromRange(range2)];
+                        NSAssert(NO, logString);
+                        QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                        range = range2;
+                    }
+                }
+            }
+            
+            // call super
+            NSString * (*originSelectorIMP)(id, SEL, NSRange);
+            originSelectorIMP = (NSString * (*)(id, SEL, NSRange))originalIMPProvider();
+            NSString * result = originSelectorIMP(selfObject, originCMD, range);
+            
+            return result;
+        };
+    });
+}
+
++ (void)qmuisafety_NSAttributedString {
+    id (^initWithStringBlock)(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) = ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^id (id selfObject, NSString *str) {
+            
+            str = str ?: @"";
+            
+            // call super
+            id(*originSelectorIMP)(id, SEL, NSString *);
+            originSelectorIMP = (id (*)(id, SEL, NSString *))originalIMPProvider();
+            id result = originSelectorIMP(selfObject, originCMD, str);
+            
+            return result;
+        };
+    };
+    
+    id (^initWithStringAttributesBlock)(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) = ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^id (id selfObject, NSString *str, NSDictionary<NSString *, id> *attrs) {
+            
+            str = str ?: @"";
+            
+            // call super
+            id(*originSelectorIMP)(id, SEL, NSString *, NSDictionary<NSString *, id> *);
+            originSelectorIMP = (id (*)(id, SEL, NSString *, NSDictionary<NSString *, id> *))originalIMPProvider();
+            id result = originSelectorIMP(selfObject, originCMD, str, attrs);
+            
+            return result;
+        };
+    };
+    
+    // 类簇对不同的 init 方法对应不同的私有 class，所以要用实例来得到真正的class
+    OverrideImplementation([[[NSAttributedString alloc] initWithString:@""] class], @selector(initWithString:), initWithStringBlock);
+    OverrideImplementation([[[NSMutableAttributedString alloc] initWithString:@""] class], @selector(initWithString:), initWithStringBlock);
+    OverrideImplementation([[[NSAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), initWithStringAttributesBlock);
+    OverrideImplementation([[[NSMutableAttributedString alloc] initWithString:@"" attributes:nil] class], @selector(initWithString:attributes:), initWithStringAttributesBlock);
+}
+
+@end
