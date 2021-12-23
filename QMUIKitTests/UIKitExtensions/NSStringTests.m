@@ -33,7 +33,8 @@
     NSString *string = @"A😊B";
     
     XCTAssertNoThrow([string substringFromIndex:0]);
-    XCTAssertThrows([string substringFromIndex:string.length]); // 越界的识别
+    XCTAssertNoThrow([string substringFromIndex:string.length]); // 系统自身对 length 的参数做了保护，返回空字符串
+    XCTAssertThrows([string substringFromIndex:5]); // 越界的识别
     XCTAssertNoThrow([string substringFromIndex:1]);
     XCTAssertThrows([string substringFromIndex:2]); // emoji 中间裁剪的识别
     XCTAssertNoThrow([string substringFromIndex:3]);

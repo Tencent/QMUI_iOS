@@ -160,7 +160,7 @@
             
             // index 越界
             {
-                BOOL isValidddatedIndex = index < selfObject.length;
+                BOOL isValidddatedIndex = index <= selfObject.length;
                 if (!isValidddatedIndex) {
                     NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 index: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), @(index), selfObject, @(selfObject.length)];
                     NSAssert(NO, logString);
@@ -171,13 +171,15 @@
             
             // 保护从 emoji 等 ComposedCharacterSequence 中间裁剪的场景
             {
-                NSRange range = [selfObject rangeOfComposedCharacterSequenceAtIndex:index];
-                BOOL isValidddatedIndex = range.location == index || NSMaxRange(range) == index;
-                if (!isValidddatedIndex) {
-                    NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，index 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), @(index), NSStringFromRange(range)];
-                    NSAssert(NO, logString);
-                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
-                    index = range.location;
+                if (index < selfObject.length) {
+                    NSRange range = [selfObject rangeOfComposedCharacterSequenceAtIndex:index];
+                    BOOL isValidddatedIndex = range.location == index || NSMaxRange(range) == index;
+                    if (!isValidddatedIndex) {
+                        NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，index 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), @(index), NSStringFromRange(range)];
+                        NSAssert(NO, logString);
+                        QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                        index = range.location;
+                    }
                 }
             }
             
