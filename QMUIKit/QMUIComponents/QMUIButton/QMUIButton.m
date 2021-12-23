@@ -31,12 +31,14 @@ const CGFloat QMUIButtonCornerRadiusAdjustsBounds = -1;
 
 - (instancetype)initWithFrame:(CGRect)frame {
     if (self = [super initWithFrame:frame]) {
-        [self didInitialize];
         self.tintColor = ButtonTintColor;
         [self setTitleColor:self.tintColor forState:UIControlStateNormal];// 初始化时 adjustsTitleTintColorAutomatically 还是 NO，所以这里手动把 titleColor 设置为 tintColor 的值
         
         // iOS7以后的button，sizeToFit后默认会自带一个上下的contentInsets，为了保证按钮大小即为内容大小，这里直接去掉，改为一个最小的值。
         self.contentEdgeInsets = UIEdgeInsetsMake(CGFLOAT_MIN, 0, CGFLOAT_MIN, 0);
+        
+        // 放在后面，让前面的默认值可以被子类重写的 didInitialize 覆盖
+        [self didInitialize];
     }
     return self;
 }
