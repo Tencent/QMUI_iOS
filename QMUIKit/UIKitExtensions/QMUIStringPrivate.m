@@ -163,8 +163,7 @@
                 BOOL isValidatedIndex = index <= selfObject.length;
                 if (!isValidatedIndex) {
                     NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 index: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), @(index), selfObject, @(selfObject.length)];
-                    NSAssert(NO, logString);
-                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                    QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                     return @"";// 系统 substringFromIndex: 返回值的标志是 nonnull
                 }
             }
@@ -176,8 +175,7 @@
                     BOOL isValidatedIndex = range.location == index || NSMaxRange(range) == index;
                     if (!isValidatedIndex) {
                         NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，index 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), @(index), NSStringFromRange(range)];
-                        NSAssert(NO, logString);
-                        QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                        QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                         index = range.location;
                     }
                 }
@@ -200,8 +198,7 @@
                 BOOL isValidatedIndex = index <= selfObject.length;
                 if (!isValidatedIndex) {
                     NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 index: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), @(index), selfObject, @(selfObject.length)];
-                    NSAssert(NO, logString);
-                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                    QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                     return @"";// 系统 substringToIndex: 返回值的标志是 nonnull，但返回 nil 比返回 @"" 更安全
                 }
             }
@@ -213,8 +210,7 @@
                     BOOL isValidatedIndex = range.location == index;
                     if (!isValidatedIndex) {
                         NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，index 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), @(index), NSStringFromRange(range)];
-                        NSAssert(NO, logString);
-                        QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                        QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                         index = range.location;
                     }
                 }
@@ -238,8 +234,7 @@
                 BOOL isValidddatedRange = NSMaxRange(range) <= selfObject.length;
                 if (!isValidddatedRange) {
                     NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 range: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), NSStringFromRange(range), selfObject, @(selfObject.length)];
-                    NSAssert(NO, logString);
-                    QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                    QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                     return @"";// 系统 substringWithRange: 返回值的标志是 nonnull
                 }
             }
@@ -251,8 +246,7 @@
                     BOOL isValidddatedRange = range.length == 0 || NSEqualRanges(range, range2);
                     if (!isValidddatedRange) {
                         NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，range 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), NSStringFromRange(range), NSStringFromRange(range2)];
-                        NSAssert(NO, logString);
-                        QMUILogWarn(@"QMUIStringSafety", @"%@", logString);
+                        QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                         range = range2;
                     }
                 }

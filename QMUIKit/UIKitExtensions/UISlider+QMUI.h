@@ -50,7 +50,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) NSUInteger qmui_step;
 
 /// 在设置 qmui_numberOfSteps 时会创建对应个数的 QMUISliderStepControl，而通过这个 configuration block 可以配置每一个 stepControl 的属性
-@property(nullable, nonatomic, copy) void (^qmui_stepControlConfiguration)(UISlider *slider, QMUISliderStepControl *stepControl, NSUInteger index);
+@property(nullable, nonatomic, copy) void (^qmui_stepControlConfiguration)(__kindof UISlider *slider, QMUISliderStepControl *stepControl, NSUInteger index);
+
+/// 当使用了 step 功能时，可通过这个 block 监听 step 的变化（只有 step 的值改变时才会触发），获取当前 step 的值请调用 slider.qmui_step，获取变化前的 step 值请访问参数 precedingStep。
+/// @note 在系统的 UIControlEventValueChanged 里获取 slider.qmui_step 也可以，但因为 slider.continuous 默认是 YES，所以拖动过程中 UIControlEventValueChanged 会触发很多次，但 step 不一定有变化，所以用专门的 block 监听会更方便高效一点。
+@property(nullable, nonatomic, copy) void (^qmui_stepDidChangeBlock)(__kindof UISlider *slider, NSUInteger precedingStep);
 @end
 
 @interface QMUISliderStepControl : UIControl

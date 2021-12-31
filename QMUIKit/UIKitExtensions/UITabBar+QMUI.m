@@ -493,14 +493,21 @@ QMUISynthesizeBOOLProperty(qmuitb_hasSetEffectForegroundColor, setQmuitb_hasSetE
 
 - (NSArray<UIVisualEffectView *> *)qmui_effectViews {
     UIView *backgroundView = self.qmui_backgroundView;
-    UIVisualEffectView *backgroundEffectView1 = [backgroundView valueForKey:@"_effectView1"];
-    UIVisualEffectView *backgroundEffectView2 = [backgroundView valueForKey:@"_effectView2"];
     NSMutableArray<UIVisualEffectView *> *result = NSMutableArray.new;
-    if (backgroundEffectView1) {
-        [result addObject:backgroundEffectView1];
-    }
-    if (backgroundEffectView2) {
-        [result addObject:backgroundEffectView2];
+    if (@available(iOS 13.0, *)) {
+        UIVisualEffectView *backgroundEffectView1 = [backgroundView valueForKey:@"_effectView1"];
+        UIVisualEffectView *backgroundEffectView2 = [backgroundView valueForKey:@"_effectView2"];
+        if (backgroundEffectView1) {
+            [result addObject:backgroundEffectView1];
+        }
+        if (backgroundEffectView2) {
+            [result addObject:backgroundEffectView2];
+        }
+    } else {
+        UIVisualEffectView *backgroundEffectView = [backgroundView qmui_valueForKey:@"_backgroundEffectView"];
+        if (backgroundEffectView) {
+            [result addObject:backgroundEffectView];
+        }
     }
     return result.count > 0 ? result : nil;
 }

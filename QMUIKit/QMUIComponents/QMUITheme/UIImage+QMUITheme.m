@@ -388,6 +388,11 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 
 QMUISynthesizeBOOLProperty(qmui_shouldUseSystemIMP, setQmui_shouldUseSystemIMP)
 
+static BOOL generatorSupportsDynamicColor = NO;
++ (BOOL)qmui_generatorSupportsDynamicColor {
+    return generatorSupportsDynamicColor;
+}
+
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -486,6 +491,8 @@ QMUISynthesizeBOOLProperty(qmui_shouldUseSystemIMP, setQmui_shouldUseSystemIMP)
                 };
             });
         }
+        
+        generatorSupportsDynamicColor = YES;
     });
 }
 

@@ -47,6 +47,11 @@ NS_ASSUME_NONNULL_BEGIN
 */
 + (UIImage *)qmui_imageWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
+/**
+ 内部用，标志 QMUIThemeImage 对 UIImage (QMUI) 里使用动态颜色生成动态图片的适配 hook 是否已生效。例如在配置表这种“加载时机特别早”的场景，此时 UIImage (QMUITheme) +load 方法尚未被调用，这些 hook 还没生效，此时如果你使用 [UIImage qmui_imageWithTintColor:dynamicColor] 得到的 image 是无法自动响应 theme 切换的。
+ */
+@property(class, nonatomic, assign) BOOL qmui_generatorSupportsDynamicColor;
+
 @end
 
 NS_ASSUME_NONNULL_END

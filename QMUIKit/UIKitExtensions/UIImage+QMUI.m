@@ -174,8 +174,12 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         CGContextSetFillColorWithColor(contextRef, tintColor.CGColor);
         CGContextFillRect(contextRef, CGRectMakeWithSize(self.size));
     }];
-    if ([NSStringFromClass(tintColor.class) containsString:@"QMUIThemeColor"]) {
-        QMUIAssert([NSStringFromClass(result.class) containsString:@"QMUIThemeImage"], @"UIImage (QMUI)", @"QMUIThemeColor 生成的图片却不是 QMUIThemeImage，可能是配置表应用的时机比 UIImage+QMUITheme 里重写 qmui_imageWithColor: 的时机还早，可能导致 theme 切换时无法刷新。");
+    
+    SEL selector = NSSelectorFromString(@"qmui_generatorSupportsDynamicColor");
+    if ([NSStringFromClass(tintColor.class) containsString:@"QMUIThemeColor"] && [UIImage respondsToSelector:selector]) {
+        BOOL supports;
+        [UIImage.class qmui_performSelector:selector withPrimitiveReturnValue:&supports];
+        QMUIAssert(supports, @"UIImage (QMUI)", @"UIImage (QMUITheme) hook 尚未生效，QMUIThemeColor 生成的图片无法自动转成 QMUIThemeImage，可能导致 theme 切换时无法刷新。");
     }
     return result;
 }
@@ -575,8 +579,11 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             CGContextFillRect(contextRef, CGRectMakeWithSize(size));
         }
     }];
-    if ([NSStringFromClass(color.class) containsString:@"QMUIThemeColor"]) {
-        QMUIAssert([NSStringFromClass(result.class) containsString:@"QMUIThemeImage"], @"UIImage (QMUI)", @"QMUIThemeColor 生成的图片却不是 QMUIThemeImage，可能是配置表应用的时机比 UIImage+QMUITheme 里重写 qmui_imageWithColor: 的时机还早，可能导致 theme 切换时无法刷新。");
+    SEL selector = NSSelectorFromString(@"qmui_generatorSupportsDynamicColor");
+    if ([NSStringFromClass(color.class) containsString:@"QMUIThemeColor"] && [UIImage respondsToSelector:selector]) {
+        BOOL supports;
+        [UIImage.class qmui_performSelector:selector withPrimitiveReturnValue:&supports];
+        QMUIAssert(supports, @"UIImage (QMUI)", @"UIImage (QMUITheme) hook 尚未生效，QMUIThemeColor 生成的图片无法自动转成 QMUIThemeImage，可能导致 theme 切换时无法刷新。");
     }
     return result;
 }

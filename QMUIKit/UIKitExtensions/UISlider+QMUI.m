@@ -23,14 +23,14 @@
 
 @property(nonatomic, strong) NSMutableArray<QMUISliderStepControl *> *qmuisl_stepControls;
 @property(nonatomic, copy) NSString *qmuisl_layoutCachedKey;
-
-//- (void)qmuisl_setNeedsLayout;
+@property(nonatomic, assign) NSUInteger qmuisl_precedingStep;
 @end
 
 @implementation UISlider (QMUI)
 
 QMUISynthesizeIdStrongProperty(qmuisl_stepControls, setQmuisl_stepControls)
 QMUISynthesizeIdCopyProperty(qmuisl_layoutCachedKey, setQmuisl_layoutCachedKey)
+QMUISynthesizeNSUIntegerProperty(qmuisl_precedingStep, setQmuisl_precedingStep)
 
 - (UIView *)qmui_thumbView {
     // thumbView 并非在一开始就存在，而是在某个时机才生成的。如果使用了自己的 thumbImage，则系统用 _thumbView 来显示。如果没用自己的 thumbImage，则系统用 _innerThumbView 来存放。注意如果是 _innerThumbView，它外部还有一个 _thumbViewNeue 用来控制布局。
@@ -199,12 +199,14 @@ static char kAssociatedObjectKey_numberOfSteps;
             [obj removeFromSuperview];
         }];
         self.qmuisl_stepControls = nil;
-        [self removeTarget:self action:@selector(qmuisl_handleValueChanged) forControlEvents:UIControlEventValueChanged];
         return;
     }
     
     [self qmuisl_swizzleForStepsIfNeeded];
-    [self addTarget:self action:@selector(qmuisl_handleValueChanged) forControlEvents:UIControlEventValueChanged];
+    
+    // step 的逻辑都是基于 [0, 1] 来计算的，所以这里强制保证一下值
+    self.minimumValue = 0;
+    self.maximumValue = 1;
     
     if (!self.qmuisl_stepControls) {
         self.qmuisl_stepControls = NSMutableArray.new;
@@ -235,21 +237,20 @@ static char kAssociatedObjectKey_numberOfSteps;
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_numberOfSteps)) unsignedIntValue];
 }
 
-static char kAssociatedObjectKey_step;
 - (void)setQmui_step:(NSUInteger)step {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_step, @(step), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (self.qmui_numberOfSteps <= 1) return;
+    if (self.qmui_numberOfSteps < 2) return;
     CGFloat value = (self.maximumValue - self.minimumValue) * ((CGFloat)step / (CGFloat)(self.qmui_numberOfSteps - 1));
     self.value = value;
-    [self qmuisl_handleValueChanged];
+    [self sendActionsForControlEvents:UIControlEventValueChanged];
 }
 
 - (NSUInteger)qmui_step {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_step)) unsignedIntValue];
+    NSUInteger step = [self qmuisl_stepWithValue:self.value];
+    return step;
 }
 
 static char kAssociatedObjectKey_stepControlConfiguration;
-- (void)setQmui_stepControlConfiguration:(void (^)(UISlider * _Nonnull, QMUISliderStepControl * _Nonnull, NSUInteger))stepControlConfiguration {
+- (void)setQmui_stepControlConfiguration:(void (^)(__kindof UISlider * _Nonnull, QMUISliderStepControl * _Nonnull, NSUInteger))stepControlConfiguration {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_stepControlConfiguration, stepControlConfiguration, OBJC_ASSOCIATION_COPY_NONATOMIC);
     if (stepControlConfiguration) {
         [self.qmuisl_stepControls enumerateObjectsUsingBlock:^(QMUISliderStepControl * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -259,8 +260,31 @@ static char kAssociatedObjectKey_stepControlConfiguration;
     }
 }
 
-- (void (^)(UISlider * _Nonnull, QMUISliderStepControl * _Nonnull, NSUInteger))qmui_stepControlConfiguration {
+- (void (^)(__kindof UISlider * _Nonnull, QMUISliderStepControl * _Nonnull, NSUInteger))qmui_stepControlConfiguration {
     return (void (^)(UISlider * _Nonnull, QMUISliderStepControl * _Nonnull, NSUInteger))objc_getAssociatedObject(self, &kAssociatedObjectKey_stepControlConfiguration);
+}
+
+static char kAssociatedObjectKey_stepDidChangeBlock;
+- (void)setQmui_stepDidChangeBlock:(void (^)(__kindof UISlider * _Nonnull, NSUInteger))stepDidChangeBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_stepDidChangeBlock, stepDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    [self removeTarget:self action:@selector(qmuisl_handleValueChanged:) forControlEvents:UIControlEventValueChanged];
+    if (stepDidChangeBlock) {
+        [self addTarget:self action:@selector(qmuisl_handleValueChanged:) forControlEvents:UIControlEventValueChanged];
+    }
+}
+
+- (void (^)(__kindof UISlider * _Nonnull, NSUInteger))qmui_stepDidChangeBlock {
+    return (void (^)(__kindof UISlider * _Nonnull, NSUInteger))objc_getAssociatedObject(self, &kAssociatedObjectKey_stepDidChangeBlock);
+}
+
+- (void)qmuisl_handleValueChanged:(UISlider *)slider {
+    if (!slider.qmui_stepDidChangeBlock || slider.qmui_numberOfSteps < 2) return;
+    
+    NSUInteger step = [slider qmuisl_stepWithValue:slider.value];
+    if (step != slider.qmuisl_precedingStep) {
+        slider.qmui_stepDidChangeBlock(slider, slider.qmuisl_precedingStep);
+        slider.qmuisl_precedingStep = step;
+    }
 }
 
 - (void)qmuisl_handleStepControlEvent:(QMUISliderStepControl *)stepControl {
@@ -274,15 +298,6 @@ static char kAssociatedObjectKey_stepControlConfiguration;
     return step;
 }
 
-- (void)qmuisl_handleValueChanged {
-    NSInteger step = [self qmuisl_stepWithValue:self.value];
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_step, @(step), OBJC_ASSOCIATION_RETAIN_NONATOMIC);// value 变了，同步更新 step 的值，但不希望触发 qmui_step 的 setter，否则死循环
-    [self.qmuisl_stepControls enumerateObjectsUsingBlock:^(QMUISliderStepControl * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.userInteractionEnabled = idx != step;// 这样才能让 thumb 可以拖动
-        obj.indicator.hidden = idx == step;
-    }];
-}
-
 - (void)qmuisl_swizzleForStepsIfNeeded {
     [QMUIHelper executeBlock:^{
         OverrideImplementation([UISlider class], @selector(layoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
@@ -294,6 +309,22 @@ static char kAssociatedObjectKey_stepControlConfiguration;
                 originSelectorIMP(selfObject, originCMD);
                 
                 [selfObject qmuisl_layoutStepControls];
+            };
+        });
+        
+        OverrideImplementation([UISlider class], @selector(setEnabled:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UISlider *selfObject, BOOL enabled) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, enabled);
+                
+                if (selfObject.qmui_stepControlConfiguration) {
+                    [selfObject.qmuisl_stepControls enumerateObjectsUsingBlock:^(QMUISliderStepControl * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        selfObject.qmui_stepControlConfiguration(selfObject, obj, idx);
+                    }];
+                }
             };
         });
         
@@ -352,6 +383,24 @@ static char kAssociatedObjectKey_stepControlConfiguration;
                 return result;
             };
         });
+        
+        OverrideImplementation([UISlider class], @selector(setValue:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UISlider *selfObject, float value, BOOL animated) {
+                
+                // 关闭 continuous 本质上只是让系统在 touch 结束时才 send value changed event，实际上不管 continuous 的值是什么，拖动过程中都会不断调用 setValue:animated: 并且实时设置当前的 value，所以需要重写这个方法，在抬手时强制把当前抬手位置的 value 转换成 UI 上 thumView 当前位置对应的 value 值，然后业务才能在 value changed 回调里获取到正确的 value（虽然业务应该获取 step 而不是 value）
+                if (selfObject.qmui_numberOfSteps >= 2) {
+                    NSUInteger step = [selfObject qmuisl_stepWithValue:value];
+                    value = (float)step / (selfObject.qmui_numberOfSteps - 1);
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, float, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, float, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, value, animated);
+                
+                
+            };
+        });
     } oncePerIdentifier:@"UISlider (QMUI) stepControl"];
 }
 
@@ -359,7 +408,15 @@ static char kAssociatedObjectKey_stepControlConfiguration;
     NSInteger count = self.qmuisl_stepControls.count;
     if (!count) return;
     
+    // 根据当前 thumbView 的位置，控制重叠的那个 stepControl 的事件响应和显隐，由于 slider 可能是 continuous 的，所以这段逻辑必须每次 layout 都调用，不能放在 layoutCachedKey 的保护里
+    CGRect thumbRect = self.qmui_thumbView.frame;
     CGRect trackRect = [self trackRectForBounds:self.bounds];
+    NSUInteger step = (CGRectGetMidX(thumbRect) - CGRectGetMinX(trackRect)) / CGRectGetWidth(trackRect) * (count - 1);
+    [self.qmuisl_stepControls enumerateObjectsUsingBlock:^(QMUISliderStepControl * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.userInteractionEnabled = idx != step;// 让 stepControl 不要影响 thumbView 的事件
+        obj.indicator.hidden = idx == step;
+    }];
+    
     NSString *layoutCachedKey = [NSString stringWithFormat:@"%.0f-%@", CGRectGetWidth(trackRect), @(count)];
     if ([self.qmuisl_layoutCachedKey isEqualToString:layoutCachedKey]) return;
     
