@@ -31,6 +31,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, strong) UIColor *backgroundColor;
 
+@property(nonatomic, assign) CGFloat showHeight;
+
 - (void)logWithLevel:(nullable NSString *)level name:(nullable NSString *)name logString:(id)logString;
 - (void)log:(id)logString;
 - (void)clear;

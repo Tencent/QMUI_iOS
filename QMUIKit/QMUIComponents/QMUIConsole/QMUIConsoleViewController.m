@@ -309,7 +309,7 @@
     
     [self layoutPopoverButton];
     
-    CGSize containerViewSize = CGSizeMake(CGRectGetWidth(self.view.bounds), MAX(100, CGRectGetHeight(self.view.bounds) / 3));
+    CGSize containerViewSize = CGSizeMake(CGRectGetWidth(self.view.bounds), MAX(CGRectGetHeight(self.view.bounds) * 0.3, self.showHeight));
     self.containerView.qmui_frameApplyTransform = CGRectMake(0, CGRectGetHeight(self.view.bounds) - containerViewSize.height, containerViewSize.width, containerViewSize.height);
     
     CGFloat toolbarHeight = 44 + self.containerView.qmui_safeAreaInsets.bottom;

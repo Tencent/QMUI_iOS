@@ -22,7 +22,7 @@
 #import "QMUITextView.h"
 
 @interface QMUIConsole ()
-
+@property(nonatomic, assign) CGFloat showHeight;
 @property(nonatomic, strong) UIWindow *consoleWindow;
 @property(nonatomic, strong) QMUIConsoleViewController *consoleViewController;
 @end
@@ -53,6 +53,15 @@
         instance.searchResultHighlightedBackgroundColor = [UIColorBlue colorWithAlphaComponent:.8];
     });
     return instance;
+}
+
+- (void)showConsolrHeight:(CGFloat)height {
+    self.showHeight = height;
+}
+
+- (void)setShowHeight:(CGFloat)showHeight {
+    _showHeight = showHeight;
+    self.consoleViewController.showHeight = self.showHeight;
 }
 
 + (instancetype)appearance {
@@ -106,7 +115,8 @@
 - (void)initConsoleWindowIfNeeded {
     if (!self.consoleWindow) {
         self.consoleWindow = [[UIWindow alloc] init];
-        self.consoleWindow.backgroundColor = nil;
+        self.consoleWindow.backgroundColor = [UIColor clearColor];
+
         if (QMUICMIActivated) {
             self.consoleWindow.windowLevel = UIWindowLevelQMUIConsole;
         } else {
@@ -121,6 +131,7 @@
         };
         
         self.consoleViewController = [[QMUIConsoleViewController alloc] init];
+        self.consoleViewController.showHeight = self.showHeight;
         self.consoleWindow.rootViewController = self.consoleViewController;
     }
 }

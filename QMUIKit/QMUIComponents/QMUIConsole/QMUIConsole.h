@@ -35,6 +35,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (nonnull instancetype)sharedInstance;
 
+- (void)showConsolrHeight:(CGFloat)height;
+
 /**
  打印日志到控制台
 
