@@ -115,7 +115,7 @@
 - (void)initConsoleWindowIfNeeded {
     if (!self.consoleWindow) {
         self.consoleWindow = [[UIWindow alloc] init];
-        self.consoleWindow.backgroundColor = [UIColor clearColor];
+        self.consoleWindow.backgroundColor = nil;
 
         if (QMUICMIActivated) {
             self.consoleWindow.windowLevel = UIWindowLevelQMUIConsole;
