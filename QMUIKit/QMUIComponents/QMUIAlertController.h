@@ -153,6 +153,9 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// alert 内部 textField 的边框颜色，如果不需要边框，可设置为 nil
 @property(nullable, nonatomic, strong) UIColor *alertTextFieldBorderColor UI_APPEARANCE_SELECTOR;
 
+/// alert 内部 textField 的背景颜色，如果不需要背景颜色，可设置为 nil
+@property(nullable, nonatomic, strong) UIColor *alertTextFieldBackgroundColor UI_APPEARANCE_SELECTOR;
+
 /// alert 内部 textField 的 textInsets，textField 的高度会由文字大小加这个 inset 来决定
 @property(nonatomic, assign) UIEdgeInsets alertTextFieldTextInsets UI_APPEARANCE_SELECTOR;
 

@@ -145,6 +145,7 @@ static NSUInteger alertControllerCount = 0;
     alertControllerAppearance.alertTextFieldFont = UIFontMake(14);
     alertControllerAppearance.alertTextFieldTextColor = UIColorBlack;
     alertControllerAppearance.alertTextFieldBorderColor = UIColorMake(210, 210, 210);
+    alertControllerAppearance.alertTextFieldBackgroundColor = UIColorWhite;
     alertControllerAppearance.alertTextFieldTextInsets = UIEdgeInsetsMake(4, 7, 4, 7);
     
     alertControllerAppearance.sheetContentMargin = UIEdgeInsetsMake(10, 10, 10, 10);
@@ -407,6 +408,13 @@ static NSUInteger alertControllerCount = 0;
     _alertTextFieldBorderColor = alertTextFieldBorderColor;
     [self.textFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
         textField.layer.borderColor = alertTextFieldBorderColor.CGColor;
+    }];
+}
+
+- (void)setAlertTextFieldBackgroundColor:(UIColor *)alertTextFieldBackgroundColor {
+    _alertTextFieldBackgroundColor = alertTextFieldBackgroundColor;
+    [self.textFields enumerateObjectsUsingBlock:^(QMUITextField * _Nonnull textField, NSUInteger idx, BOOL * _Nonnull stop) {
+        textField.backgroundColor = alertTextFieldBackgroundColor;
     }];
 }
 
@@ -1007,7 +1015,7 @@ static NSUInteger alertControllerCount = 0;
     QMUITextField *textField = [[QMUITextField alloc] init];
     textField.delegate = self;
     textField.borderStyle = UITextBorderStyleNone;
-    textField.backgroundColor = UIColorWhite;
+    textField.backgroundColor = self.alertTextFieldBackgroundColor;
     textField.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
     textField.font = self.alertTextFieldFont;
     textField.textColor = self.alertTextFieldTextColor;
