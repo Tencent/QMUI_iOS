@@ -66,9 +66,3 @@ QMUIKit 和 QMUI Demo 的 Sketch 设计稿均存放在 [https://github.com/QMUI/
 建议搭配 QMUI 专用的 Code Snippets 及文件模板使用：
 1. [QMUI_iOS_CodeSnippets](https://github.com/QMUI/QMUI_iOS_CodeSnippets)
 2. [QMUI_iOS_Templates](https://github.com/QMUI/QMUI_iOS_Templates)
-
-## 招聘
-
-2021-03-15 更新
-
-[广州|成都] 企业微信/微信读书/王者营地长期接收 iOS 客户端社招、实习生简历，详情请看 [#1209](https://github.com/Tencent/QMUI_iOS/issues/1209)。
