@@ -153,6 +153,11 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
                 }
             }
             
+            if (isValidatedColor && getter == @selector(tintColor) && [self isKindOfClass:UIButton.class]) {
+                QMUIThemeColor *color = (QMUIThemeColor *)value;
+                value = color.copy;
+            }
+            
             [self performSelector:setter withObject:value];
         }
         EndIgnorePerformSelectorLeaksWarning
