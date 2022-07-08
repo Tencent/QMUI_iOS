@@ -153,7 +153,8 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
                 }
             }
             
-            if (isValidatedColor && getter == @selector(tintColor) && [self isKindOfClass:UIButton.class]) {
+            // https://github.com/Tencent/QMUI_iOS/issues/1418
+            if (isValidatedColor && getter == @selector(tintColor) && ([self isKindOfClass:UIButton.class] || [self isKindOfClass:UIImageView.class])) {
                 QMUIThemeColor *color = (QMUIThemeColor *)value;
                 value = color.copy;
             }
