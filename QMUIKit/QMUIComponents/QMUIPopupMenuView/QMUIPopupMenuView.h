@@ -68,6 +68,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 批量设置 item 的样式
 @property(nonatomic, copy, nullable) void (^itemConfigurationHandler)(QMUIPopupMenuView *aMenuView, __kindof QMUIPopupMenuBaseItem *aItem, NSInteger section, NSInteger index);
 
+/// 如果 items 是 QMUIPopupMenuButtonItem 或其子类，则当任一  item 被点击前，都会先调用这个 block。
+@property(nonatomic, copy, nullable) void (^willHandleButtonItemEventBlock)(QMUIPopupMenuView *aMenuView, __kindof QMUIPopupMenuButtonItem *aItem, NSInteger section, NSInteger index);
+
 /// 设置 item，均处于同一个 section 内
 @property(nonatomic, copy, nullable) NSArray<__kindof QMUIPopupMenuBaseItem *> *items;
 

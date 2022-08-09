@@ -450,8 +450,8 @@ const NSInteger QMUIDialogSelectionViewControllerSelectedItemIndexNone = -1;
     self.selectedItemIndexes = [[NSMutableSet alloc] init];
     
     self.tableView = [[QMUITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
-    self.tableView.delegate = self;
     self.tableView.dataSource = self;
+    self.tableView.delegate = self;
     self.tableView.alwaysBounceVertical = NO;
     self.tableView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     

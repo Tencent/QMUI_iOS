@@ -41,8 +41,8 @@
 }
 
 - (void)dealloc {
-    self.delegate = nil;
     self.dataSource = nil;
+    self.delegate = nil;
 }
 
 // 保证一直存在tableFooterView，以去掉列表内容不满一屏时尾部的空白分割线

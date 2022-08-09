@@ -31,6 +31,7 @@
 QMUISynthesizeIdStrongProperty(qmuisl_stepControls, setQmuisl_stepControls)
 QMUISynthesizeIdCopyProperty(qmuisl_layoutCachedKey, setQmuisl_layoutCachedKey)
 QMUISynthesizeNSUIntegerProperty(qmuisl_precedingStep, setQmuisl_precedingStep)
+QMUISynthesizeIdCopyProperty(qmui_stepDidChangeBlock, setQmui_stepDidChangeBlock)
 
 - (UIView *)qmui_thumbView {
     // thumbView 并非在一开始就存在，而是在某个时机才生成的。如果使用了自己的 thumbImage，则系统用 _thumbView 来显示。如果没用自己的 thumbImage，则系统用 _innerThumbView 来存放。注意如果是 _innerThumbView，它外部还有一个 _thumbViewNeue 用来控制布局。
@@ -112,7 +113,7 @@ static char kAssociatedObjectKey_thumbShadowColor;
         [QMUIHelper executeBlock:^{
             if (@available(iOS 14.0, *)) {
                 // -[_UISlideriOSVisualElement didAddSubview:]
-                OverrideImplementation(NSClassFromString(@"_UISlideriOSVisualElement"), @selector(didAddSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UISlider", @"iOS", @"VisualElement", nil]), @selector(didAddSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                     return ^(UIView *selfObject, UIView *subview) {
                         
                         // call super
@@ -199,6 +200,7 @@ static char kAssociatedObjectKey_numberOfSteps;
             [obj removeFromSuperview];
         }];
         self.qmuisl_stepControls = nil;
+        [self removeTarget:self action:@selector(qmuisl_handleValueChanged:) forControlEvents:UIControlEventValueChanged];
         return;
     }
     
@@ -231,6 +233,9 @@ static char kAssociatedObjectKey_numberOfSteps;
         }];
     }
     [self qmuisl_setNeedsLayout];
+    
+    [self removeTarget:self action:@selector(qmuisl_handleValueChanged:) forControlEvents:UIControlEventValueChanged];
+    [self addTarget:self action:@selector(qmuisl_handleValueChanged:) forControlEvents:UIControlEventValueChanged];
 }
 
 - (NSUInteger)qmui_numberOfSteps {
@@ -264,25 +269,16 @@ static char kAssociatedObjectKey_stepControlConfiguration;
     return (void (^)(UISlider * _Nonnull, QMUISliderStepControl * _Nonnull, NSUInteger))objc_getAssociatedObject(self, &kAssociatedObjectKey_stepControlConfiguration);
 }
 
-static char kAssociatedObjectKey_stepDidChangeBlock;
-- (void)setQmui_stepDidChangeBlock:(void (^)(__kindof UISlider * _Nonnull, NSUInteger))stepDidChangeBlock {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_stepDidChangeBlock, stepDidChangeBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
-    [self removeTarget:self action:@selector(qmuisl_handleValueChanged:) forControlEvents:UIControlEventValueChanged];
-    if (stepDidChangeBlock) {
-        [self addTarget:self action:@selector(qmuisl_handleValueChanged:) forControlEvents:UIControlEventValueChanged];
-    }
-}
-
-- (void (^)(__kindof UISlider * _Nonnull, NSUInteger))qmui_stepDidChangeBlock {
-    return (void (^)(__kindof UISlider * _Nonnull, NSUInteger))objc_getAssociatedObject(self, &kAssociatedObjectKey_stepDidChangeBlock);
-}
-
 - (void)qmuisl_handleValueChanged:(UISlider *)slider {
-    if (!slider.qmui_stepDidChangeBlock || slider.qmui_numberOfSteps < 2) return;
+    if (slider.qmui_numberOfSteps < 2) return;
     
     NSUInteger step = [slider qmuisl_stepWithValue:slider.value];
     if (step != slider.qmuisl_precedingStep) {
-        slider.qmui_stepDidChangeBlock(slider, slider.qmuisl_precedingStep);
+        if (slider.qmui_stepDidChangeBlock) {
+            slider.qmui_stepDidChangeBlock(slider, slider.qmuisl_precedingStep);
+        }
+        // 即便不存在 qmui_stepDidChangeBlock 也要记录 precedingStep
+        // https://github.com/Tencent/QMUI_iOS/issues/1413
         slider.qmuisl_precedingStep = step;
     }
 }

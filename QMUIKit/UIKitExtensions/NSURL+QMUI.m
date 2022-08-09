@@ -27,7 +27,7 @@
     
     [urlComponents.queryItems enumerateObjectsUsingBlock:^(NSURLQueryItem * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (obj.name) {
-            [params setObject:obj.value ?: [NSNull null] forKey:obj.name];
+            [params setObject:obj.value ?: @"" forKey:obj.name];
         }
     }];
     return [params copy];

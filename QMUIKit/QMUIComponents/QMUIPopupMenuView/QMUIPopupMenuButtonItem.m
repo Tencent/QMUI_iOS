@@ -26,7 +26,7 @@
 
 @implementation QMUIPopupMenuButtonItem
 
-+ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(nullable void (^)(QMUIPopupMenuButtonItem *))handler {
++ (instancetype)itemWithImage:(UIImage *)image title:(NSString *)title handler:(nullable void (^)(__kindof QMUIPopupMenuButtonItem *))handler {
     QMUIPopupMenuButtonItem *item = [[self alloc] init];
     item.image = image;
     item.title = title;
@@ -87,6 +87,23 @@
 }
 
 - (void)handleButtonEvent:(id)sender {
+    if (self.menuView.willHandleButtonItemEventBlock) {
+        BOOL found = NO;
+        for (NSInteger section = 0, sectionCount = self.menuView.itemSections.count; section < sectionCount; section ++) {
+            NSArray<QMUIPopupMenuBaseItem *> *items = self.menuView.itemSections[section];
+            for (NSInteger row = 0, rowCount = items.count; row < rowCount; row ++) {
+                QMUIPopupMenuBaseItem *item = items[row];
+                if (item == self) {
+                    self.menuView.willHandleButtonItemEventBlock(self.menuView, self, section, row);
+                    found = YES;
+                    break;
+                }
+            }
+            if (found) {
+                break;
+            }
+        }
+    }
     if (self.handler) {
         self.handler(self);
     }

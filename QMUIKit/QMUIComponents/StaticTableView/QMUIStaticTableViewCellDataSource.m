@@ -54,8 +54,8 @@
 - (void)setTableView:(UITableView *)tableView {
     _tableView = tableView;
     // 触发 UITableView (QMUI_StaticCell) 里重写的 setter 里的逻辑
-    tableView.delegate = tableView.delegate;
     tableView.dataSource = tableView.dataSource;
+    tableView.delegate = tableView.delegate;
 }
 
 @end

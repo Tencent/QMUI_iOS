@@ -46,7 +46,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param handler item 点击时的事件回调，需要在这里自行隐藏 aMenuView
  @return item
  */
-+ (instancetype)itemWithImage:(nullable UIImage *)image title:(nullable NSString *)title handler:(nullable void (^)(QMUIPopupMenuButtonItem *aItem))handler;
++ (instancetype)itemWithImage:(nullable UIImage *)image title:(nullable NSString *)title handler:(nullable void (^)(__kindof QMUIPopupMenuButtonItem *aItem))handler;
 
 @end
 

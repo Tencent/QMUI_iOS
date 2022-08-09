@@ -190,18 +190,18 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
         return [self qmuivc_description];
     }
     
-    NSString *result = [NSString stringWithFormat:@"%@\nsuperclass:\t\t\t\t%@\ntitle:\t\t\t\t\t%@\nview:\t\t\t\t\t%@", [self qmuivc_description], NSStringFromClass(self.superclass), self.title, [self isViewLoaded] ? self.view : nil];
+    NSString *result = [NSString stringWithFormat:@"%@; superclass: %@; title: %@; view: %@", [self qmuivc_description], NSStringFromClass(self.superclass), self.title, [self isViewLoaded] ? self.view : nil];
     
     if ([self isKindOfClass:[UINavigationController class]]) {
         
         UINavigationController *navController = (UINavigationController *)self;
-        NSString *navDescription = [NSString stringWithFormat:@"\nviewControllers(%@):\t\t%@\ntopViewController:\t\t%@\nvisibleViewController:\t%@", @(navController.viewControllers.count), [self descriptionWithViewControllers:navController.viewControllers], [navController.topViewController qmuivc_description], [navController.visibleViewController qmuivc_description]];
+        NSString *navDescription = [NSString stringWithFormat:@"; viewControllers(%@): %@; topViewController: %@; visibleViewController: %@", @(navController.viewControllers.count), [self descriptionWithViewControllers:navController.viewControllers], [navController.topViewController qmuivc_description], [navController.visibleViewController qmuivc_description]];
         result = [result stringByAppendingString:navDescription];
         
     } else if ([self isKindOfClass:[UITabBarController class]]) {
         
         UITabBarController *tabBarController = (UITabBarController *)self;
-        NSString *tabBarDescription = [NSString stringWithFormat:@"\nviewControllers(%@):\t\t%@\nselectedViewController(%@):\t%@", @(tabBarController.viewControllers.count), [self descriptionWithViewControllers:tabBarController.viewControllers], @(tabBarController.selectedIndex), [tabBarController.selectedViewController qmuivc_description]];
+        NSString *tabBarDescription = [NSString stringWithFormat:@"; viewControllers(%@): %@; selectedViewController(%@): %@", @(tabBarController.viewControllers.count), [self descriptionWithViewControllers:tabBarController.viewControllers], @(tabBarController.selectedIndex), [tabBarController.selectedViewController qmuivc_description]];
         result = [result stringByAppendingString:tabBarDescription];
         
     }
@@ -210,11 +210,11 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
 
 - (NSString *)descriptionWithViewControllers:(NSArray<UIViewController *> *)viewControllers {
     NSMutableString *string = [[NSMutableString alloc] init];
-    [string appendString:@"(\n"];
+    [string appendString:@"( "];
     for (NSInteger i = 0, l = viewControllers.count; i < l; i++) {
-        [string appendFormat:@"\t\t\t\t\t\t\t[%@]%@%@\n", @(i), [viewControllers[i] qmuivc_description], i < l - 1 ? @"," : @""];
+        [string appendFormat:@"[%@]%@%@", @(i), [viewControllers[i] qmuivc_description], i < l - 1 ? @"," : @""];
     }
-    [string appendString:@"\t\t\t\t\t\t)"];
+    [string appendString:@" )"];
     return [string copy];
 }
 
@@ -290,7 +290,7 @@ static char kAssociatedObjectKey_visibleState;
     if ([self qmui_isViewLoadedAndVisible]) {
         return self;
     } else {
-        QMUILog(@"UIViewController (QMUI)", @"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view : nil, [self isViewLoaded] ? self.view.window : nil);
+        QMUILog(@"UIViewController (QMUI)", @"qmui_visibleViewControllerIfExist:，找不到可见的viewController。self = %@, self.view.window = %@", self, [self isViewLoaded] ? self.view.window : nil);
         return nil;
     }
 }

@@ -71,8 +71,8 @@ extern NSString *const QMUICommonTableViewControllerSectionFooterIdentifier;
  *  @example
  *  - (void)initTableView {
  *      self.tableView = [MyTableView alloc] initWithFrame:self.view.bounds style:self.style];
- *      self.tableView.delegate = self;
  *      self.tableView.dataSource = self;
+ *      self.tableView.delegate = self;
  *  }
  */
 - (void)initTableView;

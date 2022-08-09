@@ -26,10 +26,8 @@
     [navigationBar sizeToFit];
     XCTAssertTrue(navigationBar.qmui_backgroundView);
     if (@available(iOS 13.0, *)) {
-        XCTAssertFalse(navigationBar.qmui_backgroundContentView);
         XCTAssertFalse(navigationBar.qmui_shadowImageView);
     } else {
-        XCTAssertTrue(navigationBar.qmui_backgroundContentView);
         XCTAssertTrue(navigationBar.qmui_shadowImageView);
     }
     

@@ -59,23 +59,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
         return;
     }
     
-    // 为这个 selector 创建一个 QMUIMultipleDelegates 容器
     NSString *delegateGetterKey = NSStringFromSelector(getter);
-    if (!self.qmuimd_delegates[delegateGetterKey]) {
-        objc_property_t prop = class_getProperty(self.class, delegateGetterKey.UTF8String);
-        QMUIPropertyDescriptor *property = [QMUIPropertyDescriptor descriptorWithProperty:prop];
-        if (property.isStrong) {
-            // strong property
-            QMUIMultipleDelegates *strongDelegates = [QMUIMultipleDelegates strongDelegates];
-            strongDelegates.parentObject = self;
-            self.qmuimd_delegates[delegateGetterKey] = strongDelegates;
-        } else {
-            // weak property
-            QMUIMultipleDelegates *weakDelegates = [QMUIMultipleDelegates weakDelegates];
-            weakDelegates.parentObject = self;
-            self.qmuimd_delegates[delegateGetterKey] = weakDelegates;
-        }
-    }
     
     [QMUIHelper executeBlock:^{
         IMP originIMP = method_getImplementation(originMethod);
@@ -90,14 +74,32 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
                 return;
             }
             
+            // 为这个 selector 创建一个 QMUIMultipleDelegates 容器
             QMUIMultipleDelegates *delegates = selfObject.qmuimd_delegates[delegateGetterKey];
-            
             if (!aDelegate) {
                 // 对应 setDelegate:nil，表示清理所有的 delegate
-                [delegates removeAllDelegates];
-                // 只要 qmui_multipleDelegatesEnabled 开启，就会保证 delegate 一直是 delegates，所以不去调用系统默认的 set nil
-                // originSelectorIMP(selfObject, originDelegateSetter, nil);
+                if (delegates) {
+                    [delegates removeAllDelegates];
+                    [selfObject.qmuimd_delegates removeObjectForKey:delegateGetterKey];
+                }
+                // 必须要清空，否则遇到像 tableView:cellForRowAtIndexPath: 这种“要求返回值不能为 nil” 的场景就会中 assert
+                // https://github.com/Tencent/QMUI_iOS/issues/1411
+                 originSelectorIMP(selfObject, originDelegateSetter, nil);
                 return;
+            }
+            
+            if (!delegates) {
+                objc_property_t prop = class_getProperty(selfObject.class, delegateGetterKey.UTF8String);
+                QMUIPropertyDescriptor *property = [QMUIPropertyDescriptor descriptorWithProperty:prop];
+                if (property.isStrong) {
+                    // strong property
+                    delegates = [QMUIMultipleDelegates strongDelegates];
+                } else {
+                    // weak property
+                    delegates = [QMUIMultipleDelegates weakDelegates];
+                }
+                delegates.parentObject = selfObject;
+                selfObject.qmuimd_delegates[delegateGetterKey] = delegates;
             }
             
             if (aDelegate != delegates) {// 过滤掉容器自身，避免把 delegates 传进去 delegates 里，导致死循环
@@ -125,7 +127,7 @@ static char kAssociatedObjectKey_qmuiMultipleDelegatesEnabled;
 }
 
 - (void)qmui_removeDelegate:(id)delegate {
-    if (!self.qmui_multipleDelegatesEnabled) {
+    if (!self.qmuimd_delegates) {
         return;
     }
     NSMutableArray<NSString *> *delegateGetters = [[NSMutableArray alloc] init];

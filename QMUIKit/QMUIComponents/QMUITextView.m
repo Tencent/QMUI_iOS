@@ -281,7 +281,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     // 用 dispatch 延迟一下，因为在文字发生换行时，系统自己会做一些滚动，我们要延迟一点才能避免被系统的滚动覆盖
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         textView.shouldRejectSystemScroll = NO;
-        [textView qmui_scrollCaretVisibleAnimated:NO];
+        [textView qmui_scrollCaretVisibleAnimated:YES];
     });
 }
 
@@ -315,7 +315,15 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     // https://github.com/Tencent/QMUI_iOS/issues/557
     frame = CGRectFlatted(frame);
     
+    // 系统的 UITextView 只要调用 setFrame: 不管 rect 有没有变化都会触发 setContentOffset，引起最后一行输入过程中文字抖动的问题，所以这里屏蔽掉
+    BOOL sizeChanged = !CGSizeEqualToSize(frame.size, self.frame.size);
+    if (!sizeChanged) {
+        self.shouldRejectSystemScroll = YES;
+    }
     [super setFrame:frame];
+    if (!sizeChanged) {
+        self.shouldRejectSystemScroll = NO;
+    }
 }
 
 - (void)setBounds:(CGRect)bounds {

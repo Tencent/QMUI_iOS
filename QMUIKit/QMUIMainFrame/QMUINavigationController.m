@@ -25,6 +25,7 @@
 #import "QMUILog.h"
 #import "QMUIMultipleDelegates.h"
 #import "QMUIWeakObjectContainer.h"
+#import <AVKit/AVKit.h>
 
 @protocol QMUI_viewWillAppearNotifyDelegate <NSObject>
 
@@ -455,6 +456,14 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 - (UIViewController *)childViewControllerForStatusBarWithCustomBlock:(BOOL (^)(UIViewController *vc))hasCustomizedStatusBarBlock {
     // 1. 有 modal present 则优先交给 modal present 的 vc 控制（例如进入搜索状态且没指定 definesPresentationContext 的 UISearchController）
     UIViewController *childViewController = self.visibleViewController;
+    
+    // 修复在 root controller 实现了 preferredStatusBarStyle 方法并且在其中调用 childViewControllerForStatusBarStyle 方法的情况下，iOS 12 present 起 AVPlayerViewController 在 dismiss 时会触发 preferredStatusBarStyle 死循环的 bug：因为 AVPlayerViewController 内部的 preferredStatusBarStyle 会转向 presentingViewController 的 preferredStatusBarStyle，而后者又会 return  AVPlayerViewController，于是死循环
+    if (@available(iOS 13.0, *)) {
+    } else {
+        if ([childViewController isKindOfClass:AVPlayerViewController.class]) {
+            return nil;
+        }
+    }
     
     // 2. 如果 modal present 是一个 UINavigationController，则 self.visibleViewController 拿到的是该 UINavigationController.topViewController，而不是该 UINavigationController 本身，所以这里要特殊处理一下，才能让下文的 beingDismissed 判断生效
     if (childViewController.navigationController && (self.presentedViewController == childViewController.navigationController)) {

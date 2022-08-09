@@ -145,6 +145,15 @@ static char kAssociatedObjectKey_maskedCorners;
     return [objc_getAssociatedObject(self, &kAssociatedObjectKey_maskedCorners) unsignedIntegerValue];
 }
 
+- (__kindof CALayer *)qmui_layerWithName:(NSString *)name {
+    if ([self.name isEqualToString:name]) return self;
+    for (CALayer *sublayer in self.sublayers) {
+        CALayer *result = [sublayer qmui_layerWithName:name];
+        if (result) return result;
+    }
+    return nil;
+}
+
 - (void)qmui_sendSublayerToBack:(CALayer *)sublayer {
     [self insertSublayer:sublayer atIndex:0];
 }

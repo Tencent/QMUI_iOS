@@ -40,10 +40,15 @@ const CGSize kUINavigationBarBackIndicatorImageSize = {13, 21};
     }
     if ([self isKindOfClass:UINavigationController.class]) {
         [viewControllers addObjectsFromArray:[((UINavigationController *)self).visibleViewController qmui_existingViewControllersOfClasses:classes]];
-    }
-    if ([self isKindOfClass:UITabBarController.class]) {
+    } else if ([self isKindOfClass:UITabBarController.class]) {
         [viewControllers addObjectsFromArray:[((UITabBarController *)self).selectedViewController qmui_existingViewControllersOfClasses:classes]];
+    } else {
+        // 如果不是常见的 container viewController，则直接获取所有 childViewController
+        for (UIViewController *child in self.childViewControllers) {
+            [viewControllers addObjectsFromArray:[child qmui_existingViewControllersOfClasses:classes]];
+        }
     }
+    
     for (Class class in classes) {
         if ([self isKindOfClass:class]) {
             [viewControllers addObject:self];

@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.4.3";
+static NSString * const QMUI_VERSION = @"4.5.0";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -101,6 +101,10 @@ static NSString * const QMUI_VERSION = @"4.4.3";
 
 #if __has_include("QMUIBadgeProtocol.h")
 #import "QMUIBadgeProtocol.h"
+#endif
+
+#if __has_include("QMUIBarProtocol.h")
+#import "QMUIBarProtocol.h"
 #endif
 
 #if __has_include("QMUIButton.h")
@@ -523,6 +527,10 @@ static NSString * const QMUI_VERSION = @"4.4.3";
 #import "UINavigationBar+QMUI.h"
 #endif
 
+#if __has_include("UINavigationBar+QMUIBarProtocol.h")
+#import "UINavigationBar+QMUIBarProtocol.h"
+#endif
+
 #if __has_include("UINavigationController+NavigationBarTransition.h")
 #import "UINavigationController+NavigationBarTransition.h"
 #endif
@@ -557,6 +565,10 @@ static NSString * const QMUI_VERSION = @"4.4.3";
 
 #if __has_include("UITabBar+QMUI.h")
 #import "UITabBar+QMUI.h"
+#endif
+
+#if __has_include("UITabBar+QMUIBarProtocol.h")
+#import "UITabBar+QMUIBarProtocol.h"
 #endif
 
 #if __has_include("UITabBarItem+QMUI.h")

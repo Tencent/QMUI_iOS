@@ -269,10 +269,6 @@
 
 @implementation UILabel (QMUI_Marquee)
 
-- (void)dealloc {
-    [self qmuimq_removeObserver];
-}
-
 - (void)qmui_startNativeMarquee {
     // 系统有 _startMarqueeIfNecessary、_startMarquee，但直接开启的方法其实是 marqueeRunning
     BOOL running = YES;

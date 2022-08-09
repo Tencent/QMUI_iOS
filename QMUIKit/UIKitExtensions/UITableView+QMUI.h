@@ -67,10 +67,10 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
  */
 - (NSInteger)qmui_indexForSectionHeaderAtView:(nullable UIView *)view;
 
-/// 获取可视范围内的所有 sectionHeader 的 index
+/// 获取可视范围内的所有 sectionHeader 的 index，注意 contentInset 所在的区域被视为“不可视”。
 @property(nonatomic, readonly, nullable) NSArray<NSNumber *> *qmui_indexForVisibleSectionHeaders;
 
-/// 获取正处于 pinned（悬停在顶部）状态的 sectionHeader 的序号
+/// 获取正处于 pinned（悬停在顶部）状态的 sectionHeader 的序号，注意如果某个 section 的 numberOfRows 为 0，则这个 section 天然无法被 pinned。
 @property(nonatomic, readonly) NSInteger qmui_indexOfPinnedSectionHeader;
 
 /**

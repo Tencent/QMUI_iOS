@@ -224,6 +224,13 @@ static char kAssociatedObjectKey_lineHeight;
         return result == 0 ? self.font.lineHeight : result;
     } else if (self.text.length) {
         return self.font.lineHeight;
+    } else if (self.qmui_textAttributes) {
+        // 当前 label 连文字都没有时，再尝试从 qmui_textAttributes 里获取
+        if ([self.qmui_textAttributes.allKeys containsObject:NSParagraphStyleAttributeName]) {
+            return ((NSParagraphStyle *)self.qmui_textAttributes[NSParagraphStyleAttributeName]).minimumLineHeight;
+        } else if ([self.qmui_textAttributes.allKeys containsObject:NSFontAttributeName]) {
+            return ((UIFont *)self.qmui_textAttributes[NSFontAttributeName]).lineHeight;
+        }
     }
     
     return 0;

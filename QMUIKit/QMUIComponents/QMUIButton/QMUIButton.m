@@ -15,7 +15,6 @@
 
 #import "QMUIButton.h"
 #import "QMUICore.h"
-#import "QMUILog.h"
 #import "CALayer+QMUI.h"
 #import "UIButton+QMUI.h"
 
