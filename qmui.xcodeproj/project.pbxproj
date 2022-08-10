@@ -1576,8 +1576,8 @@
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = "/usr/bin/python3 ./umbrellaHeaderFileCreator.py";
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n";
+			shellPath = /bin/bash;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\npy2_path=\"/usr/bin/python\"\n\nif [ -x \"$py2_path\" ]; then \n    /usr/bin/python umbrellaHeaderFileCreator.py\nelse\n    /usr/bin/python3 umbrellaHeaderFileCreator.py\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
