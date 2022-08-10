@@ -27,7 +27,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// item 的高度，默认为 -1，-1 表示高度以 QMUIPopupMenuView.itemHeight 为准。如果设置为 QMUIViewSelfSizingHeight，则表示高度由 -[self sizeThatFits:] 返回的值决定。
 @property(nonatomic, assign) CGFloat height;
 
-/// item 被点击时的事件处理，需要在内部自行隐藏 QMUIPopupMenuView。
+/// item 被点击时的事件处理接口，QMUIPopupMenuBaseItem 里仅声明，只有 QMUIPopupMenuButtonItem 会自动调用。若继承 QMUIPopupMenuBaseItem 衍生自己的子类，也需要手动调用它。
+/// @note 需要在内部自行隐藏 QMUIPopupMenuView。
 @property(nonatomic, copy, nullable) void (^handler)(__kindof NSObject<QMUIPopupMenuItemProtocol> *aItem);
 
 /// 当前 item 所在的 QMUIPopupMenuView 的引用，只有在 item 被添加到菜单之后才有值。

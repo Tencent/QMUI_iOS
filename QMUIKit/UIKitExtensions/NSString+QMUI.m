@@ -42,7 +42,9 @@
 }
 
 - (NSString *)qmui_trim {
-    return [self stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSMutableCharacterSet * characterSet = [NSMutableCharacterSet whitespaceAndNewlineCharacterSet];
+    [characterSet addCharactersInString:@"\0"];
+    return [self stringByTrimmingCharactersInSet:characterSet];
 }
 
 - (NSString *)qmui_trimAllWhiteSpace {

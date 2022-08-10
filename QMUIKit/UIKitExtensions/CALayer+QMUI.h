@@ -17,6 +17,8 @@
 #import <Foundation/Foundation.h>
 #import <QuartzCore/QuartzCore.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
     QMUILayerMinXMinYCorner = 1U << 0,
     QMUILayerMaxXMinYCorner = 1U << 1,
@@ -43,6 +45,9 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
 
 /// iOS11 以下 layer 自身的 cornerRadius 一直都是 0，圆角的是通过 mask 做的，qmui_originCornerRadius 保存了当前的圆角
 @property(nonatomic, assign, readonly) CGFloat qmui_originCornerRadius;
+
+/// 获取指定 name 值的 layer，包括 self 和 self.sublayers，会一直往 sublayers 查找直到找到目标 layer。
+- (nullable __kindof CALayer *)qmui_layerWithName:(NSString *)name;
 
 /**
  *  把某个 sublayer 移动到当前所有 sublayers 的最后面
@@ -114,3 +119,5 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
 /// iOS 13 系统设置里的界面样式变化（Dark Mode），以及 QMUIThemeManager 触发的主题变化，都会自动调用 layer 的这个方法，业务无需关心。
 - (void)qmui_setNeedsUpdateDynamicStyle NS_REQUIRES_SUPER;
 @end
+
+NS_ASSUME_NONNULL_END

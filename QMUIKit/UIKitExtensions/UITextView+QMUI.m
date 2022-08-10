@@ -15,6 +15,7 @@
 
 #import "UITextView+QMUI.h"
 #import "QMUICore.h"
+#import "UIScrollView+QMUI.h"
 
 @implementation UITextView (QMUI)
 
@@ -88,21 +89,22 @@
     
     CGFloat contentOffsetY = self.contentOffset.y;
     
-    if (ABS(CGRectGetMinY(rect) - (contentOffsetY + self.textContainerInset.top)) <= 1) {
-        // 命中这个条件说明已经不用调整了，直接 return，避免继续走下面的判断，会重复调整，导致光标跳动
-        // 一般情况下光标的 y 都比 textContainerInset.top 小1，所以这里用 <= 1 这个判断条件
-        return;
-    }
-    
-    if (CGRectGetMinY(rect) < contentOffsetY + self.textContainerInset.top) {
-        // 光标在可视区域上方，往下滚动
-        contentOffsetY = CGRectGetMinY(rect) - self.textContainerInset.top - self.contentInset.top;
-    } else if (CGRectGetMaxY(rect) > contentOffsetY + CGRectGetHeight(self.bounds) - self.textContainerInset.bottom - self.contentInset.bottom) {
-        // 光标在可视区域下方，往上滚动
-        contentOffsetY = CGRectGetMaxY(rect) - CGRectGetHeight(self.bounds) + self.textContainerInset.bottom + self.contentInset.bottom;
+    BOOL canScroll = self.qmui_canScroll;
+    if (canScroll) {
+        if (CGRectGetMinY(rect) < contentOffsetY + self.textContainerInset.top) {
+            // 光标在可视区域上方，往下滚动
+            contentOffsetY = CGRectGetMinY(rect) - self.textContainerInset.top - self.adjustedContentInset.top;
+        } else if (CGRectGetMaxY(rect) > contentOffsetY + CGRectGetHeight(self.bounds) - self.textContainerInset.bottom - self.adjustedContentInset.bottom) {
+            // 光标在可视区域下方，往上滚动
+            contentOffsetY = CGRectGetMaxY(rect) - CGRectGetHeight(self.bounds) + self.textContainerInset.bottom + self.adjustedContentInset.bottom;
+        } else {
+            // 光标在可视区域，不用滚动
+        }
+        CGFloat contentOffsetWhenScrollToTop = -self.adjustedContentInset.top;
+        CGFloat contentOffsetWhenScrollToBottom = self.contentSize.height + self.adjustedContentInset.bottom - CGRectGetHeight(self.bounds);
+        contentOffsetY = MAX(MIN(contentOffsetY, contentOffsetWhenScrollToBottom), contentOffsetWhenScrollToTop);
     } else {
-        // 光标在可视区域内，不用调整
-        return;
+        contentOffsetY = -self.adjustedContentInset.top;
     }
     [self setContentOffset:CGPointMake(self.contentOffset.x, contentOffsetY) animated:animated];
 }

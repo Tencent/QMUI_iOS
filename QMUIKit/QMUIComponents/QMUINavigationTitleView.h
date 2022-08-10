@@ -120,7 +120,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
 @property(nonatomic, assign) BOOL loadingViewHidden;
 
 /*
- *  如果为YES则title居中，loading放在title的左边，title右边有一个跟左边loading一样大的占位空间；如果为NO，loading和title整体居中。默认值为YES。
+ *  如果为YES则title居中，loading放在title的左边，title右边有一个跟左边loading一样大的占位空间（目的是为了让切换 loading 时文字不跳动）；如果为NO，loading和title整体居中。默认值为YES。
  */
 @property(nonatomic, assign) BOOL needsLoadingPlaceholderSpace;
 
@@ -174,4 +174,10 @@ typedef NS_ENUM(NSInteger, QMUINavigationTitleViewAccessoryType) {
  */
 - (instancetype)initWithStyle:(QMUINavigationTitleViewStyle)style;
 
+@end
+
+@interface UIView (QMUINavigationTitleView)
+
+/// 标记当前 view 是用于自定义的导航栏标题，QMUI 可以帮你自动处理系统的一些布局 bug。对于 QMUINavigationTitleView 而言默认值为 YES，其他 UIView 默认值为 NO
+@property(nonatomic, assign) BOOL qmui_useAsNavigationTitleView;
 @end

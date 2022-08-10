@@ -14,16 +14,22 @@
 //
 
 #import "UIActivityIndicatorView+QMUI.h"
+#import "UIView+QMUI.h"
 
 @implementation UIActivityIndicatorView (QMUI)
 
 - (instancetype)initWithActivityIndicatorStyle:(UIActivityIndicatorViewStyle)style size:(CGSize)size {
     if (self = [self initWithActivityIndicatorStyle:style]) {
-        CGSize initialSize = self.bounds.size;
-        CGFloat scale = size.width / initialSize.width;
-        self.transform = CGAffineTransformMakeScale(scale, scale);
+        self.qmui_size = size;
     }
     return self;
+}
+
+- (void)setQmui_size:(CGSize)size {
+//    [super setQmui_size:qmui_size];
+    CGSize initialSize = self.bounds.size;
+    CGFloat scale = size.width / initialSize.width;
+    self.transform = CGAffineTransformMakeScale(scale, scale);
 }
 
 @end

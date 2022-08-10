@@ -33,8 +33,16 @@ QMUISynthesizeIdCopyProperty(qmui_frameDidChangeBlock, setQmui_frameDidChangeBlo
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIView class], @selector(setTintColor:), UIColor *, ^(UIView *selfObject, UIColor *tintColor) {
-            selfObject.qmui_tintColorCustomized = !!tintColor;
+        OverrideImplementation([UIView class], @selector(setTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject, UIColor *tintColor) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIColor *);
+                originSelectorIMP = (void (*)(id, SEL, UIColor *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, tintColor);
+                
+                selfObject.qmui_tintColorCustomized = !!tintColor;
+            };
         });
         
         // 这个私有方法在 view 被调用 becomeFirstResponder 并且处于 window 上时，才会被调用，所以比 becomeFirstResponder 更适合用来检测
@@ -99,7 +107,7 @@ static char kAssociatedObjectKey_outsideEdge;
             [QMUIHelper executeBlock:^{
                 if (@available(iOS 14.0, *)) {
                     // -[_UISlideriOSVisualElement thumbHitEdgeInsets]
-                    OverrideImplementation(NSClassFromString(@"_UISlideriOSVisualElement"), NSSelectorFromString(@"thumbHitEdgeInsets"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UISlider", @"iOS", @"VisualElement", nil]), NSSelectorFromString(@"thumbHitEdgeInsets"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                         return ^UIEdgeInsets(UIView *selfObject) {
                             // call super
                             UIEdgeInsets (*originSelectorIMP)(id, SEL);
@@ -724,11 +732,19 @@ static char kAssociatedObjectKey_sizeThatFitsBlock;
     // Extend 每个实例对象的类是为了保证比子类的 sizeThatFits 逻辑要更晚调用
     Class viewClass = self.class;
     [QMUIHelper executeBlock:^{
-        ExtendImplementationOfNonVoidMethodWithSingleArgument(viewClass, @selector(sizeThatFits:), CGSize, CGSize, ^CGSize(UIView *selfObject, CGSize firstArgv, CGSize originReturnValue) {
-            if (selfObject.qmui_sizeThatFitsBlock && [selfObject isMemberOfClass:viewClass]) {
-                originReturnValue = selfObject.qmui_sizeThatFitsBlock(selfObject, firstArgv, originReturnValue);
-            }
-            return originReturnValue;
+        OverrideImplementation(viewClass, @selector(sizeThatFits:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^CGSize(UIView *selfObject, CGSize firstArgv) {
+                
+                // call super
+                CGSize (*originSelectorIMP)(id, SEL, CGSize);
+                originSelectorIMP = (CGSize (*)(id, SEL, CGSize))originalIMPProvider();
+                CGSize result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                if (selfObject.qmui_sizeThatFitsBlock && [selfObject isMemberOfClass:viewClass]) {
+                    result = selfObject.qmui_sizeThatFitsBlock(selfObject, firstArgv, result);
+                }
+                return result;
+            };
         });
     } oncePerIdentifier:[NSString stringWithFormat:@"UIView %@-%@", NSStringFromClass(viewClass), NSStringFromSelector(@selector(sizeThatFits:))]];
 }

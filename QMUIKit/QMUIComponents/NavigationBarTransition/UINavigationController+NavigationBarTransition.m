@@ -22,6 +22,7 @@
 #import "UINavigationBar+Transition.h"
 #import "QMUINavigationTitleView.h"
 #import "UINavigationBar+QMUI.h"
+#import "UINavigationBar+QMUIBarProtocol.h"
 #import "UIView+QMUI.h"
 #import "QMUILog.h"
 
@@ -260,6 +261,7 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         UIView *backgroundView = self.navigationController.navigationBar.qmui_backgroundView;
         CGRect rect = [backgroundView.superview convertRect:backgroundView.frame toView:self.view];
         self.transitionNavigationBar.frame = CGRectSetX(rect, 0);// push/pop 过程中系统的导航栏转换过来的 x 可能是 112、-112
+        [self.view bringSubviewToFront:self.transitionNavigationBar];// 避免在后续被其他 subviews 盖住
     }
 }
 

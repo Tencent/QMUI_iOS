@@ -168,6 +168,10 @@
 
 #pragma mark - Overrides
 
+- (BOOL)isProxy {
+    return YES;
+}
+
 - (BOOL)isKindOfClass:(Class)aClass {
     BOOL result = [super isKindOfClass:aClass];
     if (result) return YES;

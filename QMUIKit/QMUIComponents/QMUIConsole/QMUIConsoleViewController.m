@@ -103,7 +103,7 @@
 
 - (void)didInitializeWithStyle:(UITableViewCellStyle)style {
     [super didInitializeWithStyle:style];
-    self.backgroundColor = nil;
+    self.backgroundColor = UIColor.clearColor;
     self.selectionStyle = UITableViewCellSelectionStyleNone;
     
     self.textView = [[QMUITextView alloc] init];

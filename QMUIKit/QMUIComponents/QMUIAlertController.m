@@ -625,7 +625,7 @@ static NSUInteger alertControllerCount = 0;
         self.buttonScrollView.contentSize = CGSizeMake(CGRectGetWidth(self.buttonScrollView.bounds), contentOriginY);
         // 容器最后布局
         CGFloat contentHeight = CGRectGetHeight(self.headerScrollView.bounds) + CGRectGetHeight(self.buttonScrollView.bounds);
-        CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds);
+        CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds) - UIEdgeInsetsGetVerticalValue(SafeAreaInsetsConstantForDeviceWithNotch);
         if (contentHeight > screenSpaceHeight - 20) {
             screenSpaceHeight -= 20;
             CGFloat contentH = fmin(CGRectGetHeight(self.headerScrollView.bounds), screenSpaceHeight / 2);
@@ -649,7 +649,7 @@ static NSUInteger alertControllerCount = 0;
         self.scrollWrapView.frame =  CGRectMake(0, 0, CGRectGetWidth(self.scrollWrapView.bounds), contentHeight);
         self.mainVisualEffectView.frame = self.scrollWrapView.bounds;
         
-        self.containerView.qmui_frameApplyTransform = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.frame)) / 2, (screenSpaceHeight - contentHeight - self.keyboardHeight) / 2, CGRectGetWidth(self.containerView.frame), CGRectGetHeight(self.scrollWrapView.bounds));
+        self.containerView.qmui_frameApplyTransform = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.frame)) / 2, SafeAreaInsetsConstantForDeviceWithNotch.top + (screenSpaceHeight - contentHeight - self.keyboardHeight) / 2, CGRectGetWidth(self.containerView.frame), CGRectGetHeight(self.scrollWrapView.bounds));
     }
     
     else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {

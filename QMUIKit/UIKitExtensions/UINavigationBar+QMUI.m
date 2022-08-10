@@ -212,31 +212,49 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
 //                    return result;
 //                };
 //            });
+            
+            OverrideImplementation([UINavigationBar class], @selector(setTitleTextAttributes:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UINavigationBar *selfObject, NSDictionary<NSAttributedStringKey, id> *titleTextAttributes) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, NSDictionary<NSAttributedStringKey, id> *);
+                    originSelectorIMP = (void (*)(id, SEL, NSDictionary<NSAttributedStringKey, id> *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, titleTextAttributes);
+                    
+                    syncAppearance(selfObject, ^void(UINavigationBarAppearance *appearance) {
+                        appearance.titleTextAttributes = titleTextAttributes;
+                    });
+                };
+            });
         }
         
         if (@available(iOS 15.0, *)) {
-            if (QMUICMIActivated && (NavBarRemoveBackgroundEffectAutomatically || TabBarRemoveBackgroundEffectAutomatically || ToolBarRemoveBackgroundEffectAutomatically)) {
-                // - [_UIBarBackground updateBackground]
-                OverrideImplementation(NSClassFromString(@"_UIBarBackground"), NSSelectorFromString(@"updateBackground"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                    return ^(UIView *selfObject) {
-                        
-                        // call super
-                        void (*originSelectorIMP)(id, SEL);
-                        originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                        originSelectorIMP(selfObject, originCMD);
-                        
-                        if (!selfObject.superview) return;
-                        if (!NavBarRemoveBackgroundEffectAutomatically && [selfObject.superview isKindOfClass:UINavigationBar.class]) return;
-                        if (!TabBarRemoveBackgroundEffectAutomatically && [selfObject.superview isKindOfClass:UITabBar.class]) return;
-                        if (!ToolBarRemoveBackgroundEffectAutomatically && [selfObject.superview isKindOfClass:UIToolbar.class]) return;
-                        
-                        UIImageView *backgroundImageView1 = [selfObject valueForKey:@"_colorAndImageView1"];
-                        UIImageView *backgroundImageView2 = [selfObject valueForKey:@"_colorAndImageView2"];
-                        UIVisualEffectView *backgroundEffectView1 = [selfObject valueForKey:@"_effectView1"];
-                        UIVisualEffectView *backgroundEffectView2 = [selfObject valueForKey:@"_effectView2"];
-                        
-                        // iOS 14 系统默认特性是存在 backgroundImage 则不存在其他任何背景，但如果存在 barTintColor 则磨砂 view 也可以共存。
-                        // iOS 15 系统默认特性是 backgroundImage、backgroundColor、backgroundEffect 三者都可以共存，其中前两者共用 _colorAndImageView，而我们这个开关为了符合 iOS 14 的特性，仅针对 _colorAndImageView 是因为 backgroundImage 存在而出现的情况做处理。
+            if (!QMUICMIActivated) return;
+            if (!(NavBarRemoveBackgroundEffectAutomatically || TabBarRemoveBackgroundEffectAutomatically || ToolBarRemoveBackgroundEffectAutomatically)
+                && !(NavBarUsesStandardAppearanceOnly || TabBarUsesStandardAppearanceOnly || ToolBarUsesStandardAppearanceOnly)) return;
+            
+            // - [_UIBarBackground updateBackground]
+            OverrideImplementation(NSClassFromString(@"_UIBarBackground"), NSSelectorFromString(@"updateBackground"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIView *selfObject) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD);
+                    
+                    if (!selfObject.superview) return;
+                    if (!NavBarRemoveBackgroundEffectAutomatically && !NavBarUsesStandardAppearanceOnly && [selfObject.superview isKindOfClass:UINavigationBar.class]) return;
+                    if (!TabBarRemoveBackgroundEffectAutomatically && !TabBarUsesStandardAppearanceOnly && [selfObject.superview isKindOfClass:UITabBar.class]) return;
+                    if (!ToolBarRemoveBackgroundEffectAutomatically && !ToolBarUsesStandardAppearanceOnly && [selfObject.superview isKindOfClass:UIToolbar.class]) return;
+                    
+                    UIImageView *backgroundImageView1 = [selfObject valueForKey:@"_colorAndImageView1"];
+                    UIImageView *backgroundImageView2 = [selfObject valueForKey:@"_colorAndImageView2"];
+                    UIVisualEffectView *backgroundEffectView1 = [selfObject valueForKey:@"_effectView1"];
+                    UIVisualEffectView *backgroundEffectView2 = [selfObject valueForKey:@"_effectView2"];
+                    
+                    // iOS 14 系统默认特性是存在 backgroundImage 则不存在其他任何背景，但如果存在 barTintColor 则磨砂 view 也可以共存。
+                    // iOS 15 系统默认特性是 backgroundImage、backgroundColor、backgroundEffect 三者都可以共存，其中前两者共用 _colorAndImageView，而我们这个开关为了符合 iOS 14 的特性，仅针对 _colorAndImageView 是因为 backgroundImage 存在而出现的情况做处理。
+                    if (NavBarRemoveBackgroundEffectAutomatically || TabBarRemoveBackgroundEffectAutomatically || ToolBarRemoveBackgroundEffectAutomatically) {
                         BOOL hasBackgroundImage1 = backgroundImageView1 && backgroundImageView1.superview && !backgroundImageView1.hidden && backgroundImageView1.image;
                         BOOL hasBackgroundImage2 = backgroundImageView2 && backgroundImageView2.superview && !backgroundImageView2.hidden && backgroundImageView2.image;
                         BOOL shouldHideEffectView = hasBackgroundImage1 || hasBackgroundImage2;
@@ -246,9 +264,15 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
                         } else {
                             // 把 backgroundImage 置为 nil，理应要恢复 effectView 的显示，但由于 iOS 15 里 effectView 有2个，什么时候显示哪个取决于 contentScrollView 的滚动位置，而这个位置在当前上下文里我们是无法得知的，所以先不处理了，交给系统在下一次 updateBackground 时刷新吧...
                         }
-                    };
-                });
-            }
+                    }
+                    
+                    // 虽然 4.4.0 增加的这些开关会保证 scrollEdgeAppearance 也被设置，但系统始终都会同时显示两份 view（一份 standard 的一份 scrollEdge 的），当你的样式是不透明时没问题，但如果存在半透明，同时显示两份 view 就会导致两个半透明的效果重叠在一起，最终肉眼看到的样式和预期是不符合的，所以 4.4.4 开始，我们会强制让其中一份 view 隐藏掉。
+                    if (NavBarUsesStandardAppearanceOnly || TabBarUsesStandardAppearanceOnly || ToolBarUsesStandardAppearanceOnly) {
+                        backgroundImageView2.hidden = YES;
+                        backgroundEffectView2.hidden = YES;
+                    }
+                };
+            });
         }
 #endif
     });
@@ -256,30 +280,6 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
 
 - (UIView *)qmui_contentView {
     return [self valueForKeyPath:@"visualProvider.contentView"];
-}
-
-- (UIView *)qmui_backgroundView {
-    return [self qmui_valueForKey:@"_backgroundView"];
-}
-
-- (__kindof UIView *)qmui_backgroundContentView {
-    if (@available(iOS 13, *)) {
-        return [self.qmui_backgroundView qmui_valueForKey:@"_colorAndImageView1"];
-    } else {
-        UIImageView *imageView = [self.qmui_backgroundView qmui_valueForKey:@"_backgroundImageView"];
-        UIVisualEffectView *visualEffectView = [self.qmui_backgroundView qmui_valueForKey:@"_backgroundEffectView"];
-        UIView *customView = [self.qmui_backgroundView qmui_valueForKey:@"_customBackgroundView"];
-        UIView *result = customView && customView.superview ? customView : (imageView && imageView.superview ? imageView : visualEffectView);
-        return result;
-    }
-}
-
-- (UIImageView *)qmui_shadowImageView {
-    // UINavigationBar 在 init 完就可以获取到 backgroundView 和 shadowView，无需关心调用时机的问题
-    if (@available(iOS 13, *)) {
-        return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView1"];
-    }
-    return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView"];
 }
 
 @end

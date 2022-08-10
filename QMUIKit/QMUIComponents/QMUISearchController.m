@@ -70,6 +70,15 @@ BeginIgnoreDeprecatedWarning
 
 @implementation QMUICustomSearchController
 
+- (instancetype)initWithSearchResultsController:(UIViewController *)searchResultsController {
+    if (self = [super initWithSearchResultsController:searchResultsController]) {
+        if (@available(iOS 15.0, *)) {
+            self.dimsBackgroundDuringPresentation = YES;// iOS 15 开始该默认值为 NO 了，为了保持与旧版本一致的表现，这里改默认值
+        }
+    }
+    return self;
+}
+
 - (void)setCustomDimmingView:(UIView *)customDimmingView {
     if (_customDimmingView != customDimmingView) {
         [_customDimmingView removeFromSuperview];
@@ -391,7 +400,7 @@ static char kAssociatedObjectKey_shouldShowSearchBar;
 
 - (void)initSearchController {
     if ([self isViewLoaded] && self.shouldShowSearchBar && !self.searchController) {
-        self.searchController = [[QMUISearchController alloc] initWithContentsViewController:self];
+        self.searchController = [[QMUISearchController alloc] initWithContentsViewController:self resultsTableViewStyle:self.tableView.qmui_style];
         self.searchController.searchResultsDelegate = self;
         self.searchController.searchBar.placeholder = @"搜索";
         self.searchController.searchBar.qmui_usedAsTableHeaderView = YES;// 以 tableHeaderView 的方式使用 searchBar 的话，将其置为 YES，以辅助兼容一些系统 bug

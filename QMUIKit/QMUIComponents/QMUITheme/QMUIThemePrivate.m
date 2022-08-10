@@ -78,7 +78,19 @@
                                                                                               NSStringFromSelector(@selector(separatorColor)),],
                                        NSStringFromClass(UITableViewCell.class):            @[NSStringFromSelector(@selector(qmui_selectedBackgroundColor)),],
                                        NSStringFromClass(UICollectionViewCell.class):            @[NSStringFromSelector(@selector(qmui_selectedBackgroundColor)),],
-                                       NSStringFromClass(UINavigationBar.class):            @[NSStringFromSelector(@selector(barTintColor)),],
+                                       NSStringFromClass(UINavigationBar.class):                   ({
+                                           NSMutableArray<NSString *> *result = @[
+                                               NSStringFromSelector(@selector(qmui_effect)),
+                                               NSStringFromSelector(@selector(qmui_effectForegroundColor)),
+                                           ].mutableCopy;
+                                           if (@available(iOS 15.0, *)) {
+                                               // iOS 15 在 UINavigationBar (QMUI) 里对所有旧版接口都映射到 standardAppearance，所以重新设置一次 standardAppearance 就可以更新所有样式
+                                               [result addObject:NSStringFromSelector(@selector(standardAppearance))];
+                                           } else {
+                                               [result addObjectsFromArray:@[NSStringFromSelector(@selector(barTintColor)),]];
+                                           }
+                                           result.copy;
+                                       }),
                                        NSStringFromClass(UIToolbar.class):                  @[NSStringFromSelector(@selector(barTintColor)),],
                                        NSStringFromClass(UITabBar.class):                   ({
                                            NSMutableArray<NSString *> *result = @[
@@ -167,21 +179,20 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        if (@available(iOS 13.0, *)) {
-        } else {
-            OverrideImplementation([UIView class], @selector(setTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UIView *selfObject, UIColor *tintColor) {
-                    
-                    // iOS 12 及以下，-[UIView setTintColor:] 被调用时，如果参数的 tintColor 与当前的 tintColor 指针相同，则不会触发 tintColorDidChange，但这对于 dynamic color 而言是不满足需求的（同一个 dynamic color 实例在任何时候返回的 rawColor 都有可能发生变化），所以这里主动为其做一次 copy 操作，规避指针地址判断的问题
-                    if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.tintColor) tintColor = tintColor.copy;
-                    
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, UIColor *);
-                    originSelectorIMP = (void (*)(id, SEL, UIColor *))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, tintColor);
-                };
-            });
-        }
+        // iOS 12 及以下，-[UIView setTintColor:] 被调用时，如果参数的 tintColor 与当前的 tintColor 指针相同，则不会触发 tintColorDidChange，但这对于 dynamic color 而言是不满足需求的（同一个 dynamic color 实例在任何时候返回的 rawColor 都有可能发生变化），所以这里主动为其做一次 copy 操作，规避指针地址判断的问题
+        // 2022-7-20 后来发现 iOS 13-15，UIImageView、UIButton，手动切换 theme 时，tintColor 不 copy 就无法刷新，但如果是系统 Dark Mode 切换引发的 setTintColor:，即便不用 copy 也可以刷新，所以这里统一对所有 iOS 版本都做一次 copy
+        // https://github.com/Tencent/QMUI_iOS/issues/1418
+        OverrideImplementation([UIView class], @selector(setTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject, UIColor *tintColor) {
+                
+                if (tintColor.qmui_isQMUIDynamicColor && tintColor == selfObject.tintColor) tintColor = tintColor.copy;
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIColor *);
+                originSelectorIMP = (void (*)(id, SEL, UIColor *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, tintColor);
+            };
+        });
         
         // iOS 12 及以下的版本，[UIView setBackgroundColor:] 并不会保存传进来的 color，所以要自己用个变量保存起来，不然 QMUIThemeColor 对象就会被丢弃
         if (@available(iOS 13.0, *)) {
