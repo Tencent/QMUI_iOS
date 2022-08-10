@@ -41,6 +41,11 @@ Pod::Spec.new do |s|
 
   s.subspec 'QMUIResources' do |ss|
     ss.resource_bundles = {'QMUIResources' => ['QMUIKit/QMUIResources/*.*']}
+    ss.pod_target_xcconfig = {
+      'EXPANDED_CODE_SIGN_IDENTITY' => '',
+      'CODE_SIGNING_REQUIRED' => 'NO',
+      'CODE_SIGNING_ALLOWED' => 'NO',
+    }
   end
 
   s.subspec 'QMUIWeakObjectContainer' do |ss|
