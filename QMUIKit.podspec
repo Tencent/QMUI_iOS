@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
   s.source_files     = 'QMUIKit/QMUIKit.h'
 
   s.subspec 'QMUICore' do |ss|
-    ss.source_files = 'QMUIKit/QMUIKit.h', 'QMUIKit/QMUICore', 'QMUIKit/UIKitExtensions'
+    ss.source_files = 'QMUIKit/QMUIKit.h', 'QMUIKit/QMUICore', 'QMUIKit/UIKitExtensions', 'QMUIKit/UIKitExtensions/QMUIBarProtocol'
     ss.frameworks = 'CoreImage', 'ImageIO'
     ss.dependency 'QMUIKit/QMUIWeakObjectContainer'
     ss.dependency 'QMUIKit/QMUILog'
