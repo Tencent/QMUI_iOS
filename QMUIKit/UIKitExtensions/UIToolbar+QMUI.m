@@ -97,19 +97,19 @@
                 };
             });
             
-            OverrideImplementation([UIToolbar class], @selector(setBarStyle:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^(UIToolbar *selfObject, UIBarStyle barStyle) {
-
-                    // call super
-                    void (*originSelectorIMP)(id, SEL, UIBarStyle);
-                    originSelectorIMP = (void (*)(id, SEL, UIBarStyle))originalIMPProvider();
-                    originSelectorIMP(selfObject, originCMD, barStyle);
-
-                    syncAppearance(selfObject, ^void(UIToolbarAppearance *appearance) {
-                        appearance.backgroundEffect = [UIBlurEffect effectWithStyle:barStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemChromeMaterialLight : UIBlurEffectStyleSystemChromeMaterialDark];
-                    });
-                };
-            });
+//            OverrideImplementation([UIToolbar class], @selector(setBarStyle:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+//                return ^(UIToolbar *selfObject, UIBarStyle barStyle) {
+//
+//                    // call super
+//                    void (*originSelectorIMP)(id, SEL, UIBarStyle);
+//                    originSelectorIMP = (void (*)(id, SEL, UIBarStyle))originalIMPProvider();
+//                    originSelectorIMP(selfObject, originCMD, barStyle);
+//
+//                    syncAppearance(selfObject, ^void(UIToolbarAppearance *appearance) {
+//                        appearance.backgroundEffect = [UIBlurEffect effectWithStyle:barStyle == UIBarStyleDefault ? UIBlurEffectStyleSystemChromeMaterialLight : UIBlurEffectStyleSystemChromeMaterialDark];
+//                    });
+//                };
+//            });
             
             // iOS 15 没有对应的属性
 //            OverrideImplementation([UIToolbar class], @selector(barStyle), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {

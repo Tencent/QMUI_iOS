@@ -252,10 +252,22 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                 
                 [selfObject setQmui_navigationAction:QMUINavigationActionDidPop animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
                 
-                [selfObject qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                void (^transitionCompletion)(void) = ^void(void) {
                     [selfObject setQmui_navigationAction:QMUINavigationActionPopCompleted animated:animated appearingViewController:appearingViewController disappearingViewControllers:disappearingViewControllers];
                     [selfObject setQmui_navigationAction:QMUINavigationActionUnknow animated:animated appearingViewController:nil disappearingViewControllers:nil];
-                }];
+                };
+                if (!result) {
+                    // 如果系统的 pop 没有成功，实际上提交给 animateAlongsideTransition:completion: 的 completion 并不会被执行，所以这里改为手动调用
+                    if (transitionCompletion) {
+                        transitionCompletion();
+                    }
+                } else {
+                    [selfObject qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+                        if (transitionCompletion) {
+                            transitionCompletion();
+                        }
+                    }];
+                }
                 
                 return result;
             };
@@ -530,7 +542,8 @@ static char kAssociatedObjectKey_navigationAction;
         BOOL canPopViewController = [self.parentViewController canPopViewController:self.parentViewController.topViewController byPopGesture:YES];
         if (canPopViewController) {
             if ([self.parentViewController.qmui_interactivePopGestureRecognizerDelegate respondsToSelector:_cmd]) {
-                return [self.parentViewController.qmui_interactivePopGestureRecognizerDelegate gestureRecognizerShouldBegin:gestureRecognizer];
+                BOOL result = [self.parentViewController.qmui_interactivePopGestureRecognizerDelegate gestureRecognizerShouldBegin:gestureRecognizer];
+                return result;
             } else {
                 return NO;
             }
@@ -558,7 +571,8 @@ static char kAssociatedObjectKey_navigationAction;
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     if (gestureRecognizer == self.parentViewController.interactivePopGestureRecognizer) {
         if ([self.parentViewController.qmui_interactivePopGestureRecognizerDelegate respondsToSelector:_cmd]) {
-            return [self.parentViewController.qmui_interactivePopGestureRecognizerDelegate gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
+            BOOL result = [self.parentViewController.qmui_interactivePopGestureRecognizerDelegate gestureRecognizer:gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:otherGestureRecognizer];
+            return result;
         }
     }
     return NO;

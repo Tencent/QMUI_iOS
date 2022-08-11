@@ -52,7 +52,7 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    if (self.truncatingTailView) {
+    if (self.truncatingTailView && self.attributedText.length) {
         [self bringSubviewToFront:self.truncatingTailView];
         
         // 不能通过修改 numberOfLines = 0 再恢复它的值，来计算高度是否折叠了，因为修改它的值会触发 layout，从而陷入死循环，所以这里只能通过 NSAttributedString 来计算内容的实际高度。注意如果 lineBreakMode 为 Tail 的话，NSAttributedString 必定只能计算单行的高度，所以要手动改为非 Tail 的值

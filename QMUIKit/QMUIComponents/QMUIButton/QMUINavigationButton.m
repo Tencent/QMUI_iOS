@@ -19,7 +19,6 @@
 #import "UIColor+QMUI.h"
 #import "UIViewController+QMUI.h"
 #import "QMUINavigationController.h"
-#import "QMUILog.h"
 #import "UIControl+QMUI.h"
 #import "UIView+QMUI.h"
 #import "NSString+QMUI.h"

@@ -321,32 +321,13 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 }
 
 - (NSArray<NSNumber *> *)qmui_indexForVisibleSectionHeaders {
-    NSArray<NSIndexPath *> *visibleCellIndexPaths = [self indexPathsForVisibleRows];
-    if (!visibleCellIndexPaths.count) return nil;
-    
     // iOS 14 及以前的版本，只要某个 section 的 header 露出来了，该 section 里的第一个 cell 必定会出现在 visibleRows 内，但 iOS 15 必须是真的显示了 cell 才会出现在 visibleRows 里
     // 这里针对 iOS 15 做个保护：如果最后一个可视 cell 刚好是该 section 的最后一个 cell，则检测范围再扩大到下一个 section，避免遗漏
-#ifdef IOS15_SDK_ALLOWED
-    if (@available(iOS 15.0, *)) {
-        NSIndexPath *lastVisibleIndexPath = visibleCellIndexPaths.lastObject;
-        if (lastVisibleIndexPath.row == [self numberOfRowsInSection:lastVisibleIndexPath.section] - 1
-            && [self numberOfSections] > lastVisibleIndexPath.section + 1
-            && [self numberOfRowsInSection:lastVisibleIndexPath.section + 1]) {
-            visibleCellIndexPaths = [visibleCellIndexPaths arrayByAddingObject:[NSIndexPath indexPathForRow:0 inSection:lastVisibleIndexPath.section + 1]];
-        }
-    }
-#endif
-    NSMutableArray<NSNumber *> *visibleSections = [[NSMutableArray alloc] init];
-    NSMutableArray<NSNumber *> *result = [[NSMutableArray alloc] init];
-    for (NSInteger i = 0; i < visibleCellIndexPaths.count; i++) {
-        if (visibleSections.count == 0 || visibleCellIndexPaths[i].section != visibleSections.lastObject.integerValue) {
-            [visibleSections addObject:@(visibleCellIndexPaths[i].section)];
-        }
-    }
-    for (NSInteger i = 0; i < visibleSections.count; i++) {
-        NSInteger section = visibleSections[i].integerValue;
+    NSMutableArray<NSNumber *> *result = NSMutableArray.new;
+    NSInteger sections = self.numberOfSections;
+    for (NSInteger section = 0; section < sections; section++) {
         if ([self qmui_isHeaderVisibleForSection:section]) {
-            [result addObject:visibleSections[i]];
+            [result addObject:@(section)];
         }
     }
     if (result.count == 0) {
@@ -377,21 +358,11 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     CGRect rectForHeader = [self rectForHeaderInSection:section];
     BOOL isSectionScrollIntoContentInsetTop = self.contentOffset.y + self.adjustedContentInset.top > CGRectGetMinY(rectForHeader);// 表示这个 section 已经往上滚动，超过 contentInset.top 那条线了
     BOOL isSectionStayInContentInsetTop = self.contentOffset.y + self.adjustedContentInset.top <= CGRectGetMaxY(rectForSection) - CGRectGetHeight(rectForHeader);// 表示这个 section 还没被完全滚走
-#ifdef IOS15_SDK_ALLOWED
-    if (@available(iOS 15.0, *)) {
-        // iOS 15 的系统交互发生变化，只有下一个 section 的 header 完全 pinned 后，上一个 section header 才会离开。iOS 14 及以前是下一个 section header 会边往上顶边把当前 section header 推走。所以这里要特殊处理一下。
-        if (section + 1 < [self numberOfSections]) {
-            CGRect rectForNextHeader = [self rectForHeaderInSection:section + 1];
-            isSectionStayInContentInsetTop = self.contentOffset.y + self.adjustedContentInset.top < CGRectGetMinY(rectForNextHeader);
-        }
-    }
-#endif
     BOOL isPinned = isSectionScrollIntoContentInsetTop && isSectionStayInContentInsetTop;
     return isPinned;
 }
 
 - (BOOL)qmui_isHeaderVisibleForSection:(NSInteger)section {
-    if (self.qmui_style != UITableViewStylePlain) return NO;
     if (section >= [self numberOfSections]) return NO;
     
     // 不存在 header 就不用判断
@@ -399,20 +370,17 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     if (CGRectGetHeight(rectForSectionHeader) <= 0) return NO;
     
     // 系统这个接口获取到的 rect 是在 contentSize 里的 rect，而不是实际看到的 rect
-    CGRect rectForSection = [self rectForSection:section];
-    BOOL isSectionScrollIntoBounds = CGRectGetMinY(rectForSectionHeader) < self.contentOffset.y + CGRectGetHeight(self.bounds);
-    BOOL isSectionStayInContentInsetTop = self.contentOffset.y + self.adjustedContentInset.top < CGRectGetMaxY(rectForSection);// 表示这个 section 还没被完全滚走
-#ifdef IOS15_SDK_ALLOWED
-    if (@available(iOS 15.0, *)) {
-        // iOS 15 的系统交互发生变化，只有下一个 section 的 header 完全 pinned 后，上一个 section header 才会离开。iOS 14 及以前是下一个 section header 会边往上顶边把当前 section header 推走。所以这里要特殊处理一下。
-        if (section + 1 < [self numberOfSections]) {
-            CGRect rectForNextHeader = [self rectForHeaderInSection:section + 1];
-            isSectionStayInContentInsetTop = self.contentOffset.y + self.adjustedContentInset.top < CGRectGetMinY(rectForNextHeader);
-        }
+    CGRect rectForSection = CGRectZero;
+    if (self.qmui_style == UITableViewStylePlain) {
+        rectForSection = [self rectForSection:section];
+    } else {
+        rectForSection = [self rectForHeaderInSection:section];
     }
-#endif
-    BOOL isVisible = isSectionScrollIntoBounds && isSectionStayInContentInsetTop;
-    return isVisible;
+    CGRect visibleRect = CGRectMake(self.contentOffset.x + self.adjustedContentInset.left, self.contentOffset.y + self.adjustedContentInset.top, CGRectGetWidth(self.bounds) - UIEdgeInsetsGetHorizontalValue(self.adjustedContentInset), CGRectGetHeight(self.bounds) - UIEdgeInsetsGetVerticalValue(self.adjustedContentInset));
+    if (CGRectIntersectsRect(visibleRect, rectForSection)) {
+        return YES;
+    }
+    return NO;
 }
 
 - (QMUITableViewCellPosition)qmui_positionForRowAtIndexPath:(NSIndexPath *)indexPath {

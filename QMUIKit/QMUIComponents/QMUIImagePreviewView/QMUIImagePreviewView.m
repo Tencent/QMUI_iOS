@@ -83,8 +83,8 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     self.collectionViewLayout.allowsMultipleItemScroll = NO;
     
     _collectionView = [[UICollectionView alloc] initWithFrame:CGRectMakeWithSize(frame.size) collectionViewLayout:self.collectionViewLayout];
-    self.collectionView.delegate = self;
     self.collectionView.dataSource = self;
+    self.collectionView.delegate = self;
     self.collectionView.backgroundColor = UIColorClear;
     self.collectionView.showsHorizontalScrollIndicator = NO;
     self.collectionView.showsVerticalScrollIndicator = NO;

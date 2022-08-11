@@ -70,11 +70,28 @@
     if (range.length == 0) {
         return range;
     }
-    NSRange result = range;
-    NSRange beginRange = [string rangeOfComposedCharacterSequenceAtIndex:range.location];
-    result.location = beginRange.location < result.location ? NSMaxRange(beginRange) : result.location;
-    NSRange endRange = [string rangeOfComposedCharacterSequenceAtIndex:NSMaxRange(range)];
-    result.length = endRange.location < NSMaxRange(range) ? endRange.location - result.location : NSMaxRange(range) - result.location;
+    NSRange systemRange = [string rangeOfComposedCharacterSequencesForRange:range];// 系统总是往大取值
+    if (NSEqualRanges(range, systemRange)) {
+        return range;
+    }
+    NSRange result = systemRange;
+    if (range.location > systemRange.location) {
+        // 意味着传进来的 range 起点刚好在某个 Character Sequence 中间，所以要把这个 Character Sequence 遗弃掉，从它后面的字符开始算
+        NSRange beginRange = [string rangeOfComposedCharacterSequenceAtIndex:range.location];
+        result.location = NSMaxRange(beginRange);
+        result.length -= beginRange.length;
+    }
+    if (NSMaxRange(range) < NSMaxRange(systemRange)) {
+        // 意味着传进来的 range 终点刚好在某个 Character Sequence 中间，所以要把这个 Character Sequence 遗弃掉，只取到它前面的字符
+        NSRange endRange = [string rangeOfComposedCharacterSequenceAtIndex:NSMaxRange(range) - 1];
+        
+        // 如果参数传进来的 range 刚好落在一个 emoji 的中间，就会导致前面减完 beginRange 这里又减掉一个 endRange，出现负数（注意这里 length 是 NSUInteger），所以做个保护，可以用 👨‍👩‍👧‍👦 测试，这个 emoji 长度是 11
+        if (result.length >= endRange.length) {
+            result.length = result.length - endRange.length;
+        } else {
+            result.length = 0;
+        }
+    }
     return result;
 }
 
@@ -82,11 +99,11 @@
     NSAttributedString *attributedString = [aString isKindOfClass:NSAttributedString.class] ? (NSAttributedString *)aString : nil;
     NSString *string = attributedString.string ?: (NSString *)aString;
     NSUInteger length = countingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
-    QMUIAssert(index < length, @"QMUIStringPrivate", @"%s, index %@ out of bounds. string = %@", __func__, @(index), attributedString ?: string);
-    if (index >= length) return nil;
+    QMUIAssert(index <= length, @"QMUIStringPrivate", @"%s, index %@ out of bounds. string = %@", __func__, @(index), attributedString ?: string);
+    if (index >= length) return @"";
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultMode:index inString:string] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [string rangeOfComposedCharacterSequenceAtIndex:index];
-    index = lessValue ? NSMaxRange(range) : range.location;
+    index = range.length == 1 ? index : (lessValue ? NSMaxRange(range) : range.location);
     if (attributedString) {
         NSAttributedString *resultString = [attributedString attributedSubstringFromRange:NSMakeRange(index, string.length - index)];
         return resultString;
@@ -99,12 +116,12 @@
     NSAttributedString *attributedString = [aString isKindOfClass:NSAttributedString.class] ? (NSAttributedString *)aString : nil;
     NSString *string = attributedString.string ?: (NSString *)aString;
     NSUInteger length = countingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
-    QMUIAssert(index < length, @"QMUIStringPrivate", @"%s, index %@ out of bounds. string = %@", __func__, @(index), attributedString ?: string);
-    if (index == 0 || index > length) return nil;
+    QMUIAssert(index <= length, @"QMUIStringPrivate", @"%s, index %@ out of bounds. string = %@", __func__, @(index), attributedString ?: string);
+    if (index == 0 || index > length) return @"";
     if (index == length) return [aString copy];// 根据系统 -[NSString substringToIndex:] 的注释，在 index 等于 length 时会返回 self 的 copy。
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultMode:index inString:string] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [string rangeOfComposedCharacterSequenceAtIndex:index];
-    index = lessValue ? range.location : NSMaxRange(range);
+    index = range.length == 1 ? index : (lessValue ? range.location : NSMaxRange(range));
     if (attributedString) {
         NSAttributedString *resultString = [attributedString attributedSubstringFromRange:NSMakeRange(0, index)];
         return resultString;
@@ -118,7 +135,7 @@
     NSString *string = attributedString.string ?: (NSString *)aString;
     NSUInteger length = countingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
     QMUIAssert(NSMaxRange(range) <= length, @"QMUIStringPrivate", @"%s, range %@ out of bounds. string = %@", __func__, NSStringFromRange(range), attributedString ?: string);
-    if (NSMaxRange(range) > length) return nil;
+    if (NSMaxRange(range) > length) return @"";
     range = countingNonASCIICharacterAsTwo ? [self transformRangeToDefaultMode:range lessValue:lessValue inString:string] : range;// 实际计算都按照系统默认的 length 规则来
     NSRange characterSequencesRange = lessValue ? [self downRoundRangeOfComposedCharacterSequences:range inString:string] : [string rangeOfComposedCharacterSequencesForRange:range];
     if (attributedString) {
@@ -229,13 +246,24 @@
     // 继承关系是 __NSCFConstantString → __NSCFString → NSMutableString → NSString，其中 __NSCFString 重写了 substringWithRange:（其他 substring 方法没任何人重写），所以这里要 hook __NSCFString 而不是 NSString
     OverrideImplementation(NSClassFromString(@"__NSCFString"), @selector(substringWithRange:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
         return ^NSString *(NSString *selfObject, NSRange range) {
-            // range 越界
+            // range 越界，注意这里识别不了负值，例如一个 (10, -8) 的 range，它的 NSMaxRange 返回2，会认为长度小于 length 所以合法，但实际上是非法的，所以交给下面的流程专门识别。
             {
                 BOOL isValidddatedRange = NSMaxRange(range) <= selfObject.length;
                 if (!isValidddatedRange) {
                     NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个超过字符串长度的 range: %@，原字符串为: %@(%@)", NSStringFromSelector(originCMD), NSStringFromRange(range), selfObject, @(selfObject.length)];
                     QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                     return @"";// 系统 substringWithRange: 返回值的标志是 nonnull
+                }
+            }
+            
+            // rang 负值
+            {
+                NSInteger location = range.location;
+                NSInteger length = range.length;
+                if (location < 0 || length < 0) {
+                    NSString *logString = [NSString stringWithFormat:@"%@ 传入了一个可能由负数转换过来的 range: %@，猜测转换前数值为 (%@, %@)，原字符串为: %@(%@)", NSStringFromSelector(originCMD), NSStringFromRange(range), @(location), @(length), selfObject, @(selfObject.length)];
+                    QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
+//                    return @"";// 由于理论上不可能准确识别这种情况，所以这里不干预 return 值，只是做个 assert 提醒
                 }
             }
             
