@@ -301,7 +301,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取当前对象的所有 @property、方法，不包含父类的
 @property(nonatomic, copy, readonly) NSString *qmui_shortMethodList;
 
-/// 获取当前对象的所有 Ivar 变量
+/// 获取当前对象的所有 Ivar 变量，并在 Ivar 名字前面显示该 Ivar 的 offset，会同时显示十进制和十六进制，以“|”隔开。
 @property(nonatomic, copy, readonly) NSString *qmui_ivarList;
 
 /// 获取当前 UIView 层级树信息（只对 UIView 有效）

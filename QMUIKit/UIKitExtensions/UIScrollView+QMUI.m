@@ -74,7 +74,7 @@ QMUISynthesizeBOOLProperty(qmuiscroll_hasSetInitialContentInset, setQmuiscroll_h
 }
 
 - (BOOL)qmui_alreadyAtTop {
-    if (((NSInteger)self.contentOffset.y) == -((NSInteger)self.adjustedContentInset.top)) {
+    if (CGFloatEqualToFloat(self.contentOffset.y, -self.adjustedContentInset.top)) {
         return YES;
     }
     
