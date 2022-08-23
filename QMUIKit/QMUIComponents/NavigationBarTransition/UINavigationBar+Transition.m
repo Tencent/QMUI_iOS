@@ -54,16 +54,16 @@
             }
         });
         
-        OverrideImplementation([UINavigationBar class], @selector(setBackgroundImage:forBarPosition:barMetrics:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UINavigationBar *selfObject, UIImage *image, UIBarPosition barPosition, UIBarMetrics barMetrics) {
+        OverrideImplementation([UINavigationBar class], @selector(setBackgroundImage:forBarMetrics:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UINavigationBar *selfObject, UIImage *image, UIBarMetrics barMetrics) {
                 
                 // call super
-                void (*originSelectorIMP)(id, SEL, UIImage *, UIBarPosition, UIBarMetrics);
-                originSelectorIMP = (void (*)(id, SEL, UIImage *, UIBarPosition, UIBarMetrics))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, image, barPosition, barMetrics);
+                void (*originSelectorIMP)(id, SEL, UIImage *, UIBarMetrics);
+                originSelectorIMP = (void (*)(id, SEL, UIImage *, UIBarMetrics))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, image, barMetrics);
                 
                 if (selfObject.qmuinb_copyStylesToBar) {
-                    [selfObject.qmuinb_copyStylesToBar setBackgroundImage:image forBarPosition:barPosition barMetrics:barMetrics];
+                    [selfObject.qmuinb_copyStylesToBar setBackgroundImage:image forBarMetrics:barMetrics];
                 }
             };
         });
@@ -165,6 +165,7 @@ static char kAssociatedObjectKey_copyStylesToBar;
         // iOS 14 开启 customNavigationBarTransitionKey 的情况下转场效果错误
         // https://github.com/Tencent/QMUI_iOS/issues/1081
         if (@available(iOS 14.0, *)) {
+            // - [UINavigationBar _accessibility_navigationController]
             OverrideImplementation([_QMUITransitionNavigationBar class], NSSelectorFromString([NSString stringWithFormat:@"_%@_%@", @"accessibility", @"navigationController"]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^UINavigationController *(_QMUITransitionNavigationBar *selfObject) {
                     if (selfObject.originalNavigationBar) {
@@ -184,7 +185,7 @@ static char kAssociatedObjectKey_copyStylesToBar;
         
 #ifdef IOS15_SDK_ALLOWED
         if (@available(iOS 15.0, *)) {
-            // -[UINavigationBar _didMoveFromWindow:toWindow:]
+            // - [UINavigationBar _didMoveFromWindow:toWindow:]
             OverrideImplementation([_QMUITransitionNavigationBar class], NSSelectorFromString(@"_didMoveFromWindow:toWindow:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(_QMUITransitionNavigationBar *selfObject, UIWindow *firstArgv, UIWindow *secondArgv) {
                     

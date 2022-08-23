@@ -88,7 +88,10 @@ static char kAssociatedObjectKey_outsideEdge;
             OverrideImplementation([UIView class], @selector(pointInside:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^BOOL(UIControl *selfObject, CGPoint point, UIEvent *event) {
                     
-                    if (!UIEdgeInsetsEqualToEdgeInsets(selfObject.qmui_outsideEdge, UIEdgeInsetsZero)) {
+                    if (!UIEdgeInsetsEqualToEdgeInsets(selfObject.qmui_outsideEdge, UIEdgeInsetsZero)
+                        && selfObject.alpha > 0.01
+                        && !selfObject.hidden
+                        && !CGRectIsEmpty(selfObject.frame)) {
                         CGRect rect = UIEdgeInsetsInsetRect(selfObject.bounds, selfObject.qmui_outsideEdge);
                         BOOL result = CGRectContainsPoint(rect, point);
                         return result;

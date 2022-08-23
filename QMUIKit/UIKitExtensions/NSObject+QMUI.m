@@ -130,7 +130,9 @@
 
 - (void)qmui_enumrateIvarsIncludingInherited:(BOOL)includingInherited usingBlock:(void (^)(Ivar ivar, NSString *ivarDescription))block {
     NSMutableArray<NSString *> *ivarDescriptions = [NSMutableArray new];
-    NSString *ivarList = [self qmui_ivarList];
+    BeginIgnorePerformSelectorLeaksWarning
+    NSString *ivarList = [self performSelector:NSSelectorFromString(@"_ivarDescription")];
+    EndIgnorePerformSelectorLeaksWarning
     NSError *error;
     NSRegularExpression *reg = [NSRegularExpression regularExpressionWithPattern:[NSString stringWithFormat:@"in %@:(.*?)((?=in \\w+:)|$)", NSStringFromClass(self.class)] options:NSRegularExpressionDotMatchesLineSeparators error:&error];
     if (!error) {
@@ -456,7 +458,31 @@ BeginIgnorePerformSelectorLeaksWarning
 }
 
 - (NSString *)qmui_ivarList {
-    return [self performSelector:NSSelectorFromString(@"_ivarDescription")];
+    NSString *systemResult = [self performSelector:NSSelectorFromString(@"_ivarDescription")];
+    NSRegularExpression *regx = [NSRegularExpression regularExpressionWithPattern:@"^(\\s+)(\\S+)" options:NSRegularExpressionCaseInsensitive error:nil];
+    NSMutableArray<NSString *> *lines = [systemResult componentsSeparatedByString:@"\n"].mutableCopy;
+    [lines enumerateObjectsUsingBlock:^(NSString *line, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        // 过滤掉空行或者 struct 结尾的"}"
+        if (line.qmui_trim.length <= 2) return;
+        
+        // 有些 struct 类型的变量，会把 struct 的成员也缩进打出来，所以用这种方式过滤掉
+        if ([line hasPrefix:@"\t\t"]) return;
+        
+        NSTextCheckingResult *regxResult = [regx firstMatchInString:line options:NSMatchingReportCompletion range:NSMakeRange(0, line.length)];
+        if (regxResult.numberOfRanges < 3) return;
+        
+        NSRange indentRange = [regxResult rangeAtIndex:1];
+        NSRange offsetRange = NSMakeRange(NSMaxRange(indentRange), 0);
+        NSRange ivarNameRange = [regxResult rangeAtIndex:2];
+        NSString *ivarName = [line substringWithRange:ivarNameRange];
+        Ivar ivar = class_getInstanceVariable(self.class, ivarName.UTF8String);
+        ptrdiff_t ivarOffset = ivar_getOffset(ivar);
+        NSString *lineWithOffset = [line stringByReplacingCharactersInRange:offsetRange withString:[NSString stringWithFormat:@"[%@|0x%@]", @(ivarOffset), [NSString stringWithFormat:@"%lx", (NSInteger)ivarOffset].uppercaseString]];
+        [lines setObject:lineWithOffset atIndexedSubscript:idx];
+    }];
+    NSString *result = [lines componentsJoinedByString:@"\n"];
+    return result;
 }
 
 - (NSString *)qmui_viewInfo {
