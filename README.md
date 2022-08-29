@@ -53,7 +53,12 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 - 关于 xib / storyboard：现已全面支持。
 - 关于 Swift：可以正常使用，如遇到问题请提 issue。
 - 关于 UIScene：暂不支持 Multiple Window。
-- 关于隐私：从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:124](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L124-L135)，可直接查看。
+
+## 隐私政策
+
+如果你想了解使用 QMUI iOS 过程中涉及到的隐私政策，可阅读：[QMUI iOS SDK 个人信息保护规则](https://qmuiteam.com/ios/privacy/)。
+
+其中特别注意的是，从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:134-145](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L134-L145)，可直接查看。
 
 ## 设计资源
 
