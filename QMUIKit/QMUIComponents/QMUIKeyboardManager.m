@@ -876,8 +876,14 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     if (!window) return nil;
     
     NSString *windowName = NSStringFromClass(window.class);
-    if (![windowName isEqualToString:@"UIRemoteKeyboardWindow"]) {
-        return nil;
+    if (@available(iOS 16,*)) {
+        if ([windowName isEqualToString:@"UITextEffectsWindow"] == NO) {
+            return nil;
+        }
+    } else {
+        if (![windowName isEqualToString:@"UIRemoteKeyboardWindow"]) {
+            return nil;
+        }
     }
     
     for (UIView *view in window.subviews) {
