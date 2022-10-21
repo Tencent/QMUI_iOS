@@ -317,6 +317,32 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
  */
 @implementation QMUIKeyboardManager
 
+static __weak __kindof UIWindow *kQmui_keyboardWindow = nil;
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        /// https://github.com/Tencent/QMUI_iOS/issues/1453
+        if (@available(iOS 16.0, *)) {
+            OverrideImplementation(UIWindow.class, @selector(setRootViewController:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIWindow *selfObject, UIViewController *viewController) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UIViewController *);
+                    originSelectorIMP = (void (*)(id, SEL, UIViewController *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, viewController);
+      
+                    NSString *inputWindowControllerName = [NSString stringWithFormat:@"UI%@%@", @"Input", @"WindowController"];;
+                    NSString *keyboardWindowName = [NSString stringWithFormat:@"UI%@%@", @"Remote", @"KeyboardWindow"];
+                    if ([viewController isKindOfClass:NSClassFromString(inputWindowControllerName)] && [selfObject isKindOfClass:NSClassFromString(keyboardWindowName)]) {
+                        kQmui_keyboardWindow = selfObject;
+                    }
+                };
+            });
+        }
+    });
+}
+
 + (instancetype)appearance {
     return [QMUIAppearance appearanceForClass:self];
 }
@@ -396,10 +422,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (UIResponder *)firstResponderInWindows {
-    UIResponder *responder = [UIApplication.sharedApplication.keyWindow qmui_findFirstResponder];
+    UIResponder *responder = [self.class.applicationKeyWindow qmui_findFirstResponder];
     if (!responder) {
         for (UIWindow *window in UIApplication.sharedApplication.windows) {
-            if (window != UIApplication.sharedApplication.keyWindow) {
+            if (window != self.class.applicationKeyWindow) {
                 responder = [window qmui_findFirstResponder];
                 if (responder) {
                     return responder;
@@ -699,7 +725,8 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         
         CGRect endFrame = CGRectZero;
         if (keyboardWindow) {
-            endFrame = [keyboardWindow convertRect:keyboardView.frame toWindow:nil];
+            /// iPadOS 16.1增加台前调度, keyboardWindow与当前keyWindow存在交叉的情况, 所以这里的toWindow需要使用keyWindow
+            endFrame = [keyboardWindow convertRect:keyboardView.frame toWindow:self.class.applicationKeyWindow];
         } else {
             endFrame = keyboardView.frame;
         }
@@ -724,7 +751,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         self.keyboardMoveBeginRect = endFrame;
         
         if (self.currentResponder) {
-            UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
+            UIWindow *mainWindow = self.class.applicationKeyWindow;
             if (mainWindow) {
                 CGRect keyboardRect = keyboardMoveUserInfo.endFrame;
                 CGFloat distanceFromBottom = [QMUIKeyboardManager distanceFromMinYToBottomInView:mainWindow keyboardRect:keyboardRect];
@@ -792,6 +819,9 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 + (UIWindow *)keyboardWindow {
+    if (kQmui_keyboardWindow != nil) {
+        return kQmui_keyboardWindow;
+    }
     
     for (UIWindow *window in UIApplication.sharedApplication.windows) {
         if ([self getKeyboardViewFromWindow:window]) {
@@ -823,7 +853,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         return rect;
     }
     
-    UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
+    UIWindow *mainWindow = self.class.applicationKeyWindow;
     if (!mainWindow) {
         if (view) {
             [view convertRect:rect fromView:nil];
@@ -862,6 +892,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 + (UIView *)keyboardView {
+    if (kQmui_keyboardWindow != nil) {
+        return [self getKeyboardViewFromWindow:kQmui_keyboardWindow];
+    }
+    
     for (UIWindow *window in UIApplication.sharedApplication.windows) {
         UIView *view = [self getKeyboardViewFromWindow:window];
         if (view) {
@@ -941,6 +975,58 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         }
         return 0;
     }
+}
+
++ (nullable __kindof UIWindow *)applicationKeyWindow {
+    UIApplication *application = UIApplication.sharedApplication;
+    
+    __block UIWindow *keyWindow = nil;
+    if (@available(iOS 13.0, *)) {
+        [application.connectedScenes enumerateObjectsUsingBlock:^(UIScene *scene, BOOL *stop1) {
+            if (scene.activationState == UISceneActivationStateForegroundActive && [scene isKindOfClass:UIWindowScene.class]) {
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                [windowScene.windows enumerateObjectsUsingBlock:^(UIWindow *window, NSUInteger idx, BOOL *stop2) {
+                    if (window.isKeyWindow && !window.isHidden) {
+                        keyWindow = window;
+                        *stop1 = YES;
+                        *stop2 = YES;
+                    }
+                }];
+            }
+        }];
+    }
+    if (!keyWindow) {
+        [application.windows enumerateObjectsUsingBlock:^(UIWindow *window, NSUInteger idx, BOOL *stop) {
+            if (window.isKeyWindow && !window.isHidden) {
+                keyWindow = window;
+                *stop = YES;
+            }
+        }];
+    }
+    if (!keyWindow) {
+        keyWindow = self.applicationDelegateWindow;
+    }
+    return keyWindow;
+}
+
++ (nullable __kindof UIWindow *)applicationDelegateWindow {
+    UIApplication *application = UIApplication.sharedApplication;
+    
+    __block UIWindow *delegateWindow = nil;
+    if (@available(iOS 13.0, *)) {
+        [application.connectedScenes enumerateObjectsUsingBlock:^(UIScene *scene, BOOL *stop) {
+            if ([scene isKindOfClass:UIWindowScene.class] && [scene.session.role isEqualToString:UIWindowSceneSessionRoleApplication]) {
+                if ([scene.delegate respondsToSelector:@selector(window)]) {
+                    delegateWindow = [scene.delegate performSelector:@selector(window)];
+                    *stop = YES;
+                }
+            }
+        }];
+    }
+    if (!delegateWindow && [application.delegate respondsToSelector:@selector(window)]) {
+        delegateWindow = [application.delegate performSelector:@selector(window)];
+    }
+    return delegateWindow;
 }
 
 @end
