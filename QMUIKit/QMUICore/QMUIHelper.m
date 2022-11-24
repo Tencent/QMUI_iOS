@@ -307,7 +307,12 @@ static CGFloat pixelOne = -1.0f;
             @"iPhone14,5" : @"iPhone 13",
             @"iPhone14,2" : @"iPhone 13 Pro",
             @"iPhone14,3" : @"iPhone 13 Pro Max",
-            
+            @"iPhone14,6" : @"iPhone SE (3rd generation)",
+            @"iPhone14,7" : @"iPhone 14",
+            @"iPhone14,8" : @"iPhone 14 Plus",
+            @"iPhone15,2" : @"iPhone 14 Pro",
+            @"iPhone15,3" : @"iPhone 14 Pro Max",
+             
             @"iPad1,1" : @"iPad 1",
             @"iPad2,1" : @"iPad 2 (WiFi)",
             @"iPad2,2" : @"iPad 2 (GSM)",
