@@ -37,7 +37,7 @@
 
 @property(nonatomic, assign) BOOL debug;
 
-@property (nonatomic, readonly) UIWindow *applicationKeyWindow;
+@property(class, nonatomic, readonly) UIWindow *applicationKeyWindow;
 
 @end
 
