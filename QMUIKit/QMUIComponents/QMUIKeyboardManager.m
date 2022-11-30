@@ -37,6 +37,8 @@
 
 @property(nonatomic, assign) BOOL debug;
 
+@property (nonatomic, readonly) UIWindow *applicationKeyWindow;
+
 @end
 
 
@@ -237,6 +239,12 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
             if (IS_SPLIT_SCREEN_IPAD && endFrame.origin.x > 0) {
                 endFrame.origin.x = 0;
             }
+        }
+        
+        UIWindow *keyboardWindow = QMUIKeyboardManager.keyboardWindow;
+        if (keyboardWindow) {
+            beginFrame = [keyboardWindow convertRect:beginFrame toWindow:[self.keyboardManager.class applicationKeyWindow]];
+            endFrame = [keyboardWindow convertRect:endFrame toWindow:[self.keyboardManager.class applicationKeyWindow]];
         }
         
         _beginFrame = beginFrame;
@@ -740,7 +748,7 @@ static __weak __kindof UIWindow *kQmui_keyboardWindow = nil;
         keyboardMoveUserInfo.animationOptions = self.lastUserInfo ? self.lastUserInfo.animationOptions : keyboardMoveUserInfo.animationCurve<<16;
         keyboardMoveUserInfo.beginFrame = self.keyboardMoveBeginRect;
         keyboardMoveUserInfo.endFrame = endFrame;
-        keyboardMoveUserInfo.isFloatingKeyboard = CGRectGetWidth([self.class keyboardView].bounds) < CGRectGetWidth([UIScreen mainScreen].bounds);
+        keyboardMoveUserInfo.isFloatingKeyboard = CGRectGetWidth(keyboardView.bounds) < CGRectGetWidth(keyboardWindow ? keyboardWindow.screen.bounds : UIScreen.mainScreen.bounds);
         
         if (self.debug) {
             NSLog(@"keyboardDidMoveNotification - %@\n", self);
