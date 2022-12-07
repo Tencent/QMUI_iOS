@@ -28,32 +28,30 @@
         // 随着 iOS 版本的迭代，需要不断检查 UIDynamicColor 对比 UIColor 多出来的方法是哪些，然后在 QMUIThemeColor 里补齐，否则可能出现”unrecognized selector sent to instance“的 crash
         // https://github.com/Tencent/QMUI_iOS/issues/791
 #ifdef DEBUG
-        if (@available(iOS 13.0, *)) {
-            Class dynamicColorClass = NSClassFromString(@"UIDynamicColor");
-            NSMutableSet<NSString *> *unrecognizedSelectors = NSMutableSet.new;
-            NSDictionary<NSString *, NSMutableSet<NSString *> *> *methods = @{
-                NSStringFromClass(UIColor.class): NSMutableSet.new,
-                NSStringFromClass(dynamicColorClass): NSMutableSet.new,
-                NSStringFromClass(self): NSMutableSet.new
-            };
-            [methods enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull classString, NSMutableSet<NSString *> * _Nonnull methods, BOOL * _Nonnull stop) {
-                [NSObject qmui_enumrateInstanceMethodsOfClass:NSClassFromString(classString) includingInherited:NO usingBlock:^(Method  _Nonnull method, SEL  _Nonnull selector) {
-                    [methods addObject:NSStringFromSelector(selector)];
-                }];
+        Class dynamicColorClass = NSClassFromString(@"UIDynamicColor");
+        NSMutableSet<NSString *> *unrecognizedSelectors = NSMutableSet.new;
+        NSDictionary<NSString *, NSMutableSet<NSString *> *> *methods = @{
+            NSStringFromClass(UIColor.class): NSMutableSet.new,
+            NSStringFromClass(dynamicColorClass): NSMutableSet.new,
+            NSStringFromClass(self): NSMutableSet.new
+        };
+        [methods enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull classString, NSMutableSet<NSString *> * _Nonnull methods, BOOL * _Nonnull stop) {
+            [NSObject qmui_enumrateInstanceMethodsOfClass:NSClassFromString(classString) includingInherited:NO usingBlock:^(Method  _Nonnull method, SEL  _Nonnull selector) {
+                [methods addObject:NSStringFromSelector(selector)];
             }];
-            [methods[NSStringFromClass(UIColor.class)] enumerateObjectsUsingBlock:^(NSString * _Nonnull selectorString, BOOL * _Nonnull stop) {
-                if ([methods[NSStringFromClass(dynamicColorClass)] containsObject:selectorString]) {
-                    [methods[NSStringFromClass(dynamicColorClass)] removeObject:selectorString];
-                }
-            }];
-            [methods[NSStringFromClass(dynamicColorClass)] enumerateObjectsUsingBlock:^(NSString * _Nonnull selectorString, BOOL * _Nonnull stop) {
-                if (![methods[NSStringFromClass(self)] containsObject:selectorString]) {
-                    [unrecognizedSelectors addObject:selectorString];
-                }
-            }];
-            if (unrecognizedSelectors.count > 0) {
-                QMUILogWarn(NSStringFromClass(self), @"%@ 还需要实现以下方法：%@", NSStringFromClass(self), unrecognizedSelectors);
+        }];
+        [methods[NSStringFromClass(UIColor.class)] enumerateObjectsUsingBlock:^(NSString * _Nonnull selectorString, BOOL * _Nonnull stop) {
+            if ([methods[NSStringFromClass(dynamicColorClass)] containsObject:selectorString]) {
+                [methods[NSStringFromClass(dynamicColorClass)] removeObject:selectorString];
             }
+        }];
+        [methods[NSStringFromClass(dynamicColorClass)] enumerateObjectsUsingBlock:^(NSString * _Nonnull selectorString, BOOL * _Nonnull stop) {
+            if (![methods[NSStringFromClass(self)] containsObject:selectorString]) {
+                [unrecognizedSelectors addObject:selectorString];
+            }
+        }];
+        if (unrecognizedSelectors.count > 0) {
+            QMUILogWarn(NSStringFromClass(self), @"%@ 还需要实现以下方法：%@", NSStringFromClass(self), unrecognizedSelectors);
         }
 #endif
     });

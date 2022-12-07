@@ -147,12 +147,7 @@ const CGFloat QMUIImagePreviewViewControllerCornerRadiusAutomaticDimension = -1;
     if (self.qmui_visibleState < QMUIViewControllerDidAppear || self.qmui_visibleState >= QMUIViewControllerDidDisappear) {
         // 在 present/dismiss 动画过程中，都使用原界面的状态栏显隐状态
         if (self.presentingViewController) {
-            BOOL statusBarHidden = NO;
-            if (@available(iOS 13.0, *)) {
-                statusBarHidden = self.presentingViewController.view.window.windowScene.statusBarManager.statusBarHidden;
-            } else {
-                statusBarHidden = UIApplication.sharedApplication.statusBarHidden;
-            }
+            BOOL statusBarHidden = self.presentingViewController.view.window.windowScene.statusBarManager.statusBarHidden;
             self.originalStatusBarHidden = statusBarHidden;
             return self.originalStatusBarHidden;
         }

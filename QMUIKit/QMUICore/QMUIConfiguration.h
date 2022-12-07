@@ -281,7 +281,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               hidesBottomBarWhenPushedInitially;
 @property(nonatomic, assign) BOOL               preventConcurrentNavigationControllerTransitions;
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
-@property(nonatomic, assign) BOOL               shouldFixTabBarTransitionBugInIPhoneX;
 @property(nonatomic, assign) BOOL               shouldFixTabBarSafeAreaInsetsBug;
 @property(nonatomic, assign) BOOL               shouldFixSearchBarMaskViewLayoutBug;
 @property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;

@@ -276,21 +276,18 @@
     QMUICMI.automaticCustomNavigationBarTransitionStyle = NO;                   // AutomaticCustomNavigationBarTransitionStyle : 界面 push/pop 时是否要自动根据两个界面的 barTintColor/backgroundImage/shadowImage 的样式差异来决定是否使用自定义的导航栏效果
     QMUICMI.supportedOrientationMask = UIInterfaceOrientationMaskAll;           // SupportedOrientationMask : 默认支持的横竖屏方向
     QMUICMI.automaticallyRotateDeviceOrientation = NO;                          // AutomaticallyRotateDeviceOrientation : 是否在界面切换或 viewController.supportedOrientationMask 发生变化时自动旋转屏幕（仅 iOS 15 及以前版本需要，iOS 16 系统会自动处理，该开关无意义。）
-    QMUICMI.defaultStatusBarStyle = UIStatusBarStyleDefault;                    // DefaultStatusBarStyle : 默认的状态栏样式，默认值为 UIStatusBarStyleDefault，也即在 iOS 12 及以前是黑色文字，iOS 13 及以后会自动根据当前 App 是否处于 Dark Mode 切换颜色。如果你希望固定为白色，请设置为 UIStatusBarStyleLightContent，固定黑色则设置为 QMUIStatusBarStyleDarkContent。
+    QMUICMI.defaultStatusBarStyle = UIStatusBarStyleDefault;                    // DefaultStatusBarStyle : 默认的状态栏样式，默认值为 UIStatusBarStyleDefault，也即在 iOS 12 及以前是黑色文字，iOS 13 及以后会自动根据当前 App 是否处于 Dark Mode 切换颜色。如果你希望固定为白色，请设置为 UIStatusBarStyleLightContent，固定黑色则设置为 UIStatusBarStyleDarkContent。
     QMUICMI.needsBackBarButtonItemTitle = YES;                                  // NeedsBackBarButtonItemTitle : 全局是否需要返回按钮的 title，不需要则只显示一个返回image
     QMUICMI.hidesBottomBarWhenPushedInitially = NO;                             // HidesBottomBarWhenPushedInitially : QMUICommonViewController.hidesBottomBarWhenPushed 的初始值，默认为 NO，以保持与系统默认值一致，但通常建议改为 YES，因为一般只有 tabBar 首页那几个界面要求为 NO
     QMUICMI.preventConcurrentNavigationControllerTransitions = YES;             // PreventConcurrentNavigationControllerTransitions : 自动保护 QMUINavigationController 在上一次 push/pop 尚未结束的时候就进行下一次 push/pop 的行为，避免产生 crash
     QMUICMI.navigationBarHiddenInitially = NO;                                  // NavigationBarHiddenInitially : QMUINavigationControllerDelegate preferredNavigationBarHidden 的初始值，默认为NO
-    QMUICMI.shouldFixTabBarTransitionBugInIPhoneX = NO;                         // ShouldFixTabBarTransitionBugInIPhoneX : 是否需要自动修复 iOS 11 下，iPhone X 的设备在 push 界面时，tabBar 会瞬间往上跳的 bug
     QMUICMI.shouldFixTabBarSafeAreaInsetsBug = NO;                              // ShouldFixTabBarSafeAreaInsetsBug : 是否要对 iOS 11 及以后的版本修复当存在 UITabBar 时，UIScrollView 的 inset.bottom 可能错误的 bug（issue #218 #934），默认为 YES
     QMUICMI.shouldFixSearchBarMaskViewLayoutBug = NO;                           // ShouldFixSearchBarMaskViewLayoutBug : 是否自动修复 UISearchController.searchBar 被当作 tableHeaderView 使用时可能出现的布局 bug(issue #950)
     QMUICMI.shouldPrintQMUIWarnLogToConsole = IS_DEBUG;                         // ShouldPrintQMUIWarnLogToConsole : 是否在出现 QMUILogWarn 时自动把这些 log 以 QMUIConsole 的方式显示到设备屏幕上
     QMUICMI.sendAnalyticsToQMUITeam = YES;                                      // SendAnalyticsToQMUITeam : 是否允许在 DEBUG 模式下上报 Bundle Identifier 和 Display Name 给 QMUI 统计用
     QMUICMI.dynamicPreferredValueForIPad = NO;                                  // DynamicPreferredValueForIPad : 当 iPad 处于 Slide Over 或 Split View 分屏模式下，宏 `PreferredValueForXXX` 是否把 iPad 视为某种屏幕宽度近似的 iPhone 来取值。
-    if (@available(iOS 13.0, *)) {
-        QMUICMI.ignoreKVCAccessProhibited = NO;                                     // IgnoreKVCAccessProhibited : 是否全局忽略 iOS 13 对 KVC 访问 UIKit 私有属性的限制
-        QMUICMI.adjustScrollIndicatorInsetsByContentInsetAdjustment = NO;           // AdjustScrollIndicatorInsetsByContentInsetAdjustment : 当将 UIScrollView.contentInsetAdjustmentBehavior 设为 UIScrollViewContentInsetAdjustmentNever 时，是否自动将 UIScrollView.automaticallyAdjustsScrollIndicatorInsets 设为 NO，以保证原本在 iOS 12 下的代码不用修改就能在 iOS 13 下正常控制滚动条的位置。
-    }
+    QMUICMI.ignoreKVCAccessProhibited = NO;                                     // IgnoreKVCAccessProhibited : 是否全局忽略 iOS 13 对 KVC 访问 UIKit 私有属性的限制
+    QMUICMI.adjustScrollIndicatorInsetsByContentInsetAdjustment = NO;           // AdjustScrollIndicatorInsetsByContentInsetAdjustment : 当将 UIScrollView.contentInsetAdjustmentBehavior 设为 UIScrollViewContentInsetAdjustmentNever 时，是否自动将 UIScrollView.automaticallyAdjustsScrollIndicatorInsets 设为 NO，以保证原本在 iOS 12 下的代码不用修改就能在 iOS 13 下正常控制滚动条的位置。
 }
 
 // QMUI 2.3.0 版本里，配置表新增这个方法，返回 YES 表示在 App 启动时要自动应用这份配置表。仅当你的 App 里存在多份配置表时，才需要把除默认配置表之外的其他配置表的返回值改为 NO。

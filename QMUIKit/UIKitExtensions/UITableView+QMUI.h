@@ -18,7 +18,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-#define PreferredValueForTableViewStyle(_style, _plain, _grouped, _insetGrouped) (_style == UITableViewStyleGrouped ? _grouped : (_style == QMUITableViewStyleInsetGrouped ? _insetGrouped : _plain))
+#define PreferredValueForTableViewStyle(_style, _plain, _grouped, _insetGrouped) (_style == UITableViewStyleGrouped ? _grouped : (_style == UITableViewStyleInsetGrouped ? _insetGrouped : _plain))
 
 /// cell 在当前 section 里的位置，注意判断时要用 (var & xxx) == xxx 的方式
 typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
@@ -126,35 +126,21 @@ typedef NS_OPTIONS(NSInteger, QMUITableViewCellPosition) {
 
 @end
 
-
-extern const UITableViewStyle QMUITableViewStyleInsetGrouped;
-
 /**
  系统在 iOS 13 新增了 UITableViewStyleInsetGrouped 类型用于展示往内缩进、cell 带圆角的列表，而这个 Category 让 iOS 12 及以下的系统也能支持这种样式，iOS 13 也可以通过这个 Category 修改左右的缩进值和 cell 的圆角。
  使用方式：
- 对于 UITableView，通过 -[UITableView initWithStyle:QMUITableViewStyleInsetGrouped] 初始化 tableView。
- 对于 UITableViewController，通过 -[UITableViewController initWithStyle:QMUITableViewStyleInsetGrouped] 初始化 tableViewController。
+ 对于 UITableView，通过 -[UITableView initWithStyle:UITableViewStyleInsetGrouped] 初始化 tableView。
+ 对于 UITableViewController，通过 -[UITableViewController initWithStyle:UITableViewStyleInsetGrouped] 初始化 tableViewController。
  可通过 @c qmui_insetGroupedCornerRadius @c qmui_insetGroupedHorizontalInset 统一修改圆角值和左右缩进，如果要为不同 indexPath 指定不同圆角值，可在 -[UITableViewDelegate tableView:willDisplayCell:forRowAtIndexPath:] 内修改 cell.layer.cornerRadius 的值。
  
  @note 对于 sectionHeader/footer，建议使用 QMUITableViewHeaderFooterView，或者继承系统的 UITableViewHeaderFooterView 并重写它的 sizeThatFits:、layoutSubviews 去计算高度和布局，sizeThatFits: 的参数 size.width 即为减去左右缩进后的宽度。如果直接用系统的 UITableViewHeaderFooterView，iOS 10 及以下多行文本时布局会错误，暂时无法解决，但如果业务项目本身不需要支持 iOS 10 及以下系统，那可忽略这个限制。
  */
 @interface UITableView (QMUI_InsetGrouped)
 
-/**
- 对于代码的使用场景，通过这个属性可以获取当前 UITableView 的 style（如果当前 tableView 没有使用 InsetGrouped 则可以忽略这个属性的存在）。
- 对于 Interface Builder 的使用场景，如果你的 App 最低版本从 iOS 13 开始，则直接用系统自带的 style 选项框去修改 style 即可，但如果你的 App
- 最低版本包含 iOS 12 及以下，则需要在 Interface Builder 里把 qmui_style 修改为“2”来使用 QMUITableViewStyleInsetGrouped（选中 TableView 节点后在“User Defined Runtime Attributes”里添加名为“qmui_style”，类型为“Number”，值为“2”的条目）。
- */
-#if TARGET_INTERFACE_BUILDER
-@property(nonatomic, assign, readwrite) IBInspectable UITableViewStyle qmui_style;
-#else
-@property(nonatomic, assign, readonly) UITableViewStyle qmui_style;
-#endif
-
-/// 当使用 QMUITableViewStyleInsetGrouped 时可通过这个属性修改 cell 的圆角值，默认值为 10，也即 iOS 13 系统默认表现。如果要为不同 indexPath 指定不同圆角值，可在 -[UITableViewDelegate tableView:willDisplayCell:forRowAtIndexPath:] 内修改 cell.layer.cornerRadius 的值。
+/// 当使用 UITableViewStyleInsetGrouped 时可通过这个属性修改 cell 的圆角值，默认值为 10，也即 iOS 13 系统默认表现。如果要为不同 indexPath 指定不同圆角值，可在 -[UITableViewDelegate tableView:willDisplayCell:forRowAtIndexPath:] 内修改 cell.layer.cornerRadius 的值。
 @property(nonatomic, assign) CGFloat qmui_insetGroupedCornerRadius UI_APPEARANCE_SELECTOR;
 
-/// 当使用 QMUITableViewStyleInsetGrouped 时可通过这个属性修改列表的左右缩进值，默认值为 20，也即 iOS 13 系统默认表现。
+/// 当使用 UITableViewStyleInsetGrouped 时可通过这个属性修改列表的左右缩进值，默认值为 20，也即 iOS 13 系统默认表现。
 @property(nonatomic, assign) CGFloat qmui_insetGroupedHorizontalInset UI_APPEARANCE_SELECTOR;
 
 @end

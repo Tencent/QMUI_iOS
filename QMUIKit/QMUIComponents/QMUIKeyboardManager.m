@@ -230,14 +230,12 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         CGRect beginFrame = [[self.originUserInfo objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue];
         CGRect endFrame = [[self.originUserInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
         
-        if (@available(iOS 13.0, *)) {
-            // iOS 13 分屏键盘 x 不是 0，不知道是系统 BUG 还是故意这样，先这样保护，再观察一下后面的 beta 版本
-            if (IS_SPLIT_SCREEN_IPAD && beginFrame.origin.x > 0) {
-                beginFrame.origin.x = 0;
-            }
-            if (IS_SPLIT_SCREEN_IPAD && endFrame.origin.x > 0) {
-                endFrame.origin.x = 0;
-            }
+        // iOS 13 分屏键盘 x 不是 0，不知道是系统 BUG 还是故意这样，先这样保护，再观察一下后面的 beta 版本
+        if (IS_SPLIT_SCREEN_IPAD && beginFrame.origin.x > 0) {
+            beginFrame.origin.x = 0;
+        }
+        if (IS_SPLIT_SCREEN_IPAD && endFrame.origin.x > 0) {
+            endFrame.origin.x = 0;
         }
         
         _beginFrame = beginFrame;

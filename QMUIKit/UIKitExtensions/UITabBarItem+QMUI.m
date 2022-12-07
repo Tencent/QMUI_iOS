@@ -30,10 +30,7 @@ QMUISynthesizeIdCopyProperty(qmui_doubleTapBlock, setQmui_doubleTapBlock)
     if (!tabBarButton) {
         return nil;
     }
-    if (@available(iOS 13.0, *)) {
-        return [tabBarButton qmui_valueForKey:@"_imageView"];
-    }
-    return [tabBarButton qmui_valueForKey:@"_info"];
+    return [tabBarButton qmui_valueForKey:@"_imageView"];
 }
 
 @end

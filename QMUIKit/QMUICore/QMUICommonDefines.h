@@ -92,8 +92,8 @@
 #pragma mark - 忽略 iOS 13 KVC 访问私有属性限制
 
 /// 将 KVC 代码包裹在这个宏中，可忽略系统的  KVC 访问限制
-#define BeginIgnoreUIKVCAccessProhibited if (@available(iOS 13.0, *)) NSThread.currentThread.qmui_shouldIgnoreUIKVCAccessProhibited = YES;
-#define EndIgnoreUIKVCAccessProhibited if (@available(iOS 13.0, *)) NSThread.currentThread.qmui_shouldIgnoreUIKVCAccessProhibited = NO;
+#define BeginIgnoreUIKVCAccessProhibited NSThread.currentThread.qmui_shouldIgnoreUIKVCAccessProhibited = YES;
+#define EndIgnoreUIKVCAccessProhibited NSThread.currentThread.qmui_shouldIgnoreUIKVCAccessProhibited = NO;
 
 #pragma mark - 变量-设备相关
 
@@ -179,10 +179,10 @@
 #define ScreenNativeScale ([[UIScreen mainScreen] nativeScale])
 
 /// toolBar相关frame
-#define ToolBarHeight (IS_IPAD ? (IS_NOTCHED_SCREEN ? 70 : (IOS_VERSION >= 12.0 ? 50 : 44)) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
+#define ToolBarHeight (IS_IPAD ? (IS_NOTCHED_SCREEN ? 70 : 50) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
 
 /// tabBar相关frame
-#define TabBarHeight (IS_IPAD ? (IS_NOTCHED_SCREEN ? 65 : (IOS_VERSION >= 12.0 ? 50 : 49)) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(49, 32) : 49) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
+#define TabBarHeight (IS_IPAD ? (IS_NOTCHED_SCREEN ? 65 : 50) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(49, 32) : 49) + SafeAreaInsetsConstantForDeviceWithNotch.bottom)
 
 /// 状态栏高度(来电等情况下，状态栏高度会发生变化，所以应该实时计算，iOS 13 起，来电等情况下状态栏高度不会改变)
 #define StatusBarHeight (UIApplication.sharedApplication.statusBarHidden ? 0 : UIApplication.sharedApplication.statusBarFrame.size.height)
@@ -191,7 +191,7 @@
 #define StatusBarHeightConstant [QMUIHelper statusBarHeightConstant]
 
 /// navigationBar 的静态高度
-#define NavigationBarHeight (IS_IPAD ? (IOS_VERSION >= 12.0 ? 50 : 44) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44))
+#define NavigationBarHeight (IS_IPAD ? 50 : (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44))
 
 /// 代表(导航栏+状态栏)，这里用于获取其高度
 /// @warn 如果是用于 viewController，请使用 UIViewController(QMUI) qmui_navigationBarMaxYInViewCoordinator 代替
@@ -296,9 +296,6 @@ AddAccessibilityHint(NSObject *obj, NSString *hint) {
 
 
 #pragma mark - 其他
-
-// 固定黑色的 StatusBarStyle，用于亮色背景，作为 -preferredStatusBarStyle 方法的 return 值使用。
-#define QMUIStatusBarStyleDarkContent [QMUIHelper statusBarStyleDarkContent]
 
 #define StringFromBOOL(_flag) (_flag ? @"YES" : @"NO")
 

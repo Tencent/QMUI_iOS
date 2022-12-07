@@ -805,23 +805,6 @@
 
 @implementation QMUIModalPresentationWindow
 
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    // 避免来电状态时只 modal 的遮罩只盖住一部分的状态栏
-    // 但在 iOS 13 及以后，来电状态下状态栏的高度不会再变化了
-    // https://github.com/Tencent/QMUI_iOS/issues/375
-    if (@available(iOS 13.0, *)) {
-    } else {
-        if (self.rootViewController) {
-            UIView *rootView = self.rootViewController.view;
-            if (CGRectGetMinY(rootView.frame) > 0 && !UIApplication.sharedApplication.statusBarHidden && StatusBarHeight > CGRectGetMinY(rootView.frame)) {
-                rootView.frame = self.bounds;
-            }
-        }
-    }
-
-}
-
 @end
 
 @implementation UIViewController (QMUIModalPresentationViewController)

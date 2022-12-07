@@ -22,8 +22,4 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, weak, readonly) UITableView *qmui_tableView;
 @end
 
-@interface UITableViewHeaderFooterView (QMUI_InsetGrouped)
-
-@end
-
 NS_ASSUME_NONNULL_END

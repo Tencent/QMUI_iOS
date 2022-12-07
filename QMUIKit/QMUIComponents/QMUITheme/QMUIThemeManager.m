@@ -43,28 +43,22 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
         _name = name;
         self._themeIdentifiers = NSMutableArray.new;
         self._themes = NSMutableArray.new;
-        if (@available(iOS 13.0, *)) {
-            [UITraitCollection qmui_addUserInterfaceStyleWillChangeObserver:self selector:@selector(handleUserInterfaceStyleWillChangeEvent:)];
-        }
+        [UITraitCollection qmui_addUserInterfaceStyleWillChangeObserver:self selector:@selector(handleUserInterfaceStyleWillChangeEvent:)];
     }
     return self;
 }
 
 - (void)handleUserInterfaceStyleWillChangeEvent:(UITraitCollection *)traitCollection {
     if (!_respondsSystemStyleAutomatically) return;
-    if (@available(iOS 13.0, *)) {
-        if (traitCollection && self.identifierForTrait) {
-            self.currentThemeIdentifier = self.identifierForTrait(traitCollection);
-        }
+    if (traitCollection && self.identifierForTrait) {
+        self.currentThemeIdentifier = self.identifierForTrait(traitCollection);
     }
 }
 
 - (void)setRespondsSystemStyleAutomatically:(BOOL)respondsSystemStyleAutomatically {
     _respondsSystemStyleAutomatically = respondsSystemStyleAutomatically;
-    if (@available(iOS 13.0, *)) {
-        if (_respondsSystemStyleAutomatically && self.identifierForTrait) {
-             self.currentThemeIdentifier = self.identifierForTrait([UITraitCollection currentTraitCollection]);
-        }
+    if (_respondsSystemStyleAutomatically && self.identifierForTrait) {
+         self.currentThemeIdentifier = self.identifierForTrait([UITraitCollection currentTraitCollection]);
     }
 }
 

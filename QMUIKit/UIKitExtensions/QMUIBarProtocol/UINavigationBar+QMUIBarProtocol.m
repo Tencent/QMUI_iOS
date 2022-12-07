@@ -57,11 +57,7 @@ EndIgnoreClangWarning
 
 - (UIImageView *)qmui_shadowImageView {
     // bar 在 init 完就可以获取到 backgroundView 和 shadowView，无需关心调用时机的问题
-    if (@available(iOS 13, *)) {
-        return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView1"];
-    }
-    // iOS 10 及以后，在 bar 初始化之后就能获取到 backgroundView 和 shadowView 了
-    return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView"];
+    return [self.qmui_backgroundView qmui_valueForKey:@"_shadowView1"];
 }
 
 - (UIVisualEffectView *)qmui_effectView {
@@ -74,20 +70,13 @@ EndIgnoreClangWarning
 - (NSArray<UIVisualEffectView *> *)qmui_effectViews {
     UIView *backgroundView = self.qmui_backgroundView;
     NSMutableArray<UIVisualEffectView *> *result = NSMutableArray.new;
-    if (@available(iOS 13.0, *)) {
-        UIVisualEffectView *backgroundEffectView1 = [backgroundView valueForKey:@"_effectView1"];
-        UIVisualEffectView *backgroundEffectView2 = [backgroundView valueForKey:@"_effectView2"];
-        if (backgroundEffectView1) {
-            [result addObject:backgroundEffectView1];
-        }
-        if (backgroundEffectView2) {
-            [result addObject:backgroundEffectView2];
-        }
-    } else {
-        UIVisualEffectView *backgroundEffectView = [backgroundView qmui_valueForKey:@"_backgroundEffectView"];
-        if (backgroundEffectView) {
-            [result addObject:backgroundEffectView];
-        }
+    UIVisualEffectView *backgroundEffectView1 = [backgroundView valueForKey:@"_effectView1"];
+    UIVisualEffectView *backgroundEffectView2 = [backgroundView valueForKey:@"_effectView2"];
+    if (backgroundEffectView1) {
+        [result addObject:backgroundEffectView1];
+    }
+    if (backgroundEffectView2) {
+        [result addObject:backgroundEffectView2];
     }
     return result.count > 0 ? result : nil;
 }

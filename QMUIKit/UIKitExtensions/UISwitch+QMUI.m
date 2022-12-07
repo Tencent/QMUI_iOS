@@ -30,8 +30,14 @@
         });
         
         // 设置 qmui_offTintColor 的原理是找到 UISwitch 内部的 switchWellView 并改变它的 backgroundColor，而 switchWellView 在某些时机会重新创建 ，因此需要在这些时机之后对 switchWellView 重新设置一次背景颜色：
-        if (@available(iOS 13.0, *)) {
-            ExtendImplementationOfVoidMethodWithSingleArgument([UISwitch class], @selector(traitCollectionDidChange:), UITraitCollection *, ^(UISwitch *selfObject, UITraitCollection *previousTraitCollection) {
+        OverrideImplementation([UISwitch class], @selector(traitCollectionDidChange:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UISwitch *selfObject, UITraitCollection *previousTraitCollection) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UITraitCollection *);
+                originSelectorIMP = (void (*)(id, SEL, UITraitCollection *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, previousTraitCollection);
+                
                 BOOL interfaceStyleChanged = [previousTraitCollection hasDifferentColorAppearanceComparedToTraitCollection:selfObject.traitCollection];
                 if (interfaceStyleChanged) {
                     // 在 iOS 13 切换 Dark/Light Mode 之后，会在重新创建 switchWellView，之所以延迟一个 runloop 是因为这个时机是在晚于 traitCollectionDidChange 的 _traitCollectionDidChangeInternal中进行
@@ -39,18 +45,8 @@
                         [selfObject qmui_applyOffTintColorIfNeeded];
                     });
                 }
-            });
-        } else {
-            // iOS 9 - 12 上调用 setOnTintColor: 或 setTintColor: 之后，会在重新创建 switchWellView
-            ExtendImplementationOfVoidMethodWithSingleArgument([UISwitch class], @selector(setTintColor:), UIColor *, ^(UISwitch *selfObject, UIColor *firstArgv) {
-                [selfObject qmui_applyOffTintColorIfNeeded];
-            });
-            ExtendImplementationOfVoidMethodWithSingleArgument([UISwitch class], @selector(setOnTintColor:), UIColor *, ^(UISwitch *selfObject, UIColor *firstArgv) {
-                [selfObject qmui_applyOffTintColorIfNeeded];
-            });
-
-        }
-        
+            };
+        });
     });
 }
 

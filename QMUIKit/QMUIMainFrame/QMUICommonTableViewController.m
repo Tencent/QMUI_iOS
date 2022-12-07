@@ -245,7 +245,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
         }
     }
     // 分别测试过 iOS 13 及以下的所有版本，最终总结，对于 Plain 类型的 tableView 而言，要去掉 header / footer 请使用 0，对于 Grouped 类型的 tableView 而言，要去掉 header / footer 请使用 CGFLOAT_MIN
-    return PreferredValueForTableViewStyle(tableView.qmui_style, 0, TableViewGroupedSectionHeaderDefaultHeight, TableViewInsetGroupedSectionHeaderDefaultHeight);
+    return PreferredValueForTableViewStyle(tableView.style, 0, TableViewGroupedSectionHeaderDefaultHeight, TableViewInsetGroupedSectionHeaderDefaultHeight);
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
@@ -257,7 +257,7 @@ NSString *const QMUICommonTableViewControllerSectionFooterIdentifier = @"QMUISec
         }
     }
     // 分别测试过 iOS 13 及以下的所有版本，最终总结，对于 Plain 类型的 tableView 而言，要去掉 header / footer 请使用 0，对于 Grouped 类型的 tableView 而言，要去掉 header / footer 请使用 CGFLOAT_MIN
-    return PreferredValueForTableViewStyle(tableView.qmui_style, 0, TableViewGroupedSectionFooterDefaultHeight, TableViewInsetGroupedSectionFooterDefaultHeight);
+    return PreferredValueForTableViewStyle(tableView.style, 0, TableViewGroupedSectionFooterDefaultHeight, TableViewInsetGroupedSectionFooterDefaultHeight);
 }
 
 // 是否有定义某个section的header title

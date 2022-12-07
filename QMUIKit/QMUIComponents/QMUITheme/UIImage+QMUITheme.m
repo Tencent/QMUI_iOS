@@ -462,42 +462,41 @@ static BOOL generatorSupportsDynamicColor = NO;
                 return result;
             };
         });
-        if (@available(iOS 13.0, *)) {
-            // 如果一个静态的 UIImage 通过 imageWithTintColor: 传入一个动态的颜色，那么这个 UIImage 也会变成动态的，但这个动态图片是 iOS 13 系统原生的动态图片，无法响应 QMUITheme，所以这里需要为 QMUIThemeImage 做特殊处理。
-            // 注意，系统的 imageWithTintColor: 不会调用 imageWithTintColor:renderingMode:，所以要分开重写两个方法
-            OverrideImplementation([UIImage class], @selector(imageWithTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^UIImage *(UIImage *selfObject, UIColor *tintColor) {
-                    
-                    UIImage *result = [UIImage qmui_dynamicImageWithOriginalImage:selfObject tintColor:tintColor originalActionBlock:^UIImage *(UIImage *aImage, UIColor *aTintColor) {
-                        aImage.qmui_shouldUseSystemIMP = YES;
-                        return [aImage imageWithTintColor:aTintColor];
-                    }];
-                    if (!result) {
-                        // call super
-                        UIImage *(*originSelectorIMP)(id, SEL, UIColor *);
-                        originSelectorIMP = (UIImage * (*)(id, SEL, UIColor *))originalIMPProvider();
-                        result = originSelectorIMP(selfObject, originCMD, tintColor);
-                    }
-                    return result;
-                };
-            });
-            OverrideImplementation([UIImage class], @selector(imageWithTintColor:renderingMode:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^UIImage *(UIImage *selfObject, UIColor *tintColor, UIImageRenderingMode renderingMode) {
-                    
-                    UIImage *result = [UIImage qmui_dynamicImageWithOriginalImage:selfObject tintColor:tintColor originalActionBlock:^UIImage *(UIImage *aImage, UIColor *aTintColor) {
-                        aImage.qmui_shouldUseSystemIMP = YES;
-                        return [aImage imageWithTintColor:aTintColor renderingMode:renderingMode];
-                    }];
-                    if (!result) {
-                        // call super
-                        UIImage *(*originSelectorIMP)(id, SEL, UIColor *, UIImageRenderingMode);
-                        originSelectorIMP = (UIImage * (*)(id, SEL, UIColor *, UIImageRenderingMode))originalIMPProvider();
-                        result = originSelectorIMP(selfObject, originCMD, tintColor, renderingMode);
-                    }
-                    return result;
-                };
-            });
-        }
+        
+        // 如果一个静态的 UIImage 通过 imageWithTintColor: 传入一个动态的颜色，那么这个 UIImage 也会变成动态的，但这个动态图片是 iOS 13 系统原生的动态图片，无法响应 QMUITheme，所以这里需要为 QMUIThemeImage 做特殊处理。
+        // 注意，系统的 imageWithTintColor: 不会调用 imageWithTintColor:renderingMode:，所以要分开重写两个方法
+        OverrideImplementation([UIImage class], @selector(imageWithTintColor:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIImage *(UIImage *selfObject, UIColor *tintColor) {
+                
+                UIImage *result = [UIImage qmui_dynamicImageWithOriginalImage:selfObject tintColor:tintColor originalActionBlock:^UIImage *(UIImage *aImage, UIColor *aTintColor) {
+                    aImage.qmui_shouldUseSystemIMP = YES;
+                    return [aImage imageWithTintColor:aTintColor];
+                }];
+                if (!result) {
+                    // call super
+                    UIImage *(*originSelectorIMP)(id, SEL, UIColor *);
+                    originSelectorIMP = (UIImage * (*)(id, SEL, UIColor *))originalIMPProvider();
+                    result = originSelectorIMP(selfObject, originCMD, tintColor);
+                }
+                return result;
+            };
+        });
+        OverrideImplementation([UIImage class], @selector(imageWithTintColor:renderingMode:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIImage *(UIImage *selfObject, UIColor *tintColor, UIImageRenderingMode renderingMode) {
+                
+                UIImage *result = [UIImage qmui_dynamicImageWithOriginalImage:selfObject tintColor:tintColor originalActionBlock:^UIImage *(UIImage *aImage, UIColor *aTintColor) {
+                    aImage.qmui_shouldUseSystemIMP = YES;
+                    return [aImage imageWithTintColor:aTintColor renderingMode:renderingMode];
+                }];
+                if (!result) {
+                    // call super
+                    UIImage *(*originSelectorIMP)(id, SEL, UIColor *, UIImageRenderingMode);
+                    originSelectorIMP = (UIImage * (*)(id, SEL, UIColor *, UIImageRenderingMode))originalIMPProvider();
+                    result = originSelectorIMP(selfObject, originCMD, tintColor, renderingMode);
+                }
+                return result;
+            };
+        });
         
         generatorSupportsDynamicColor = YES;
     });

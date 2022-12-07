@@ -24,18 +24,19 @@ QMUISynthesizeBOOLProperty(qmui_capturesStatusBarAppearance, setQmui_capturesSta
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
+        // -[UIWindow initWithFrame:]
         ExtendImplementationOfNonVoidMethodWithSingleArgument([UIWindow class], @selector(initWithFrame:), CGRect, UIWindow *, ^UIWindow *(UIWindow *selfObject, CGRect frame, UIWindow *originReturnValue) {
             selfObject.qmui_capturesStatusBarAppearance = YES;
             return originReturnValue;
         });
+
+        // -[UIWindow initWithWindowScene:]
+        ExtendImplementationOfNonVoidMethodWithSingleArgument([UIWindow class], @selector(initWithWindowScene:), UIWindowScene *, UIWindow *, ^UIWindow *(UIWindow *selfObject, UIWindowScene *windowScene, UIWindow *originReturnValue) {
+            selfObject.qmui_capturesStatusBarAppearance = YES;
+            return originReturnValue;
+        });
         
-        if (@available(iOS 13.0, *)) {
-            ExtendImplementationOfNonVoidMethodWithSingleArgument([UIWindow class], @selector(initWithWindowScene:), UIWindowScene *, UIWindow *, ^UIWindow *(UIWindow *selfObject, UIWindowScene *windowScene, UIWindow *originReturnValue) {
-                selfObject.qmui_capturesStatusBarAppearance = YES;
-                return originReturnValue;
-            });
-        }
-        
+        // -[UIWindow _canAffectStatusBarAppearance]
         OverrideImplementation([UIWindow class], NSSelectorFromString([NSString stringWithFormat:@"_%@%@%@", @"canAffect", @"StatusBar", @"Appearance"]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^BOOL(UIWindow *selfObject) {
                 

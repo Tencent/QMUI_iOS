@@ -250,13 +250,6 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
 + (void)resetDimmedApplicationWindow;
 
 /**
- * 黑色的 StatusBarStyle，用于亮色背景
- * @note 在 iOS 13 以前  UIStatusBarStyleDefault 状态栏内容的颜色固定是黑色的，而在 iOS 13 UIStatusBarStyleDefault 会根据 user interface style 来决定状态栏的颜色，如果你需要一直黑色可以用 QMUIStatusBarStyleDarkContent 来代替以前 UIStatusBarStyleDefault 的写法
- * @return 在 iOS 13 以上返回 UIStatusBarStyleDarkContent，在 iOS 12 及以下返回 UIStatusBarStyleDefault
-*/
-@property(class, nonatomic, readonly) UIStatusBarStyle statusBarStyleDarkContent;
-
-/**
  在非 UIApplicationStateActive 的时机去设置 UIAppearance 可能引发第三方输入法 crash，因此提供这个方法判断当前是否可以更新 UIAppearance。
  详情请见 https://github.com/Tencent/QMUI_iOS/issues/1281
  */

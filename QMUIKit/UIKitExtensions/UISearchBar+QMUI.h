@@ -51,9 +51,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 支持根据 active 的值的不同来设置不一样的输入框位置偏移，当使用这个 block 后 @c qmui_textFieldMargins 无效。
 @property(nonatomic, copy) UIEdgeInsets (^qmui_textFieldMarginsBlock)(__kindof UISearchBar *searchBar, BOOL active);
 
-/// 获取 searchBar 内部的输入框的引用，在 searchBar 初始化完即可被获取
-@property(nullable, nonatomic, weak, readonly) UITextField *qmui_textField;
-
 /// 获取 searchBar 的背景 view，为一个 UIImageView 的子类 UISearchBarBackground，在 searchBar 初始化完即可被获取
 @property(nullable, nonatomic, weak, readonly) UIView *qmui_backgroundView;
 

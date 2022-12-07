@@ -20,34 +20,6 @@
 
 @implementation UITextField (QMUI)
 
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        
-        // iOS 12 及以下版本需要重写该方法才能替换
-        if (@available(iOS 13.0, *)) {
-        } else {
-            OverrideImplementation([UITextField class], NSSelectorFromString(@"_clearButtonImageForState:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^UIImage *(UITextField *selfObject, UIControlState firstArgv) {
-                    
-                    if (selfObject.qmui_clearButtonImage) {
-                        if (firstArgv & UIControlStateHighlighted) {
-                            return [selfObject.qmui_clearButtonImage qmui_imageWithAlpha:UIControlHighlightedAlpha];
-                        }
-                        return selfObject.qmui_clearButtonImage;
-                    }
-                    
-                    // call super
-                    UIImage *(*originSelectorIMP)(id, SEL, UIControlState);
-                    originSelectorIMP = (UIImage *(*)(id, SEL, UIControlState))originalIMPProvider();
-                    UIImage *result = originSelectorIMP(selfObject, originCMD, firstArgv);
-                    return result;
-                };
-            });
-        }
-    });
-}
-
 - (void)setQmui_selectedRange:(NSRange)qmui_selectedRange {
     self.selectedTextRange = [self qmui_convertUITextRangeFromNSRange:qmui_selectedRange];
 }

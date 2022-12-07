@@ -140,19 +140,6 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
         BOOL isValidatedEffect = [value isKindOfClass:QMUIThemeVisualEffect.class] && (!manager || [((QMUIThemeVisualEffect *)value).managerName isEqual:manager.name]);
         BOOL isOtherObject = ![value isKindOfClass:UIColor.class] && ![value isKindOfClass:UIImage.class] && ![value isKindOfClass:UIVisualEffect.class];// 支持所有非 color、image、effect 的其他对象，例如 NSAttributedString
         if (isOtherObject || isValidatedColor || isValidatedImage || isValidatedEffect) {
-            
-            // 修复 iOS 12 及以下版本，QMUIThemeImage 在搭配 resizable 使用的情况下可能无法跟随主题刷新的 bug
-            // https://github.com/Tencent/QMUI_iOS/issues/971
-            if (@available(iOS 13.0, *)) {
-            } else {
-                if (isValidatedImage) {
-                    QMUIThemeImage *image = (QMUIThemeImage *)value;
-                    if (image.qmui_resizable) {
-                        value = image.copy;
-                    }
-                }
-            }
-            
             [self performSelector:setter withObject:value];
         }
         EndIgnorePerformSelectorLeaksWarning
@@ -173,13 +160,7 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
                 textView.textColor = textView.textColor;
             }
         } else {
-            if (@available(iOS 12.0, *)) {
-                [self setNeedsDisplay];
-            } else {
-                // 系统 UITextView 在 iOS 12 及以上重写了 -[UIView setNeedsDisplay]，在里面会去刷新文字样式，但 iOS 11 及以下没有重写，所以这里对此作了兼容。实现思路是参考高版本系统的实现。
-                UIView *textContainerView = [self qmui_valueForKey:@"_containerView"];
-                if (textContainerView) [textContainerView setNeedsDisplay];
-            }
+            [self setNeedsDisplay];
         }
     }
     

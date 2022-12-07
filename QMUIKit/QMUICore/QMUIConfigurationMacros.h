@@ -265,12 +265,11 @@
 #define AutomaticCustomNavigationBarTransitionStyle [QMUICMI automaticCustomNavigationBarTransitionStyle] // 界面 push/pop 时是否要自动根据两个界面的 barTintColor/backgroundImage/shadowImage 的样式差异来决定是否使用自定义的导航栏效果
 #define SupportedOrientationMask                        [QMUICMI supportedOrientationMask]          // 默认支持的横竖屏方向
 #define AutomaticallyRotateDeviceOrientation            [QMUICMI automaticallyRotateDeviceOrientation]  // 是否在界面切换或 viewController.supportedOrientationMask 发生变化时自动旋转屏幕，默认为 NO（仅 iOS 15 及以前版本需要，iOS 16 系统会自动处理，该开关无意义）。
-#define DefaultStatusBarStyle                           [QMUICMI defaultStatusBarStyle]      // 默认的状态栏样式，默认值为 UIStatusBarStyleDefault，也即在 iOS 12 及以前是黑色文字，iOS 13 及以后会自动根据当前 App 是否处于 Dark Mode 切换颜色。如果你希望固定为白色，请设置为 UIStatusBarStyleLightContent，固定黑色则设置为 QMUIStatusBarStyleDarkContent。
+#define DefaultStatusBarStyle                           [QMUICMI defaultStatusBarStyle]      // 默认的状态栏样式，默认值为 UIStatusBarStyleDefault，也即在 iOS 12 及以前是黑色文字，iOS 13 及以后会自动根据当前 App 是否处于 Dark Mode 切换颜色。如果你希望固定为白色，请设置为 UIStatusBarStyleLightContent，固定黑色则设置为 UIStatusBarStyleDarkContent。
 #define NeedsBackBarButtonItemTitle                     [QMUICMI needsBackBarButtonItemTitle]       // 全局是否需要返回按钮的title，不需要则只显示一个返回image
 #define HidesBottomBarWhenPushedInitially               [QMUICMI hidesBottomBarWhenPushedInitially] // QMUICommonViewController.hidesBottomBarWhenPushed 的初始值，默认为 NO，以保持与系统默认值一致，但通常建议改为 YES，因为一般只有 tabBar 首页那几个界面要求为 NO
 #define PreventConcurrentNavigationControllerTransitions [QMUICMI preventConcurrentNavigationControllerTransitions] // PreventConcurrentNavigationControllerTransitions : 自动保护 QMUINavigationController 在上一次 push/pop 尚未结束的时候就进行下一次 push/pop 的行为，避免产生 crash
 #define NavigationBarHiddenInitially                    [QMUICMI navigationBarHiddenInitially]      // preferredNavigationBarHidden 的初始值，默认为NO
-#define ShouldFixTabBarTransitionBugInIPhoneX           [QMUICMI shouldFixTabBarTransitionBugInIPhoneX] // 是否需要自动修复 iOS 11 下，iPhone X 的设备在 push 界面时，tabBar 会瞬间往上跳的 bug
 #define ShouldFixTabBarSafeAreaInsetsBug [QMUICMI shouldFixTabBarSafeAreaInsetsBug] // 是否要对 iOS 11 及以后的版本修复当存在 UITabBar 时，UIScrollView 的 inset.bottom 可能错误的 bug（issue #218 #934），默认为 YES
 #define ShouldFixSearchBarMaskViewLayoutBug             [QMUICMI shouldFixSearchBarMaskViewLayoutBug] // 是否自动修复 UISearchController.searchBar 被当作 tableHeaderView 使用时可能出现的布局 bug(issue #950)
 #define SendAnalyticsToQMUITeam                         [QMUICMI sendAnalyticsToQMUITeam] // 是否允许在 DEBUG 模式下上报 Bundle Identifier 和 Display Name 给 QMUI 统计用

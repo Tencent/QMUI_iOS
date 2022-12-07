@@ -72,35 +72,33 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
         });
         
         // iOS 12 及以前，initWithNavigationBarClass:toolbarClass:、initWithRootViewController: 会调用 initWithNibName:bundle:，所以这两个方法在 iOS 12 下不需要再次调用 qmui_didInitialize 了。
-        if (@available(iOS 13.0, *)) {
-            OverrideImplementation([UINavigationController class], @selector(initWithNavigationBarClass:toolbarClass:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^UINavigationController *(UINavigationController *selfObject, Class firstArgv, Class secondArgv) {
-                    
-                    // call super
-                    UINavigationController *(*originSelectorIMP)(id, SEL, Class, Class);
-                    originSelectorIMP = (UINavigationController *(*)(id, SEL, Class, Class))originalIMPProvider();
-                    UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
-                    
-                    [selfObject qmui_didInitialize];
-                    
-                    return result;
-                };
-            });
-            
-            OverrideImplementation([UINavigationController class], @selector(initWithRootViewController:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-                return ^UINavigationController *(UINavigationController *selfObject, UIViewController *firstArgv) {
-                    
-                    // call super
-                    UINavigationController *(*originSelectorIMP)(id, SEL, UIViewController *);
-                    originSelectorIMP = (UINavigationController *(*)(id, SEL, UIViewController *))originalIMPProvider();
-                    UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv);
-                    
-                    [selfObject qmui_didInitialize];
-                    
-                    return result;
-                };
-            });
-        }
+        OverrideImplementation([UINavigationController class], @selector(initWithNavigationBarClass:toolbarClass:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UINavigationController *(UINavigationController *selfObject, Class firstArgv, Class secondArgv) {
+                
+                // call super
+                UINavigationController *(*originSelectorIMP)(id, SEL, Class, Class);
+                originSelectorIMP = (UINavigationController *(*)(id, SEL, Class, Class))originalIMPProvider();
+                UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+                
+                [selfObject qmui_didInitialize];
+                
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UINavigationController class], @selector(initWithRootViewController:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UINavigationController *(UINavigationController *selfObject, UIViewController *firstArgv) {
+                
+                // call super
+                UINavigationController *(*originSelectorIMP)(id, SEL, UIViewController *);
+                originSelectorIMP = (UINavigationController *(*)(id, SEL, UIViewController *))originalIMPProvider();
+                UINavigationController *result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                [selfObject qmui_didInitialize];
+                
+                return result;
+            };
+        });
         
         
         ExtendImplementationOfVoidMethodWithoutArguments([UINavigationController class], @selector(viewDidLoad), ^(UINavigationController *selfObject) {

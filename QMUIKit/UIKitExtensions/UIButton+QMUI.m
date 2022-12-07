@@ -68,14 +68,12 @@ QMUISynthesizeIdStrongProperty(qbt_statesWithImageTintColor, setQbt_statesWithIm
             };
         });
         
-        if (@available(iOS 13, *)) {
-            ExtendImplementationOfVoidMethodWithoutArguments([UIButton class], @selector(layoutSubviews), ^(UIButton *selfObject) {
-                // 临时解决 iOS 13 开启了粗体文本（Bold Text）导致 UIButton Title 显示不完整 https://github.com/Tencent/QMUI_iOS/issues/620
-                if (UIAccessibilityIsBoldTextEnabled()) {
-                    [selfObject.titleLabel sizeToFit];
-                }
-            });
-        }
+        ExtendImplementationOfVoidMethodWithoutArguments([UIButton class], @selector(layoutSubviews), ^(UIButton *selfObject) {
+            // 临时解决 iOS 13 开启了粗体文本（Bold Text）导致 UIButton Title 显示不完整 https://github.com/Tencent/QMUI_iOS/issues/620
+            if (UIAccessibilityIsBoldTextEnabled()) {
+                [selfObject.titleLabel sizeToFit];
+            }
+        });
     });
 }
 

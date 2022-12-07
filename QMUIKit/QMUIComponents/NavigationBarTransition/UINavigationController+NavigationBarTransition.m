@@ -134,22 +134,6 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                         weakNavigationController.navigationBar.qmuinb_copyStylesToBar = nil;
                     }
                         break;
-                    case QMUINavigationActionDidPop: {
-                        
-                        if (@available(iOS 13.0, *)) {
-                        } else {
-                            // iOS 12 及以下系统，在不使用自定义 titleView 的情况下，在 viewWillAppear 时通过修改 navigationBar.titleTextAttributes 来设置新界面的导航栏标题样式，push 时是生效的，但 pop 时右边界面的样式会覆盖左边界面的样式，所以 pop 时的 titleTextAttributes 改为在 did pop 时处理
-                            // 如果用自定义 titleView 则没这种问题，只是为了代码简单，时机的选择不区分是否自定义 title
-                            [appearingViewController renderNavigationBarTitleAppearanceAnimated:animated];
-                            [weakNavigationController qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
-                                // 这里要重新获取 topViewController，因为触发 pop 有两种：1. 普通完整的 pop；2.手势返回又取消。后者在 completion 里拿到的 topViewController 已经不是 completion 外面那个 appearingViewController 了，只有重新获取的 topViewController 才能代表最终可视的那个界面
-                                // https://github.com/Tencent/QMUI_iOS/issues/1210
-                                [weakNavigationController.topViewController renderNavigationBarTitleAppearanceAnimated:animated];
-                            }];
-                        }
-                    }
-                        break;
-                        
                     default:
                         break;
                 }
@@ -404,16 +388,7 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     // iOS 13 及以上，title 的更新只在 viewWillAppear 这里进行就可以了，但 iOS 12 及以下还要靠 popViewController 那边
     // iOS 12 及以下系统，在不使用自定义 titleView 的情况下，在 viewWillAppear 时通过修改 navigationBar.titleTextAttributes 来设置新界面的导航栏标题样式，push 时是生效的，但 pop 时右边界面的样式会覆盖左边界面的样式，所以 pop 时的 titleTextAttributes 改为在 did pop 时处理
     // 如果用自定义 titleView 则没这种问题，只是为了代码简单，时机的选择不区分是否自定义 title
-    BOOL shouldRenderTitle = YES;
-    if (@available(iOS 13.0, *)) {
-    } else {
-        // push/pop 时如果 animated 为 NO，那么走到这里时 push/pop 已经结束了，action 处于 unknown 状态，所以这里要把 unknown 也包含进去
-        // https://github.com/Tencent/QMUI_iOS/issues/1190
-        shouldRenderTitle = navigationController.qmui_navigationAction >= QMUINavigationActionUnknow && navigationController.qmui_navigationAction <= QMUINavigationActionPushCompleted;
-    }
-    if (shouldRenderTitle) {
-        [vc renderNavigationBarTitleAppearanceAnimated:animated];
-    }
+    [vc renderNavigationBarTitleAppearanceAnimated:animated];
 }
 
 // 仅处理导航栏标题
