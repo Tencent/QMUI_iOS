@@ -84,6 +84,18 @@
     return [result copy];
 }
 
+- (id)qmui_firstMatchWithBlock:(BOOL (NS_NOESCAPE^)(id _Nonnull))block {
+    if (!block) {
+        return nil;
+    }
+    for (id item in self) {
+        if (block(item)) {
+            return item;
+        }
+    }
+    return nil;
+}
+
 - (NSArray *)qmui_mapWithBlock:(id (NS_NOESCAPE^)(id item))block {
     if (!block) {
         return self;

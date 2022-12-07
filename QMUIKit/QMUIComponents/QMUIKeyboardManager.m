@@ -18,6 +18,7 @@
 #import "QMUILog.h"
 #import "QMUIAppearance.h"
 #import "QMUIMultipleDelegates.h"
+#import "NSArray+QMUI.h"
 
 @class QMUIKeyboardViewFrameObserver;
 @protocol QMUIKeyboardViewFrameObserverDelegate <NSObject>
@@ -630,14 +631,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 }
 
 - (BOOL)shouldReceiveShowNotification {
-   
     UIResponder *firstResponder = [self firstResponderInWindows];
-    if (self.currentResponder) {
-         // 这里有 BUG，如果点击了 webview 导致键盘下降，这个时候运行 shouldReceiveHideNotification 就会判断错误，所以如果发现是 nil 或是 WKContentView 则值不变
-        if (firstResponder && ![firstResponder isKindOfClass:NSClassFromString([NSString stringWithFormat:@"%@%@", @"WK", @"ContentView"])]) {
-            self.currentResponder = firstResponder;
-        }
-    } else {
+    // 如果点击了 webview 导致键盘下降，这个时候运行 shouldReceiveHideNotification 就会判断错误，所以如果发现是 nil 或是 WKContentView 则值不变
+    // WKContentView
+    if (!self.currentResponder || (firstResponder && ![firstResponder isKindOfClass:NSClassFromString([NSString stringWithFormat:@"%@%@", @"WK", @"ContentView"])])) {
         self.currentResponder = firstResponder;
     }
 
@@ -713,7 +710,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         keyboardMoveUserInfo.animationOptions = self.lastUserInfo ? self.lastUserInfo.animationOptions : keyboardMoveUserInfo.animationCurve<<16;
         keyboardMoveUserInfo.beginFrame = self.keyboardMoveBeginRect;
         keyboardMoveUserInfo.endFrame = endFrame;
-        keyboardMoveUserInfo.isFloatingKeyboard = CGRectGetWidth([self.class keyboardView].bounds) < CGRectGetWidth([UIScreen mainScreen].bounds);
+        keyboardMoveUserInfo.isFloatingKeyboard = keyboardView ? CGRectGetWidth(keyboardView.bounds) < CGRectGetWidth(UIApplication.sharedApplication.delegate.window.bounds) : NO;
         
         if (self.debug) {
             NSLog(@"keyboardDidMoveNotification - %@\n", self);
@@ -724,7 +721,7 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
         self.keyboardMoveBeginRect = endFrame;
         
         if (self.currentResponder) {
-            UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
+            UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.delegate.window;
             if (mainWindow) {
                 CGRect keyboardRect = keyboardMoveUserInfo.endFrame;
                 CGFloat distanceFromBottom = [QMUIKeyboardManager distanceFromMinYToBottomInView:mainWindow keyboardRect:keyboardRect];
@@ -791,39 +788,13 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     }
 }
 
-+ (UIWindow *)keyboardWindow {
-    
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        if ([self getKeyboardViewFromWindow:window]) {
-            return window;
-        }
-    }
-    
-    NSMutableArray *kbWindows = nil;
-    
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        NSString *windowName = NSStringFromClass(window.class);
-        if ([windowName isEqualToString:[NSString stringWithFormat:@"UI%@%@", @"Remote", @"KeyboardWindow"]]) {
-            // UIRemoteKeyboardWindow（iOS9 以下 UITextEffectsWindow）
-            if (!kbWindows) kbWindows = [NSMutableArray new];
-            [kbWindows addObject:window];
-        }
-    }
-    
-    if (kbWindows.count == 1) {
-        return kbWindows.firstObject;
-    }
-    
-    return nil;
-}
-
 + (CGRect)convertKeyboardRect:(CGRect)rect toView:(UIView *)view {
     
     if (CGRectIsNull(rect) || CGRectIsInfinite(rect)) {
         return rect;
     }
     
-    UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.windows.firstObject;
+    UIWindow *mainWindow = UIApplication.sharedApplication.keyWindow ?: UIApplication.sharedApplication.delegate.window;
     if (!mainWindow) {
         if (view) {
             [view convertRect:rect fromView:nil];
@@ -861,9 +832,29 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     return distance;
 }
 
++ (UIWindow *)keyboardWindow {
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+        if ([self positionedKeyboardViewInWindow:window]) {
+            return window;
+        }
+    }
+    
+    UIWindow *window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
+        return [NSStringFromClass(item.class) isEqualToString:@"UIRemoteKeyboardWindow"];
+    }];
+    if (window) {
+        return window;
+    }
+    
+    window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
+        return [NSStringFromClass(item.class) isEqualToString:@"UITextEffectsWindow"];
+    }];
+    return window;
+}
+
 + (UIView *)keyboardView {
     for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        UIView *view = [self getKeyboardViewFromWindow:window];
+        UIView *view = [self positionedKeyboardViewInWindow:window];
         if (view) {
             return view;
         }
@@ -871,29 +862,50 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     return nil;
 }
 
-+ (UIView *)getKeyboardViewFromWindow:(UIWindow *)window {
+/**
+ 从给定的 window 里寻找代表键盘当前布局位置的 view。
+ iOS 15 及以前（包括用 Xcode 13 编译的 App 运行在 iOS 16 上的场景），键盘的 UI 层级是：
+ |- UIApplication.windows
+    |- UIRemoteKeyboardWindow
+        |- UIInputSetContainerView
+            |- UIInputSetHostView - 键盘及 webView 里的输入工具栏（上下键、Done键）
+                |- _UIKBCompatInputView - 键盘主体按键
+                |- TUISystemInputAssistantView - 键盘顶部的候选词栏、emoji 键盘顶部的搜索框
+                |- _UIRemoteKeyboardPlaceholderView - webView 里的输入工具栏的占位（实际的 view 在 UITextEffectsWindow 里）
+ 
+ iOS 16 及以后（仅限用 Xcode 14 及以上版本编译的 App），UIApplication.windows 里已经不存在 UIRemoteKeyboardWindow 了，所以退而求其次，我们通过 UITextEffectsWindow 里的 UIInputSetHostView 来获取键盘的位置——这两个 window 在布局层面可以理解为镜像关系。
+ |- UIApplication.windows
+    |- UITextEffectsWindow
+        |- UIInputSetContainerView
+            |- UIInputSetHostView - 键盘及 webView 里的输入工具栏（上下键、Done键）
+                |- _UIRemoteKeyboardPlaceholderView - 整个键盘区域，包含顶部候选词栏、emoji 键盘顶部搜索栏（有时候不一定存在）
+                |- UIWebFormAccessory - webView 里的输入工具栏的占位
+                |- TUIInputAssistantHostView - 外接键盘时可能存在，此时不一定有 placeholder
+        |- UIInputSetHostView - 可能存在多个，但只有一个里面有 _UIRemoteKeyboardPlaceholderView
+ 
+ 所以只要找到 UIInputSetHostView 即可，优先从 UIRemoteKeyboardWindow 找，不存在的话则从 UITextEffectsWindow 找。
+ */
++ (UIView *)positionedKeyboardViewInWindow:(UIWindow *)window {
     
     if (!window) return nil;
     
     NSString *windowName = NSStringFromClass(window.class);
-    if (![windowName isEqualToString:@"UIRemoteKeyboardWindow"]) {
-        return nil;
+    if ([windowName isEqualToString:@"UIRemoteKeyboardWindow"]) {
+        UIView *result = [[window.subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
+            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetContainerView"];
+        }].subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
+            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetHostView"];
+        }];
+        return result;
     }
-    
-    for (UIView *view in window.subviews) {
-        NSString *viewName = NSStringFromClass(view.class);
-        if (![viewName isEqualToString:@"UIInputSetContainerView"]) {
-            continue;
-        }
-        for (UIView *subView in view.subviews) {
-            NSString *subViewName = NSStringFromClass(subView.class);
-            if (![subViewName isEqualToString:@"UIInputSetHostView"]) {
-                continue;
-            }
-            return subView;
-        }
+    if ([windowName isEqualToString:@"UITextEffectsWindow"]) {
+        UIView *result = [[window.subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
+            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetContainerView"];
+        }].subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
+            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetHostView"] && subview.subviews.count;
+        }];
+        return result;
     }
-    
     return nil;
 }
 

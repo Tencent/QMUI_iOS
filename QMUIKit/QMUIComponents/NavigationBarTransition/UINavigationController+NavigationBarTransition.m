@@ -140,11 +140,11 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                         } else {
                             // iOS 12 及以下系统，在不使用自定义 titleView 的情况下，在 viewWillAppear 时通过修改 navigationBar.titleTextAttributes 来设置新界面的导航栏标题样式，push 时是生效的，但 pop 时右边界面的样式会覆盖左边界面的样式，所以 pop 时的 titleTextAttributes 改为在 did pop 时处理
                             // 如果用自定义 titleView 则没这种问题，只是为了代码简单，时机的选择不区分是否自定义 title
-                            [appearingViewController renderNavigationTitleStyleAnimated:animated];
+                            [appearingViewController renderNavigationBarTitleAppearanceAnimated:animated];
                             [weakNavigationController qmui_animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
                                 // 这里要重新获取 topViewController，因为触发 pop 有两种：1. 普通完整的 pop；2.手势返回又取消。后者在 completion 里拿到的 topViewController 已经不是 completion 外面那个 appearingViewController 了，只有重新获取的 topViewController 才能代表最终可视的那个界面
                                 // https://github.com/Tencent/QMUI_iOS/issues/1210
-                                [weakNavigationController.topViewController renderNavigationTitleStyleAnimated:animated];
+                                [weakNavigationController.topViewController renderNavigationBarTitleAppearanceAnimated:animated];
                             }];
                         }
                     }
@@ -215,6 +215,30 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                 }
             };
         });
+        
+        if (@available(iOS 15.0, *)) {
+            // - [UINavigationBar didMoveToWindow]
+            OverrideImplementation([UINavigationBar class], @selector(didMoveToWindow), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UINavigationBar *selfObject) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD);
+                    
+                    // 由于 renderNavigationBarStyleAnimated: 里对导航栏尚未添加到 window 上（UIAppearance 尚未被应用）的情况，跳过了 renderNavigationBarAppearanceAnimated:，所以这里在导航栏添加到 window 上时刷新一下导航栏样式
+                    // https://github.com/Tencent/QMUI_iOS/issues/1437
+                    if (selfObject.window) {
+                        UINavigationController *nav = (UINavigationController *)selfObject.qmui_viewController;
+                        if (![nav isKindOfClass:UINavigationController.class]) return;
+                        UIViewController *topViewController = nav.topViewController;
+                        if (topViewController.qmui_visibleState & QMUIViewControllerVisible) {// 加上这个 visibleState 的判断是因为一个普通的 UINavigationController 被初始化后导航栏默认就有一个 didMoveToWindow 的时机，这个时机里 topViewController 尚未触发 viewWillAppear:，如果不判断 visibleState，就会导致在过早的时候去设置导航栏样式，然后 viewWillAppear: 时又设置了一次。
+                            [topViewController renderNavigationBarAppearanceAnimated:NO];
+                        }
+                    }
+                };
+            });
+        }
     });
 }
 
@@ -267,7 +291,7 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
 
 #pragma mark - 工具方法
 
-// 根据当前的viewController，统一处理导航栏底部的分隔线、状态栏的颜色
+// 根据当前的viewController，统一处理导航栏的显隐、样式
 - (void)renderNavigationBarStyleAnimated:(BOOL)animated {
     
     // 屏蔽不处于 UINavigationController 里的 viewController，以及 custom containerViewController 里的 childViewController
@@ -295,6 +319,33 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
             }
         }
     }
+    
+    // 仅当导航栏被添加到 window 之后（UIAppearance 被应用之后），业务才可以设置导航栏的样式，否则在 UINavigationBar (QMUI) 里获取到的 navigationBar.standardAppearance 是系统默认的样式而不是 App 全局配置的样式，导致后续导航栏样式都是错的。
+    // https://github.com/Tencent/QMUI_iOS/issues/1437
+    if (@available(iOS 15.0, *)) {
+        if (!navigationController.navigationBar.window) {
+            return;
+        }
+    }
+    
+    [self renderNavigationBarAppearanceAnimated:animated];
+}
+
+// 仅处理导航栏的样式，不涉及显隐
+- (void)renderNavigationBarAppearanceAnimated:(BOOL)animated {
+    
+    // 屏蔽不处于 UINavigationController 里的 viewController，以及 custom containerViewController 里的 childViewController
+    if (![self.navigationController.viewControllers containsObject:self]) {
+        return;
+    }
+    
+    if (![self conformsToProtocol:@protocol(QMUINavigationControllerAppearanceDelegate)]) {
+        return;
+    }
+    
+    // 以下用于控制 vc 的外观样式，如果某个方法有实现则用方法的返回值，否则再看配置表对应的值是否有配置，有配置就使用配置表，没配置则什么都不做，维持系统原生样式
+    UIViewController<QMUINavigationControllerAppearanceDelegate> *vc = (UIViewController<QMUINavigationControllerAppearanceDelegate> *)self;
+    UINavigationController *navigationController = vc.navigationController;
     
     // 导航栏的背景色
     if ([vc respondsToSelector:@selector(qmui_navigationBarBarTintColor)]) {
@@ -361,11 +412,12 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         shouldRenderTitle = navigationController.qmui_navigationAction >= QMUINavigationActionUnknow && navigationController.qmui_navigationAction <= QMUINavigationActionPushCompleted;
     }
     if (shouldRenderTitle) {
-        [vc renderNavigationTitleStyleAnimated:animated];
+        [vc renderNavigationBarTitleAppearanceAnimated:animated];
     }
 }
 
-- (void)renderNavigationTitleStyleAnimated:(BOOL)animated {
+// 仅处理导航栏标题
+- (void)renderNavigationBarTitleAppearanceAnimated:(BOOL)animated {
     
     // 屏蔽不处于 UINavigationController 里的 viewController，以及 custom containerViewController 里的 childViewController
     if (![self.navigationController.viewControllers containsObject:self]) {

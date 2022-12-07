@@ -22,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @required
 
+/// 获取当前 image 的标记名称，仅对 QMUIThemeImage 有效，其他 class 返回 nil。
+@property(nonatomic, copy, readonly) NSString *qmui_name;
+
 /// 获取当前 UIImage 的实际图片（返回的图片必定不是 dynamic image）
 @property(nonatomic, strong, readonly) UIImage *qmui_rawImage;
 
@@ -40,12 +43,33 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIImage *)qmui_imageWithThemeProvider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
 /**
- 生成一个动态的 image 对象，每次使用该图片时都会动态根据当前的 QMUIThemeManager name 和主题返回对应的图片。
- @param name themeManager 的 name，用于区分不同维度的主题管理器
+ 生成一个动态的 image 对象，并以 name 为其标记，每次使用该图片时都会动态根据当前的 QMUIThemeManager 主题返回对应的图片。
+ @param name 动态 image 的名称，默认为 nil
  @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值
  @return 当前主题下的实际图片，由 provider 返回
 */
-+ (UIImage *)qmui_imageWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
++ (UIImage *)qmui_imageWithName:(NSString * _Nullable)name
+                  themeProvider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
+
+/**
+ 生成一个动态的 image 对象，每次使用该图片时都会动态根据当前的 QMUIThemeManager name 和主题返回对应的图片。
+ @param managerName themeManager 的 name，用于区分不同维度的主题管理器
+ @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值
+ @return 当前主题下的实际图片，由 provider 返回
+*/
++ (UIImage *)qmui_imageWithThemeManagerName:(__kindof NSObject<NSCopying> *)managerName
+                                   provider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
+
+/**
+ 生成一个动态的 image 对象，并以 name 为其标记，每次使用该图片时都会动态根据当前的 QMUIThemeManager name 和主题返回对应的图片。
+ @param name 动态 image 的名称，默认为 nil
+ @param managerName themeManager 的 name，用于区分不同维度的主题管理器
+ @param provider 当 image 被使用时，这个 provider 会被调用，返回对应当前主题的 image 值
+ @return 当前主题下的实际图片，由 provider 返回
+*/
++ (UIImage *)qmui_imageWithName:(NSString * _Nullable)name
+               themeManagerName:(__kindof NSObject<NSCopying> *)managerName
+                       provider:(UIImage *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
 /**
  内部用，标志 QMUIThemeImage 对 UIImage (QMUI) 里使用动态颜色生成动态图片的适配 hook 是否已生效。例如在配置表这种“加载时机特别早”的场景，此时 UIImage (QMUITheme) +load 方法尚未被调用，这些 hook 还没生效，此时如果你使用 [UIImage qmui_imageWithTintColor:dynamicColor] 得到的 image 是无法自动响应 theme 切换的。

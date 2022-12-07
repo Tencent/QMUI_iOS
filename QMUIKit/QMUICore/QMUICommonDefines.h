@@ -66,6 +66,11 @@
 #define IOS15_SDK_ALLOWED YES
 #endif
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 160000
+/// 当前编译使用的 Base SDK 版本为 iOS 16.0 及以上
+#define IOS16_SDK_ALLOWED YES
+#endif
+
 #pragma mark - Clang
 
 #define ArgumentToString(macro) #macro
@@ -131,6 +136,8 @@
 
 /// 是否全面屏设备
 #define IS_NOTCHED_SCREEN [QMUIHelper isNotchedScreen]
+/// iPhone 14 Pro Max
+#define IS_67INCH_SCREEN_AND_IPHONE14 [QMUIHelper is67InchScreenAndiPhone14Later]
 /// iPhone 12 Pro Max
 #define IS_67INCH_SCREEN [QMUIHelper is67InchScreen]
 /// iPhone XS Max
@@ -181,7 +188,7 @@
 #define StatusBarHeight (UIApplication.sharedApplication.statusBarHidden ? 0 : UIApplication.sharedApplication.statusBarFrame.size.height)
 
 /// 状态栏高度(如果状态栏不可见，也会返回一个普通状态下可见的高度)
-#define StatusBarHeightConstant (UIApplication.sharedApplication.statusBarHidden ? (IS_IPAD ? (IS_NOTCHED_SCREEN ? 24 : 20) : PreferredValueForNotchedDevice(IS_LANDSCAPE ? 0 : ([[QMUIHelper deviceModel] isEqualToString:@"iPhone12,1"] ? 48 : (IS_61INCH_SCREEN_AND_IPHONE12 || IS_67INCH_SCREEN ? 47 : ((IS_54INCH_SCREEN && IOS_VERSION >= 15.0) ? 50 : 44))), 20)) : UIApplication.sharedApplication.statusBarFrame.size.height)
+#define StatusBarHeightConstant [QMUIHelper statusBarHeightConstant]
 
 /// navigationBar 的静态高度
 #define NavigationBarHeight (IS_IPAD ? (IOS_VERSION >= 12.0 ? 50 : 44) : (IS_LANDSCAPE ? PreferredValueForVisualDevice(44, 32) : 44))
@@ -193,7 +200,7 @@
 /// 同上，这里用于获取它的静态常量值
 #define NavigationContentTopConstant (StatusBarHeightConstant + NavigationBarHeight)
 
-/// 判断当前是否是处于分屏模式的 iPad
+/// 判断当前是否是处于分屏模式的 iPad 或 iOS 16.1 的台前调度模式
 #define IS_SPLIT_SCREEN_IPAD (IS_IPAD && APPLICATION_WIDTH != SCREEN_WIDTH)
 
 /// iPhoneX 系列全面屏手机的安全区域的静态值
@@ -227,7 +234,7 @@
 #define _65INCH_WIDTH [QMUIHelper screenSizeFor65Inch].width
 
 #define AS_IPAD (DynamicPreferredValueForIPad ? ((IS_IPAD && !IS_SPLIT_SCREEN_IPAD) || (IS_SPLIT_SCREEN_IPAD && APPLICATION_WIDTH >= 768)) : IS_IPAD)
-#define AS_65INCH_SCREEN (IS_67INCH_SCREEN || IS_65INCH_SCREEN || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _65INCH_WIDTH))
+#define AS_65INCH_SCREEN (IS_67INCH_SCREEN_AND_IPHONE14 || IS_67INCH_SCREEN || IS_65INCH_SCREEN || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _65INCH_WIDTH))
 #define AS_61INCH_SCREEN (IS_61INCH_SCREEN_AND_IPHONE12 || IS_61INCH_SCREEN)
 #define AS_58INCH_SCREEN (IS_58INCH_SCREEN || IS_54INCH_SCREEN || ((AS_61INCH_SCREEN || AS_65INCH_SCREEN) && IS_ZOOMEDMODE) || (IS_IPAD && DynamicPreferredValueForIPad && IPAD_SIMILAR_SCREEN_WIDTH == _58INCH_WIDTH))
 #define AS_55INCH_SCREEN (IS_55INCH_SCREEN)

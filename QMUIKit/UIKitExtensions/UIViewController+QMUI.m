@@ -535,62 +535,6 @@ static char kAssociatedObjectKey_dataLoaded;
 
 @end
 
-@implementation UIViewController (RotateDeviceOrientation)
-
-+ (void)load {
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        // 实现 AutomaticallyRotateDeviceOrientation 开关的功能
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewWillAppear:), BOOL, ^(UIViewController *selfObject, BOOL animated) {
-            if (!AutomaticallyRotateDeviceOrientation) {
-                return;
-            }
-            
-            // 某些情况下的 UIViewController 不具备决定设备方向的权利，具体请看 https://github.com/Tencent/QMUI_iOS/issues/291
-            if (![selfObject qmui_shouldForceRotateDeviceOrientation]) {
-                BOOL isRootViewController = [selfObject isViewLoaded] && selfObject.view.window.rootViewController == selfObject;
-                BOOL isChildViewController = [selfObject.tabBarController.viewControllers containsObject:selfObject] || [selfObject.navigationController.viewControllers containsObject:selfObject] || [selfObject.splitViewController.viewControllers containsObject:selfObject];
-                BOOL hasRightsOfRotateDeviceOrientaion = isRootViewController || isChildViewController;
-                if (!hasRightsOfRotateDeviceOrientaion) {
-                    return;
-                }
-            }
-            
-            
-            UIInterfaceOrientation statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
-            UIDeviceOrientation deviceOrientationBeforeChangingByHelper = [QMUIHelper sharedInstance].orientationBeforeChangingByHelper;
-            BOOL shouldConsiderBeforeChanging = deviceOrientationBeforeChangingByHelper != UIDeviceOrientationUnknown;
-            UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-            
-            // 虽然这两者的 unknow 值是相同的，但在启动 App 时可能只有其中一个是 unknown
-            if (statusBarOrientation == UIInterfaceOrientationUnknown || deviceOrientation == UIDeviceOrientationUnknown) return;
-            
-            // 如果当前设备方向和界面支持的方向不一致，则主动进行旋转
-            UIDeviceOrientation deviceOrientationToRotate = [QMUIHelper interfaceOrientationMask:selfObject.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientation] ? deviceOrientation : [QMUIHelper deviceOrientationWithInterfaceOrientationMask:selfObject.supportedInterfaceOrientations];
-            
-            // 之前没用私有接口修改过，那就按最标准的方式去旋转
-            if (!shouldConsiderBeforeChanging) {
-                if ([QMUIHelper rotateToDeviceOrientation:deviceOrientationToRotate]) {
-                    [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = deviceOrientation;
-                } else {
-                    [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = UIDeviceOrientationUnknown;
-                }
-                return;
-            }
-            
-            // 用私有接口修改过方向，但下一个界面和当前界面方向不相同，则要把修改前记录下来的那个设备方向考虑进来
-            deviceOrientationToRotate = [QMUIHelper interfaceOrientationMask:selfObject.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientationBeforeChangingByHelper] ? deviceOrientationBeforeChangingByHelper : [QMUIHelper deviceOrientationWithInterfaceOrientationMask:selfObject.supportedInterfaceOrientations];
-            [QMUIHelper rotateToDeviceOrientation:deviceOrientationToRotate];
-        });
-    });
-}
-
-- (BOOL)qmui_shouldForceRotateDeviceOrientation {
-    return NO;
-}
-
-@end
-
 @implementation UIViewController (QMUINavigationController)
 
 QMUISynthesizeBOOLProperty(qmui_navigationControllerPopGestureRecognizerChanging, setQmui_navigationControllerPopGestureRecognizerChanging)

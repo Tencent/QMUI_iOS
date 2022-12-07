@@ -180,6 +180,9 @@ extern NSString *const QMUICGColorOriginalColorBindKey;
 
 @required
 
+/// 获取当前 color 的标记名称，仅对 QMUIThemeColor 有效，其他 class 返回 nil。
+@property(nonatomic, copy, readonly) NSString *qmui_name;
+
 /// 获取当前 color 的实际颜色（返回的颜色必定不是 dynamic color）
 @property(nonatomic, strong, readonly) UIColor *qmui_rawColor;
 

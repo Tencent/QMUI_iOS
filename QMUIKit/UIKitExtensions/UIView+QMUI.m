@@ -168,7 +168,7 @@ static char kAssociatedObjectKey_tintColorDidChangeBlock;
 }
 
 static char kAssociatedObjectKey_hitTestBlock;
-- (void)setQmui_hitTestBlock:(__kindof UIView * _Nonnull (^)(CGPoint, UIEvent * _Nonnull, __kindof UIView * _Nonnull))qmui_hitTestBlock {
+- (void)setQmui_hitTestBlock:(__kindof UIView * _Nullable (^)(CGPoint, UIEvent * _Nullable, __kindof UIView * _Nullable))qmui_hitTestBlock {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_hitTestBlock, qmui_hitTestBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
     [QMUIHelper executeBlock:^{
         ExtendImplementationOfNonVoidMethodWithTwoArguments([UIView class], @selector(hitTest:withEvent:), CGPoint, UIEvent *, UIView *, ^UIView *(UIView *selfObject, CGPoint point, UIEvent *event, UIView *originReturnValue) {

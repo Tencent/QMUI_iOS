@@ -22,6 +22,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @required
 
+/// 获取当前 UIVisualEffect 的标记名称，仅对 QMUIThemeVisualEffect 有效，其他 class 返回 nil。
+@property(nonatomic, copy, readonly) NSString *qmui_name;
+
 /// 获取当前 UIVisualEffect 的实际 effect（返回的 effect 必定不是 dynamic image）
 @property(nonatomic, strong, readonly) __kindof UIVisualEffect *qmui_rawEffect;
 
@@ -40,12 +43,34 @@ NS_ASSUME_NONNULL_BEGIN
 + (UIVisualEffect *)qmui_effectWithThemeProvider:(UIVisualEffect *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 
 /**
- 生成一个动态的 UIVisualEffect 对象，每次使用该对象时都会动态根据当前的 QMUIThemeManager  name 和主题返回对应的 effect。
- @param name themeManager 的 name，用于区分不同维度的主题管理器
+ 生成一个动态的 UIVisualEffect 对象，并以 name 为其标记。每次使用该对象时都会动态根据当前的 QMUIThemeManager  主题返回对应的 effect。
+ @param name 动态 UIVisualEffect 的名称，默认为 nil
  @param provider 当 UIVisualEffect 被使用时，这个 provider 会被调用，返回对应当前主题的 effect 值。请不要在这个 block 里做耗时操作。
  @return 一个动态的 UIVisualEffect 对象，被使用时才会返回实际的 effect 效果
 */
-+ (UIVisualEffect *)qmui_effectWithThemeManagerName:(__kindof NSObject<NSCopying> *)name provider:(UIVisualEffect *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
++ (UIVisualEffect *)qmui_effectWithName:(NSString * _Nullable)name
+                          themeProvider:(UIVisualEffect *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
+
+
+/**
+ 生成一个动态的 UIVisualEffect 对象。每次使用该对象时都会动态根据当前的 QMUIThemeManager  name 和主题返回对应的 effect。
+ @param managerName themeManager 的 name，用于区分不同维度的主题管理器
+ @param provider 当 UIVisualEffect 被使用时，这个 provider 会被调用，返回对应当前主题的 effect 值。请不要在这个 block 里做耗时操作。
+ @return 一个动态的 UIVisualEffect 对象，被使用时才会返回实际的 effect 效果
+*/
++ (UIVisualEffect *)qmui_effectWithThemeManagerName:(__kindof NSObject<NSCopying> *)managerName
+                                           provider:(UIVisualEffect *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
+
+/**
+ 生成一个动态的 UIVisualEffect 对象，并以 name 为其标记。每次使用该对象时都会动态根据当前的 QMUIThemeManager  name 和主题返回对应的 effect。
+ @param name 动态 UIVisualEffect 的名称，默认为 nil
+ @param managerName themeManager 的 name，用于区分不同维度的主题管理器
+ @param provider 当 UIVisualEffect 被使用时，这个 provider 会被调用，返回对应当前主题的 effect 值。请不要在这个 block 里做耗时操作。
+ @return 一个动态的 UIVisualEffect 对象，被使用时才会返回实际的 effect 效果
+*/
++ (UIVisualEffect *)qmui_effectWithName:(NSString * _Nullable)name
+                       themeManagerName:(__kindof NSObject<NSCopying> *)managerName
+                               provider:(UIVisualEffect *(^)(__kindof QMUIThemeManager *manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme))provider;
 @end
 
 NS_ASSUME_NONNULL_END

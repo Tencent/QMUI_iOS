@@ -18,6 +18,8 @@
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
 #import "UILabel+QMUI.h"
+#import "CALayer+QMUI.h"
+#import "NSShadow+QMUI.h"
 
 @interface UISlider ()
 
@@ -106,10 +108,10 @@ static char kAssociatedObjectKey_thumbColor;
     }
 }
 
-static char kAssociatedObjectKey_thumbShadowColor;
-- (void)setQmui_thumbShadowColor:(UIColor *)qmui_thumbShadowColor {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_thumbShadowColor, qmui_thumbShadowColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    if (qmui_thumbShadowColor) {
+static char kAssociatedObjectKey_thumbShadow;
+- (void)setQmui_thumbShadow:(NSShadow *)thumbShadow {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_thumbShadow, thumbShadow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (thumbShadow) {
         [QMUIHelper executeBlock:^{
             if (@available(iOS 14.0, *)) {
                 // -[_UISlideriOSVisualElement didAddSubview:]
@@ -125,10 +127,7 @@ static char kAssociatedObjectKey_thumbShadowColor;
                         if (![slider isKindOfClass:UISlider.class]) return;
                         UIView *tv = slider.qmui_thumbView;
                         if (tv) {
-                            tv.layer.shadowColor = slider.qmui_thumbShadowColor.CGColor;
-                            tv.layer.shadowOpacity = slider.qmui_thumbShadowColor ? 1 : 0;
-                            tv.layer.shadowOffset = slider.qmui_thumbShadowOffset;
-                            tv.layer.shadowRadius = slider.qmui_thumbShadowRadius;
+                            tv.layer.qmui_shadow = slider.qmui_thumbShadow;
                         }
                     };
                 });
@@ -143,51 +142,21 @@ static char kAssociatedObjectKey_thumbShadowColor;
                         
                         UIView *tv = selfObject.qmui_thumbView;
                         if (tv) {
-                            tv.layer.shadowColor = selfObject.qmui_thumbShadowColor.CGColor;
-                            tv.layer.shadowOpacity = selfObject.qmui_thumbShadowColor ? 1 : 0;
-                            tv.layer.shadowOffset = selfObject.qmui_thumbShadowOffset;
-                            tv.layer.shadowRadius = selfObject.qmui_thumbShadowRadius;
+                            tv.layer.qmui_shadow = selfObject.qmui_thumbShadow;
                         }
                     };
                 });
             }
-        } oncePerIdentifier:@"UISlider (QMUI) thumbShadowColor"];
+        } oncePerIdentifier:@"UISlider (QMUI) thumbShadow"];
     }
     UIView *thumbView = self.qmui_thumbView;
     if (thumbView) {
-        thumbView.layer.shadowColor = qmui_thumbShadowColor.CGColor;
-        thumbView.layer.shadowOpacity = qmui_thumbShadowColor ? 1 : 0;
+        thumbView.layer.qmui_shadow = thumbShadow;
     }
 }
 
-- (UIColor *)qmui_thumbShadowColor {
-    return (UIColor *)objc_getAssociatedObject(self, &kAssociatedObjectKey_thumbShadowColor);
-}
-
-static char kAssociatedObjectKey_thumbShadowOffset;
-- (void)setQmui_thumbShadowOffset:(CGSize)qmui_thumbShadowOffset {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_thumbShadowOffset, @(qmui_thumbShadowOffset), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    UIView *thumbView = self.qmui_thumbView;
-    if (thumbView) {
-        thumbView.layer.shadowOffset = qmui_thumbShadowOffset;
-    }
-}
-
-- (CGSize)qmui_thumbShadowOffset {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_thumbShadowOffset)) CGSizeValue];
-}
-
-static char kAssociatedObjectKey_thumbShadowRadius;
-- (void)setQmui_thumbShadowRadius:(CGFloat)qmui_thumbShadowRadius {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_thumbShadowRadius, @(qmui_thumbShadowRadius), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    UIView *thumbView = self.qmui_thumbView;
-    if (thumbView) {
-        thumbView.layer.shadowRadius = qmui_thumbShadowRadius;
-    }
-}
-
-- (CGFloat)qmui_thumbShadowRadius {
-    return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_thumbShadowRadius)) qmui_CGFloatValue];
+- (NSShadow *)qmui_thumbShadow {
+    return (NSShadow *)objc_getAssociatedObject(self, &kAssociatedObjectKey_thumbShadow);
 }
 
 #pragma mark - Steps

@@ -164,7 +164,7 @@
 - (CGSize)subAccessorySpacingSize {
     if (self.subAccessoryView) {
         UIView *view = self.subAccessoryView;
-        return CGSizeMake(CGRectGetWidth(view.bounds) + self.subAccessoryViewOffset.x, CGRectGetHeight(view.bounds));
+        return CGSizeMake(CGRectGetWidth(view.frame) + self.subAccessoryViewOffset.x, CGRectGetHeight(view.frame));
     }
     return CGSizeZero;
 }

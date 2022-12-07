@@ -6,29 +6,21 @@
  * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
  */
 //
-//  QMUIBarProtocolPrivate.h
+//  NSShadow+QMUI.h
 //  QMUIKit
 //
-//  Created by molice on 2022/5/18.
+//  Created by molice on 2022/9/6.
 //
 
 #import <UIKit/UIKit.h>
-#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol QMUIBarProtocolPrivate <NSObject>
+@interface NSShadow (QMUI)
 
-@required
-@property(nonatomic, assign) BOOL qmuibar_hasSetEffect;
-@property(nonatomic, assign) BOOL qmuibar_hasSetEffectForegroundColor;
-@property(nonatomic, strong, readonly, nullable) NSArray<UIVisualEffect *> *qmuibar_backgroundEffects;
-- (void)qmuibar_updateEffect;
-@end
-
-@interface QMUIBarProtocolPrivate : NSObject
-
-+ (void)swizzleBarBackgroundViewIfNeeded;
++ (instancetype)qmui_shadowWithColor:(nullable UIColor *)shadowColor
+                        shadowOffset:(CGSize)shadowOffset
+                        shadowRadius:(CGFloat)shadowRadius;
 @end
 
 NS_ASSUME_NONNULL_END

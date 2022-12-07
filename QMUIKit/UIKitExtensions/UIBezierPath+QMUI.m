@@ -17,14 +17,15 @@
 
 @implementation UIBezierPath (QMUI)
 
-+ (UIBezierPath *)qmui_bezierPathWithRoundedRect:(CGRect)rect cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius lineWidth:(CGFloat)lineWidth {
++ (instancetype)qmui_bezierPathWithRoundedRect:(CGRect)rect cornerRadiusArray:(NSArray<NSNumber *> *)cornerRadius lineWidth:(CGFloat)lineWidth {
+    NSAssert(cornerRadius.count == 4, @"cornerRadiusArray.count should be 4.");
     CGFloat topLeftCornerRadius = cornerRadius[0].floatValue;
     CGFloat bottomLeftCornerRadius = cornerRadius[1].floatValue;
     CGFloat bottomRightCornerRadius = cornerRadius[2].floatValue;
     CGFloat topRightCornerRadius = cornerRadius[3].floatValue;
     CGFloat lineCenter = lineWidth / 2.0;
     
-    UIBezierPath *path = [UIBezierPath bezierPath];
+    UIBezierPath *path = [self bezierPath];
     [path moveToPoint:CGPointMake(topLeftCornerRadius, lineCenter)];
     [path addArcWithCenter:CGPointMake(topLeftCornerRadius, topLeftCornerRadius) radius:topLeftCornerRadius - lineCenter startAngle:M_PI * 1.5 endAngle:M_PI clockwise:NO];
     [path addLineToPoint:CGPointMake(lineCenter, CGRectGetHeight(rect) - bottomLeftCornerRadius)];
@@ -35,6 +36,16 @@
     [path addArcWithCenter:CGPointMake(CGRectGetWidth(rect) - topRightCornerRadius, topRightCornerRadius) radius:topRightCornerRadius - lineCenter startAngle:0.0 endAngle:M_PI * 1.5 clockwise:NO];
     [path closePath];
     
+    return path;
+}
+
++ (instancetype)qmui_bezierPathWithMediaTimingFunction:(CAMediaTimingFunction *)function {
+    float point1[2], point2[2];
+    [function getControlPointAtIndex:1 values:(float *)&point1];
+    [function getControlPointAtIndex:2 values:(float *)&point2];
+    UIBezierPath *path = [self bezierPath];
+    [path moveToPoint:CGPointZero];
+    [path addCurveToPoint:CGPointMake(1, 1) controlPoint1:CGPointMake(point1[0], point1[1]) controlPoint2:CGPointMake(point2[0], point2[1])];
     return path;
 }
 

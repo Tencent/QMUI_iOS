@@ -35,12 +35,14 @@ NS_ASSUME_NONNULL_BEGIN
 /// @warning 由于支持 NSCopying，增加属性时必须在 copyWithZone: 里复制一次
 @interface QMUIThemeColor : UIColor <QMUIDynamicColorProtocol>
 
+@property(nonatomic, copy, nullable) NSString *name;
 @property(nonatomic, copy) NSObject<NSCopying> *managerName;
 @property(nonatomic, copy) UIColor *(^themeProvider)(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme);
 @end
 
 @interface QMUIThemeImage : UIImage <QMUIDynamicImageProtocol, NSCopying>
 
+@property(nonatomic, copy, nullable) NSString *name;
 @property(nonatomic, copy) NSObject<NSCopying> *managerName;
 @property(nonatomic, copy) UIImage *(^themeProvider)(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme);
 @end
@@ -48,6 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @warning 由于支持 NSCopying，增加属性时必须在 copyWithZone: 里复制一次
 @interface QMUIThemeVisualEffect : NSObject <QMUIDynamicEffectProtocol>
 
+@property(nonatomic, copy, nullable) NSString *name;
 @property(nonatomic, copy) NSObject<NSCopying> *managerName;
 @property(nonatomic, copy) __kindof UIVisualEffect *(^themeProvider)(__kindof QMUIThemeManager * _Nonnull manager, __kindof NSObject<NSCopying> * _Nullable identifier, __kindof NSObject * _Nullable theme);
 @end

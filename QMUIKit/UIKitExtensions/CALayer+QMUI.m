@@ -145,6 +145,26 @@ static char kAssociatedObjectKey_maskedCorners;
     return [objc_getAssociatedObject(self, &kAssociatedObjectKey_maskedCorners) unsignedIntegerValue];
 }
 
+static char kAssociatedObjectKey_shadow;
+- (void)setQmui_shadow:(NSShadow *)shadow {
+    if (shadow) {
+        if ([shadow.shadowColor isKindOfClass:UIColor.class]) {
+            self.shadowColor = ((UIColor *)shadow.shadowColor).CGColor;
+        }
+        self.shadowOffset = shadow.shadowOffset;
+        self.shadowRadius = shadow.shadowBlurRadius;
+        self.shadowOpacity = 1;
+    } else if (self.qmui_shadow)  {
+        // 仅当之前已经用 qmui_shadow 设置过阴影时，才支持通过 qmui_shadow = nil 来去除阴影，否则什么都不做。
+        self.shadowOpacity = 0;
+    }
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_shadow, shadow, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (NSShadow *)qmui_shadow {
+    return (NSShadow *)objc_getAssociatedObject(self, &kAssociatedObjectKey_shadow);
+}
+
 - (__kindof CALayer *)qmui_layerWithName:(NSString *)name {
     if ([self.name isEqualToString:name]) return self;
     for (CALayer *sublayer in self.sublayers) {

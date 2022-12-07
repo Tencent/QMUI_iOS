@@ -46,6 +46,12 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
 /// iOS11 以下 layer 自身的 cornerRadius 一直都是 0，圆角的是通过 mask 做的，qmui_originCornerRadius 保存了当前的圆角
 @property(nonatomic, assign, readonly) CGFloat qmui_originCornerRadius;
 
+/**
+ 支持直接用一个 NSShadow 来设置各种 shadow 样式（其实就是把分散的多个 shadowXxx 接口合并为一个）。不保证样式的锁定（也即如果后续用独立的 shadowXxx 接口修改了样式则会被覆盖）。
+ @note 当使用这个接口时，shadowOpacity 会强制设置为1，阴影的半透明请通过修改 NSShadow.shadowColor 颜色里的 alpha 来控制。仅当之前已经设置过 qmui_shadow 的情况下，才可以通过 qmui_shadow = nil 来去除阴影。
+ */
+@property(nonatomic, strong, nullable) NSShadow *qmui_shadow;
+
 /// 获取指定 name 值的 layer，包括 self 和 self.sublayers，会一直往 sublayers 查找直到找到目标 layer。
 - (nullable __kindof CALayer *)qmui_layerWithName:(NSString *)name;
 

@@ -18,30 +18,22 @@
 
 @implementation QMUIHelper (QMUI_Interface)
 
-QMUISynthesizeNSIntegerProperty(orientationBeforeChangingByHelper, setOrientationBeforeChangingByHelper)
+QMUISynthesizeNSIntegerProperty(lastOrientationChangedByHelper, setLastOrientationChangedByHelper)
 
 - (void)handleDeviceOrientationNotification:(NSNotification *)notification {
     // 如果是由 setValue:forKey: 方式修改方向而走到这个 notification 的话，理论上是不需要重置为 Unknown 的，但因为在 UIViewController (QMUI) 那边会再次记录旋转前的值，所以这里就算重置也无所谓
-    [QMUIHelper sharedInstance].orientationBeforeChangingByHelper = UIDeviceOrientationUnknown;
-}
-
-+ (BOOL)rotateToDeviceOrientation:(UIDeviceOrientation)orientation {
-    if ([UIDevice currentDevice].orientation == orientation) {
-        [UIViewController attemptRotationToDeviceOrientation];
-        return NO;
-    }
-    
-    [[UIDevice currentDevice] setValue:@(orientation) forKey:@"orientation"];
-    return YES;
+    [QMUIHelper sharedInstance].lastOrientationChangedByHelper = UIDeviceOrientationUnknown;
 }
 
 + (UIDeviceOrientation)deviceOrientationWithInterfaceOrientationMask:(UIInterfaceOrientationMask)mask {
-    if ((mask & UIInterfaceOrientationMaskAll) == UIInterfaceOrientationMaskAll) {
-        return [UIDevice currentDevice].orientation;
+    if (UIDevice.currentDevice.orientation == UIDeviceOrientationUnknown) return UIDeviceOrientationUnknown;
+    
+    // mask 包含多个方向值，如果要转换的 mask 方向已经包含当前设备方向，则直接返回当前设备方向，以免外面要用这个返回值去做方向旋转时出现不必要的旋转。
+    UIInterfaceOrientationMask orientation = 1 << (UIInterfaceOrientation)UIDevice.currentDevice.orientation;
+    if (mask & orientation) {
+        return UIDevice.currentDevice.orientation;
     }
-    if ((mask & UIInterfaceOrientationMaskAllButUpsideDown) == UIInterfaceOrientationMaskAllButUpsideDown) {
-        return [UIDevice currentDevice].orientation;
-    }
+    
     if ((mask & UIInterfaceOrientationMaskPortrait) == UIInterfaceOrientationMaskPortrait) {
         return UIDeviceOrientationPortrait;
     }
@@ -122,4 +114,106 @@ QMUISynthesizeNSIntegerProperty(orientationBeforeChangingByHelper, setOrientatio
     CGFloat angle = [QMUIHelper angleForTransformWithInterfaceOrientation:orientation];
     return CGAffineTransformMakeRotation(angle);
 }
+@end
+
+@implementation UIViewController (QMUI_Interface)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        
+        // iOS 16 及以后，系统会在界面切换时自动旋转设备方向，所以不需要以下逻辑。
+        if (@available(iOS 16.0, *)) return;
+
+        // 实现 AutomaticallyRotateDeviceOrientation 开关的功能
+        OverrideImplementation([UIViewController class], @selector(viewWillAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL animated) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, animated);
+                
+                if (!AutomaticallyRotateDeviceOrientation) {
+                    return;
+                }
+                
+                // 某些情况下的 UIViewController 不具备决定设备方向的权利，具体请看 https://github.com/Tencent/QMUI_iOS/issues/291
+                if (![selfObject qmui_shouldForceRotateDeviceOrientation]) {
+                    BOOL isRootViewController = [selfObject isViewLoaded] && selfObject.view.window.rootViewController == selfObject;
+                    BOOL isChildViewController = [selfObject.tabBarController.viewControllers containsObject:selfObject] || [selfObject.navigationController.viewControllers containsObject:selfObject] || [selfObject.splitViewController.viewControllers containsObject:selfObject];
+                    BOOL hasRightsOfRotateDeviceOrientaion = isRootViewController || isChildViewController;
+                    if (!hasRightsOfRotateDeviceOrientaion) {
+                        return;
+                    }
+                }
+                
+                
+                UIInterfaceOrientation statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
+                UIDeviceOrientation lastOrientationChangedByHelper = [QMUIHelper sharedInstance].lastOrientationChangedByHelper;
+                BOOL shouldConsiderLastChanged = lastOrientationChangedByHelper != UIDeviceOrientationUnknown;
+                UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+                
+                // 虽然这两者的 unknow 值是相同的，但在启动 App 时可能只有其中一个是 unknown
+                if (statusBarOrientation == UIInterfaceOrientationUnknown || deviceOrientation == UIDeviceOrientationUnknown) return;
+                
+                // 之前没用私有接口修改过，那就按最标准的方式去旋转
+                if (!shouldConsiderLastChanged) {
+                    // 如果当前设备方向和界面支持的方向不一致，则主动进行旋转
+                    UIDeviceOrientation deviceOrientationToRotate = [QMUIHelper interfaceOrientationMask:selfObject.supportedInterfaceOrientations containsDeviceOrientation:deviceOrientation] ? deviceOrientation : [QMUIHelper deviceOrientationWithInterfaceOrientationMask:selfObject.supportedInterfaceOrientations];
+                    if ([selfObject qmui_rotateToInterfaceOrientation:(UIInterfaceOrientation)deviceOrientationToRotate]) {
+                        [QMUIHelper sharedInstance].lastOrientationChangedByHelper = deviceOrientation;
+                    } else {
+                        [QMUIHelper sharedInstance].lastOrientationChangedByHelper = UIDeviceOrientationUnknown;
+                    }
+                    return;
+                }
+                
+                // 用私有接口修改过方向，但下一个界面和当前界面方向不相同，则要把修改前记录下来的那个设备方向考虑进来
+                UIDeviceOrientation deviceOrientationToRotate = [QMUIHelper interfaceOrientationMask:selfObject.supportedInterfaceOrientations containsDeviceOrientation:lastOrientationChangedByHelper] ? lastOrientationChangedByHelper : [QMUIHelper deviceOrientationWithInterfaceOrientationMask:selfObject.supportedInterfaceOrientations];
+                [selfObject qmui_rotateToInterfaceOrientation:(UIInterfaceOrientation)deviceOrientationToRotate];
+            };
+        });
+    });
+}
+
+- (BOOL)qmui_rotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+#ifdef IOS16_SDK_ALLOWED
+    if (@available(iOS 16.0, *)) {
+        __block BOOL result = YES;
+        UIInterfaceOrientationMask mask = 1 << interfaceOrientation;
+        UIWindow *window = self.view.window ?: UIApplication.sharedApplication.delegate.window;
+        [window.windowScene requestGeometryUpdateWithPreferences:[[UIWindowSceneGeometryPreferencesIOS alloc] initWithInterfaceOrientations:mask] errorHandler:^(NSError * _Nonnull error) {
+            if (error) {
+                result = NO;
+            }
+        }];
+        return result;
+    }
+#endif
+    
+    if ([UIDevice currentDevice].orientation == (UIDeviceOrientation)interfaceOrientation) {
+        [UIViewController attemptRotationToDeviceOrientation];
+        return NO;
+    }
+    [[UIDevice currentDevice] setValue:@(interfaceOrientation) forKey:@"orientation"];
+    return YES;
+}
+
+- (void)qmui_setNeedsUpdateOfSupportedInterfaceOrientations {
+#ifdef IOS16_SDK_ALLOWED
+    if (@available(iOS 16.0, *)) {
+        [self setNeedsUpdateOfSupportedInterfaceOrientations];
+    } else
+#endif
+    {
+        UIDeviceOrientation orientation = [QMUIHelper deviceOrientationWithInterfaceOrientationMask:self.supportedInterfaceOrientations];
+        [[UIDevice currentDevice] setValue:@(orientation) forKey:@"orientation"];
+    }
+}
+
+- (BOOL)qmui_shouldForceRotateDeviceOrientation {
+    return NO;
+}
+
 @end

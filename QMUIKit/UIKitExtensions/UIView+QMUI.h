@@ -115,7 +115,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param event 事件
  @param super 的返回结果
  */
-@property(nullable, nonatomic, copy) __kindof UIView * (^qmui_hitTestBlock)(CGPoint point, UIEvent *event, __kindof UIView *originalView);
+@property(nullable, nonatomic, copy) __kindof UIView * _Nullable (^qmui_hitTestBlock)(CGPoint point, UIEvent * _Nullable event, __kindof UIView * _Nullable originalView);
 
 @end
 

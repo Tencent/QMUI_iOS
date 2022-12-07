@@ -224,7 +224,7 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
     objc_setAssociatedObject(self, &kAssociatedObjectKey_selectedBackgroundColor, qmui_selectedBackgroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     if (qmui_selectedBackgroundColor) {
         // 系统默认的 selectedBackgroundView 是 UITableViewCellSelectedBackground，无法修改自定义背景色，所以改为用普通的 UIView
-        if ([NSStringFromClass(self.selectedBackgroundView.class) hasPrefix:@"UITableViewCell"]) {
+        if (!self.selectedBackgroundView || [NSStringFromClass(self.selectedBackgroundView.class) hasPrefix:@"UITableViewCell"]) {
             self.selectedBackgroundView = [[UIView alloc] init];
         }
         self.selectedBackgroundView.backgroundColor = qmui_selectedBackgroundColor;
@@ -265,6 +265,142 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
         return nil;
     }
     return [self qmui_valueForKey:@"_accessoryView"];
+}
+
+static char kAssociatedObjectKey_configureReorderingStyleBlock;
+- (void)setQmui_configureReorderingStyleBlock:(void (^)(__kindof UITableView * _Nonnull, __kindof UITableViewCell * _Nonnull, BOOL))configureReorderingStyleBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_configureReorderingStyleBlock, configureReorderingStyleBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (configureReorderingStyleBlock) {
+        
+        static NSString *kCellKey = @"QMUI_configureCell";
+        
+        [QMUIHelper executeBlock:^{
+            // - [UITableViewCell _setReordering:]
+            // - (void) _setReordering:(BOOL)arg1; (0x1177b462a)
+            OverrideImplementation([UITableViewCell class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"set", @"Reordering", @":", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UITableViewCell *selfObject, BOOL firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if (selfObject.qmui_configureReorderingStyleBlock) {
+                        selfObject.qmui_configureReorderingStyleBlock(selfObject.qmui_tableView, selfObject, firstArgv);
+                    }
+                };
+            });
+            
+            // - [UITableViewCell _shouldMaskToBoundsWhileAnimating]
+            OverrideImplementation([UITableViewCell class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"should", @"MaskToBounds", @"WhileAnimating", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^BOOL(UITableViewCell *selfObject) {
+                    // call super
+                    BOOL (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                    BOOL result = originSelectorIMP(selfObject, originCMD);
+                    
+                    // 系统默认在做 move 动作时 cell 是 clip 的，会导致 cell.layer.shadow 不可用，所以强制取消 clip
+                    if (selfObject.qmui_configureReorderingStyleBlock) {
+                        return NO;
+                    }
+                    
+                    return result;
+                };
+            });
+            
+            Class constants = NSClassFromString([NSString qmui_stringByConcat:@"UITable", @"Constants", @"_", @"IOS"]);
+            if (@available(iOS 14.0, *)) {
+                
+                // - [UITableViewCell _setConstants:]
+                // - (void) _setConstants:(id)arg1; (0x10c36d360)
+                OverrideImplementation([UITableViewCell class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"set", @"Constants", @":", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^(UITableViewCell *selfObject, NSObject *firstArgv) {
+                        
+                        [firstArgv qmui_bindObjectWeakly:selfObject forKey:kCellKey];
+                        
+                        // call super
+                        void (*originSelectorIMP)(id, SEL, NSObject *);
+                        originSelectorIMP = (void (*)(id, SEL, NSObject *))originalIMPProvider();
+                        originSelectorIMP(selfObject, originCMD, firstArgv);
+                    };
+                });
+                
+                // - [UITableConstants_IOS defaultAlphaForReorderingCell]
+                OverrideImplementation(constants, NSSelectorFromString([NSString qmui_stringByConcat:@"default", @"Alpha", @"ForReorderingCell", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^CGFloat(NSObject *selfObject) {
+                        // call super
+                        CGFloat (*originSelectorIMP)(id, SEL);
+                        originSelectorIMP = (CGFloat (*)(id, SEL))originalIMPProvider();
+                        CGFloat result = originSelectorIMP(selfObject, originCMD);
+                        
+                        UITableViewCell *cell = [selfObject qmui_getBoundObjectForKey:kCellKey];
+                        if (cell.qmui_configureReorderingStyleBlock) {
+                            return 1;
+                        }
+                        return result;
+                    };
+                });
+                
+                // - (BOOL) reorderingCellWantsShadows; (0x109f44dbc)
+                OverrideImplementation(constants, NSSelectorFromString([NSString qmui_stringByConcat:@"reordering", @"Cell", @"WantsShadows", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^BOOL(NSObject *selfObject) {
+                        // call super
+                        BOOL (*originSelectorIMP)(id, SEL);
+                        originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                        BOOL result = originSelectorIMP(selfObject, originCMD);
+                        
+                        UITableViewCell *cell = [selfObject qmui_getBoundObjectForKey:kCellKey];
+                        if (cell.qmui_configureReorderingStyleBlock) {
+                            return NO;
+                        }
+                        return result;
+                    };
+                });
+                
+            } else {
+                
+                // - (double) defaultAlphaForReorderingCell:(id)arg1 inTableView:(id)arg2; (0x1174286d7)
+                OverrideImplementation(constants, NSSelectorFromString([NSString qmui_stringByConcat:@"default", @"Alpha", @"ForReorderingCell:", @"inTableView:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^CGFloat(NSObject *selfObject, UITableViewCell *cell, UITableView *tableView) {
+                        
+                        // call super
+                        CGFloat (*originSelectorIMP)(id, SEL, UITableViewCell *, UITableView *);
+                        originSelectorIMP = (CGFloat (*)(id, SEL, UITableViewCell *, UITableView *))originalIMPProvider();
+                        CGFloat result = originSelectorIMP(selfObject, originCMD, cell, tableView);
+                        
+                        if (cell.qmui_configureReorderingStyleBlock) {
+                            return 1;
+                        }
+                        
+                        return result;
+                    };
+                });
+                
+                // - (BOOL) reorderingCellWantsShadows:(id)arg1 inTableView:(id)arg2; (0x1155d86e5)
+                OverrideImplementation(constants, NSSelectorFromString([NSString qmui_stringByConcat:@"reordering", @"Cell", @"WantsShadows:", @"inTableView:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                    return ^BOOL(NSObject *selfObject, UITableViewCell *cell, UITableView *tableView) {
+                        
+                        // call super
+                        BOOL (*originSelectorIMP)(id, SEL, UITableViewCell *, UITableView *);
+                        originSelectorIMP = (BOOL (*)(id, SEL, UITableViewCell *, UITableView *))originalIMPProvider();
+                        BOOL result = originSelectorIMP(selfObject, originCMD, cell, tableView);
+                        
+                        if (cell.qmui_configureReorderingStyleBlock) {
+                            return NO;
+                        }
+                        
+                        return result;
+                    };
+                });
+            }
+            
+            
+        } oncePerIdentifier:@"QMUI_configureReordering"];
+    }
+}
+
+- (void (^)(__kindof UITableView * _Nonnull, __kindof UITableViewCell * _Nonnull, BOOL))qmui_configureReorderingStyleBlock {
+    return (void (^)(__kindof UITableView * _Nonnull, __kindof UITableViewCell * _Nonnull, BOOL))objc_getAssociatedObject(self, &kAssociatedObjectKey_configureReorderingStyleBlock);
 }
 
 @end

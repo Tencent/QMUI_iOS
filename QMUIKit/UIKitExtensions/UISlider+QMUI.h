@@ -34,14 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// @warning 注意在使用了 qmui_thumbSize 时请勿使用系统的 thumbTintColor，后者会导致 qmui_thumbSize 无效。
 @property(nullable, nonatomic, strong) IBInspectable UIColor *qmui_thumbColor UI_APPEARANCE_SELECTOR;
 
-/// 中间圆球的阴影颜色，默认为 nil
-@property(nullable, nonatomic, strong) IBInspectable UIColor *qmui_thumbShadowColor UI_APPEARANCE_SELECTOR;
-
-/// 中间圆球的阴影偏移值，默认为 CGSizeZero
-@property(nonatomic, assign) IBInspectable CGSize qmui_thumbShadowOffset UI_APPEARANCE_SELECTOR;
-
-/// 中间圆球的阴影扩散度，默认为 0
-@property(nonatomic, assign) IBInspectable CGFloat qmui_thumbShadowRadius UI_APPEARANCE_SELECTOR;
+/// 中间圆球的阴影样式，默认为 nil，也即没有阴影。
+@property(nullable, nonatomic, strong) NSShadow *qmui_thumbShadow UI_APPEARANCE_SELECTOR;
 
 /// 用于实现只有若干个离散数值的 slider 交互，该属性可控制圆点停靠的位置数量，默认为0，当设置为大于等于2的值时才启用该交互模式。
 @property(nonatomic, assign) NSUInteger qmui_numberOfSteps;

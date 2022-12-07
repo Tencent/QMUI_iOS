@@ -18,6 +18,7 @@
 #import "NSObject+QMUI.h"
 #import "UIView+QMUI.h"
 #import "NSArray+QMUI.h"
+#import "UINavigationItem+QMUI.h"
 
 NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
 
@@ -27,6 +28,60 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
+        // [UIKit Bug] Xcode 14 编译的 App 在 iOS 16.0 上可能存在顶部标题布局错乱
+        // https://github.com/Tencent/QMUI_iOS/issues/1457
+//#ifdef IOS16_SDK_ALLOWED 有些机子在 Xcode 13 编译的包上也有问题，所以先不做 Xcode 版本判断
+            if (@available(iOS 16.0, *)) {
+                
+                if (@available(iOS 16.1, *)) {
+                    // iOS 16.1 系统已修复
+                } else {
+                    OverrideImplementation([UINavigationItem class], @selector(setTitleView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                        return ^(UINavigationItem *selfObject, UIView *firstArgv) {
+                            
+                            // call super
+                            void (*originSelectorIMP)(id, SEL, UIView *);
+                            originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                            originSelectorIMP(selfObject, originCMD, firstArgv);
+                            
+                            if (!firstArgv) return;
+                            
+                            UINavigationBar *navigationBar = selfObject.qmui_navigationBar;
+                            [navigationBar qmuinb_fixTitleViewLayoutInIOS16];
+                        };
+                    });
+                    
+                    OverrideImplementation([UINavigationBar class], @selector(pushNavigationItem:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                        return ^(UINavigationBar *selfObject, UINavigationItem *navigationItem, BOOL animated) {
+                            
+                            if (!animated && !selfObject.topItem.titleView && navigationItem.titleView) {
+                                [selfObject qmuinb_fixTitleViewLayoutInIOS16];
+                            }
+                            
+                            // call super
+                            void (*originSelectorIMP)(id, SEL, UINavigationItem *, BOOL);
+                            originSelectorIMP = (void (*)(id, SEL, UINavigationItem *, BOOL))originalIMPProvider();
+                            originSelectorIMP(selfObject, originCMD, navigationItem, animated);
+                        };
+                    });
+                    
+                    OverrideImplementation([UINavigationBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                        return ^(UINavigationBar *selfObject, NSArray<UINavigationItem *> *items, BOOL animated) {
+                            
+                            if (!animated && !selfObject.topItem.titleView && items.lastObject.titleView) {
+                                [selfObject qmuinb_fixTitleViewLayoutInIOS16];
+                            }
+                            
+                            // call super
+                            void (*originSelectorIMP)(id, SEL, NSArray<UINavigationItem *> *, BOOL);
+                            originSelectorIMP = (void (*)(id, SEL, NSArray<UINavigationItem *> *, BOOL))originalIMPProvider();
+                            originSelectorIMP(selfObject, originCMD, items, animated);
+                        };
+                    });
+                }
+            }
+//#endif
+        
         // [UIKit Bug] iOS 12 及以上的系统，如果设置了自己的 leftBarButtonItem，且 title 很长时，则当 pop 的时候，title 会瞬间跳到左边，与 leftBarButtonItem 重叠
         // https://github.com/Tencent/QMUI_iOS/issues/1217
         if (@available(iOS 12.0, *)) {
@@ -34,7 +89,7 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
             // _UITAMICAdaptorView
             Class adaptorClass = NSClassFromString([NSString qmui_stringByConcat:@"_", @"UITAMIC", @"Adaptor", @"View", nil]);
             
-            // _UINavigationBarContentView
+            // -[_UINavigationBarContentView didAddSubview:]
             OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil]), @selector(didAddSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^(UIView *selfObject, UIView *firstArgv) {
                     
@@ -76,6 +131,7 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
                 }
             };
             
+            // // - [UINavigationBar _popNavigationItemWithTransition:]
             // - (id) _popNavigationItemWithTransition:(int)arg1; (0x1a15513a0)
             OverrideImplementation([UINavigationBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"popNavigationItem", @"With", @"Transition:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
                 return ^id(UINavigationBar *selfObject, NSInteger firstArgv) {
@@ -113,6 +169,8 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
             void (^syncAppearance)(UINavigationBar *, void(^barActionBlock)(UINavigationBarAppearance *appearance)) = ^void(UINavigationBar *navigationBar, void(^barActionBlock)(UINavigationBarAppearance *appearance)) {
                 if (!barActionBlock) return;
                 
+                // 需要确保这里获取到的 navigationBar.standardAppearance 是已经被应用了 UIAppearance 全局样式后的值，否则会出现下方 issue 描述的问题
+                // https://github.com/Tencent/QMUI_iOS/issues/1437
                 UINavigationBarAppearance *appearance = navigationBar.standardAppearance;
                 barActionBlock(appearance);
                 navigationBar.standardAppearance = appearance;
@@ -273,6 +331,24 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
                     }
                 };
             });
+            
+            // 尚未应用 UIAppearance 就已经修改 bar 的样式的场景，可能导致 bar 样式无法与全局保持一致，所以这里做个提醒
+            // https://github.com/Tencent/QMUI_iOS/issues/1451
+            // - [UINavigationBar setStandardAppearance:]
+            OverrideImplementation([UINavigationBar class], @selector(setStandardAppearance:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UINavigationBar *selfObject, UINavigationBarAppearance * firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UINavigationBarAppearance *);
+                    originSelectorIMP = (void (*)(id, SEL, UINavigationBarAppearance *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    // 这里只希望识别 UINavigationController 自带的 navigationBar，不希望处理业务自己 new 的 bar，所以用 superview 是否为 UILayoutContainerView 来作为判断条件。
+                    if ([NSStringFromClass(selfObject.superview.class) hasPrefix:@"UILayoutContainer"] && !selfObject.window) {
+                        QMUIAssert(NO, @"UINavigationBar (QMUI)", @"试图在 UINavigationBar 尚未添加到 window 上时就修改它的样式，可能导致 UINavigationBar 的样式无法与全局保持一致。");
+                    }
+                };
+            });
         }
 #endif
     });
@@ -280,6 +356,18 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
 
 - (UIView *)qmui_contentView {
     return [self valueForKeyPath:@"visualProvider.contentView"];
+}
+
+- (void)qmuinb_fixTitleViewLayoutInIOS16 {
+    // _UINavigationBarTitleControl，在每次转场动画时都会被重建，但无动画则一直都是这个实例（横竖屏切换也是同一个实例）
+    Class titleControlClass = NSClassFromString([NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"TitleControl", nil]);
+    UIView *titleControl = [self.qmui_contentView.subviews qmui_filterWithBlock:^BOOL(__kindof UIView * _Nonnull item) {
+        return [item isKindOfClass:titleControlClass];
+    }].firstObject;
+    titleControl.qmui_frameWillChangeBlock = ^CGRect(__kindof UIView * _Nonnull view, CGRect followingFrame) {
+        followingFrame = CGRectSetY(followingFrame, CGRectGetMinYVerticallyCenterInParentRect(view.superview.bounds, followingFrame));
+        return followingFrame;
+    };
 }
 
 @end

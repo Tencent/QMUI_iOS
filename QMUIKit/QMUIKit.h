@@ -13,7 +13,7 @@
 #ifndef QMUIKit_h
 #define QMUIKit_h
 
-static NSString * const QMUI_VERSION = @"4.5.1";
+static NSString * const QMUI_VERSION = @"4.6.0";
 
 #if __has_include("CAAnimation+QMUI.h")
 #import "CAAnimation+QMUI.h"
@@ -61,6 +61,10 @@ static NSString * const QMUI_VERSION = @"4.5.1";
 
 #if __has_include("NSPointerArray+QMUI.h")
 #import "NSPointerArray+QMUI.h"
+#endif
+
+#if __has_include("NSShadow+QMUI.h")
+#import "NSShadow+QMUI.h"
 #endif
 
 #if __has_include("NSString+QMUI.h")

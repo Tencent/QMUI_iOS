@@ -43,6 +43,13 @@ extern const UIEdgeInsets QMUITableViewCellSeparatorInsetsNone;
 @property(nonatomic, copy, nullable) void (^qmui_configureStyleBlock)(__kindof UITableView *tableView, __kindof UITableViewCell *cell, NSIndexPath * _Nullable indexPath);
 
 /**
+ 设置 cell 在 moveRow 时的样式（系统默认是 0.8 alpha + 上下很重的投影，且无法自定义），在 cellForRow 里设置后会在每次 move 的开始、结束时触发。通常可利用这个 block 修改 cell.qmui_shadow 样式。
+ 
+ @warning 当 cell 的这个 block 值非空时，该 cell 在 moveRow 过程中会强制设置 clipsToBounds 为 NO、alpha 为1，且移除系统添加的投影（系统的投影是 UITableView 的 subview，不是 cell 的），所以即便你设置了这个 block 但里面什么都不做，也会导致该 cell 的系统默认样式丢失。
+ */
+@property(nonatomic, copy, nullable) void (^qmui_configureReorderingStyleBlock)(__kindof UITableView *tableView, __kindof UITableViewCell *aCell, BOOL isReordering);
+
+/**
  控制 cell 的分隔线位置，做成 block 的形式是为了方便根据不同的 UITableViewStyle 以及不同的 QMUITableViewCellPosition （通过 cell.qmui_cellPosition 获取）来设置不同的分隔线缩进。分隔线默认是左右撑满整个 cell 的，通过这个 block 返回一个 insets 则会基于整个 cell 的宽度减去 insets 的值得到最终分隔线的布局，如果某些位置不需要分隔线可以返回 QMUITableViewCellSeparatorInsetsNone。
  
  @note 只有在 tableView.separatorStyle != UITableViewCellSeparatorStyleNone 时才会出现分隔线，而分隔线的颜色则由 tableView.separatorColor 控制。创建这个属性的背景是当你希望用 UITableView 系统提供的接口去控制分隔线显隐时，会发现很难调整每个 cell 内的分隔线位置及显示/隐藏逻辑（例如最后一个 cell 不要分隔线），此时你可以用这个属性来达到自定义的目的。当 block 不为空时，内部实际上会创建一条自定义的分隔线来代替系统的，系统自带的分隔线会被隐藏。

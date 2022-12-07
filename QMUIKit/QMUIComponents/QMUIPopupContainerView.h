@@ -133,7 +133,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 @property(nonatomic, strong, nullable) UIColor *maskViewBackgroundColor UI_APPEARANCE_SELECTOR;
 
 /// 浮层的阴影，默认包含箭头的形状，如果使用了 @c arrowImage 则不包含箭头。当不需要阴影时可将其置为 nil。
-@property(nonatomic, strong, nullable) UIColor *shadowColor UI_APPEARANCE_SELECTOR;
+@property(nonatomic, strong, nullable) NSShadow *shadow UI_APPEARANCE_SELECTOR;
 
 @property(nonatomic, strong, nullable) UIColor *borderColor UI_APPEARANCE_SELECTOR;
 @property(nonatomic, assign) CGFloat borderWidth UI_APPEARANCE_SELECTOR;

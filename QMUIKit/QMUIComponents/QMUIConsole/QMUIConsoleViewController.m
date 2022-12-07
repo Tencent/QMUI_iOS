@@ -255,7 +255,7 @@
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor clearColor];
     __weak __typeof(self)weakSelf = self;
-    self.view.qmui_hitTestBlock = ^__kindof UIView * _Nonnull(CGPoint point, UIEvent * _Nonnull event, __kindof UIView * _Nonnull originalView) {
+    self.view.qmui_hitTestBlock = ^__kindof UIView * _Nullable(CGPoint point, UIEvent * _Nullable event, __kindof UIView * _Nullable originalView) {
         
         QMUIPopupMenuView *menuView = weakSelf.levelMenu.isShowing ? weakSelf.levelMenu : (weakSelf.nameMenu.isShowing ? weakSelf.nameMenu : nil);
         if (menuView && ![originalView isDescendantOfView:menuView]) {

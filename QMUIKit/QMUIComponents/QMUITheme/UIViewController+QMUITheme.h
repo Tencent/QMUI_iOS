@@ -21,10 +21,11 @@ NS_ASSUME_NONNULL_BEGIN
 @interface UIViewController (QMUITheme)
 
 /**
- 当主题变化时这个方法会被调用
+ 当主题变化时这个方法会被调用，不管当前 vc 是否处于可视状态。
  @param manager 当前的主题管理对象
  @param identifier 当前主题的标志，可自行修改参数类型为目标类型
  @param theme 当前主题对象，可自行修改参数类型为目标类型
+ @warning 这个方法会在任何可能的时机被调用，不应该认为它一定比 viewDidLoad、viewWillAppear:、viewDidAppear: 晚。
  */
 - (void)qmui_themeDidChangeByManager:(QMUIThemeManager *)manager identifier:(__kindof NSObject<NSCopying> *)identifier theme:(__kindof NSObject *)theme NS_REQUIRES_SUPER;
 @end

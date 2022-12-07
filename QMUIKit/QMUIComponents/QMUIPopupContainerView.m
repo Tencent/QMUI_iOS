@@ -23,6 +23,7 @@
 #import "UIBarItem+QMUI.h"
 #import "QMUIAppearance.h"
 #import "CALayer+QMUI.h"
+#import "NSShadow+QMUI.h"
 
 @interface QMUIPopupContainerViewWindow : UIWindow
 
@@ -141,16 +142,9 @@
     }
 }
 
-- (void)setShadowColor:(UIColor *)shadowColor {
-    _shadowColor = shadowColor;
-    _backgroundLayer.shadowColor = shadowColor.CGColor;
-    if (shadowColor) {
-        _backgroundLayer.shadowOffset = CGSizeMake(0, 2);
-        _backgroundLayer.shadowOpacity = 1;
-        _backgroundLayer.shadowRadius = 10;
-    } else {
-        _backgroundLayer.shadowOpacity = 0;
-    }
+- (void)setShadow:(NSShadow *)shadow {
+    _shadow = shadow;
+    _backgroundLayer.qmui_shadow = shadow;
 }
 
 - (void)setBorderColor:(UIColor *)borderColor {
@@ -335,7 +329,13 @@
 }
 
 - (void)setSourceBarItem:(__kindof UIBarItem *)sourceBarItem {
+    if (_sourceBarItem && _sourceBarItem != sourceBarItem) {
+        _sourceBarItem.qmui_viewLayoutDidChangeBlock = nil;
+    }
+    
     _sourceBarItem = sourceBarItem;
+    if (!_sourceBarItem) return;
+    
     __weak __typeof(self)weakSelf = self;
     // 每次都要重新定义 block，否则当不同的 popup 在同一个 sourceBarItem 显示，这个 block 内部得到的 weakSelf 可能是前一次的
     sourceBarItem.qmui_viewLayoutDidChangeBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
@@ -350,7 +350,13 @@
 }
 
 - (void)setSourceView:(__kindof UIView *)sourceView {
+    if (_sourceView && _sourceView != sourceView) {
+        _sourceView.qmui_frameDidChangeBlock = nil;
+    }
+    
     _sourceView = sourceView;
+    if (!_sourceView) return;
+    
     __weak __typeof(self)weakSelf = self;
     sourceView.qmui_frameDidChangeBlock = ^(__kindof UIView * _Nonnull view, CGRect precedingFrame) {
         if (!view.window || !weakSelf.superview) return;
@@ -756,14 +762,12 @@
 /// 根据内容大小和外部限制的大小，计算出合适的self size（包含箭头）
 - (CGSize)sizeWithContentSize:(CGSize)contentSize sizeThatFits:(CGSize)sizeThatFits {
     CGFloat resultWidth = contentSize.width + UIEdgeInsetsGetHorizontalValue(self.contentEdgeInsets) + self.borderWidth * 2 + self.arrowSpacingInHorizontal;
-//    resultWidth = MIN(resultWidth, sizeThatFits.width);// 宽度不能超过传进来的size.width
     resultWidth = MAX(MIN(resultWidth, self.maximumWidth), self.minimumWidth);// 宽度必须在最小值和最大值之间
-    resultWidth = ceil(resultWidth);
+    resultWidth = flat(resultWidth);
     
     CGFloat resultHeight = contentSize.height + UIEdgeInsetsGetVerticalValue(self.contentEdgeInsets) + self.borderWidth * 2 + self.arrowSpacingInVertical;
-//    resultHeight = MIN(resultHeight, sizeThatFits.height);
     resultHeight = MAX(MIN(resultHeight, self.maximumHeight), self.minimumHeight);
-    resultHeight = ceil(resultHeight);
+    resultHeight = flat(resultHeight);
     
     return CGSizeMake(resultWidth, resultHeight);
 }
@@ -894,7 +898,7 @@
     appearance.backgroundColor = UIColorWhite;// 如果先设置了 UIView.appearance.backgroundColor，再使用最传统的 method_exchangeImplementations 交换 UIView.setBackgroundColor 方法，则会 crash。QMUI 这里是在 +initialize 时设置的，业务如果要 hook -[UIView setBackgroundColor:] 则需要比 +initialize 更早才行
     appearance.maskViewBackgroundColor = UIColorMask;
     appearance.highlightedBackgroundColor = nil;
-    appearance.shadowColor = UIColorMakeWithRGBA(0, 0, 0, .1);
+    appearance.shadow = [NSShadow qmui_shadowWithColor:UIColorMakeWithRGBA(0, 0, 0, .1) shadowOffset:CGSizeMake(0, 2) shadowRadius:10];
     appearance.borderColor = UIColorGrayLighten;
     appearance.borderWidth = PixelOne;
     appearance.cornerRadius = 10;

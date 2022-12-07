@@ -160,13 +160,28 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
     
     // 特殊的 view 特殊处理
     // iOS 10-11 里当 UILabel.attributedText 的文字颜色都相同时，也无法使用 setNeedsDisplay 刷新样式，但只要某个 range 颜色不同就没问题，iOS 9、12-13 也没问题，这个通过 UILabel (QMUIThemeCompatibility) 兼容。
-    static NSArray<Class> *needsDisplayClasses = nil;
-    if (!needsDisplayClasses) needsDisplayClasses = @[UILabel.class, UITextView.class];
-    [needsDisplayClasses enumerateObjectsUsingBlock:^(Class  _Nonnull class, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([self isKindOfClass:class]) {
-            [self setNeedsDisplay];
+    if ([self isKindOfClass:UILabel.class]) {
+        [self setNeedsDisplay];
+    }
+    
+    if ([self isKindOfClass:UITextView.class]) {
+        UITextView *textView = (UITextView *)self;
+        if (@available(iOS 16.0, *)) {
+            // iOS 16 里无法通过 setNeedsDisplay 去刷新文本颜色了，所以只能重新把 textColor 设置一遍
+            // 测过 textColor 和 typingAttributes[NSForegroundColorAttributeName] 是互通的，所以只操作任意一个即可
+            if (textView.textColor.qmui_isQMUIDynamicColor) {
+                textView.textColor = textView.textColor;
+            }
+        } else {
+            if (@available(iOS 12.0, *)) {
+                [self setNeedsDisplay];
+            } else {
+                // 系统 UITextView 在 iOS 12 及以上重写了 -[UIView setNeedsDisplay]，在里面会去刷新文字样式，但 iOS 11 及以下没有重写，所以这里对此作了兼容。实现思路是参考高版本系统的实现。
+                UIView *textContainerView = [self qmui_valueForKey:@"_containerView"];
+                if (textContainerView) [textContainerView setNeedsDisplay];
+            }
         }
-    }];
+    }
     
     // 输入框、搜索框的键盘跟随主题变化
     if (QMUICMIActivated) {

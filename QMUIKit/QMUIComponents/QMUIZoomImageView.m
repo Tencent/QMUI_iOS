@@ -28,6 +28,8 @@
 #import <CoreMedia/CoreMedia.h>
 #import <AVFoundation/AVFoundation.h>
 #import <MediaPlayer/MediaPlayer.h>
+#import "CALayer+QMUI.h"
+#import "NSShadow+QMUI.h"
 
 #define kIconsColor UIColorMakeWithRGBA(255, 255, 255, .75)
 
@@ -1044,10 +1046,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
         [self.sliderRightLabel qmui_setTheSameAppearanceAsLabel:self.sliderLeftLabel];
         [self addSubview:self.sliderRightLabel];
         
-        self.layer.shadowColor = UIColorBlack.CGColor;
-        self.layer.shadowOpacity = .5;
-        self.layer.shadowOffset = CGSizeMake(0, 0);
-        self.layer.shadowRadius = 10;
+        self.layer.qmui_shadow = [NSShadow qmui_shadowWithColor:[UIColorBlack colorWithAlphaComponent:.5] shadowOffset:CGSizeZero shadowRadius:10];
     }
     return self;
 }
