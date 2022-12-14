@@ -192,6 +192,9 @@
         
         // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 这里不会限制，而是放在 didChange 那里限制。
         if (textField.markedTextRange) {
+            if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
+                return [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:string originalValue:YES];
+            }
             return YES;
         }
         
@@ -210,6 +213,9 @@
         
         if (!string.length && range.length > 0) {
             // 允许删除，这段必须放在上面 #377、#1170 的逻辑后面
+            if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
+                return [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:string originalValue:YES];
+            }
             return YES;
         }
         
@@ -222,7 +228,7 @@
                 if ([textField lengthWithString:allowedText] <= substringLength) {
                     BOOL shouldChange = YES;
                     if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
-                        shouldChange = [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:allowedText originalValue:shouldChange];
+                        shouldChange = [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:allowedText originalValue:YES];
                     }
                     if (!shouldChange) {
                         return NO;
@@ -249,8 +255,7 @@
     }
     
     if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
-        BOOL delegateValue = [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:string originalValue:YES];
-        return delegateValue;
+        return [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:string originalValue:YES];
     }
     
     return YES;

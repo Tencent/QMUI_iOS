@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  尝试将手机旋转为指定方向。请确保传进来的参数属于 -[UIViewController supportedInterfaceOrientations] 返回的范围内，如不在该范围内会旋转失败。
  @return 旋转成功则返回 YES，旋转失败返回 NO。
- @note 请注意与 @c qmui_setNeedsUpdateOfSupportedInterfaceOrientations 的区别：如果你的界面支持N个方向，而你希望保持对这N个方向的支持的情况下把设备方向旋转为这N个方向里的某一个时，应该调用 @c qmui_rotateToInterfaceOrientation: 。如果你的界面支持N个方向，而某些情况下你希望把N换成M并触发设备的方向刷新，则请修改方向后，调用 @c qmui_setNeedsUpdateOfSupportedInterfaceOrientations 。
+ @note 请注意与 @c qmui_setNeedsUpdateOfSupportedInterfaceOrientations 的区别：如果你的界面支持N个方向，而你希望保持对这N个方向的支持的情况下把设备方向旋转为这N个方向里的某一个时，应该调用 @c qmui_rotateToInterfaceOrientation: 。如果你的界面支持N个方向，而某些情况下你希望把N换成M并触发设备的方向刷新，则请修改方向后，调用 @c qmui_setNeedsUpdateOfSupportedInterfaceOrientations 。更详细可查看：https://github.com/Tencent/QMUI_iOS/wiki/%E9%80%82%E7%94%A8%E4%BA%8E-iOS-16-%E5%8F%8A%E4%BB%A5%E4%B8%8B%E7%89%88%E6%9C%AC%E7%9A%84%E5%B1%8F%E5%B9%95%E6%96%B9%E5%90%91%E6%8E%A7%E5%88%B6%E6%96%B9%E5%BC%8F
  */
 - (BOOL)qmui_rotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 

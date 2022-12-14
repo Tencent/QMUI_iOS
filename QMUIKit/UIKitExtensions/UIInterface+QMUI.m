@@ -180,6 +180,9 @@ QMUISynthesizeNSIntegerProperty(lastOrientationChangedByHelper, setLastOrientati
 - (BOOL)qmui_rotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
 #ifdef IOS16_SDK_ALLOWED
     if (@available(iOS 16.0, *)) {
+        
+        [self setNeedsUpdateOfSupportedInterfaceOrientations];
+        
         __block BOOL result = YES;
         UIInterfaceOrientationMask mask = 1 << interfaceOrientation;
         UIWindow *window = self.view.window ?: UIApplication.sharedApplication.delegate.window;
