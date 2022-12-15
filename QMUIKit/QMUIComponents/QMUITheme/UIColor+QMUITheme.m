@@ -103,7 +103,6 @@
     CGColorSpaceRef spaceRef = CGColorSpaceCreateDeviceRGB();
     CGColorRef cgColor = CGColorCreate(spaceRef, (CGFloat[]){rawColor.qmui_red, rawColor.qmui_green, rawColor.qmui_blue, rawColor.qmui_alpha});
     CGColorSpaceRelease(spaceRef);
-    CFRelease(spaceRef);
     
     [(__bridge id)(cgColor) qmui_bindObject:self forKey:QMUICGColorOriginalColorBindKey];
     return (CGColorRef)CFAutorelease(cgColor);
