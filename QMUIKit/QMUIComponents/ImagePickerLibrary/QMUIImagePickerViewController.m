@@ -122,6 +122,16 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     [self.collectionView reloadData];
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    
+    // 在 pop 回相簿列表时重置标志位以使下次进来 picker 时 collection 可以滚动到正确的初始位置
+    // 但不能影响从 picker 进入大图的路径
+    if (self.navigationController && ![self.navigationController.viewControllers containsObject:self]) {
+        self.hasScrollToInitialPosition = NO;
+    }
+}
+
 - (void)showEmptyView {
     [super showEmptyView];
     self.emptyView.backgroundColor = self.view.backgroundColor; // 为了盖住背后的 collectionView，这里加个背景色（不盖住的话会看到 collectionView 先滚到列表顶部然后跳到列表底部）
@@ -242,10 +252,6 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
         }
         self.hasScrollToInitialPosition = YES;
     }
-}
-
-- (void)willPopInNavigationControllerWithAnimated:(BOOL)animated {
-    self.hasScrollToInitialPosition = NO;
 }
 
 #pragma mark - Getters & Setters

@@ -20,6 +20,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface UITextField (QMUI)
 
+/// UITextView 在输入框开头继续按删除按键，也会触发 shouldChange 的 delegate，但 UITextField 没这个行为，所以提供这个属性，当置为 YES 时，行为与 UITextView 一致，在输入框开头删除也会询问 delegate 并传 range(0, 0) 和空的 text。
+/// 默认为 NO。
+@property(nonatomic, assign) BOOL qmui_respondsToDeleteActionAtLeading;
+
 /// UITextField 只有 selectedTextRange 属性（在 UITextInput 协议里定义），相对而言没有 NSRange 那么直观，因此这里提供 NSRange 类型的操作方式可以主动设置光标的位置或选中的区域
 @property(nonatomic, assign) NSRange qmui_selectedRange;
 

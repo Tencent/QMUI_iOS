@@ -19,6 +19,7 @@
 #import "QMUIAppearance.h"
 #import "QMUIMultipleDelegates.h"
 #import "NSArray+QMUI.h"
+#import "UIView+QMUI.h"
 
 @class QMUIKeyboardViewFrameObserver;
 @protocol QMUIKeyboardViewFrameObserverDelegate <NSObject>
@@ -935,7 +936,10 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
 
 + (CGFloat)visibleKeyboardHeight {
     UIView *keyboardView = [self keyboardView];
-    UIWindow *keyboardWindow = keyboardView.window;
+    // iPad“侧拉”模式打开的 App，App Window 和键盘 Window 尺寸不同，如果以键盘 Window 为准则会认为键盘一直在屏幕上，从而出现误判，所以这里改为用 App Window。
+    // iPhone、iPad 全屏/分屏/台前调度，都没这个问题
+//    UIWindow *keyboardWindow = keyboardView.window;
+    UIWindow *keyboardWindow = UIApplication.sharedApplication.delegate.window;
     if (!keyboardView || !keyboardWindow) {
         return 0;
     } else {
@@ -945,7 +949,8 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
             return 0;
         }
         
-        CGRect visibleRect = CGRectIntersection(CGRectFlatted(keyboardWindow.bounds), CGRectFlatted(keyboardView.frame));
+        CGRect keyboardFrame = [keyboardWindow qmui_convertRect:keyboardView.bounds fromView:keyboardView];
+        CGRect visibleRect = CGRectIntersection(keyboardWindow.bounds, keyboardFrame);
         if (CGRectIsValidated(visibleRect)) {
             return CGRectGetHeight(visibleRect);
         }

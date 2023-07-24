@@ -283,7 +283,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign) BOOL               navigationBarHiddenInitially;
 @property(nonatomic, assign) BOOL               shouldFixTabBarSafeAreaInsetsBug;
 @property(nonatomic, assign) BOOL               shouldFixSearchBarMaskViewLayoutBug;
-@property(nonatomic, assign) BOOL               sendAnalyticsToQMUITeam;
 @property(nonatomic, assign) BOOL               dynamicPreferredValueForIPad;
 @property(nonatomic, assign) BOOL               ignoreKVCAccessProhibited API_AVAILABLE(ios(13.0));
 @property(nonatomic, assign) BOOL               adjustScrollIndicatorInsetsByContentInsetAdjustment API_AVAILABLE(ios(13.0));

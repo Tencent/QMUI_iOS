@@ -303,7 +303,7 @@ AddAccessibilityHint(NSObject *obj, NSString *hint) {
 /// 与 NSAssert 的差异在于，当你使用 NSAssert 时，整条语句默认不会出现在 Release 包里，但 QMUIAssert 依然会存在。
 /// 用法：QMUIAssert(a != b, @"UIView (QMUI)", @"xxxx")
 /// 用法：QMUIAssert(a != b, @"UIView (QMUI)", @"%@, xxx", @"xxx")
-#define QMUIAssert(_condition, _categoryName, ...) ({if (!(_condition)) {QMUILogWarn(_categoryName, __VA_ARGS__);if (QMUICMIActivated && !ShouldPrintQMUIWarnLogToConsole) {NSAssert(NO, __VA_ARGS__);}}})
+#define QMUIAssert(_condition, _categoryName, ...) ({if (!(_condition)) {QMUILogWarn(_categoryName, __VA_ARGS__);if (!QMUICMIActivated || !ShouldPrintQMUIWarnLogToConsole) {NSAssert(NO, __VA_ARGS__);}}})
 
 #pragma mark - Selector
 

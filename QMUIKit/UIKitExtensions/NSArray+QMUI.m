@@ -108,4 +108,18 @@
     return [result copy];
 }
 
+- (NSArray *)qmui_compactMapWithBlock:(id _Nullable (NS_NOESCAPE^)(id _Nonnull))block {
+    if (!block) {
+        return self;
+    }
+    NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity:self.count];
+    for (NSInteger i = 0; i < self.count; i++) {
+        id item = block(self[i]);
+        if (item) {
+            [result addObject:item];
+        }
+    }
+    return [result copy];
+}
+
 @end

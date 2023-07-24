@@ -231,7 +231,7 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
 @property(class, nonatomic, readonly) CGSize applicationSize;
 
 /**
- 静态的导航栏高度，在导航栏不可见时也会根据机型返回导航栏的固定高度
+ 静态的状态栏高度，在状态栏不可见时也会根据机型返回状态栏的固定高度
  */
 @property(class, nonatomic, readonly) CGFloat statusBarHeightConstant;
 

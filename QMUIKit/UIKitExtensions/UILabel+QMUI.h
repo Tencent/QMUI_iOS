@@ -61,6 +61,12 @@ extern const CGFloat QMUILineHeightIdentity;
 @property(nonatomic, assign) CGFloat qmui_lineHeight;
 
 /**
+ 获取当前 font.capHeight 的中心点在 label.bounds.size.height 里的y值（代表字符的中心点位置），从而令业务在试图将文本垂直居中时可以基于该属性的返回值去计算。
+ @warning 仅对单行文本有意义
+ */
+@property(nonatomic, assign, readonly) CGFloat qmui_centerOfCapHeight;
+
+/**
  * 将目标UILabel的样式属性设置到当前UILabel上
  *
  * 将会复制的样式属性包括：font、textColor、backgroundColor

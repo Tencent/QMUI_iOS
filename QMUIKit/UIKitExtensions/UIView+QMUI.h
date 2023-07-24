@@ -44,7 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property(nonatomic, assign, readonly) BOOL qmui_tintColorCustomized;
 
-/// 响应区域需要改变的大小，负值表示往外扩大，正值表示往内缩小。特别地，如果对 UISlider 使用，则扩大的是圆点的区域。
+/// 响应区域需要改变的大小，负值表示往外扩大，正值表示往内缩小。
+/// 特别地，如果对 UISlider 使用，则扩大的是圆点的区域。
+/// 当你引入了 QMUINavigationButton，它会使 UIBarButtonItem.customView 也可使用 qmui_outsideEdge（默认不可以，因为 customView 的父容器和 customView 一样大，所以 UINavigationBar 感知不到 customView 有 qmui_outsideEdge）。
 @property(nonatomic,assign) UIEdgeInsets qmui_outsideEdge;
 
 /**

@@ -759,7 +759,7 @@ static NSUInteger alertControllerCount = 0;
         }
         // 把上下的margin都加上用于跟整个屏幕的高度做比较
         CGFloat contentHeight = contentOriginY + UIEdgeInsetsGetVerticalValue(self.sheetContentMargin);
-        CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds);
+        CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds) - SafeAreaInsetsConstantForDeviceWithNotch.top - (self.isExtendBottomLayout ? 0 : SafeAreaInsetsConstantForDeviceWithNotch.bottom);
         if (contentHeight > screenSpaceHeight) {
             CGFloat cancelButtonAreaHeight = (self.cancelAction ? (CGRectGetHeight(self.cancelAction.button.bounds) + self.sheetCancelButtonMarginTop) : 0);
             screenSpaceHeight = screenSpaceHeight - cancelButtonAreaHeight - UIEdgeInsetsGetVerticalValue(self.sheetContentMargin);
@@ -789,7 +789,7 @@ static NSUInteger alertControllerCount = 0;
             contentHeight -= self.sheetContentMargin.top;
         }
         
-        self.containerView.qmui_frameApplyTransform = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.frame)) / 2, screenSpaceHeight - contentHeight - SafeAreaInsetsConstantForDeviceWithNotch.bottom, CGRectGetWidth(self.containerView.frame), contentHeight + (self.isExtendBottomLayout ? SafeAreaInsetsConstantForDeviceWithNotch.bottom : 0));
+        self.containerView.qmui_frameApplyTransform = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.frame)) / 2, SafeAreaInsetsConstantForDeviceWithNotch.top + screenSpaceHeight - contentHeight, CGRectGetWidth(self.containerView.frame), contentHeight + (self.isExtendBottomLayout ? SafeAreaInsetsConstantForDeviceWithNotch.bottom : 0));
         
         self.extendLayer.frame = CGRectFlatMake(0, CGRectGetHeight(self.containerView.bounds) - SafeAreaInsetsConstantForDeviceWithNotch.bottom - 1, CGRectGetWidth(self.containerView.bounds), SafeAreaInsetsConstantForDeviceWithNotch.bottom + 1);
     }

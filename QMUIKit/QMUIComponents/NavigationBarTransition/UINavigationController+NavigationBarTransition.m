@@ -113,7 +113,7 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
                 switch (action) {
                     case QMUINavigationActionDidPush:
                     case QMUINavigationActionWillPop:
-                    case QMUINavigationActionWillSet: {
+                    case QMUINavigationActionDidSet: {
                         BOOL shouldCustomNavigationBarTransition =
                         [weakNavigationController shouldCustomTransitionAutomaticallyForOperation:UINavigationControllerOperationPush firstViewController:disappearingViewController secondViewController:appearingViewController];
                         if (shouldCustomNavigationBarTransition) {
@@ -173,9 +173,7 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         
         OverrideImplementation([UIViewController class], @selector(viewWillLayoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIViewController *selfObject) {
-                if (selfObject.transitionNavigationBar) {
-                    [selfObject layoutTransitionNavigationBar];
-                }
+                [selfObject.transitionNavigationBar updateLayout];
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL);
@@ -233,24 +231,26 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     }
     
     _QMUITransitionNavigationBar *customBar = [[_QMUITransitionNavigationBar alloc] init];
+    customBar.parentViewController = self;
     self.transitionNavigationBar = customBar;
     
     // iOS 15 里，假 bar 在 add 到界面上时会被强制同步为 UIAppearance 的值，不管你之前是否设置过自己的样式。而且在那个 runloop 内不管你后续怎么更新 standardAppearance，都会呈现出 UIAppearance 里的统一的值的样式。所以这里一方面屏蔽 didMoveToWindow，从而避免在这时候应用 UIAppearance，另一方面要保证先 add 到界面上再同步当前导航栏的样式。
-    // 经测试只有 push 时需要这么处理，pop 没问题
+    // 经测试只有 push 或 push 动画的 set 需要这么处理，pop 及 pop 动画的 set 没问题
     // iOS 14 及以下没这种问题。
-#ifdef IOS15_SDK_ALLOWED
+    // https://github.com/Tencent/QMUI_iOS/issues/1501
     if (@available(iOS 15.0, *)) {
-        if (self.navigationController.qmui_navigationAction == QMUINavigationActionDidPush) {
+        BOOL isPush = self.navigationController.qmui_navigationAction == QMUINavigationActionDidPush;
+        BOOL isSet = self.navigationController.qmui_navigationAction == QMUINavigationActionDidSet;
+        BOOL isPopAnimation = isSet && self.navigationController.qmui_lastOperation == UINavigationControllerOperationPop;
+        if (isPush || (isSet && !isPopAnimation)) {
             customBar.shouldPreventAppearance = YES;
         }
     }
-#endif
     [self.view addSubview:customBar];
     customBar.originalNavigationBar = self.navigationController.navigationBar;// 注意这里内部不会保留真 bar 和假 bar 的 copy 关系
     if (shouldBind) {
         self.navigationController.navigationBar.qmuinb_copyStylesToBar = customBar;
     }
-    [self layoutTransitionNavigationBar];
 }
 
 - (void)removeTransitionNavigationBar {
@@ -261,15 +261,6 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
         if (self.navigationController.navigationBar.translucent && self.originContainerViewBackgroundColor) {
             [transitionCoordinator containerView].backgroundColor = self.originContainerViewBackgroundColor;
         }
-    }
-}
-
-- (void)layoutTransitionNavigationBar {
-    if (self.isViewLoaded && self.navigationController) {
-        UIView *backgroundView = self.navigationController.navigationBar.qmui_backgroundView;
-        CGRect rect = [backgroundView.superview convertRect:backgroundView.frame toView:self.view];
-        self.transitionNavigationBar.frame = CGRectSetX(rect, 0);// push/pop 过程中系统的导航栏转换过来的 x 可能是 112、-112
-        [self.view bringSubviewToFront:self.transitionNavigationBar];// 避免在后续被其他 subviews 盖住
     }
 }
 

@@ -129,6 +129,7 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
 
 - (void)qmui_didInitialize {
     [super qmui_didInitialize];
+    self.qmui_alwaysInvokeAppearanceMethods = YES;
     self.qmui_multipleDelegatesEnabled = YES;
     self.delegator = [[_QMUINavigationControllerDelegator alloc] init];
     self.delegator.navigationController = self;
@@ -313,16 +314,10 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
         animated = NO;
     }
     
-    if (self.isViewLoaded) {
-        if (self.view.window) {
-            // 增加 self.view.window 作为判断条件是因为当 UINavigationController 不可见时（例如上面盖着一个 prenset 起来的 vc，或者 nav 所在的 tabBar 切到别的 tab 去了），pushViewController 会被执行，但 navigationController:didShowViewController:animated: 的 delegate 不会被触发，导致 isViewControllerTransiting 的标志位无法正确恢复，所以做个保护。
-            // https://github.com/Tencent/QMUI_iOS/issues/261
-            if (animated) {
-                self.isViewControllerTransiting = YES;
-            }
-        } else {
-            QMUILogWarn(NSStringFromClass(self.class), @"push 的时候 navigationController 不可见（例如上面盖着一个 prenset vc，或者切到别的 tab，可能导致一些 UINavigationControllerDelegate 不会被调用");
-        }
+    // 增加 self.view.window 作为判断条件是因为当 UINavigationController 不可见时（例如上面盖着一个 present 起来的 vc，或者 nav 所在的 tabBar 切到别的 tab 去了），pushViewController 会被执行，但 navigationController:didShowViewController:animated: 的 delegate 不会被触发，导致 isViewControllerTransiting 的标志位无法正确恢复，所以做个保护。
+    // https://github.com/Tencent/QMUI_iOS/issues/261
+    if (animated && self.isViewLoaded && self.view.window) {
+        self.isViewControllerTransiting = YES;
     }
     
     // 在 push 前先设置好返回按钮的文字

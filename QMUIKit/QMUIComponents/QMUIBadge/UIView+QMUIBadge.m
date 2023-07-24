@@ -405,7 +405,8 @@ static char kAssociatedObjectKey_updatesIndicatorView;
     }
 }
 
-- (UIView *)findBarButtonImageViewIfOffsetByTopRight:(BOOL)offsetByTopRight {
+// 不管 image 还是 text 的 UIBarButtonItem 都获取内部的 _UIModernBarButton 即可
+- (UIView *)findBarButtonContentViewIfOffsetByTopRight:(BOOL)offsetByTopRight {
     NSString *classString = NSStringFromClass(self.class);
     if ([classString isEqualToString:@"UITabBarButton"]) {
         // 特别的，对于 UITabBarItem，将 imageView 作为参考 view
@@ -420,10 +421,7 @@ static char kAssociatedObjectKey_updatesIndicatorView;
     if ([classString isEqualToString:@"_UIButtonBarButton"]) {
         for (UIView *subview in self.subviews) {
             if ([subview isKindOfClass:UIButton.class]) {
-                UIView *imageView = ((UIButton *)subview).imageView;
-                if (imageView && !imageView.hidden) {
-                    return imageView;
-                }
+                return subview;
             }
         }
     }
@@ -437,9 +435,9 @@ static char kAssociatedObjectKey_updatesIndicatorView;
         BOOL offsetByTopRight = !CGPointEqualToPoint(badgeView.offset, QMUIBadgeInvalidateOffset) || !CGPointEqualToPoint(badgeView.offsetLandscape, QMUIBadgeInvalidateOffset);
         CGPoint offset = IS_LANDSCAPE ? (offsetByTopRight ? badgeView.offsetLandscape : badgeView.centerOffsetLandscape) : (offsetByTopRight ? badgeView.offset : badgeView.centerOffset);
         
-        UIView *imageView = [view findBarButtonImageViewIfOffsetByTopRight:offsetByTopRight];
-        if (imageView) {
-            CGRect imageViewFrame = [view convertRect:imageView.frame fromView:imageView.superview];
+        UIView *contentView = [view findBarButtonContentViewIfOffsetByTopRight:offsetByTopRight];
+        if (contentView) {
+            CGRect imageViewFrame = [view convertRect:contentView.frame fromView:contentView.superview];
             if (offsetByTopRight) {
                 badgeView.frame = CGRectSetXY(badgeView.frame, CGRectGetMaxX(imageViewFrame) + offset.x, CGRectGetMinY(imageViewFrame) - CGRectGetHeight(badgeView.frame) + offset.y);
             } else {

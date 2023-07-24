@@ -119,29 +119,9 @@ static BOOL QMUI_hasAppliedInitialTemplate;
         }
     }
     
-    if (IS_DEBUG && self.sendAnalyticsToQMUITeam) {
-        [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:[NSOperationQueue new] usingBlock:^(NSNotification * _Nonnull note) {
-            // 这里根据是否能成功获取到 classesref 来统计信息，以供后续确认对 classesref 为 nil 的保护是否真的必要
-            [self sendAnalyticsWithQuery:classes ? @"findByObjc=true" : nil];
-        }];
-    }
-    
     if (classes) free(classes);
     
     QMUI_hasAppliedInitialTemplate = YES;
-}
-
-- (void)sendAnalyticsWithQuery:(NSString *)query {
-    NSString *identifier = [NSBundle mainBundle].bundleIdentifier.qmui_stringByEncodingUserInputQuery;
-    NSString *displayName = ((NSString *)([NSBundle mainBundle].infoDictionary[@"CFBundleDisplayName"] ?: [NSBundle mainBundle].infoDictionary[@"CFBundleName"])).qmui_stringByEncodingUserInputQuery;
-    NSString *QMUIVersion = QMUI_VERSION.qmui_stringByEncodingUserInputQuery;// 如果不以 framework 方式引入 QMUI 的话，是无法通过 CFBundleShortVersionString 获取到 QMUI 所在的 bundle 的版本号的，所以这里改为用脚本生成的变量来获取
-    NSString *queryString = [NSString stringWithFormat:@"appId=%@&appName=%@&version=%@&platform=iOS", identifier, displayName, QMUIVersion];
-    if (query.length > 0) queryString = [NSString stringWithFormat:@"%@&%@", queryString, query];
-    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:@"https://qmuiteam.com/analytics/usageReport"]];
-    request.HTTPMethod = @"POST";
-    request.HTTPBody = [queryString dataUsingEncoding:NSUTF8StringEncoding];
-    NSURLSession *session = [NSURLSession sharedSession];
-    [[session dataTaskWithRequest:request] resume];
 }
 
 #pragma mark - Initialize default values
@@ -193,12 +173,16 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.navBarHighlightedAlpha = 0.2f;
     self.navBarDisabledAlpha = 0.2f;
     self.sizeNavBarBackIndicatorImageAutomatically = YES;
-    self.navBarCloseButtonImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavClose size:CGSizeMake(16, 16) tintColor:self.navBarTintColor];
-    
     self.navBarLoadingMarginRight = 3;
     self.navBarAccessoryViewMarginLeft = 5;
     self.navBarActivityIndicatorViewStyle = UIActivityIndicatorViewStyleGray;
-    self.navBarAccessoryViewTypeDisclosureIndicatorImage = [[UIImage qmui_imageWithShape:QMUIImageShapeTriangle size:CGSizeMake(8, 5) tintColor:self.navBarTitleColor] qmui_imageWithOrientation:UIImageOrientationDown];
+    
+    // XCTest 会在 dispatch_once 里访问 UIScreen 引发死锁，所以屏蔽掉
+    // https://github.com/Tencent/QMUI_iOS/issues/1479
+    if (!IS_XCTEST) {
+        self.navBarCloseButtonImage = [UIImage qmui_imageWithShape:QMUIImageShapeNavClose size:CGSizeMake(16, 16) tintColor:self.navBarTintColor];
+        self.navBarAccessoryViewTypeDisclosureIndicatorImage = [[UIImage qmui_imageWithShape:QMUIImageShapeTriangle size:CGSizeMake(8, 5) tintColor:self.navBarTitleColor] qmui_imageWithOrientation:UIImageOrientationDown];
+    }
     
     
     #pragma mark - Toolbar
@@ -277,7 +261,7 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.shouldPrintDefaultLog = YES;
     self.shouldPrintInfoLog = YES;
     self.shouldPrintWarnLog = YES;
-    self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG;
+    self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG && !IS_XCTEST;
     
     #pragma mark - QMUIBadge
     self.badgeOffset = QMUIBadgeInvalidateOffset;
@@ -291,7 +275,6 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.needsBackBarButtonItemTitle = YES;
     self.preventConcurrentNavigationControllerTransitions = YES;
     self.shouldFixTabBarSafeAreaInsetsBug = YES;
-    self.sendAnalyticsToQMUITeam = YES;
 }
 
 #pragma mark - Switch Setter

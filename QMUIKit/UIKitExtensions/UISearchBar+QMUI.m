@@ -17,6 +17,7 @@
 #import "QMUICore.h"
 #import "UIImage+QMUI.h"
 #import "UIView+QMUI.h"
+#import "UIViewController+QMUI.h"
 
 @interface UISearchBar ()
 
@@ -490,7 +491,10 @@ static char kAssociatedObjectKey_showsLeftAccessoryView;
                 self.qmui_leftAccessoryView.transform = CGAffineTransformMakeTranslation(-CGRectGetMaxX(self.qmui_leftAccessoryView.frame), 0);
                 [self qmuisb_updateCustomTextFieldMargins];
             } completion:^(BOOL finished) {
-                self.qmui_leftAccessoryView.hidden = YES;
+                // 快速在 show/hide 之间切换，容易出现状态错误，所以做个保护
+                if (showsLeftAccessoryView == self.qmui_showsLeftAccessoryView) {
+                    self.qmui_leftAccessoryView.hidden = YES;
+                }
                 self.qmui_leftAccessoryView.transform = CGAffineTransformIdentity;
             }];
         }
@@ -567,7 +571,10 @@ static char kAssociatedObjectKey_showsRightAccessoryView;
                 self.qmui_rightAccessoryView.transform = CGAffineTransformMakeTranslation(CGRectGetWidth(self.qmui_rightAccessoryView.superview.bounds) - CGRectGetMinX(self.qmui_rightAccessoryView.frame), 0);
                 [self qmuisb_updateCustomTextFieldMargins];
             } completion:^(BOOL finished) {
-                self.qmui_rightAccessoryView.hidden = YES;
+                // 快速在 show/hide 之间切换，容易出现状态错误，所以做个保护
+                if (showsRightAccessoryView == self.qmui_showsRightAccessoryView) {
+                    self.qmui_rightAccessoryView.hidden = YES;
+                }
                 self.qmui_rightAccessoryView.transform = CGAffineTransformIdentity;
                 self.qmui_rightAccessoryView.alpha = 1;
             }];
@@ -814,6 +821,9 @@ static char kAssociatedObjectKey_rightAccessoryViewMargins;
     }
 }
 
+// UISearchController.searchBar 作为 UITableView.tableHeaderView 时，进入搜索状态，搜索结果列表顶部有一大片空白
+// 不要让系统自适应了，否则在搜索结果（navigationBar 隐藏）push 进入下一级界面（navigationBar 显示）过程中系统自动调整的 contentInset 会跳来跳去
+// https://github.com/Tencent/QMUI_iOS/issues/1473
 - (void)qmuisb_fixSearchResultsScrollViewContentInsetIfNeeded {
     if (!self.qmuisb_shouldFixLayoutWhenUsedAsTableHeaderView) return;
     if (self.qmui_isActive) {
@@ -824,8 +834,10 @@ static char kAssociatedObjectKey_rightAccessoryViewMargins;
             [view isKindOfClass:UIScrollView.class] ? view :
             [view.subviews.firstObject isKindOfClass:UIScrollView.class] ? view.subviews.firstObject : nil;
             UIView *searchBarContainerView = self.superview;
-            if (scrollView && searchBarContainerView) {
-                scrollView.contentInset = UIEdgeInsetsMake(searchBarContainerView.qmui_height, 0, 0, 0);
+            if (scrollView && scrollView.contentInsetAdjustmentBehavior == UIScrollViewContentInsetAdjustmentNever && searchBarContainerView) {
+                CGFloat containerHeight = CGRectGetHeight(searchBarContainerView.frame);
+                scrollView.contentInset = UIEdgeInsetsMake(containerHeight, 0, scrollView.safeAreaInsets.bottom, 0);
+                scrollView.scrollIndicatorInsets = scrollView.contentInset;
             }
         }
     }

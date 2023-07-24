@@ -23,7 +23,13 @@
 
 @interface _QMUITransitionNavigationBar : UINavigationBar
 
+@property(nonatomic, weak) UIViewController *parentViewController;
+
 // 建立假 bar 到真 bar 的关系，内部会通过 qmuinb_copyStylesToBar 同时设置真 bar 到假 bar 的关系
 @property(nonatomic, weak) UINavigationBar *originalNavigationBar;
+
 @property(nonatomic, assign) BOOL shouldPreventAppearance;
+
+// 根据当前的系统导航栏布局，刷新自身在 vc.view 上的布局
+- (void)updateLayout;
 @end

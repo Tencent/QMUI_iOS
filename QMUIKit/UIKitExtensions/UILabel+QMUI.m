@@ -42,9 +42,18 @@ const CGFloat QMUILineHeightIdentity = -1000;
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
             SEL swizzledSelector = NSSelectorFromString([@"qmuilb_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+            ExchangeImplementations([UILabel class], originalSelector, swizzledSelector);
         }
     });
+}
+
+- (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor {
+    BeginIgnoreClangWarning(-Wunused-value)
+    [self init];
+    EndIgnoreClangWarning
+    self.font = font;
+    self.textColor = textColor;
+    return self;
 }
 
 - (void)qmuilb_setText:(NSString *)text {
@@ -240,13 +249,14 @@ static char kAssociatedObjectKey_lineHeight;
     return !!objc_getAssociatedObject(self, &kAssociatedObjectKey_lineHeight);
 }
 
-- (instancetype)qmui_initWithFont:(UIFont *)font textColor:(UIColor *)textColor {
-    BeginIgnoreClangWarning(-Wunused-value)
-    [self init];
-    EndIgnoreClangWarning
-    self.font = font;
-    self.textColor = textColor;
-    return self;
+- (CGFloat)qmui_centerOfCapHeight {
+    NSRange range = NSMakeRange(0, self.attributedText.length);
+    UIFont *font = [self.attributedText attribute:NSFontAttributeName atIndex:0 effectiveRange:&range];
+    if (!font) {
+        font = self.font;
+    }
+    CGFloat center = CGRectGetHeight(self.bounds) + font.descender - font.capHeight / 2;
+    return center;
 }
 
 - (void)qmui_setTheSameAppearanceAsLabel:(UILabel *)label {
@@ -293,6 +303,7 @@ static char kAssociatedObjectKey_showPrincipalLines;
         
         if (!self.qmui_layoutSubviewsBlock) {
             self.qmui_layoutSubviewsBlock = ^(UILabel * _Nonnull label) {
+                if (!label.attributedText.length) return;
                 if (!label.qmuilb_principalLineLayer || label.qmuilb_principalLineLayer.hidden)  return;
                 
                 label.qmuilb_principalLineLayer.frame  = label.bounds;

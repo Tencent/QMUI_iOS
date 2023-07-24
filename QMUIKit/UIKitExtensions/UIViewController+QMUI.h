@@ -147,6 +147,7 @@ typedef NS_OPTIONS(NSUInteger, QMUIViewControllerVisibleState) {
 @interface UIViewController (Data)
 
 /// 当数据加载完（什么时候算是“加载完”需要通过属性 qmui_dataLoaded 来设置）并且界面已经走过 viewDidAppear: 时，这个 block 会被执行，执行结束后 block 会被清空，以避免重复调用。
+/// @warning 注意，如果你在 viewWillAppear: 里设置该 block，则要留意在下一级界面手势返回触发后又取消，会触发前一个界面的 viewWillAppear:、viewDidDisappear:，过程中不会触发 viewDidAppear:，所以这次设置的 block 并没有人消费它。
 @property(nullable, nonatomic, copy) void (^qmui_didAppearAndLoadDataBlock)(void);
 
 /// 请在你的数据加载完成时手动修改这个属性为 YES，如果此时界面已经走过 viewDidAppear:，则 qmui_didAppearAndLoadDataBlock 会被立即执行，如果此时界面尚未走 viewDidAppear:，则等到 viewDidAppear: 时，qmui_didAppearAndLoadDataBlock 就会被自动执行。

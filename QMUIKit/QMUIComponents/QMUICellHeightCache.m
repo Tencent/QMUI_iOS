@@ -222,7 +222,7 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); ++index) {
             SEL originalSelector = selectors[index];
             SEL swizzledSelector = NSSelectorFromString([@"qmuiTableCache_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+            ExchangeImplementations([UITableView class], originalSelector, swizzledSelector);
         }
     });
 }
@@ -526,7 +526,7 @@ QMUISynthesizeIdStrongProperty(qmuiCollectionCache_allIndexPathHeightCaches, set
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
             SEL swizzledSelector = NSSelectorFromString([@"qmuiCollectionCache_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+            ExchangeImplementations([UICollectionView class], originalSelector, swizzledSelector);
         }
     });
 }

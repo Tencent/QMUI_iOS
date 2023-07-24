@@ -501,10 +501,8 @@ const CGFloat QMUIButtonCornerRadiusAdjustsBounds = -1;
 
 - (void)setEnabled:(BOOL)enabled {
     [super setEnabled:enabled];
-    if (!enabled && self.adjustsButtonWhenDisabled) {
-        self.alpha = ButtonDisabledAlpha;
-    } else {
-        self.alpha = 1;
+    if (self.adjustsButtonWhenDisabled) {
+        self.alpha = enabled ? 1 : ButtonDisabledAlpha;
     }
 }
 

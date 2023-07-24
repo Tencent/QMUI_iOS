@@ -52,6 +52,18 @@ typedef NS_OPTIONS (NSUInteger, QMUICornerMask) {
  */
 @property(nonatomic, strong, nullable) NSShadow *qmui_shadow;
 
+/**
+ 只有当前 layer 里被返回的路径包裹住的内容才能被看到，路径之外的区域被裁剪掉。
+ 该 block 会在 layer 大小发生变化时被调用，所以请根据 aLayer.bounds 计算实时的路径。
+ */
+@property(nonatomic, copy, nullable) UIBezierPath * (^qmui_maskPathBlock)(__kindof CALayer *aLayer);
+
+/**
+ 与 qmui_maskPathBlock 相反，返回的路径会将当前 layer 的内容裁切掉，例如假设返回一个 layer 中间的矩形路径，则这个矩形会被挖空，其他区域正常显示。
+ 该 block 会在 layer 大小发生变化时被调用，所以请根据 aLayer.bounds 计算实时的路径。
+ */
+@property(nonatomic, copy, nullable) UIBezierPath * (^qmui_evenOddMaskPathBlock)(__kindof CALayer *aLayer);
+
 /// 获取指定 name 值的 layer，包括 self 和 self.sublayers，会一直往 sublayers 查找直到找到目标 layer。
 - (nullable __kindof CALayer *)qmui_layerWithName:(NSString *)name;
 

@@ -24,6 +24,8 @@
 #import "NSString+QMUI.h"
 #import "UINavigationController+QMUI.h"
 #import "UINavigationItem+QMUI.h"
+#import "UINavigationBar+QMUI.h"
+#import "NSArray+QMUI.h"
 
 typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
     QMUINavigationButtonPositionNone = -1,  // 不处于navigationBar最左（右）边的按钮，则使用None。用None则不会在alignmentRectInsets里调整位置
@@ -107,6 +109,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         }
             break;
         case QMUINavigationButtonTypeBack: {
+            self.qmui_outsideEdge = UIEdgeInsetsMake(-12, -12, -24, -24);
             UIImage *backIndicatorImage = UINavigationBar.qmui_appearanceConfigured.backIndicatorImage;
             if (!backIndicatorImage) {
                 // 配置表没有自定义的图片，则按照系统的返回按钮图片样式创建一张，颜色按照 tintColor 来
@@ -362,7 +365,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         for (NSUInteger index = 0; index < sizeof(selectors) / sizeof(SEL); index++) {
             SEL originalSelector = selectors[index];
             SEL swizzledSelector = NSSelectorFromString([@"qmui_" stringByAppendingString:NSStringFromSelector(originalSelector)]);
-            ExchangeImplementations([self class], originalSelector, swizzledSelector);
+            ExchangeImplementations([UINavigationItem class], originalSelector, swizzledSelector);
         }
     });
 }
@@ -477,6 +480,48 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             };
         });
         
+        // 系统的 UIBarButtonItem 响应区域比较大，如果用 customView 则响应区域只有 customView.frame 的大小，这里专门扩大它
+        // 对没用 customView 的不处理
+        OverrideImplementation([UINavigationBar class], @selector(hitTest:withEvent:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIView *(UINavigationBar *selfObject, CGPoint firstArgv, UIEvent *secondArgv) {
+                
+                // call super
+                UIView * (*originSelectorIMP)(id, SEL, CGPoint, UIEvent *);
+                originSelectorIMP = (UIView * (*)(id, SEL, CGPoint, UIEvent *))originalIMPProvider();
+                UIView * result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+                
+                BOOL hitNothing = !result || result == selfObject.qmui_contentView || [NSStringFromClass(result.class) containsString:@"StackView"];
+                if (!hitNothing) return result;
+                
+                NSMutableArray<UIView *> *customViews = [[NSMutableArray alloc] init];
+                if (selfObject.topItem.titleView) {
+                    [customViews addObject:selfObject.topItem.titleView];
+                }
+                [customViews addObjectsFromArray:[selfObject.topItem.leftBarButtonItems qmui_compactMapWithBlock:^id _Nullable(UIBarButtonItem * _Nonnull item) {
+                    return item.customView ?: nil;
+                }]];
+                [customViews addObjectsFromArray:[selfObject.topItem.rightBarButtonItems qmui_compactMapWithBlock:^id _Nullable(UIBarButtonItem * _Nonnull item) {
+                    return item.customView ?: nil;
+                }]];
+                UIView *hitTestingView = [customViews qmui_firstMatchWithBlock:^BOOL(UIView * _Nonnull item) {
+                    if (!CGRectIsEmpty(item.frame) && !item.hidden && item.alpha > 0.01 && item.window) {
+                        if ([item isKindOfClass:UIControl.class] && !((UIControl *)item).enabled) {
+                            return NO;
+                        }
+                        CGRect rect = [selfObject convertRect:item.bounds fromView:item];
+                        rect = CGRectInsetEdges(rect, item.qmui_outsideEdge);
+                        if (CGRectContainsPoint(rect, firstArgv)) {
+                            return YES;
+                        }
+                    }
+                    return NO;
+                }];
+                if (hitTestingView) {
+                    return hitTestingView;
+                }
+                return result;
+            };
+        });
     });
 }
 

@@ -682,7 +682,7 @@ static char kAssociatedObjectKey_shouldShowDebugColor;
                     [selfObject renderColorWithSubviews:selfObject.subviews];
                 } else if (objc_getAssociatedObject(selfObject, &kAssociatedObjectKey_shouldShowDebugColor)) {
                     // 设置过 qmui_shouldShowDebugColor，但当前的值为 NO 的情况，则无脑清空所有背景色（可能会把业务自己设置的背景色去掉，由于是调试功能，无所谓）
-                    selfObject.backgroundColor = nil;
+                    selfObject.backgroundColor = UIColor.clearColor;
                     [selfObject renderColorWithSubviews:selfObject.subviews];
                 }
             });
@@ -764,7 +764,7 @@ static char kAssociatedObjectKey_sizeThatFitsBlock;
         if (view.qmui_shouldShowDebugColor) {
             view.backgroundColor = [view debugColor];
         } else {
-            view.backgroundColor = nil;
+            view.backgroundColor = UIColor.clearColor;
         }
     }
 }

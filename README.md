@@ -5,8 +5,6 @@
 QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设计目的是用于辅助快速搭建一个具备基本设计还原效果的 iOS 项目，同时利用自身提供的丰富控件及兼容处理，
 让开发者能专注于业务需求而无需耗费精力在基础代码的设计上。不管是新项目的创建，或是已有项目的维护，均可使开发效率和项目质量得到大幅度提升。
 
-官网：[http://qmuiteam.com/ios](http://qmuiteam.com/ios)
-
 [![QMUI Team Name](https://img.shields.io/badge/Team-QMUI-brightgreen.svg?style=flat)](https://github.com/QMUI "QMUI Team")
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://opensource.org/licenses/MIT "Feel free to contribute.")
 
@@ -37,7 +35,9 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 
 ## 使用方法
 
-请查看官网的[开始使用](http://qmuiteam.com/ios/page/start.html)。
+```
+pod 'QMUIKit'
+```
 
 ## 代码示例
 
@@ -57,9 +57,7 @@ QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设�
 
 ## 隐私政策
 
-如果你想了解使用 QMUI iOS 过程中涉及到的隐私政策，可阅读：[QMUI iOS SDK 个人信息保护规则](https://qmuiteam.com/ios/privacy/)。
-
-其中特别注意的是，从 2.8.0 版本开始，QMUIKit 默认会在 Debug 模式下启动 App 时发送当前 App 的 Bundle Identifier 和 Display Name 给 QMUI 作统计用，Release 下不会发送。你也可以通过配置表的 `SendAnalyticsToQMUITeam` 开关将统计关闭。统计的代码在 [QMUIConfiguration.m:134-145](https://github.com/Tencent/QMUI_iOS/blob/master/QMUIKit/QMUICore/QMUIConfiguration.m#L134-L145)，可直接查看。
+如果你想了解使用 QMUI iOS 过程中涉及到的隐私政策，可阅读：[QMUI iOS SDK 个人信息保护规则](https://github.com/Tencent/QMUI_iOS/wiki/QMUI-iOS-SDK%E4%B8%AA%E4%BA%BA%E4%BF%A1%E6%81%AF%E4%BF%9D%E6%8A%A4%E8%A7%84%E5%88%99)。
 
 ## 设计资源
 

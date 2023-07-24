@@ -165,6 +165,65 @@ static char kAssociatedObjectKey_shadow;
     return (NSShadow *)objc_getAssociatedObject(self, &kAssociatedObjectKey_shadow);
 }
 
+static char kAssociatedObjectKey_maskPathBlock;
+- (void)setQmui_maskPathBlock:(UIBezierPath * _Nonnull (^)(__kindof CALayer * _Nonnull))qmui_maskPathBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_maskPathBlock, qmui_maskPathBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_maskPathBlock) {
+        [CALayer qmui_hookMaskIfNeeded];
+        CAShapeLayer *mask = CAShapeLayer.layer;
+        self.mask = mask;
+        [self setNeedsLayout];
+    } else {
+        self.mask = nil;
+    }
+}
+
+- (UIBezierPath * _Nonnull (^)(__kindof CALayer * _Nonnull))qmui_maskPathBlock {
+    return (UIBezierPath * _Nonnull (^)(__kindof CALayer * _Nonnull))objc_getAssociatedObject(self, &kAssociatedObjectKey_maskPathBlock);
+}
+
+static char kAssociatedObjectKey_evenOddMaskPathBlock;
+- (void)setQmui_evenOddMaskPathBlock:(UIBezierPath * _Nonnull (^)(__kindof CALayer * _Nonnull))qmui_evenOddMaskPathBlock {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_evenOddMaskPathBlock, qmui_evenOddMaskPathBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_evenOddMaskPathBlock) {
+        [CALayer qmui_hookMaskIfNeeded];
+        CAShapeLayer *mask = CAShapeLayer.layer;
+        mask.fillRule = kCAFillRuleEvenOdd;
+        self.mask = mask;
+        [self setNeedsLayout];
+    } else {
+        self.mask = nil;
+    }
+}
+
+- (UIBezierPath * _Nonnull (^)(__kindof CALayer * _Nonnull))qmui_evenOddMaskPathBlock {
+    return (UIBezierPath * _Nonnull (^)(__kindof CALayer * _Nonnull))objc_getAssociatedObject(self, &kAssociatedObjectKey_evenOddMaskPathBlock);
+}
+
++ (void)qmui_hookMaskIfNeeded {
+    [QMUIHelper executeBlock:^{
+        OverrideImplementation([CALayer class], @selector(layoutSublayers), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(CALayer *selfObject) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+                
+                if (selfObject.qmui_maskPathBlock && [selfObject.mask isKindOfClass:CAShapeLayer.class]) {
+                    ((CAShapeLayer *)selfObject.mask).path = selfObject.qmui_maskPathBlock(selfObject).CGPath;
+                }
+                if (selfObject.qmui_evenOddMaskPathBlock && [selfObject.mask isKindOfClass:CAShapeLayer.class]) {
+                    UIBezierPath *path = [UIBezierPath bezierPathWithRect:selfObject.bounds];
+                    UIBezierPath *maskPath = selfObject.qmui_evenOddMaskPathBlock(selfObject);
+                    [path appendPath:maskPath];
+                    ((CAShapeLayer *)selfObject.mask).path = path.CGPath;
+                }
+            };
+        });
+    } oncePerIdentifier:@"CALayer (QMUI) mask"];
+}
+
 - (__kindof CALayer *)qmui_layerWithName:(NSString *)name {
     if ([self.name isEqualToString:name]) return self;
     for (CALayer *sublayer in self.sublayers) {

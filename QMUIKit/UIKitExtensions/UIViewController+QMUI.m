@@ -479,11 +479,19 @@ QMUISynthesizeIdCopyProperty(qmui_didAppearAndLoadDataBlock, setQmui_didAppearAn
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        ExtendImplementationOfVoidMethodWithSingleArgument([UIViewController class], @selector(viewDidAppear:), BOOL, ^(UIViewController *selfObject, BOOL animated) {
-            if (selfObject.qmui_didAppearAndLoadDataBlock && selfObject.qmui_dataLoaded) {
-                selfObject.qmui_didAppearAndLoadDataBlock();
-                selfObject.qmui_didAppearAndLoadDataBlock = nil;
-            }
+        OverrideImplementation([UIViewController class], @selector(viewDidAppear:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, BOOL animated) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, animated);
+                
+                if (selfObject.qmui_didAppearAndLoadDataBlock && selfObject.qmui_dataLoaded) {
+                    selfObject.qmui_didAppearAndLoadDataBlock();
+                    selfObject.qmui_didAppearAndLoadDataBlock = nil;
+                }
+            };
         });
     });
 }

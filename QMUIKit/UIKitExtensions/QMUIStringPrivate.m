@@ -288,6 +288,23 @@
             return result;
         };
     });
+    
+    // 保护 -[NSMutableAttributedString appendAttributedString:] 遇到参数为 nil 时会命中系统 assert: nil argument 的场景
+    // -[__NSCFString replaceCharactersInRange:withString:]
+    OverrideImplementation(NSClassFromString(@"__NSCFString"), @selector(replaceCharactersInRange:withString:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^(NSString *selfObject, NSRange firstArgv, id secondArgv) {
+            
+            if (!secondArgv) {
+                QMUIAssert(NO, @"QMUIStringPrivate", @"replaceCharactersInRange:withString: 参数 nil 会命中系统 Assert 导致 crash");
+                secondArgv = @"";
+            }
+            
+            // call super
+            void (*originSelectorIMP)(id, SEL, NSRange, id);
+            originSelectorIMP = (void (*)(id, SEL, NSRange, id))originalIMPProvider();
+            originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+        };
+    });
 }
 
 + (void)qmuisafety_NSAttributedString {

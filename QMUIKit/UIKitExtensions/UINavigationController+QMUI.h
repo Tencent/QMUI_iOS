@@ -57,11 +57,18 @@ typedef void (^QMUINavigationActionDidChangeBlock)(QMUINavigationAction action, 
  */
 - (void)qmui_addNavigationActionDidChangeBlock:(QMUINavigationActionDidChangeBlock)block;
 
+/// 系统的设定是当 UINavigationController 不可见时（例如上面盖着一个 present vc，或者切到别的 tab），push/pop 操作均不会调用 vc 的生命周期方法（viewDidLoad 也是在 nav 恢复可视时才触发），所以提供这个属性用于当你希望这种情况下依然调用生命周期方法时，你可以打开它。默认为 NO。
+/// @warning 由于强制在 push/pop 时触发生命周期方法，所以会导致 vc 的 viewDidLoad 等方法比系统默认的更早调用，知悉即可。
+@property(nonatomic, assign) BOOL qmui_alwaysInvokeAppearanceMethods;
+
 /// 是否在 push 的过程中
 @property(nonatomic, readonly) BOOL qmui_isPushing;
 
 /// 是否在 pop 的过程中，包括手势、以及代码触发的 pop
 @property(nonatomic, readonly) BOOL qmui_isPopping;
+
+/// 以系统私有方法的方式去判断当前正在进行 push 动画还是 pop 动画，注意 setViewControllers 直接表现也是 push 或 pop 动画，可以通过 qmui_lastOperation 得知，但 qmui_isPushing、qmui_isPopping 无法区分 setViewControllers 的情况。
+@property(nonatomic, readonly) UINavigationControllerOperation qmui_lastOperation;
 
 /// 获取顶部的 ViewController，相比于系统的方法，这个方法能获取到 pop 的转场过程中顶部还没有完全消失的 ViewController （请注意：这种情况下，获取到的 topViewController 已经不在栈内）
 @property(nullable, nonatomic, readonly) UIViewController *qmui_topViewController;
