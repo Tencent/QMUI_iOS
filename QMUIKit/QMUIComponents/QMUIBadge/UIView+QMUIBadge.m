@@ -150,6 +150,41 @@ static char kAssociatedObjectKey_badgeString;
     return (NSString *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeString);
 }
 
+static char kAssociatedObjectKey_badgeAttributedString;
+- (void)setQmui_badgeAttributedString:(NSAttributedString *)qmui_badgeAttributedString{
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeAttributedString, qmui_badgeAttributedString, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    
+    if (qmui_badgeAttributedString) {
+        if (!self.qmui_badgeLabel) {
+        self.qmui_badgeLabel = [[_QMUIBadgeLabel alloc] init];
+        self.qmui_badgeLabel.clipsToBounds = YES;
+        self.qmui_badgeLabel.textAlignment = NSTextAlignmentCenter;
+        self.qmui_badgeLabel.backgroundColor = self.qmui_badgeBackgroundColor;
+        self.qmui_badgeLabel.font = [UIFont systemFontOfSize:0]; //font 设置为0避免图片周边出现偏移边距.
+        self.qmui_badgeLabel.contentEdgeInsets = self.qmui_badgeContentEdgeInsets;
+        self.qmui_badgeLabel.offset = self.qmui_badgeOffset;
+        self.qmui_badgeLabel.offsetLandscape = self.qmui_badgeOffsetLandscape;
+        BeginIgnoreDeprecatedWarning
+        self.qmui_badgeLabel.centerOffset = self.qmui_badgeCenterOffset;
+        self.qmui_badgeLabel.centerOffsetLandscape = self.qmui_badgeCenterOffsetLandscape;
+        EndIgnoreDeprecatedWarning
+        [self addSubview:self.qmui_badgeLabel];
+        
+        [self updateLayoutSubviewsBlockIfNeeded];
+    }
+    self.qmui_badgeLabel.attributedText = qmui_badgeAttributedString;
+    self.qmui_badgeLabel.hidden = NO;
+    [self setNeedsUpdateBadgeLabelLayout];
+    self.clipsToBounds = NO;
+    }else{
+        self.qmui_badgeLabel.hidden = YES;
+    }
+
+}
+- (NSAttributedString *)qmui_badgeAttributedString{
+    return (NSAttributedString *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeAttributedString);
+}
+
 static char kAssociatedObjectKey_badgeBackgroundColor;
 - (void)setQmui_badgeBackgroundColor:(UIColor *)qmui_badgeBackgroundColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeBackgroundColor, qmui_badgeBackgroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -252,7 +287,7 @@ static char kAssociatedObjectKey_badgeLabel;
 }
 
 - (void)setNeedsUpdateBadgeLabelLayout {
-    if (self.qmui_badgeString.length) {
+    if (self.qmui_badgeString.length || self.qmui_badgeAttributedString) {
         [self setNeedsLayout];
     }
 }

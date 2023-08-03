@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 用字符串设置未读数，nil 表示不显示未读数
 @property(nonatomic, copy, nullable) NSString *qmui_badgeString;
+/// 用富文本设置角标.扩展自定义的图片或组合样式
+@property(nonatomic, copy, nullable) NSAttributedString *qmui_badgeAttributedString;
+
 
 @property(nonatomic, strong, nullable) UIColor *qmui_badgeBackgroundColor;
 @property(nonatomic, strong, nullable) UIColor *qmui_badgeTextColor;
