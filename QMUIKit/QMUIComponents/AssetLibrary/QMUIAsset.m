@@ -113,6 +113,62 @@ static NSString * const kAssetInfoSize = @"size";
     return resultImage;
 }
 
+- (NSInteger)requestOriginalImageWithCompletion:(void (^)(UIImage *image,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed {
+    CGFloat aspectRatio = _phAsset.pixelWidth / (CGFloat)_phAsset.pixelHeight;
+    CGFloat pixelWidth = [UIScreen mainScreen].bounds.size.width * ScreenScale;
+    // 超宽图片
+    if (aspectRatio > 1.8) {
+        pixelWidth = pixelWidth * aspectRatio;
+    }
+    // 超高图片
+    if (aspectRatio < 0.2) {
+        pixelWidth = pixelWidth * 0.5;
+    }
+    CGFloat pixelHeight = pixelWidth / aspectRatio;
+    CGSize imageSize = CGSizeMake(pixelWidth, pixelHeight);
+    
+    // 修复获取图片时出现的瞬间内存过高问题
+    // 下面两行代码，来自hsjcom，他的github是：https://github.com/hsjcom 表示感谢
+    PHImageRequestOptions *option = [[PHImageRequestOptions alloc] init];
+    option.resizeMode = PHImageRequestOptionsResizeModeFast;
+    __weak typeof(self) weakSelf = self;
+    int32_t imageRequestID = [[PHImageManager defaultManager] requestImageForAsset:_phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFill options:option resultHandler:^(UIImage *result, NSDictionary *info) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        BOOL cancelled = [[info objectForKey:PHImageCancelledKey] boolValue];
+        if (!cancelled && result) {
+            if (completion) {
+                completion(result,info,[[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            }
+        }
+        // Download image from iCloud / 从iCloud下载图片
+        if ([info objectForKey:PHImageResultIsInCloudKey] && !result && networkAccessAllowed) {
+            PHImageRequestOptions *options = [[PHImageRequestOptions alloc] init];
+            options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (progressHandler) {
+                        progressHandler(progress, error, stop, info);
+                    }
+                });
+            };
+            options.networkAccessAllowed = YES;
+            options.resizeMode = PHImageRequestOptionsResizeModeFast;
+            [[PHImageManager defaultManager] requestImageDataForAsset:strongSelf.phAsset options:options resultHandler:^(NSData *imageData, NSString *dataUTI, UIImageOrientation orientation, NSDictionary *info) {
+                UIImage *resultImage = [UIImage imageWithData:imageData];
+                if (!resultImage && result) {
+                    resultImage = result;
+                }
+                if (completion)  {
+                    completion(resultImage,info,NO);
+                }
+            }];
+        }
+    }];
+    return imageRequestID;
+}
+
 - (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *result, NSDictionary<NSString *, id> *info))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
     PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
     imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
