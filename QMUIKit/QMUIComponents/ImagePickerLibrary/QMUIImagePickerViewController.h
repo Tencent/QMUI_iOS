@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class QMUIImagePickerViewController;
 @class QMUIButton;
-
+ 
 @protocol QMUIImagePickerViewControllerDelegate <NSObject>
 
 @optional
@@ -111,10 +111,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, strong, readonly) QMUIButton *sendButton;
 @property(nullable, nonatomic, strong, readonly) UILabel *imageCountLabel;
 
-/// 也可以直接传入 QMUIAssetsGroup，然后读取其中的 QMUIAsset 并储存到 imagesAssetArray 中，传入后会赋值到 QMUIAssetsGroup，并自动刷新 UI 展示
-- (void)refreshWithAssetsGroup:(QMUIAssetsGroup * _Nullable)assetsGroup;
-
-@property(nullable, nonatomic, strong, readonly) NSMutableArray<QMUIAsset *> *imagesAssetArray;
 @property(nullable, nonatomic, strong, readonly) QMUIAssetsGroup *assetsGroup;
 
 /// 当前被选择的图片对应的 QMUIAsset 对象数组
@@ -140,6 +136,11 @@ NS_ASSUME_NONNULL_BEGIN
  *  @see imagePickerViewControllerWillStartLoading: & imagePickerViewControllerDidFinishLoading:
  */
 @property(nonatomic, assign) BOOL shouldShowDefaultLoadingView;
+
+/// 也可以直接传入 QMUIAssetsGroup，然后读取其中的 QMUIAsset 并储存到 imagesAssetArray 中，传入后会赋值到 QMUIAssetsGroup，并自动刷新 UI 展示
+- (void)refreshWithAssetsGroup:(QMUIAssetsGroup * _Nullable)assetsGroup;
+
+- (void)updateCollectionViewWithChangeInstance:(PHChange *)changeInstance;
 
 @end
 

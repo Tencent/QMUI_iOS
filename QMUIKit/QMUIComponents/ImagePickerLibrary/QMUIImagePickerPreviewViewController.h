@@ -16,12 +16,14 @@
 #import <UIKit/UIKit.h>
 #import "QMUIImagePreviewViewController.h"
 #import "QMUIAsset.h"
+#import "QMUIAssetsGroup.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
 @class QMUIButton, QMUINavigationButton;
 @class QMUIImagePickerViewController;
 @class QMUIImagePickerPreviewViewController;
+@class QMUIAssetFetchResultChange;
 
 @protocol QMUIImagePickerPreviewViewControllerDelegate <NSObject>
 
@@ -52,10 +54,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nullable, nonatomic, strong, readonly) QMUINavigationButton *backButton;
 @property(nullable, nonatomic, strong, readonly) QMUIButton *checkboxButton;
 
-/// 由于组件需要通过本地图片的 QMUIAsset 对象读取图片的详细信息，因此这里的需要传入的是包含一个或多个 QMUIAsset 对象的数组
-@property(nullable, nonatomic, strong) NSMutableArray<QMUIAsset *> *imagesAssetArray;
-@property(nullable, nonatomic, strong) NSMutableArray<QMUIAsset *> *selectedImageAssetArray;
-
 @property(nonatomic, assign) QMUIAssetDownloadStatus downloadStatus;
 
 /// 最多可以选择的图片数，默认为无穷大
@@ -67,6 +65,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// 选择图片超出最大图片限制时 alertView 的标题
 @property(nullable, nonatomic, copy) NSString *alertButtonTitleWhenExceedMaxSelectImageCount;
 
+/// 已选照片，单选模式下为 nil
+@property (nonatomic, strong, nullable) NSMutableArray <QMUIAsset *> *selectedImageAssetArray;
+
+/// 照片排序方式
+@property (nonatomic, assign) QMUIAlbumSortType albumSortType;
 /**
  *  更新数据并刷新 UI，手工调用
  *
@@ -75,10 +78,16 @@ NS_ASSUME_NONNULL_BEGIN
  *  @param currentImageIndex       当前展示的图片在 imageAssetArray 的索引
  *  @param singleCheckMode         是否为单选模式，如果是单选模式，则不显示 checkbox
  */
-- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSMutableArray<QMUIAsset *> * _Nullable)imageAssetArray
-                                 selectedImageAssetArray:(NSMutableArray<QMUIAsset *> * _Nullable)selectedImageAssetArray
-                                       currentImageIndex:(NSInteger)currentImageIndex
-                                         singleCheckMode:(BOOL)singleCheckMode;
+- (void)updateImagePickerPreviewViewWithAssetGroup:(QMUIAssetsGroup *)assetGroup
+                                      imagesAssets:(NSMutableDictionary <NSString *, QMUIAsset *> *)imageAssets
+                           selectedImageAssetArray:(NSMutableArray<QMUIAsset *> * _Nullable)selectedImageAssetArray
+                                 currentImageIndex:(NSInteger)currentImageIndex
+                                   singleCheckMode:(BOOL)singleCheckMode
+                    onlyPreviewSelectedImageAssets:(BOOL)onlyPreviewSelectedImageAssets;
+
+- (void)updateCollectionViewWithAssetFetchResultChange:(QMUIAssetFetchResultChange *)assetFetchResultChange;
+
+- (QMUIAsset *)imageAssetForIndex:(NSInteger)index;
 
 @end
 

@@ -130,6 +130,38 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
     }
 }
 
+- (void)updateCurrentImgeIndex {
+    CGFloat pageWidth = [self collectionView:self.collectionView layout:self.collectionViewLayout sizeForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].width;
+    CGFloat pageHorizontalMargin = self.collectionViewLayout.minimumLineSpacing;
+    CGFloat contentOffsetX = self.collectionView.contentOffset.x;
+    CGFloat index = contentOffsetX / (pageWidth + pageHorizontalMargin);
+
+    // 在滑动过临界点的那一次才去调用 delegate，避免过于频繁的调用
+    BOOL isFirstDidScroll = self.previousIndexWhenScrolling == 0;
+
+    // fastToRight example : self.previousIndexWhenScrolling 1.49, index = 2.0
+    BOOL fastToRight = (floor(index) - floor(self.previousIndexWhenScrolling) >= 1.0) && (floor(index) - self.previousIndexWhenScrolling > 0.5);
+    BOOL turnPageToRight = fastToRight || betweenOrEqual(self.previousIndexWhenScrolling, floor(index) + 0.5, index);
+
+    // fastToLeft example : self.previousIndexWhenScrolling 2.51, index = 1.99
+    BOOL fastToLeft = (floor(self.previousIndexWhenScrolling) - floor(index) >= 1.0) && (self.previousIndexWhenScrolling - ceil(index) > 0.5);
+    BOOL turnPageToLeft = fastToLeft || betweenOrEqual(index, floor(index) + 0.5, self.previousIndexWhenScrolling);
+
+    if (!isFirstDidScroll && (turnPageToRight || turnPageToLeft)) {
+        index = round(index);
+        if (0 <= index && index < [self.collectionView numberOfItemsInSection:0]) {
+
+            // 不调用 setter，避免又走一次 scrollToItem
+            _currentImageIndex = index;
+
+            if ([self.delegate respondsToSelector:@selector(imagePreviewView:willScrollHalfToIndex:)]) {
+                [self.delegate imagePreviewView:self willScrollHalfToIndex:index];
+            }
+        }
+    }
+    self.previousIndexWhenScrolling = index;
+}
+
 - (void)setLoadingColor:(UIColor *)loadingColor {
     BOOL isLoadingColorChanged = _loadingColor && ![_loadingColor isEqual:loadingColor];
     _loadingColor = loadingColor;
@@ -210,35 +242,7 @@ static NSString * const kImageOrUnknownCellIdentifier = @"imageorunknown";
         return;
     }
     
-    CGFloat pageWidth = [self collectionView:self.collectionView layout:self.collectionViewLayout sizeForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]].width;
-    CGFloat pageHorizontalMargin = self.collectionViewLayout.minimumLineSpacing;
-    CGFloat contentOffsetX = self.collectionView.contentOffset.x;
-    CGFloat index = contentOffsetX / (pageWidth + pageHorizontalMargin);
-    
-    // 在滑动过临界点的那一次才去调用 delegate，避免过于频繁的调用
-    BOOL isFirstDidScroll = self.previousIndexWhenScrolling == 0;
-
-    // fastToRight example : self.previousIndexWhenScrolling 1.49, index = 2.0
-    BOOL fastToRight = (floor(index) - floor(self.previousIndexWhenScrolling) >= 1.0) && (floor(index) - self.previousIndexWhenScrolling > 0.5);
-    BOOL turnPageToRight = fastToRight || betweenOrEqual(self.previousIndexWhenScrolling, floor(index) + 0.5, index);
-
-    // fastToLeft example : self.previousIndexWhenScrolling 2.51, index = 1.99
-    BOOL fastToLeft = (floor(self.previousIndexWhenScrolling) - floor(index) >= 1.0) && (self.previousIndexWhenScrolling - ceil(index) > 0.5);
-    BOOL turnPageToLeft = fastToLeft || betweenOrEqual(index, floor(index) + 0.5, self.previousIndexWhenScrolling);
-    
-    if (!isFirstDidScroll && (turnPageToRight || turnPageToLeft)) {
-        index = round(index);
-        if (0 <= index && index < [self.collectionView numberOfItemsInSection:0]) {
-            
-            // 不调用 setter，避免又走一次 scrollToItem
-            _currentImageIndex = index;
-            
-            if ([self.delegate respondsToSelector:@selector(imagePreviewView:willScrollHalfToIndex:)]) {
-                [self.delegate imagePreviewView:self willScrollHalfToIndex:index];
-            }
-        }
-    }
-    self.previousIndexWhenScrolling = index;
+    [self updateCurrentImgeIndex];
 }
 
 @end

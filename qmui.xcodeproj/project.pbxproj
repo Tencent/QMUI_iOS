@@ -15,6 +15,8 @@
 		08B399CA22E18A3B000A8A45 /* UITraitCollection+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = 08B399C822E18A3B000A8A45 /* UITraitCollection+QMUI.m */; };
 		1178D5692198258700AA30E5 /* NSURL+QMUI.h in Headers */ = {isa = PBXBuildFile; fileRef = 1178D5672198258700AA30E5 /* NSURL+QMUI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1178D56A2198258700AA30E5 /* NSURL+QMUI.m in Sources */ = {isa = PBXBuildFile; fileRef = 1178D5682198258700AA30E5 /* NSURL+QMUI.m */; };
+		8C63888224F9637D00E6E2B6 /* QMUIAssetFetchResultChange.h in Headers */ = {isa = PBXBuildFile; fileRef = 8C63888024F9637D00E6E2B6 /* QMUIAssetFetchResultChange.h */; };
+		8C63888324F9637D00E6E2B6 /* QMUIAssetFetchResultChange.m in Sources */ = {isa = PBXBuildFile; fileRef = 8C63888124F9637D00E6E2B6 /* QMUIAssetFetchResultChange.m */; };
 		AA8860BA2107455C005E4054 /* QMUIWeakObjectContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = AA8860B82107455C005E4054 /* QMUIWeakObjectContainer.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA8860BB2107455C005E4054 /* QMUIWeakObjectContainer.m in Sources */ = {isa = PBXBuildFile; fileRef = AA8860B92107455C005E4054 /* QMUIWeakObjectContainer.m */; };
 		CD046C412018668900092035 /* QMUILogItem.h in Headers */ = {isa = PBXBuildFile; fileRef = CD046C3F2018668900092035 /* QMUILogItem.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -360,6 +362,8 @@
 		1178D5672198258700AA30E5 /* NSURL+QMUI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURL+QMUI.h"; sourceTree = "<group>"; };
 		1178D5682198258700AA30E5 /* NSURL+QMUI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURL+QMUI.m"; sourceTree = "<group>"; };
 		6D03A56D1B53895D003BDDE4 /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = System/Library/Frameworks/Photos.framework; sourceTree = SDKROOT; };
+		8C63888024F9637D00E6E2B6 /* QMUIAssetFetchResultChange.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIAssetFetchResultChange.h; sourceTree = "<group>"; };
+		8C63888124F9637D00E6E2B6 /* QMUIAssetFetchResultChange.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIAssetFetchResultChange.m; sourceTree = "<group>"; };
 		AA8860B82107455C005E4054 /* QMUIWeakObjectContainer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUIWeakObjectContainer.h; sourceTree = "<group>"; };
 		AA8860B92107455C005E4054 /* QMUIWeakObjectContainer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QMUIWeakObjectContainer.m; sourceTree = "<group>"; };
 		CD046C3F2018668900092035 /* QMUILogItem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QMUILogItem.h; sourceTree = "<group>"; };
@@ -761,7 +765,9 @@
 				CD4DA9BF1E8E3B0500836A1A /* QMUIConfigurationTemplate */,
 				CDB8CA2D1DCC870700769DF0 /* QMUIKit */,
 			);
+			indentWidth = 4;
 			sourceTree = "<group>";
+			tabWidth = 4;
 		};
 		CD44C1C61956D5970098D0A2 /* Products */ = {
 			isa = PBXGroup;
@@ -1157,6 +1163,8 @@
 				CDC86F441F68D5F9000E8829 /* QMUIAssetsGroup.m */,
 				CDC86F451F68D5F9000E8829 /* QMUIAssetsManager.h */,
 				CDC86F461F68D5F9000E8829 /* QMUIAssetsManager.m */,
+				8C63888024F9637D00E6E2B6 /* QMUIAssetFetchResultChange.h */,
+				8C63888124F9637D00E6E2B6 /* QMUIAssetFetchResultChange.m */,
 			);
 			path = AssetLibrary;
 			sourceTree = "<group>";
@@ -1399,6 +1407,7 @@
 				CD84F31D1E52DBEA00546111 /* UITabBar+QMUI.h in Headers */,
 				FE1FBCAF1E8BA79000C6C01A /* UITextView+QMUI.h in Headers */,
 				CD6631DB1FD929F4004DF7E8 /* QMUITableViewHeaderFooterView.h in Headers */,
+				8C63888224F9637D00E6E2B6 /* QMUIAssetFetchResultChange.h in Headers */,
 				CDD12D3C1FBB320E00114EA9 /* NSArray+QMUI.h in Headers */,
 				CDC86FBD1F68D617000E8829 /* QMUIAsset.h in Headers */,
 				CDC86FBE1F68D617000E8829 /* QMUIAssetsGroup.h in Headers */,
@@ -1620,6 +1629,7 @@
 			files = (
 				CDB8CBC81DCC870800769DF0 /* UINavigationController+QMUI.m in Sources */,
 				CDB8CBDC1DCC870800769DF0 /* UIView+QMUI.m in Sources */,
+				8C63888324F9637D00E6E2B6 /* QMUIAssetFetchResultChange.m in Sources */,
 				CDD12D3D1FBB320E00114EA9 /* NSArray+QMUI.m in Sources */,
 				CDE418FC20761A0F002ED021 /* UIBarItem+QMUI.m in Sources */,
 				D0FB669921CBF00F00806600 /* UIInterface+QMUI.m in Sources */,

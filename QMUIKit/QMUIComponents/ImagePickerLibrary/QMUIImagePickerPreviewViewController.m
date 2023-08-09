@@ -29,6 +29,7 @@
 #import "UIView+QMUI.h"
 #import "QMUILog.h"
 #import "QMUIAppearance.h"
+#import "QMUIAssetFetchResultChange.h"
 
 #pragma mark - QMUIImagePickerPreviewViewController (UIAppearance)
 
@@ -52,6 +53,16 @@
 
 @end
 
+@interface QMUIImagePickerPreviewViewController ()
+
+@property (nonatomic, assign) BOOL onlyPreviewSelectedImageAssets;
+
+@property (nonatomic, strong) NSMutableDictionary <NSString *, QMUIAsset *> *imageAssets;
+
+@property (nonatomic, strong, nullable) QMUIAssetsGroup *assetsGroup;
+
+@end
+
 @implementation QMUIImagePickerPreviewViewController {
     BOOL _singleCheckMode;
 }
@@ -60,7 +71,7 @@
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.maximumSelectImageCount = INT_MAX;
         self.minimumSelectImageCount = 0;
-        
+        self.imageAssets = [[NSMutableDictionary alloc] init];
         [self qmui_applyAppearance];
     }
     return self;
@@ -98,7 +109,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     if (!_singleCheckMode) {
-        QMUIAsset *imageAsset = self.imagesAssetArray[self.imagePreviewView.currentImageIndex];
+        QMUIAsset *imageAsset = [self imageAssetForIndex:self.imagePreviewView.currentImageIndex];
         self.checkboxButton.selected = [self.selectedImageAssetArray containsObject:imageAsset];
     }
     
@@ -161,11 +172,15 @@
     }
 }
 
-- (void)updateImagePickerPreviewViewWithImagesAssetArray:(NSMutableArray<QMUIAsset *> *)imageAssetArray
-                                 selectedImageAssetArray:(NSMutableArray<QMUIAsset *> *)selectedImageAssetArray
-                                       currentImageIndex:(NSInteger)currentImageIndex
-                                         singleCheckMode:(BOOL)singleCheckMode {
-    self.imagesAssetArray = imageAssetArray;
+- (void)updateImagePickerPreviewViewWithAssetGroup:(QMUIAssetsGroup *)assetGroup
+                                      imagesAssets:(NSMutableDictionary <NSString *, QMUIAsset *> *)imageAssets
+                           selectedImageAssetArray:(NSMutableArray <QMUIAsset *> * _Nullable)selectedImageAssetArray
+                                 currentImageIndex:(NSInteger)currentImageIndex
+                                   singleCheckMode:(BOOL)singleCheckMode
+                    onlyPreviewSelectedImageAssets:(BOOL)onlyPreviewSelectedImageAssets {
+    self.onlyPreviewSelectedImageAssets =  onlyPreviewSelectedImageAssets;
+    self.assetsGroup = assetGroup;
+    self.imageAssets = imageAssets;
     self.selectedImageAssetArray = selectedImageAssetArray;
     self.imagePreviewView.currentImageIndex = currentImageIndex;
     _singleCheckMode = singleCheckMode;
@@ -174,14 +189,50 @@
     }
 }
 
+- (void)updateCollectionViewWithAssetFetchResultChange:(QMUIAssetFetchResultChange *)assetFetchResultChange {
+    if (self.onlyPreviewSelectedImageAssets) {
+        // 如果所选的照片已经被完全删除，则自动退出
+        if (self.selectedImageAssetArray.count == 0) {
+            [self.navigationController popViewControllerAnimated:YES];
+        } else {
+            [self.imagePreviewView.collectionView reloadData];
+        }
+        return;
+    }
+    if (!assetFetchResultChange.hasIncrementalChanges) {
+        [self.imagePreviewView.collectionView reloadData];
+    } else {
+        [self.imagePreviewView.collectionView performBatchUpdates:^{
+            [self.imagePreviewView.collectionView deleteItemsAtIndexPaths:assetFetchResultChange.removedIndexPaths];
+            [self.imagePreviewView.collectionView insertItemsAtIndexPaths:assetFetchResultChange.insertedIndexPaths];
+        } completion:^(BOOL finished) {
+            [self.imagePreviewView.collectionView reloadItemsAtIndexPaths:assetFetchResultChange.changedIndexPaths];
+            [assetFetchResultChange enumerateMovesWithBlock:^(NSIndexPath * _Nonnull fromIndexPath, NSIndexPath * _Nonnull toIndexPath) {
+                [self.imagePreviewView.collectionView moveItemAtIndexPath:fromIndexPath
+                                                              toIndexPath:toIndexPath];
+            }];
+            /// 没触发 scrollViewDidScroll: 方法，这里手动调用下，更新 currentImageIndex
+            [self.imagePreviewView updateCurrentImgeIndex];
+            QMUIAsset *imageAsset = [self imageAssetForIndex:self.imagePreviewView.currentImageIndex];
+            self.checkboxButton.selected = [self.selectedImageAssetArray containsObject:imageAsset];
+        }];
+    }
+}
+
 #pragma mark - <QMUIImagePreviewViewDelegate>
 
 - (NSUInteger)numberOfImagesInImagePreviewView:(QMUIImagePreviewView *)imagePreviewView {
-    return [self.imagesAssetArray count];
+    if (_singleCheckMode) {
+        return 1;
+    }
+    if (self.onlyPreviewSelectedImageAssets) {
+        return self.selectedImageAssetArray.count;
+    }
+    return self.assetsGroup.phFetchResult.count;
 }
 
 - (QMUIImagePreviewMediaType)imagePreviewView:(QMUIImagePreviewView *)imagePreviewView assetTypeAtIndex:(NSUInteger)index {
-    QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:index];
+    QMUIAsset *imageAsset = [self imageAssetForIndex:index];
     if (imageAsset.assetType == QMUIAssetTypeImage) {
         if (imageAsset.assetSubType == QMUIAssetSubTypeLivePhoto) {
             return QMUIImagePreviewMediaTypeLivePhoto;
@@ -200,7 +251,7 @@
 
 - (void)imagePreviewView:(QMUIImagePreviewView *)imagePreviewView willScrollHalfToIndex:(NSUInteger)index {
     if (!_singleCheckMode) {
-        QMUIAsset *imageAsset = self.imagesAssetArray[index];
+        QMUIAsset *imageAsset = [self imageAssetForIndex:index];
         self.checkboxButton.selected = [self.selectedImageAssetArray containsObject:imageAsset];
     }
 }
@@ -242,7 +293,7 @@
         }
         
         button.selected = NO;
-        QMUIAsset *imageAsset = self.imagesAssetArray[self.imagePreviewView.currentImageIndex];
+        QMUIAsset *imageAsset = [self imageAssetForIndex:self.imagePreviewView.currentImageIndex];
         [self.selectedImageAssetArray removeObject:imageAsset];
         
         if ([self.delegate respondsToSelector:@selector(imagePickerPreviewViewController:didUncheckImageAtIndex:)]) {
@@ -269,7 +320,7 @@
         
         button.selected = YES;
         [QMUIImagePickerHelper springAnimationOfImageCheckedWithCheckboxButton:button];
-        QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:self.imagePreviewView.currentImageIndex];
+        QMUIAsset *imageAsset = [self imageAssetForIndex:self.imagePreviewView.currentImageIndex];
         [self.selectedImageAssetArray addObject:imageAsset];
         
         if (self.delegate && [self.delegate respondsToSelector:@selector(imagePickerPreviewViewController:didCheckImageAtIndex:)]) {
@@ -285,7 +336,7 @@
     // 如果是走 PhotoKit 的逻辑，那么这个 block 会被多次调用，并且第一次调用时返回的图片是一张小图，
     // 拉取图片的过程中可能会多次返回结果，且图片尺寸越来越大，因此这里调整 contentMode 以防止图片大小跳动
     imageView.contentMode = UIViewContentModeScaleAspectFit;
-    QMUIAsset *imageAsset = [self.imagesAssetArray objectAtIndex:index];
+    QMUIAsset *imageAsset = [self imageAssetForIndex:index];
     // 获取资源图片的预览图，这是一张适合当前设备屏幕大小的图片，最终展示时把图片交给组件控制最终展示出来的大小。
     // 系统相册本质上也是这么处理的，因此无论是系统相册，还是这个系列组件，由始至终都没有显示照片原图，
     // 这也是系统相册能加载这么快的原因。
@@ -410,6 +461,25 @@
             imageView.tag = imageAsset.requestID;
         }
     }
+}
+
+#pragma mark - Image asset for index
+
+- (QMUIAsset *)imageAssetForIndex:(NSInteger)index {
+    if (_singleCheckMode) {
+        return self.imageAssets.allValues.firstObject;
+    }
+    if (self.onlyPreviewSelectedImageAssets) {
+        QMUIAsset *assets = self.selectedImageAssetArray[index];
+        return assets;
+    }
+    const NSInteger newIndex = [self.assetsGroup convertedIndexForIndex:index
+                                             albumSortType:self.albumSortType];
+    if (self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier] == nil) {
+        self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier] =
+            [[QMUIAsset alloc] initWithPHAsset:self.assetsGroup.phFetchResult[newIndex]];
+    }
+    return self.imageAssets[self.assetsGroup.phFetchResult[newIndex].localIdentifier];
 }
 
 @end

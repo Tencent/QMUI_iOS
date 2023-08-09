@@ -72,12 +72,16 @@ typedef NS_ENUM (NSUInteger, QMUIImagePreviewMediaType) {
 @property(nonatomic, strong, readonly) UICollectionView *collectionView;
 @property(nonatomic, strong, readonly) QMUICollectionViewPagingLayout *collectionViewLayout;
 
-/// 获取当前正在查看的图片 index，也可强制将图片滚动到指定的 index
-@property(nonatomic, assign) NSUInteger currentImageIndex;
-- (void)setCurrentImageIndex:(NSUInteger)currentImageIndex animated:(BOOL)animated;
-
 /// 每一页里的 loading 的颜色，默认为 UIColorWhite
 @property(nonatomic, strong) UIColor *loadingColor;
+
+/// 获取当前正在查看的图片 index，也可强制将图片滚动到指定的 index
+@property(nonatomic, assign) NSUInteger currentImageIndex;
+
+- (void)setCurrentImageIndex:(NSUInteger)currentImageIndex animated:(BOOL)animated;
+
+/// 更新 currentImageIndex ，可用于手动调用，主动更新 currentImageIndex
+- (void)updateCurrentImgeIndex;
 
 @end
 
