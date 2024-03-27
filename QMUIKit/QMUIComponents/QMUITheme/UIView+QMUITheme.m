@@ -140,7 +140,17 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
         BOOL isValidatedEffect = [value isKindOfClass:QMUIThemeVisualEffect.class] && (!manager || [((QMUIThemeVisualEffect *)value).managerName isEqual:manager.name]);
         BOOL isOtherObject = ![value isKindOfClass:UIColor.class] && ![value isKindOfClass:UIImage.class] && ![value isKindOfClass:UIVisualEffect.class];// 支持所有非 color、image、effect 的其他对象，例如 NSAttributedString
         if (isOtherObject || isValidatedColor || isValidatedImage || isValidatedEffect) {
-            [self performSelector:setter withObject:value];
+            if (@available(iOS 17.0, *)) {
+                if ([self isKindOfClass:[UIImageView class]] && [setterString isEqualToString:@"setImage:"]) {
+                    UIImageView *imageView = (UIImageView *)self;
+                    imageView.image = nil;
+                    imageView.image = value;
+                } else {
+                    [self performSelector:setter withObject:value];
+                }
+            } else {
+                [self performSelector:setter withObject:value];
+            }
         }
         EndIgnorePerformSelectorLeaksWarning
     }];
