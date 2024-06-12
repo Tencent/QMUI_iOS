@@ -169,6 +169,26 @@ static const headerType *getProjectImageHeader() {
     NSString *executablePath = NSBundle.mainBundle.executablePath;
     if (!executablePath) return nil;
     const headerType *target_image_header = 0;
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000
+#if DEBUG
+    // Xcode16之后，优先查找debug.dylib
+    NSString *debugImagePath = [NSString stringWithFormat:@"%@.debug.dylib", executablePath];
+    for (uint32_t i = 0; i < imageCount; i++) {
+        const char *image_name = _dyld_get_image_name(i);
+        NSString *imagePath = [NSString stringWithUTF8String:image_name];
+        if ([imagePath isEqualToString:debugImagePath]) {
+            target_image_header = (headerType *)_dyld_get_image_header(i);
+            break;
+        }
+    }
+    
+    if (target_image_header) {
+        return target_image_header;
+    }
+#endif
+#endif
+
     for (uint32_t i = 0; i < imageCount; i++) {
         const char *image_name = _dyld_get_image_name(i);// name 是一串完整的文件路径，以 image 名结尾
         NSString *imagePath = [NSString stringWithUTF8String:image_name];
