@@ -100,6 +100,19 @@ static char kAssociatedObjectKey_badgeString;
     return (NSString *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeString);
 }
 
+static char kAssociatedObjectKey_badgeAttributedString;
+- (void)setQmui_badgeAttributedString:(NSAttributedString *)qmui_badgeAttributedString{
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeAttributedString, qmui_badgeAttributedString, OBJC_ASSOCIATION_COPY_NONATOMIC);
+    if (qmui_badgeAttributedString) {
+        [self updateViewDidSetBlockIfNeeded];
+    }
+    self.qmui_view.qmui_badgeAttributedString = qmui_badgeAttributedString;
+}
+- (NSAttributedString *)qmui_badgeAttributedString{
+    return (NSAttributedString *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeAttributedString);
+}
+
+
 static char kAssociatedObjectKey_badgeBackgroundColor;
 - (void)setQmui_badgeBackgroundColor:(UIColor *)qmui_badgeBackgroundColor {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeBackgroundColor, qmui_badgeBackgroundColor, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
