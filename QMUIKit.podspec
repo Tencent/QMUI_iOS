@@ -122,6 +122,8 @@ Pod::Spec.new do |s|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUISheetPresentation/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIMainFrame'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUINavigationButton'
     end
 
     ss.subspec 'QMUIKeyboardManager' do |sss|
@@ -259,6 +261,7 @@ Pod::Spec.new do |s|
       sss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
       sss.dependency 'QMUIKit/QMUIComponents/QMUILayouter'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIPopupContainerView'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUICheckbox'
     end
     
     ss.subspec 'QMUIScrollAnimator' do |sss|
