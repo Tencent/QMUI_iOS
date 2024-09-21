@@ -93,7 +93,7 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
             };
         });
         
-        // [UIKit Bug] iOS 14 及以下版本，将 UISearchBar 作为 tableHeaderView 使用的 UITableView，如果同时设置了 estimatedRowHeight，则 contentSize 会错乱，导致滚动异常
+        // [UIKit Bug] 将 UISearchBar 作为 tableHeaderView 使用的 UITableView，如果同时设置了 estimatedRowHeight，则 contentSize 会错乱，导致滚动异常
         // https://github.com/Tencent/QMUI_iOS/issues/1161
         if (@available(iOS 15.0, *)) {
         } else {

@@ -169,7 +169,7 @@ static const headerType *getProjectImageHeader(void) {
     NSString *executablePath = NSBundle.mainBundle.executablePath;
     if (!executablePath) return nil;
     const headerType *target_image_header = 0;
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000
+#ifdef IOS18_SDK_ALLOWED
 #if DEBUG
     // Xcode16之后，优先查找debug.dylib
     NSString *debugImagePath = [NSString stringWithFormat:@"%@.debug.dylib", executablePath];

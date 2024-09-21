@@ -163,6 +163,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// @NEW_DEVICE_CHECKER
 @property(class, nonatomic, readonly) BOOL isRegularScreen;
 
+/// iPhone 16 Pro Max
+@property(class, nonatomic, readonly) BOOL is69InchScreen;
+
 /// iPhone 14 Pro Max
 @property(class, nonatomic, readonly) BOOL is67InchScreenAndiPhone14Later;
 
@@ -171,6 +174,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// iPhone XS Max / 11 Pro Max
 @property(class, nonatomic, readonly) BOOL is65InchScreen;
+
+/// iPhone 16 Pro
+@property(class, nonatomic, readonly) BOOL is63InchScreen;
 
 /// iPhone 12 / 12 Pro
 @property(class, nonatomic, readonly) BOOL is61InchScreenAndiPhone12Later;
@@ -199,9 +205,11 @@ NS_ASSUME_NONNULL_BEGIN
 /// iPhone 4
 @property(class, nonatomic, readonly) BOOL is35InchScreen;
 
+@property(class, nonatomic, readonly) CGSize screenSizeFor69Inch;
 @property(class, nonatomic, readonly) CGSize screenSizeFor67InchAndiPhone14Later;
 @property(class, nonatomic, readonly) CGSize screenSizeFor67Inch;
 @property(class, nonatomic, readonly) CGSize screenSizeFor65Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor63Inch;
 @property(class, nonatomic, readonly) CGSize screenSizeFor61InchAndiPhone14ProLater;
 @property(class, nonatomic, readonly) CGSize screenSizeFor61InchAndiPhone12Later;
 @property(class, nonatomic, readonly) CGSize screenSizeFor61Inch;

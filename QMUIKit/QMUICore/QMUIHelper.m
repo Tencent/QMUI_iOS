@@ -20,6 +20,7 @@
 #import "NSString+QMUI.h"
 #import "UIInterface+QMUI.h"
 #import "NSObject+QMUI.h"
+#import "NSArray+QMUI.h"
 #import <AVFoundation/AVFoundation.h>
 #import <math.h>
 #import <sys/utsname.h>
@@ -317,6 +318,10 @@ static CGFloat pixelOne = -1.0f;
             @"iPhone15,5" : @"iPhone 15 Plus",
             @"iPhone16,1" : @"iPhone 15 Pro",
             @"iPhone16,2" : @"iPhone 15 Pro Max",
+            @"iPhone17,1" : @"iPhone 16 Pro",
+            @"iPhone17,2" : @"iPhone 16 Pro Max",
+            @"iPhone17,3" : @"iPhone 16",
+            @"iPhone17,4" : @"iPhone 16 Plus",
             
             @"iPad1,1" : @"iPad 1",
             @"iPad2,1" : @"iPad 2 (WiFi)",
@@ -389,6 +394,18 @@ static CGFloat pixelOne = -1.0f;
             @"iPad13,11" : @"iPad Pro (12.9 inch, 5th generation)",
             @"iPad14,1" : @"iPad mini (6th generation)",
             @"iPad14,2" : @"iPad mini (6th generation)",
+            @"iPad14,3" : @"iPad Pro 11 inch 4th Gen",
+            @"iPad14,4" : @"iPad Pro 11 inch 4th Gen",
+            @"iPad14,5" : @"iPad Pro 12.9 inch 6th Gen",
+            @"iPad14,6" : @"iPad Pro 12.9 inch 6th Gen",
+            @"iPad14,8" : @"iPad Air 6th Gen",
+            @"iPad14,9" : @"iPad Air 6th Gen",
+            @"iPad14,10" : @"iPad Air 7th Gen",
+            @"iPad14,11" : @"iPad Air 7th Gen",
+            @"iPad16,3" : @"iPad Pro 11 inch 5th Gen",
+            @"iPad16,4" : @"iPad Pro 11 inch 5th Gen",
+            @"iPad16,5" : @"iPad Pro 12.9 inch 7th Gen",
+            @"iPad16,6" : @"iPad Pro 12.9 inch 7th Gen",
             
             @"iPod1,1" : @"iPod touch 1",
             @"iPod2,1" : @"iPod touch 2",
@@ -440,6 +457,11 @@ static CGFloat pixelOne = -1.0f;
             @"Watch6,16" : @"Apple Watch Series 8 41mm case (GPS+Cellular)",
             @"Watch6,17" : @"Apple Watch Series 8 45mm case (GPS+Cellular)",
             @"Watch6,18" : @"Apple Watch Ultra",
+            @"Watch7,1" : @"Apple Watch Series 9 41mm case (GPS)",
+            @"Watch7,2" : @"Apple Watch Series 9 45mm case (GPS)",
+            @"Watch7,3" : @"Apple Watch Series 9 41mm case (GPS+Cellular)",
+            @"Watch7,4" : @"Apple Watch Series 9 45mm case (GPS+Cellular)",
+            @"Watch7,5" : @"Apple Watch Ultra 2",
             
             @"AudioAccessory1,1" : @"HomePod",
             @"AudioAccessory1,2" : @"HomePod",
@@ -542,7 +564,24 @@ static NSInteger isNotchedScreen = -1;
 }
 
 + (BOOL)isRegularScreen {
+    if ([@[
+        @"iPhone 14 Pro",
+        @"iPhone 15",
+        @"iPhone 16",
+    ] qmui_firstMatchWithBlock:^BOOL(NSString *item) {
+        return [QMUIHelper.deviceName hasPrefix:item];
+    }]) {
+        return YES;
+    }
     return [self isIPad] || (!IS_ZOOMEDMODE && ([self is67InchScreenAndiPhone14Later] || [self is67InchScreen] || [self is65InchScreen] || [self is61InchScreen] || [self is55InchScreen]));
+}
+
+static NSInteger is69InchScreen = -1;
++ (BOOL)is69InchScreen {
+    if (is69InchScreen < 0) {
+        is69InchScreen = CGSizeEqualToSize(CGSizeMake(DEVICE_WIDTH, DEVICE_HEIGHT), self.screenSizeFor69Inch) ? 1 : 0;
+    }
+    return is69InchScreen > 0;
 }
 
 static NSInteger is67InchScreenAndiPhone14Later = -1;
@@ -569,6 +608,14 @@ static NSInteger is65InchScreen = -1;
         is65InchScreen = (DEVICE_WIDTH == self.screenSizeFor65Inch.width && DEVICE_HEIGHT == self.screenSizeFor65Inch.height && !QMUIHelper.is61InchScreen) ? 1 : 0;
     }
     return is65InchScreen > 0;
+}
+
+static NSInteger is63InchScreen = -1;
++ (BOOL)is63InchScreen {
+    if (is63InchScreen < 0) {
+        is63InchScreen = CGSizeEqualToSize(CGSizeMake(DEVICE_WIDTH, DEVICE_HEIGHT), self.screenSizeFor63Inch) ? 1 : 0;
+    }
+    return is63InchScreen > 0;
 }
 
 static NSInteger is61InchScreenAndiPhone14ProLater = -1;
@@ -645,6 +692,10 @@ static NSInteger is35InchScreen = -1;
     return is35InchScreen > 0;
 }
 
++ (CGSize)screenSizeFor69Inch {
+    return CGSizeMake(440, 956);
+}
+
 + (CGSize)screenSizeFor67InchAndiPhone14Later {
     return CGSizeMake(430, 932);// iPhone 14 Pro Max
 }
@@ -663,6 +714,10 @@ static NSInteger is35InchScreen = -1;
 
 + (CGSize)screenSizeFor61InchAndiPhone12Later {
     return CGSizeMake(390, 844);
+}
+
++ (CGSize)screenSizeFor63Inch {
+    return CGSizeMake(402, 874);
 }
 
 + (CGSize)screenSizeFor61Inch {
@@ -724,6 +779,26 @@ static CGFloat preferredLayoutWidth = -1;
     static NSDictionary<NSString *, NSDictionary<NSNumber *, NSValue *> *> *dict;
     if (!dict) {
         dict = @{
+            // iPhone 16 Pro
+            @"iPhone17,1": @{
+                @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(62, 0, 34, 0)],
+                @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 62, 21, 62)],
+            },
+            // iPhone 16 Pro Max
+            @"iPhone17,2": @{
+                @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(62, 0, 34, 0)],
+                @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 62, 21, 62)],
+            },
+            // iPhone 16
+            @"iPhone17,3": @{
+                @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(59, 0, 34, 0)],
+                @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 59, 21, 59)],
+            },
+            // iPhone 16 Plus
+            @"iPhone17,4": @{
+                @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(59, 0, 34, 0)],
+                @(UIInterfaceOrientationLandscapeLeft): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(0, 59, 21, 59)],
+            },
             // iPhone 15
             @"iPhone15,4": @{
                 @(UIInterfaceOrientationPortrait): [NSValue valueWithUIEdgeInsets:UIEdgeInsetsMake(47, 0, 34, 0)],
@@ -960,19 +1035,16 @@ static NSInteger isHighPerformanceDevice = -1;
 
 + (BOOL)isDynamicIslandDevice {
     if (!IS_IPHONE) return NO;
-    __block BOOL result = NO;
-    NSString *deviceName = self.deviceName;
-    [@[
+    if ([@[
         @"iPhone 14 Pro",
-        @"iPhone 14 Pro Max",
         @"iPhone 15",
-    ] enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if ([deviceName hasPrefix:obj]) {
-            result = YES;
-            *stop = YES;
-        }
-    }];
-    return result;
+        @"iPhone 16",
+    ] qmui_firstMatchWithBlock:^BOOL(NSString *item) {
+        return [QMUIHelper.deviceName hasPrefix:item];
+    }]) {
+        return YES;
+    }
+    return NO;
 }
 
 - (void)handleAppSizeWillChange:(NSNotification *)notification {
@@ -1017,13 +1089,13 @@ static NSInteger isHighPerformanceDevice = -1;
         // iPhone 13 Mini
         return 48;
     }
-    if ([deviceModel isEqualToString:@"iPhone15,2"]     // iPhone 14 Pro
-        || [deviceModel isEqualToString:@"iPhone15,3"]  // iPhone 14 Pro Max
-        || [deviceModel isEqualToString:@"iPhone15,4"]  // iPhone 15
-        || [deviceModel isEqualToString:@"iPhone15,5"]  // iPhone 15 Plus
-        || [deviceModel isEqualToString:@"iPhone16,1"]  // iPhone 15 Pro
-        || [deviceModel isEqualToString:@"iPhone16,2"]  // iPhone 15 Pro Max
-    ) {
+    if ([@[
+        @"iPhone 14 Pro",
+        @"iPhone 15",
+        @"iPhone 16",
+    ] qmui_firstMatchWithBlock:^BOOL(NSString *item) {
+        return [QMUIHelper.deviceName hasPrefix:item];
+    }]) {
         return 54;
     }
     if (IS_61INCH_SCREEN_AND_IPHONE12 || IS_67INCH_SCREEN) {
@@ -1040,15 +1112,20 @@ static NSInteger isHighPerformanceDevice = -1;
         result += PreferredValueForVisualDevice(44, 32);
     } else {
         result += 44;
-        NSString *deviceModel = [QMUIHelper deviceModel];
-        if ([deviceModel isEqualToString:@"iPhone15,2"]     // iPhone 14 Pro
-            || [deviceModel isEqualToString:@"iPhone15,3"]  // iPhone 14 Pro Max
-            || [deviceModel isEqualToString:@"iPhone15,4"]  // iPhone 15
-            || [deviceModel isEqualToString:@"iPhone15,5"]  // iPhone 15 Plus
-            || [deviceModel isEqualToString:@"iPhone16,1"]  // iPhone 15 Pro
-            || [deviceModel isEqualToString:@"iPhone16,2"]  // iPhone 15 Pro Max
-        ) {
-            result -= PixelOne;
+        if ([@[
+            @"iPhone 16 Pro",
+        ] qmui_firstMatchWithBlock:^BOOL(NSString *item) {
+            return [QMUIHelper.deviceName hasPrefix:item];
+        }]) {
+            result += 2 + PixelOne;// 56.333
+        } else if ([@[
+            @"iPhone 14 Pro",
+            @"iPhone 15",
+            @"iPhone 16",
+        ] qmui_firstMatchWithBlock:^BOOL(NSString *item) {
+            return [QMUIHelper.deviceName hasPrefix:item];
+        }]) {
+            result -= PixelOne;// 53.667
         }
     }
     return result;

@@ -76,6 +76,11 @@
 #define IOS17_SDK_ALLOWED YES
 #endif
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000
+/// 当前编译使用的 Base SDK 版本为 iOS 18.0 及以上
+#define IOS18_SDK_ALLOWED YES
+#endif
+
 #pragma mark - Clang
 
 #define ArgumentToString(macro) #macro
