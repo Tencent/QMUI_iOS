@@ -96,14 +96,14 @@
     return nil;
 }
 
-- (NSArray *)qmui_mapWithBlock:(id (NS_NOESCAPE^)(id item))block {
+- (NSArray *)qmui_mapWithBlock:(id (NS_NOESCAPE^)(id item, NSInteger index))block {
     if (!block) {
         return self;
     }
 
     NSMutableArray *result = [[NSMutableArray alloc] initWithCapacity:self.count];
     for (NSInteger i = 0; i < self.count; i++) {
-        [result addObject:block(self[i])];
+        [result addObject:block(self[i], i)];
     }
     return [result copy];
 }

@@ -80,13 +80,14 @@ static char kAssociatedObjectKey_automaticallyAdjustTouchHighlightedInScrollView
                         selfObject.qmuictl_canSetHighlighted = NO;
                         if (selfObject.touchInside) {
                             [selfObject setHighlighted:YES];
+                            __weak __typeof(selfObject)weakSelf = selfObject;// 避免 dispatch retain 住 self，因为这期间可能 self 已经被 remove 了，如果还触发它的点击事件，可能导致业务逻辑异常
                             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.02 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                                 // 如果延迟时间太长，会导致快速点击两次，事件会触发两次
                                 // 对于 3D Touch 的机器，如果点击按钮的时候在按钮上停留事件稍微长一点点，那么 touchesEnded 会被调用两次
                                 // 把 super touchEnded 放到延迟里调用会导致长按无法触发点击，先这么改，再想想怎么办。// [selfObject qmui_touchesEnded:touches withEvent:event];
-                                [selfObject sendActionsForAllTouchEventsIfCan];
-                                if (selfObject.highlighted) {
-                                    [selfObject setHighlighted:NO];
+                                [weakSelf sendActionsForAllTouchEventsIfCan];
+                                if (weakSelf.highlighted) {
+                                    [weakSelf setHighlighted:NO];
                                 }
                             });
                         } else {

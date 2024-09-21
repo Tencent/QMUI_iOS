@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  将要设置的 frame 用 CGRectApplyAffineTransformWithAnchorPoint 处理后再设置
+ 注意这个方式会导致 self.bounds 也受 transform 的影响（系统默认行为是 frame 受 transform 影响，center 和 bounds 不会），如果有需要访问 self.bounds 的情况，请避免使用这个方式。
  */
 @property(nonatomic, assign) CGRect qmui_frameApplyTransform;
 
@@ -115,7 +116,7 @@ NS_ASSUME_NONNULL_BEGIN
  当 hitTest:withEvent: 被调用时会调用这个 block，就不用重写方法了
  @param point 事件产生的 point
  @param event 事件
- @param super 的返回结果
+ @param originalView super 的返回结果
  */
 @property(nullable, nonatomic, copy) __kindof UIView * _Nullable (^qmui_hitTestBlock)(CGPoint point, UIEvent * _Nullable event, __kindof UIView * _Nullable originalView);
 
@@ -192,6 +193,9 @@ extern const CGFloat QMUIViewSelfSizingHeight;
 
 /// 等价于 CGRectGetMaxX(frame)
 @property(nonatomic, assign) CGFloat qmui_right;
+
+/// 以 center = xxx 的方式将 frame 的 origin 设置为指定的值，由于用的是 center，所以可以兼容 transform 场景。
+@property(nonatomic, assign) CGPoint qmui_origin;
 
 /// 等价于 CGRectGetWidth(frame)
 @property(nonatomic, assign) CGFloat qmui_width;

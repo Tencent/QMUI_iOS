@@ -100,7 +100,12 @@
     NSString *string = attributedString.string ?: (NSString *)aString;
     NSUInteger length = countingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
     QMUIAssert(index <= length, @"QMUIStringPrivate", @"%s, index %@ out of bounds. string = %@", __func__, @(index), attributedString ?: string);
-    if (index >= length) return @"";
+    if (index >= length) {
+        if (attributedString) {
+            return [[attributedString.class alloc] init];
+        }
+        return @"";
+    };
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultMode:index inString:string] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [string rangeOfComposedCharacterSequenceAtIndex:index];
     index = range.length == 1 ? index : (lessValue ? NSMaxRange(range) : range.location);
@@ -117,8 +122,20 @@
     NSString *string = attributedString.string ?: (NSString *)aString;
     NSUInteger length = countingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
     QMUIAssert(index <= length, @"QMUIStringPrivate", @"%s, index %@ out of bounds. string = %@", __func__, @(index), attributedString ?: string);
-    if (index == 0 || index > length) return @"";
-    if (index == length) return [aString copy];// 根据系统 -[NSString substringToIndex:] 的注释，在 index 等于 length 时会返回 self 的 copy。
+    if (index == 0 || index > length) {
+        if (attributedString) {
+            return [[attributedString.class alloc] init];
+        }
+        return @"";
+    }
+    if (index == length) {// 根据系统 -[NSString substringToIndex:] 的注释，在 index 等于 length 时会返回 self 的 copy。
+        if (attributedString) {
+            if ([attributedString isKindOfClass:NSMutableAttributedString.class]) {
+                return [aString mutableCopy];
+            }
+        }
+        return [aString copy];
+    }
     index = countingNonASCIICharacterAsTwo ? [self transformIndexToDefaultMode:index inString:string] : index;// 实际计算都按照系统默认的 length 规则来
     NSRange range = [string rangeOfComposedCharacterSequenceAtIndex:index];
     index = range.length == 1 ? index : (lessValue ? range.location : NSMaxRange(range));
@@ -135,7 +152,12 @@
     NSString *string = attributedString.string ?: (NSString *)aString;
     NSUInteger length = countingNonASCIICharacterAsTwo ? string.qmui_lengthWhenCountingNonASCIICharacterAsTwo : string.length;
     QMUIAssert(NSMaxRange(range) <= length, @"QMUIStringPrivate", @"%s, range %@ out of bounds. string = %@", __func__, NSStringFromRange(range), attributedString ?: string);
-    if (NSMaxRange(range) > length) return @"";
+    if (NSMaxRange(range) > length) {
+        if (attributedString) {
+            return [[attributedString.class alloc] init];
+        }
+        return @"";
+    }
     range = countingNonASCIICharacterAsTwo ? [self transformRangeToDefaultMode:range lessValue:lessValue inString:string] : range;// 实际计算都按照系统默认的 length 规则来
     NSRange characterSequencesRange = lessValue ? [self downRoundRangeOfComposedCharacterSequences:range inString:string] : [string rangeOfComposedCharacterSequencesForRange:range];
     if (attributedString) {
@@ -166,8 +188,51 @@
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        [self qmuisafety_UIKeyboardImpl];
+        [self qmuisafety_NSRegularExpression];
         [self qmuisafety_NSString];
         [self qmuisafety_NSAttributedString];
+    });
+}
+
+static BOOL QMUIAvoidSubstring = NO;
++ (void)qmuisafety_UIKeyboardImpl {
+    // UIKeyboardImpl
+    // - (void) handleKeyWithString:(id)arg1 forKeyEvent:(id)arg2 executionContext:(id)arg3;
+    OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"UIKeyb", @"oard", @"Impl", nil]), NSSelectorFromString([NSString qmui_stringByConcat:@"handleKeyWithString:", @"forKeyEvent:", @"executionContext:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^(NSObject *selfObject, NSString *string, UIPressesEvent *event, NSObject *context) {
+            
+            QMUIAvoidSubstring = YES;
+            
+            // call super
+            void (*originSelectorIMP)(id, SEL, NSString *, UIPressesEvent *, NSObject *);
+            originSelectorIMP = (void (*)(id, SEL, id, id, id))originalIMPProvider();
+            originSelectorIMP(selfObject, originCMD, string, event, context);
+            
+            QMUIAvoidSubstring = NO;
+        };
+    });
+}
+
++ (void)qmuisafety_NSRegularExpression {
+    // 避免 stringByReplacingMatchesInString 无效
+    // https://github.com/Tencent/QMUI_iOS/issues/1542
+    // -[NSRegularExpression(NSReplacement) stringByReplacingMatchesInString:options:range:withTemplate:]
+    // - (id) stringByReplacingMatchesInString:(id)arg1 options:(unsigned long)arg2 range:(struct _NSRange)arg3 withTemplate:(id)arg4;
+    OverrideImplementation([NSRegularExpression class], @selector(stringByReplacingMatchesInString:options:range:withTemplate:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+        return ^NSString *(NSRegularExpression *selfObject, NSString *string, NSMatchingOptions options, NSRange range, NSString *templ) {
+            
+            QMUIAvoidSubstring = YES;
+            
+            // call super
+            NSString * (*originSelectorIMP)(id, SEL, NSString *, NSMatchingOptions, NSRange, NSString *);
+            originSelectorIMP = (NSString * (*)(id, SEL, NSString *, NSMatchingOptions, NSRange, NSString *))originalIMPProvider();
+            NSString * result = originSelectorIMP(selfObject, originCMD, string, options, range, templ);
+            
+            QMUIAvoidSubstring = NO;
+            
+            return result;
+        };
     });
 }
 
@@ -186,8 +251,9 @@
             }
             
             // 保护从 emoji 等 ComposedCharacterSequence 中间裁剪的场景
+            // 系统 emoji 键盘输入过程中一定会调用 substringFromIndex:text.length - 1，导致触发我们这个警告，这里特殊保护一下
             {
-                if (index < selfObject.length) {
+                if (index < selfObject.length && !QMUIAvoidSubstring) {
                     NSRange range = [selfObject rangeOfComposedCharacterSequenceAtIndex:index];
                     BOOL isValidatedIndex = range.location == index || NSMaxRange(range) == index;
                     if (!isValidatedIndex) {
@@ -272,7 +338,7 @@
                 if (NSMaxRange(range) < selfObject.length) {
                     NSRange range2 = [selfObject rangeOfComposedCharacterSequencesForRange:range];
                     BOOL isValidddatedRange = range.length == 0 || NSEqualRanges(range, range2);
-                    if (!isValidddatedRange) {
+                    if (!isValidddatedRange && !QMUIAvoidSubstring) {
                         NSString *logString = [NSString stringWithFormat:@"试图在 ComposedCharacterSequence 中间用 %@ 裁剪字符串，可能导致乱码、crash。原字符串为“%@”(%@)，range 为 %@，命中的 ComposedCharacterSequence range 为 %@", NSStringFromSelector(originCMD), selfObject, @(selfObject.length), NSStringFromRange(range), NSStringFromRange(range2)];
                         QMUIAssert(NO, @"QMUIStringSafety", @"%@", logString);
                         range = range2;

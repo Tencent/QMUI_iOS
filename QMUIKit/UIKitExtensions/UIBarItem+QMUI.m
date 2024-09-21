@@ -28,13 +28,13 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        // UIBarButtonItem -setView:
+        // -[UIBarButtonItem setView:]
         // @warning 如果作为 UIToolbar.items 使用，则 customView 的情况下，iOS 10 及以下的版本不会调用 setView:，所以那种情况改为在 setToolbarItems:animated: 时调用，代码见下方
         ExtendImplementationOfVoidMethodWithSingleArgument([UIBarButtonItem class], @selector(setView:), UIView *, ^(UIBarButtonItem *selfObject, UIView *firstArgv) {
             [UIBarItem setView:firstArgv inBarButtonItem:selfObject];
         });
         
-        // UITabBarItem -setView:
+        // -[UITabBarItem setView:]
         ExtendImplementationOfVoidMethodWithSingleArgument([UITabBarItem class], @selector(setView:), UIView *, ^(UITabBarItem *selfObject, UIView *firstArgv) {
             [UIBarItem setView:firstArgv inBarItem:selfObject];
         });

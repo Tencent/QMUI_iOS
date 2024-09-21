@@ -168,25 +168,25 @@
     menuView.maximumWidth = 124;
     menuView.safetyMarginsOfSuperview = UIEdgeInsetsSetRight(menuView.safetyMarginsOfSuperview, 6);
     menuView.items = @[
-                       [QMUIPopupMenuButtonItem itemWithImage:nil title:@"开启全部" handler:^(QMUIPopupMenuButtonItem *aItem) {
-                           for (NSString *logName in self.allNames) {
-                               [[QMUILogger sharedInstance].logNameManager setEnabled:YES forLogName:logName];
-                           }
-                           [self reloadData];
-                           [aItem.menuView hideWithAnimated:YES];
-                       }],
-                       [QMUIPopupMenuButtonItem itemWithImage:nil title:@"禁用全部" handler:^(QMUIPopupMenuButtonItem *aItem) {
-                           for (NSString *logName in self.allNames) {
-                               [[QMUILogger sharedInstance].logNameManager setEnabled:NO forLogName:logName];
-                           }
-                           [self reloadData];
-                           [aItem.menuView hideWithAnimated:YES];
-                       }],
-                       [QMUIPopupMenuButtonItem itemWithImage:nil title:@"清空全部" handler:^(QMUIPopupMenuButtonItem *aItem) {
-                           [[QMUILogger sharedInstance].logNameManager removeAllNames];
-                           [self reloadData];
-                           [aItem.menuView hideWithAnimated:YES];
-                       }]];
+        [QMUIPopupMenuItem itemWithTitle:@"开启全部" handler:^(__kindof QMUIPopupMenuItem * _Nonnull aItem, __kindof UIControl<QMUIPopupMenuItemViewProtocol> * _Nonnull aItemView, NSInteger section, NSInteger index) {
+            for (NSString *logName in self.allNames) {
+                [[QMUILogger sharedInstance].logNameManager setEnabled:YES forLogName:logName];
+            }
+            [self reloadData];
+            [aItem.menuView hideWithAnimated:YES];
+        }],
+        [QMUIPopupMenuItem itemWithTitle:@"禁用全部" handler:^(__kindof QMUIPopupMenuItem * _Nonnull aItem, __kindof UIControl<QMUIPopupMenuItemViewProtocol> * _Nonnull aItemView, NSInteger section, NSInteger index) {
+            for (NSString *logName in self.allNames) {
+                [[QMUILogger sharedInstance].logNameManager setEnabled:NO forLogName:logName];
+            }
+            [self reloadData];
+            [aItem.menuView hideWithAnimated:YES];
+        }],
+        [QMUIPopupMenuItem itemWithTitle:@"清空全部" handler:^(__kindof QMUIPopupMenuItem * _Nonnull aItem, __kindof UIControl<QMUIPopupMenuItemViewProtocol> * _Nonnull aItemView, NSInteger section, NSInteger index) {
+            [[QMUILogger sharedInstance].logNameManager removeAllNames];
+            [self reloadData];
+            [aItem.menuView hideWithAnimated:YES];
+        }]];
     menuView.sourceBarItem = self.navigationItem.rightBarButtonItem;
     [menuView showWithAnimated:YES];
 }

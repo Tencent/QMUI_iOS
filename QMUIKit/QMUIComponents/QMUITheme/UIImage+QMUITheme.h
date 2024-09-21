@@ -22,9 +22,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @required
 
-/// 获取当前 image 的标记名称，仅对 QMUIThemeImage 有效，其他 class 返回 nil。
-@property(nonatomic, copy, readonly) NSString *qmui_name;
-
 /// 获取当前 UIImage 的实际图片（返回的图片必定不是 dynamic image）
 @property(nonatomic, strong, readonly) UIImage *qmui_rawImage;
 
@@ -74,7 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  内部用，标志 QMUIThemeImage 对 UIImage (QMUI) 里使用动态颜色生成动态图片的适配 hook 是否已生效。例如在配置表这种“加载时机特别早”的场景，此时 UIImage (QMUITheme) +load 方法尚未被调用，这些 hook 还没生效，此时如果你使用 [UIImage qmui_imageWithTintColor:dynamicColor] 得到的 image 是无法自动响应 theme 切换的。
  */
-@property(class, nonatomic, assign) BOOL qmui_generatorSupportsDynamicColor;
+@property(class, nonatomic, assign, readonly) BOOL qmui_generatorSupportsDynamicColor;
 
 @end
 

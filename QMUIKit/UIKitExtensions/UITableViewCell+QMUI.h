@@ -74,8 +74,12 @@ extern const UIEdgeInsets QMUITableViewCellSeparatorInsetsNone;
 @property(nonatomic, copy, nullable) void (^qmui_setSelectedBlock)(BOOL selected, BOOL animated);
 
 /**
- 获取当前 cell 的 accessoryView，优先级分别是：编辑状态下的 editingAccessoryView -> 编辑状态下的系统自己的 accessoryView -> 普通状态下的自定义 accessoryView -> 普通状态下系统自己的 accessoryView。
+ 获取当前 cell 的 accessoryView，优先级分别是：当前肉眼可视的 view(比如进入排序模式时的 reorderControl) ->编辑状态下的 editingAccessoryView -> 编辑状态下的系统自己的 accessoryView -> 普通状态下的自定义 accessoryView -> 普通状态下系统自己的 accessoryView。
+ 
  @note 对于系统的 UITableViewCellAccessoryDetailDisclosureButton，iOS 12 及以下是一个 UITableViewCellDetailDisclosureView，而 iOS 13 及以上被拆成两个独立的 view，此时 qmui_accessoryView 只能返回布局上更靠左的那个 view。
+ 如果你给 cell 设置了自己的 accessoryView，但此时 cell 进入排序模式，系统会把你的 accessoryView 隐藏掉，强制显示为 reorderControl，此时 UITableViewCell.accessoryView 返回的是你自己设置的 view，而 UITableViewCell.qmui_accessoryView 返回的是当前可视的 view（也即 reorderControl）。
+ 
+ @warning 一般在 willDisplayCell 里使用，cellForRow 里可能太早了很多 view 尚未被创建，会返回 nil
 */
 @property(nonatomic, strong, readonly, nullable) __kindof UIView *qmui_accessoryView;
 

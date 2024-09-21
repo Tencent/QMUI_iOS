@@ -396,7 +396,7 @@ static NSUInteger const kTagForCenteredPlayButton = 1;
 
 - (BOOL)enabledZoomImageView {
     BOOL enabledZoom = YES;
-    BOOL isLivePhoto = isLivePhoto = !!self.livePhoto;
+    BOOL isLivePhoto = !!self.livePhoto;
     if ([self.delegate respondsToSelector:@selector(enabledZoomViewInZoomImageView:)]) {
         enabledZoom = [self.delegate enabledZoomViewInZoomImageView:self];
     } else if (!self.image && !isLivePhoto && !self.videoPlayerItem) {

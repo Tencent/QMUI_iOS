@@ -539,6 +539,14 @@ const CGSize QMUIViewFixedSizeNone = {-1, -1};
     self.frame = CGRectSetX(self.frame, right - CGRectGetWidth(self.frame));
 }
 
+- (CGPoint)qmui_origin {
+    return self.frame.origin;
+}
+
+- (void)setQmui_origin:(CGPoint)qmui_origin {
+    self.center = CGPointMake(qmui_origin.x + CGRectGetWidth(self.frame) / 2, qmui_origin.y + CGRectGetHeight(self.frame) / 2);
+}
+
 - (CGFloat)qmui_width {
     return CGRectGetWidth(self.frame);
 }
@@ -575,6 +583,8 @@ static char kAssociatedObjectKey_fixedSize;
             return superResult;
         };
         self.qmui_size = qmui_fixedSize;
+    } else {
+        self.qmui_sizeThatFitsBlock = nil;
     }
 }
 

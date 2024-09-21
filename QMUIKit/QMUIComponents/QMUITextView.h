@@ -102,6 +102,11 @@
 @property(nonatomic, assign) CGFloat maximumHeight;
 
 /**
+ 在 textView:shouldChangeTextInRange:replacementText: 里可用这个属性判断当前是否点击了删除。特别注意，当输入框为空时继续点删除也会触发，且这种情况只能通过这个属性区分，无法用别的判断方式。
+ */
+@property(nonatomic, assign) BOOL isDeletingDuringTextChange;
+
+/**
  *  控制输入框是否要出现“粘贴”menu
  *  @param sender 触发这次询问事件的来源
  *  @param superReturnValue [super canPerformAction:withSender:] 的返回值，当你不需要控制这个 block 的返回值时，可以返回 superReturnValue

@@ -65,13 +65,6 @@
         self.qmui_updatesIndicatorSize = UpdatesIndicatorSize;
         self.qmui_updatesIndicatorOffset = UpdatesIndicatorOffset;
         self.qmui_updatesIndicatorOffsetLandscape = UpdatesIndicatorOffsetLandscape;
-        
-        BeginIgnoreDeprecatedWarning
-        self.qmui_badgeCenterOffset = BadgeCenterOffset;
-        self.qmui_badgeCenterOffsetLandscape = BadgeCenterOffsetLandscape;
-        self.qmui_updatesIndicatorCenterOffset = UpdatesIndicatorCenterOffset;
-        self.qmui_updatesIndicatorCenterOffsetLandscape = UpdatesIndicatorCenterOffsetLandscape;
-        EndIgnoreClangWarning
     }
 }
 
@@ -160,34 +153,20 @@ static char kAssociatedObjectKey_badgeOffsetLandscape;
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeOffsetLandscape)) CGPointValue];
 }
 
-BeginIgnoreDeprecatedWarning
-BeginIgnoreClangWarning(-Wdeprecated-implementations)
-
-static char kAssociatedObjectKey_badgeCenterOffset;
-- (void)setQmui_badgeCenterOffset:(CGPoint)qmui_badgeCenterOffset {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeCenterOffset, [NSValue valueWithCGPoint:qmui_badgeCenterOffset], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    self.qmui_view.qmui_badgeCenterOffset = qmui_badgeCenterOffset;
+- (void)setQmui_badgeView:(__kindof UIView *)qmui_badgeView {
+    self.qmui_view.qmui_badgeView = qmui_badgeView;
 }
 
-- (CGPoint)qmui_badgeCenterOffset {
-    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeCenterOffset)) CGPointValue];
+- (__kindof UIView *)qmui_badgeView {
+    return self.qmui_view.qmui_badgeView;
 }
 
-static char kAssociatedObjectKey_badgeCenterOffsetLandscape;
-- (void)setQmui_badgeCenterOffsetLandscape:(CGPoint)qmui_badgeCenterOffsetLandscape {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_badgeCenterOffsetLandscape, [NSValue valueWithCGPoint:qmui_badgeCenterOffsetLandscape], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    self.qmui_view.qmui_badgeCenterOffsetLandscape = qmui_badgeCenterOffsetLandscape;
+- (void)setQmui_badgeViewDidLayoutBlock:(void (^)(__kindof UIView * _Nonnull, __kindof UIView * _Nonnull))qmui_badgeViewDidLayoutBlock {
+    self.qmui_view.qmui_badgeViewDidLayoutBlock = qmui_badgeViewDidLayoutBlock;
 }
 
-- (CGPoint)qmui_badgeCenterOffsetLandscape {
-    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_badgeCenterOffsetLandscape)) CGPointValue];
-}
-
-EndIgnoreClangWarning
-EndIgnoreDeprecatedWarning
-
-- (QMUILabel *)qmui_badgeLabel {
-    return self.qmui_view.qmui_badgeLabel;
+- (void (^)(__kindof UIView * _Nonnull, __kindof UIView * _Nonnull))qmui_badgeViewDidLayoutBlock {
+    return self.qmui_view.qmui_badgeViewDidLayoutBlock;
 }
 
 #pragma mark - UpdatesIndicator
@@ -245,34 +224,20 @@ static char kAssociatedObjectKey_updatesIndicatorOffsetLandscape;
     return [((NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorOffsetLandscape)) CGPointValue];
 }
 
-BeginIgnoreDeprecatedWarning
-BeginIgnoreClangWarning(-Wdeprecated-implementations)
-
-static char kAssociatedObjectKey_updatesIndicatorCenterOffset;
-- (void)setQmui_updatesIndicatorCenterOffset:(CGPoint)qmui_updatesIndicatorCenterOffset {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorCenterOffset, [NSValue valueWithCGPoint:qmui_updatesIndicatorCenterOffset], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    self.qmui_view.qmui_updatesIndicatorCenterOffset = qmui_updatesIndicatorCenterOffset;
+- (void)setQmui_updatesIndicatorView:(__kindof UIView *)qmui_updatesIndicatorView {
+    self.qmui_view.qmui_updatesIndicatorView = qmui_updatesIndicatorView;
 }
-
-- (CGPoint)qmui_updatesIndicatorCenterOffset {
-    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorCenterOffset)) CGPointValue];
-}
-
-static char kAssociatedObjectKey_updatesIndicatorCenterOffsetLandscape;
-- (void)setQmui_updatesIndicatorCenterOffsetLandscape:(CGPoint)qmui_updatesIndicatorCenterOffsetLandscape {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorCenterOffsetLandscape, [NSValue valueWithCGPoint:qmui_updatesIndicatorCenterOffsetLandscape], OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-    self.qmui_view.qmui_updatesIndicatorCenterOffsetLandscape = qmui_updatesIndicatorCenterOffsetLandscape;
-}
-
-- (CGPoint)qmui_updatesIndicatorCenterOffsetLandscape {
-    return [((NSValue *)objc_getAssociatedObject(self, &kAssociatedObjectKey_updatesIndicatorCenterOffsetLandscape)) CGPointValue];
-}
-
-EndIgnoreClangWarning
-EndIgnoreDeprecatedWarning
 
 - (UIView *)qmui_updatesIndicatorView {
     return self.qmui_view.qmui_updatesIndicatorView;
+}
+
+- (void)setQmui_updatesIndicatorViewDidLayoutBlock:(void (^)(__kindof UIView * _Nonnull, __kindof UIView * _Nonnull))qmui_updatesIndicatorViewDidLayoutBlock {
+    self.qmui_view.qmui_updatesIndicatorViewDidLayoutBlock = qmui_updatesIndicatorViewDidLayoutBlock;
+}
+
+- (void (^)(__kindof UIView * _Nonnull, __kindof UIView * _Nonnull))qmui_updatesIndicatorViewDidLayoutBlock {
+    return self.qmui_view.qmui_updatesIndicatorViewDidLayoutBlock;
 }
 
 #pragma mark - Common
@@ -291,13 +256,6 @@ EndIgnoreDeprecatedWarning
             view.qmui_updatesIndicatorSize = item.qmui_updatesIndicatorSize;
             view.qmui_updatesIndicatorOffset = item.qmui_updatesIndicatorOffset;
             view.qmui_updatesIndicatorOffsetLandscape = item.qmui_updatesIndicatorOffsetLandscape;
-            
-            BeginIgnoreDeprecatedWarning
-            view.qmui_badgeCenterOffset = item.qmui_badgeCenterOffset;
-            view.qmui_badgeCenterOffsetLandscape = item.qmui_badgeCenterOffsetLandscape;
-            view.qmui_updatesIndicatorCenterOffset = item.qmui_updatesIndicatorCenterOffset;
-            view.qmui_updatesIndicatorCenterOffsetLandscape = item.qmui_updatesIndicatorCenterOffsetLandscape;
-            EndIgnoreDeprecatedWarning
             
             view.qmui_badgeString = item.qmui_badgeString;
             view.qmui_shouldShowUpdatesIndicator = item.qmui_shouldShowUpdatesIndicator;

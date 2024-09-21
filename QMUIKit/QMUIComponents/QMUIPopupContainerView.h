@@ -25,6 +25,12 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
     QMUIPopupContainerViewLayoutDirectionRight
 };
 
+typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutAlignment) {
+    QMUIPopupContainerViewLayoutAlignmentCenter,
+    QMUIPopupContainerViewLayoutAlignmentLeading,
+    QMUIPopupContainerViewLayoutAlignmentTrailing,
+};
+
 /**
  * 带箭头的小tips浮层，自带 imageView 和 textLabel，可展示简单的图文信息，支持 UIViewContentModeTop/UIViewContentModeBottom/UIViewContentModeCenter 三种布局方式。
  * QMUIPopupContainerView 支持以两种方式显示在界面上：
@@ -50,9 +56,11 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
  */
 @interface QMUIPopupContainerView : UIControl {
     CAShapeLayer    *_backgroundLayer;
+    CAShapeLayer    *_borderLayer;// CAShapeLayer 的特性是有一半 stroke 会和 fill 重叠，而我们希望的是 stroke 在 fill 外面，所以只能分开两个 layer 实现 border 和 background
     UIImageView     *_arrowImageView;
     CGFloat         _arrowMinX;
     CGFloat         _arrowMinY;
+    BOOL            _shouldInvalidateLayout;
 }
 
 @property(nonatomic, assign) BOOL debug;
@@ -92,6 +100,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 @property(nonatomic, assign) CGSize arrowSize UI_APPEARANCE_SELECTOR;
 
 /// 三角箭头的图片，通常用于默认的三角样式不满足需求时。当使用了 arrowImage 后，arrowSize 将会被固定为 arrowImage.size。
+/// 当 borderWidth 大于0时，arrowImage 会与所在那一侧的 border 重叠，所以你的切图需要预留一部分 borderWidth 的区域以盖住边框。
 /// 图片必须为箭头向下的方向
 @property(nonatomic, strong, nullable) UIImage *arrowImage UI_APPEARANCE_SELECTOR;
 
@@ -101,7 +110,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 最小宽度（指整个控件的宽度，而不是contentView部分），默认为0
 @property(nonatomic, assign) CGFloat minimumWidth UI_APPEARANCE_SELECTOR;
 
-/// 最大高度（指整个控件的高度，而不是contentView部分），默认为CGFLOAT_MAX
+/// 最大高度（指整个控件的高度，而不是contentView部分），默认为CGFLOAT_MAX，会在布局时被动态修改。
 @property(nonatomic, assign) CGFloat maximumHeight UI_APPEARANCE_SELECTOR;
 
 /// 最小高度（指整个控件的高度，而不是contentView部分），默认为0
@@ -113,10 +122,22 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// 最终的布局方向（preferLayoutDirection只是期望的方向，但有可能那个方向已经没有剩余空间可摆放控件了，所以会自动变换）
 @property(nonatomic, assign, readonly) QMUIPopupContainerViewLayoutDirection currentLayoutDirection;
 
+/// 计算布局时期望浮层与目标位置的对齐方式，默认为 QMUIPopupContainerViewLayoutAlignmentCenter，也即浮层和目标位置相对居中。
+/// 对 preferLayoutDirection 为 Above/Below 而言，Leading 表示浮层的左侧与目标位置左边缘对齐，Trailing 表示浮层的右侧与目标位置右边缘对齐。
+/// 对 preferLayoutDirection 为 Left/Right 而言，Leading 表示浮层的顶端与目标位置顶边缘对齐，Trailing 表示浮层的底端与目标位置底边缘对齐。
+/// 如果预期的对齐方式无法被满足时，会根据 usesOppositeLayoutAlignmentIfNeeded 的值来决定备选方案。
+@property(nonatomic, assign) QMUIPopupContainerViewLayoutAlignment preferLayoutAlignment UI_APPEARANCE_SELECTOR;
+
+/// 表示 preferLayoutAlignment 在极端情况下无法满足调用方设置的值时，应该以什么方式作为备选。
+/// 若当前属性值为 YES，则表示用相反的对齐方式去尝试（例如 preferLayoutAlignment = QMUIPopupContainerViewLayoutAlignmentLeading 则在极端情况下会用 QMUIPopupContainerViewLayoutAlignmentTrailing 作为备选），若当前属性值为 NO 则表示保持对齐方向不变，让浮层的边缘紧贴着 safetyMarginsOfSuperview 即可。
+/// 默认为 YES。
+/// @warning 对 QMUIPopupContainerViewLayoutAlignmentCenter 无意义，因为 QMUIPopupContainerViewLayoutAlignmentCenter 没有所谓的相反概念。
+@property(nonatomic, assign) BOOL usesOppositeLayoutAlignmentIfNeeded UI_APPEARANCE_SELECTOR;
+
 /// 最终布局时箭头距离目标边缘的距离，默认为5
 @property(nonatomic, assign) CGFloat distanceBetweenSource UI_APPEARANCE_SELECTOR;
 
-/// 最终布局时与父节点的边缘的临界点，默认为(10, 10, 10, 10)
+/// 最终布局时与父节点的边缘的临界点，默认为(10, 10, 10, 10)，注意这里的值不需要由业务考虑 safeAreaInsets，内部会自己叠加。
 @property(nonatomic, assign) UIEdgeInsets safetyMarginsOfSuperview UI_APPEARANCE_SELECTOR;
 
 /// 允许用一个自定的 view 作为背景，会自动将其 mask 为圆角带箭头的造型，当同时使用 backgroundView 和 arrowImage 时，arrowImage 只作为遮罩使用（也即使用它的造型，不显示它的图片内容）。
@@ -147,7 +168,10 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 /// rect 需要处于 QMUIPopupContainerView 所在的坐标系内，例如如果 popup 使用 addSubview: 的方式添加到界面，则 sourceRect 应该是 superview 坐标系内的；如果 popup 使用 window 的方式展示，则 sourceRect 需要转换为 window 坐标系内。
 @property(nonatomic, assign) CGRect sourceRect;
 
-/// 立即刷新当前 popup 的布局，前提是 popup 已经被 show 过。
+/// 标记为需要更新布局，会在下一次 runloop 里统一调用 updateLayout。一般情况请用这个方法，避免直接用 updateLayout，从而获取更佳的性能。
+- (void)setNeedsUpdateLayout;
+
+/// 立即刷新当前 popup 的布局，前提是 popup.isShowing 为 YES。
 - (void)updateLayout;
 
 - (void)showWithAnimated:(BOOL)animated;
@@ -155,6 +179,22 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutDirection) {
 - (void)hideWithAnimated:(BOOL)animated;
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^ __nullable)(BOOL finished))completion;
 - (BOOL)isShowing;
+
+/// 允许业务自定义显示动画，请在这个 block 里写自己的动画实现，并在恰当的时候调用参数里的 animation() 和 completion()。
+/// @param defaultAnimation 组件里默认的显示动画（默认实现是 scale+alpha），业务可自行决定是否要调用它
+/// @param completion 动画结束的回调，业务必须在自己动画结束时主动调用它
+/// @param isWindowMode 是否正在以 window 模式展示
+/// @param rootView popup 组件当前所在的容器，如果是 window 模式，则是内部自己创建的 window.rootViewController.view，若是其他模式则是业务的 view
+/// @param popup 当前 popup 实例
+@property(nonatomic, copy) void (^showingAnimationBlock)(void (^defaultAnimation)(void), void (^completion)(BOOL finished), BOOL isWindowMode, UIView * _Nullable rootView, __kindof QMUIPopupContainerView *popup);
+
+/// 允许业务自定义隐藏动画，请在这个 block 里写自己的动画实现，并在恰当的时候调用参数里的 animation() 和 completion()。
+/// @param defaultAnimation 组件里默认的显示动画（默认实现是 scale+alpha），业务可自行决定是否要调用它
+/// @param completion 动画结束的回调，业务必须在自己动画结束时主动调用它
+/// @param isWindowMode 是否正在以 window 模式展示
+/// @param rootView popup 组件当前所在的容器，如果是 window 模式，则是内部自己创建的 window.rootViewController.view，若是其他模式则是业务的 view
+/// @param popup 当前 popup 实例
+@property(nonatomic, copy) void (^hidingAnimationBlock)(void (^defaultAnimation)(void), void (^completion)(BOOL finished), BOOL isWindowMode, UIView * _Nullable rootView, __kindof QMUIPopupContainerView *popup);
 
 /**
  *  即将显示时的回调

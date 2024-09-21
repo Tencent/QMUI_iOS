@@ -105,7 +105,7 @@ static char kAssociatedObjectKey_textAttributes;
         NSMutableArray *willRemovedAttributes = [NSMutableArray array];
         [string enumerateAttributesInRange:NSMakeRange(0, string.length) options:0 usingBlock:^(NSDictionary<NSAttributedStringKey,id> * _Nonnull attrs, NSRange range, BOOL * _Nonnull stop) {
             // 如果存在 kern 属性，则只有 range 是第一个字至倒数第二个字，才有可能是通过 qmui_textAttribtus 设置的
-            if (NSEqualRanges(range, NSMakeRange(0, string.length - 1)) && [attrs[NSKernAttributeName] isEqualToNumber:prevTextAttributes[NSKernAttributeName]]) {
+            if (NSEqualRanges(range, NSMakeRange(0, string.length - 1)) && [attrs[NSKernAttributeName] isEqual:prevTextAttributes[NSKernAttributeName]]) {
                 [string removeAttribute:NSKernAttributeName range:NSMakeRange(0, string.length - 1)];
             }
             // 上面排除掉 kern 属性后，如果 range 不是整个字符串，那肯定不是通过 qmui_textAttributes 设置的
@@ -169,7 +169,7 @@ static char kAssociatedObjectKey_textAttributes;
         [attributedString addAttribute:NSParagraphStyleAttributeName value:paraStyle range:NSMakeRange(0, attributedString.length)];
         
         // iOS 默认文字底对齐，改了行高要自己调整才能保证文字一直在 label 里垂直居中
-        CGFloat baselineOffset = (self.qmui_lineHeight - self.font.lineHeight) / 4;// 实际测量得知，baseline + 1，文字会往上移动 2pt，所以这里为了垂直居中，需要 / 4。
+        CGFloat baselineOffset = [QMUIHelper baselineOffsetWhenVerticalAlignCenterInHeight:self.qmui_lineHeight withFont:self.font];
         [attributedString addAttribute:NSBaselineOffsetAttributeName value:@(baselineOffset) range:NSMakeRange(0, attributedString.length)];
     }
     
@@ -259,6 +259,16 @@ static char kAssociatedObjectKey_lineHeight;
     return center;
 }
 
+- (CGFloat)qmui_centerOfXHeight {
+    NSRange range = NSMakeRange(0, self.attributedText.length);
+    UIFont *font = [self.attributedText attribute:NSFontAttributeName atIndex:0 effectiveRange:&range];
+    if (!font) {
+        font = self.font;
+    }
+    CGFloat center = CGRectGetHeight(self.bounds) + font.descender - font.xHeight / 2;
+    return center;
+}
+
 - (void)qmui_setTheSameAppearanceAsLabel:(UILabel *)label {
     self.font = label.font;
     self.textColor = label.textColor;
@@ -309,8 +319,12 @@ static char kAssociatedObjectKey_showPrincipalLines;
                 label.qmuilb_principalLineLayer.frame  = label.bounds;
                 
                 NSRange range = NSMakeRange(0, label.attributedText.length);
-                CGFloat baselineOffset = [[label.attributedText attribute:NSBaselineOffsetAttributeName atIndex:0 effectiveRange:&range] doubleValue];
-                CGFloat lineOffset = baselineOffset * 2;
+                CGFloat lineOffset = [[label.attributedText attribute:NSBaselineOffsetAttributeName atIndex:0 effectiveRange:&range] doubleValue];
+                // ≤ iOS 15 的设备上，1pt baseline 会让文本向上移动 2pt，≥ iOS 16 均为 1:1 移动。
+                if (@available(iOS 16.0, *)) {
+                } else {
+                    lineOffset = lineOffset * 2;
+                }
                 UIFont *font = label.font;
                 CGFloat maxX = CGRectGetWidth(label.bounds);
                 CGFloat maxY = CGRectGetHeight(label.bounds);

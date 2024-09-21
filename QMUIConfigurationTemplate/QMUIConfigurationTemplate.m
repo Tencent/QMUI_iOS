@@ -54,7 +54,7 @@
     #pragma mark - QMUILog
     QMUICMI.shouldPrintDefaultLog = YES;                                        // ShouldPrintDefaultLog : 是否允许输出 QMUILogLevelDefault 级别的 log
     QMUICMI.shouldPrintInfoLog = YES;                                           // ShouldPrintInfoLog : 是否允许输出 QMUILogLevelInfo 级别的 log
-    QMUICMI.shouldPrintWarnLog = YES;                                           // ShouldPrintInfoLog : 是否允许输出 QMUILogLevelWarn 级别的 log
+    QMUICMI.shouldPrintWarnLog = YES;                                           // ShouldPrintWarnLog : 是否允许输出 QMUILogLevelWarn 级别的 log
     QMUICMI.shouldPrintQMUIWarnLogToConsole = NO;                              // ShouldPrintQMUIWarnLogToConsole : 是否在出现 QMUILogWarn 时自动把这些 log 以 QMUIConsole 的方式显示到设备屏幕上
     
     #pragma mark - UIControl
@@ -257,19 +257,11 @@
     QMUICMI.badgeContentEdgeInsets = UIEdgeInsetsMake(2, 4, 2, 4);              // BadgeContentEdgeInsets : QMUIBadge 上的未读数与圆圈之间的 padding
     QMUICMI.badgeOffset = CGPointMake(-9, 11);                                  // BadgeOffset : QMUIBadge 上的未读数相对于目标 view 右上角的偏移
     QMUICMI.badgeOffsetLandscape = CGPointMake(-9, 6);                          // BadgeOffsetLandscape : QMUIBadge 上的未读数在横屏下相对于目标 view 右上角的偏移
-    BeginIgnoreDeprecatedWarning
-    QMUICMI.badgeCenterOffset = CGPointMake(14, -10);                           // BadgeCenterOffset : QMUIBadge 未读数相对于目标 view 中心的偏移
-    QMUICMI.badgeCenterOffsetLandscape = CGPointMake(16, -7);                   // BadgeCenterOffsetLandscape : QMUIBadge 未读数在横屏下相对于目标 view 中心的偏移
-    EndIgnoreDeprecatedWarning
     
     QMUICMI.updatesIndicatorColor = UIColorRed;                                 // UpdatesIndicatorColor : QMUIBadge 上的未读红点的颜色
     QMUICMI.updatesIndicatorSize = CGSizeMake(7, 7);                            // UpdatesIndicatorSize : QMUIBadge 上的未读红点的大小
     QMUICMI.updatesIndicatorOffset = CGPointMake(4, UpdatesIndicatorSize.height);// UpdatesIndicatorOffset : QMUIBadge 未读红点相对于目标 view 右上角的偏移
     QMUICMI.updatesIndicatorOffsetLandscape = UpdatesIndicatorOffset;           // UpdatesIndicatorOffsetLandscape : QMUIBadge 未读红点在横屏下相对于目标 view 右上角的偏移
-    BeginIgnoreDeprecatedWarning
-    QMUICMI.updatesIndicatorCenterOffset = CGPointMake(14, -10);                // UpdatesIndicatorCenterOffset : QMUIBadge 未读红点相对于目标 view 中心的偏移
-    QMUICMI.updatesIndicatorCenterOffsetLandscape = CGPointMake(14, -10);       // UpdatesIndicatorCenterOffsetLandscape : QMUIBadge 未读红点在横屏下相对于目标 view 中心点的偏移
-    EndIgnoreDeprecatedWarning
     
     #pragma mark - Others
     

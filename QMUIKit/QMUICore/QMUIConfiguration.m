@@ -264,10 +264,11 @@ static BOOL QMUI_hasAppliedInitialTemplate;
     self.shouldPrintQMUIWarnLogToConsole = IS_DEBUG && !IS_XCTEST;
     
     #pragma mark - QMUIBadge
-    self.badgeOffset = QMUIBadgeInvalidateOffset;
-    self.badgeOffsetLandscape = QMUIBadgeInvalidateOffset;
-    self.updatesIndicatorOffset = QMUIBadgeInvalidateOffset;
-    self.updatesIndicatorOffsetLandscape = QMUIBadgeInvalidateOffset;
+    self.badgeOffset = CGPointMake(-9, 11);
+    self.badgeOffsetLandscape = CGPointMake(-9, 6);
+    self.updatesIndicatorSize = CGSizeMake(7, 7);
+    self.updatesIndicatorOffset = CGPointMake(4, self.updatesIndicatorSize.height);
+    self.updatesIndicatorOffsetLandscape = self.updatesIndicatorOffset;
     
     #pragma mark - Others
     

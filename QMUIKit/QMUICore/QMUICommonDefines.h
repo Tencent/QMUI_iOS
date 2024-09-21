@@ -71,6 +71,11 @@
 #define IOS16_SDK_ALLOWED YES
 #endif
 
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 170000
+/// 当前编译使用的 Base SDK 版本为 iOS 17.0 及以上
+#define IOS17_SDK_ALLOWED YES
+#endif
+
 #pragma mark - Clang
 
 #define ArgumentToString(macro) #macro
@@ -142,6 +147,8 @@
 #define IS_67INCH_SCREEN [QMUIHelper is67InchScreen]
 /// iPhone XS Max
 #define IS_65INCH_SCREEN [QMUIHelper is65InchScreen]
+/// iPhone 14 Pro / 15 Pro
+#define IS_61INCH_SCREEN_AND_IPHONE14PRO [QMUIHelper is61InchScreenAndiPhone14ProLater]
 /// iPhone 12 / 12 Pro
 #define IS_61INCH_SCREEN_AND_IPHONE12 [QMUIHelper is61InchScreenAndiPhone12Later]
 /// iPhone XR
@@ -166,6 +173,9 @@
 
 /// 是否放大模式（iPhone 6及以上的设备支持放大模式，iPhone X 除外）
 #define IS_ZOOMEDMODE [QMUIHelper isZoomedMode]
+
+/// 当前设备是否拥有灵动岛
+#define IS_DYNAMICISLAND_DEVICE [QMUIHelper isDynamicIslandDevice]
 
 #pragma mark - 变量-布局相关
 
@@ -198,7 +208,7 @@
 #define NavigationContentTop (StatusBarHeight + NavigationBarHeight)
 
 /// 同上，这里用于获取它的静态常量值
-#define NavigationContentTopConstant (StatusBarHeightConstant + NavigationBarHeight)
+#define NavigationContentTopConstant (QMUIHelper.navigationBarMaxYConstant)
 
 /// 判断当前是否是处于分屏模式的 iPad 或 iOS 16.1 的台前调度模式
 #define IS_SPLIT_SCREEN_IPAD (IS_IPAD && APPLICATION_WIDTH != SCREEN_WIDTH)
@@ -326,11 +336,12 @@ setterWithGetter(SEL getter) {
 
 /**
  *  某些地方可能会将 CGFLOAT_MIN 作为一个数值参与计算（但其实 CGFLOAT_MIN 更应该被视为一个标志位而不是数值），可能导致一些精度问题，所以提供这个方法快速将 CGFLOAT_MIN 转换为 0
+ *  某些情况可能计算出来是0.0000000x，也靠这个方法抹去尾数。
  *  issue: https://github.com/Tencent/QMUI_iOS/issues/203
  */
 CG_INLINE CGFloat
 removeFloatMin(CGFloat floatValue) {
-    return floatValue == CGFLOAT_MIN ? 0 : floatValue;
+    return fabs(floatValue) <= 0.001 ? 0 : floatValue;
 }
 
 /**
@@ -340,9 +351,19 @@ removeFloatMin(CGFloat floatValue) {
  */
 CG_INLINE CGFloat
 flatSpecificScale(CGFloat floatValue, CGFloat scale) {
+    if (isinf(floatValue) || floatValue == CGFLOAT_MAX) return floatValue;
     floatValue = removeFloatMin(floatValue);
     scale = scale ?: ScreenScale;
-    CGFloat flattedValue = ceil(floatValue * scale) / scale;
+    // 这里因为浮点精度的问题，可能会出现一些偏差，例如 161.66666666666669 算出来可能是162，161.66666666666666 算出来是161.66666666667，为了解决这种场景，这里同时用 ceil 和 round 算一遍再取最接近的那个结果
+    NSInteger pixelValue1 = ceil(floatValue * scale);
+    NSInteger pixelValue2 = round(floatValue * scale);
+    NSInteger pixelValue = 0;
+    if (fabs(pixelValue1 - floatValue) <= fabs(pixelValue2 - floatValue)) {
+        pixelValue = pixelValue1;
+    } else {
+        pixelValue = pixelValue2;
+    }
+    CGFloat flattedValue = pixelValue / scale;
     return flattedValue;
 }
 

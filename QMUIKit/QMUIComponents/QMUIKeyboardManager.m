@@ -831,38 +831,8 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
     return distance;
 }
 
-+ (UIWindow *)keyboardWindow {
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        if ([self positionedKeyboardViewInWindow:window]) {
-            return window;
-        }
-    }
-    
-    UIWindow *window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
-        return [NSStringFromClass(item.class) isEqualToString:@"UIRemoteKeyboardWindow"];
-    }];
-    if (window) {
-        return window;
-    }
-    
-    window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
-        return [NSStringFromClass(item.class) isEqualToString:@"UITextEffectsWindow"];
-    }];
-    return window;
-}
-
-+ (UIView *)keyboardView {
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
-        UIView *view = [self positionedKeyboardViewInWindow:window];
-        if (view) {
-            return view;
-        }
-    }
-    return nil;
-}
-
 /**
- 从给定的 window 里寻找代表键盘当前布局位置的 view。
+ 从所有 window 里寻找代表键盘当前布局位置的 view。
  iOS 15 及以前（包括用 Xcode 13 编译的 App 运行在 iOS 16 上的场景），键盘的 UI 层级是：
  |- UIApplication.windows
     |- UIRemoteKeyboardWindow
@@ -884,28 +854,48 @@ static char kAssociatedObjectKey_KeyboardViewFrameObserver;
  
  所以只要找到 UIInputSetHostView 即可，优先从 UIRemoteKeyboardWindow 找，不存在的话则从 UITextEffectsWindow 找。
  */
-+ (UIView *)positionedKeyboardViewInWindow:(UIWindow *)window {
++ (UIView *)keyboardView {
+    UIView *inputSetHostView = [[UIApplication.sharedApplication.windows qmui_filterWithBlock:^BOOL(__kindof UIWindow * _Nonnull window) {
+        return [NSStringFromClass(window.class) isEqualToString:@"UIRemoteKeyboardWindow"];
+    }] qmui_compactMapWithBlock:^id _Nullable(__kindof UIWindow * _Nonnull window) {
+        return [self inputSetHostViewInWindow:window];
+    }].firstObject;
     
-    if (!window) return nil;
+    if (inputSetHostView) return inputSetHostView;
     
-    NSString *windowName = NSStringFromClass(window.class);
-    if ([windowName isEqualToString:@"UIRemoteKeyboardWindow"]) {
-        UIView *result = [[window.subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
-            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetContainerView"];
-        }].subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
-            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetHostView"];
-        }];
-        return result;
+    inputSetHostView = [[UIApplication.sharedApplication.windows qmui_filterWithBlock:^BOOL(__kindof UIWindow * _Nonnull window) {
+        return [NSStringFromClass(window.class) isEqualToString:@"UITextEffectsWindow"];
+    }] qmui_compactMapWithBlock:^id _Nullable(__kindof UIWindow * _Nonnull window) {
+        return [self inputSetHostViewInWindow:window];
+    }].firstObject;
+    
+    return inputSetHostView;
+}
+
++ (UIView *)inputSetHostViewInWindow:(UIWindow *)window {
+    UIView *result = [[window.subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
+        return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetContainerView"];
+    }].subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
+        return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetHostView"] && subview.subviews.count;
+    }];
+    return result;
+}
+
++ (UIWindow *)keyboardWindow {
+    UIView *inputSetHostView = [self keyboardView];
+    if (inputSetHostView) return inputSetHostView.window;
+    
+    UIWindow *window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
+        return [NSStringFromClass(item.class) isEqualToString:@"UIRemoteKeyboardWindow"];
+    }];
+    if (window) {
+        return window;
     }
-    if ([windowName isEqualToString:@"UITextEffectsWindow"]) {
-        UIView *result = [[window.subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
-            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetContainerView"];
-        }].subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull subview) {
-            return [NSStringFromClass(subview.class) isEqualToString:@"UIInputSetHostView"] && subview.subviews.count;
-        }];
-        return result;
-    }
-    return nil;
+    
+    window = [UIApplication.sharedApplication.windows qmui_firstMatchWithBlock:^BOOL(__kindof UIWindow * _Nonnull item) {
+        return [NSStringFromClass(item.class) isEqualToString:@"UITextEffectsWindow"];
+    }];
+    return window;
 }
 
 + (BOOL)isKeyboardVisible {

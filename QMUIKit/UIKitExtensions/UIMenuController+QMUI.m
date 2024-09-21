@@ -14,91 +14,131 @@
 
 #import "UIMenuController+QMUI.h"
 #import "QMUICore.h"
-
-@interface UIMenuController ()
-
-@property(nonatomic, assign) NSInteger qmui_originWindowLevel;
-@property(nonatomic, assign) BOOL qmui_windowLevelChanged;
-
-@end
+#import "NSArray+QMUI.h"
 
 @implementation UIMenuController (QMUI)
 
-QMUISynthesizeNSIntegerProperty(qmui_originWindowLevel, setQmui_originWindowLevel);
-QMUISynthesizeBOOLProperty(qmui_windowLevelChanged, setQmui_windowLevelChanged);
-
 static UIWindow *kMenuControllerWindow = nil;
-static BOOL kHasAddedMenuControllerNotification = NO;
 
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        OverrideImplementation(object_getClass([UIMenuController class]), @selector(sharedMenuController), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIMenuController *selfObject) {
-                
-                // call super
-                UIMenuController *(*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (UIMenuController *(*)(id, SEL))originalIMPProvider();
-                UIMenuController *menuController = originSelectorIMP(selfObject, originCMD);
-                
-                /// 修复 issue：https://github.com/Tencent/QMUI_iOS/issues/659
-                if (!kHasAddedMenuControllerNotification) {
-                    kHasAddedMenuControllerNotification = YES;
-                    [[NSNotificationCenter defaultCenter] addObserver:menuController selector:@selector(handleMenuWillShowNotification:) name:UIMenuControllerWillShowMenuNotification object:nil];
-                    [[NSNotificationCenter defaultCenter] addObserver:menuController selector:@selector(handleMenuWillHideNotification:) name:UIMenuControllerWillHideMenuNotification object:nil];
-                }
-                
-                return menuController;
-            };
-        });
+        if (@available(iOS 16.0, *)) {
+            // iOS 16 开始改为用 UIEditMenuInteraction，以前的做法也无效了，所以用 hook 的方式解决
+            // https://github.com/Tencent/QMUI_iOS/issues/1538
+            
+            // UIEditMenuInteraction
+            // - (void)presentEditMenuWithConfiguration:(UIEditMenuConfiguration *)configuration;
+            OverrideImplementation([UIEditMenuInteraction class], @selector(presentEditMenuWithConfiguration:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIEditMenuInteraction *selfObject, UIEditMenuConfiguration *configuration) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UIEditMenuConfiguration *);
+                    originSelectorIMP = (void (*)(id, SEL, UIEditMenuConfiguration *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, configuration);
+                    
+                    // 走到 present 的时候 window 可能还没构造，所以这里延迟一下再调用
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [UIMenuController qmuimc_handleMenuWillShow];
+                    });
+                };
+            });
+            
+            OverrideImplementation([UIEditMenuInteraction class], @selector(dismissMenu), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIEditMenuInteraction *selfObject) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD);
+                    
+                    [UIMenuController qmuimc_handleMenuWillHide];
+                };
+            });
+            
+        } else if (@available(iOS 13.0, *))  {
+            // +[UIMenuController sharedMenuController]
+            OverrideImplementation(object_getClass([UIMenuController class]), @selector(sharedMenuController), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIMenuController *selfObject) {
+                    
+                    // call super
+                    UIMenuController *(*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (UIMenuController *(*)(id, SEL))originalIMPProvider();
+                    UIMenuController *menuController = originSelectorIMP(selfObject, originCMD);
+                    
+                    /// 修复 issue：https://github.com/Tencent/QMUI_iOS/issues/659
+                    /// UIMenuController 本身就是单例，这里就不考虑释放了
+                    if (![menuController qmui_getBoundBOOLForKey:@"kHasAddedNotification"]) {
+                        [menuController qmui_bindBOOL:YES forKey:@"kHasAddedNotification"];
+                        [NSNotificationCenter.defaultCenter addObserverForName:UIMenuControllerWillShowMenuNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification * _Nonnull notification) {
+                            [UIMenuController qmuimc_handleMenuWillShow];
+                        }];
+                        [NSNotificationCenter.defaultCenter addObserverForName:UIMenuControllerWillHideMenuNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification * _Nonnull notification) {
+                            [UIMenuController qmuimc_handleMenuWillHide];
+                        }];
+                    }
+                    
+                    return menuController;
+                };
+            });
+        }
     });
 }
 
-- (void)handleMenuWillShowNotification:(NSNotification *)notification {
-    UIWindow *window = [self menuControllerWindow];
-    UIWindow *targetWindow = [self windowForFirstResponder];
++ (void)qmuimc_handleMenuWillShow {
+    UIWindow *window = [UIMenuController qmuimc_menuControllerWindow];
+    UIWindow *targetWindow = [UIMenuController qmuimc_firstResponderWindowExceptMainWindow];
     if (window && targetWindow && ![QMUIHelper isKeyboardVisible]) {
-        QMUILog(NSStringFromClass(self.class), @"show menu - cur window level = %@, origin window level = %@ target window level = %@", @(window.windowLevel), @(self.qmui_originWindowLevel), @(targetWindow.windowLevel));
-        self.qmui_windowLevelChanged = YES;
-        self.qmui_originWindowLevel = window.windowLevel;
+        QMUILog(@"UIMenuController", @"show menu - cur window level = %@, origin window level = %@ target window level = %@", @(window.windowLevel), @([window qmui_getBoundLongForKey:@"kOriginalWindowLevel"]), @(targetWindow.windowLevel));
+        [window qmui_bindLong:window.windowLevel forKey:@"kOriginalWindowLevel"];
+        [window qmui_bindBOOL:YES forKey:@"kWindowLevelChanged"];
         window.windowLevel = targetWindow.windowLevel + 1;
     }
 }
 
-- (void)handleMenuWillHideNotification:(NSNotification *)notification {
-    UIWindow *window = [self menuControllerWindow];
-    if (window && self.qmui_windowLevelChanged) {
-        QMUILog(NSStringFromClass(self.class), @"hide menu - cur window level = %@, origin window level = %@", @(window.windowLevel), @(self.qmui_originWindowLevel));
-        window.windowLevel = self.qmui_originWindowLevel;
-        self.qmui_originWindowLevel = 0;
-        self.qmui_windowLevelChanged = NO;
++ (void)qmuimc_handleMenuWillHide {
+    UIWindow *window = [UIMenuController qmuimc_menuControllerWindow];
+    if (window && [window qmui_getBoundBOOLForKey:@"kWindowLevelChanged"]) {
+        QMUILog(@"UIMenuController", @"hide menu - cur window level = %@, origin window level = %@", @(window.windowLevel), @([window qmui_getBoundLongForKey:@"kOriginalWindowLevel"]));
+        window.windowLevel = [window qmui_getBoundLongForKey:@"kOriginalWindowLevel"];
+        [window qmui_bindLong:0 forKey:@"kOriginalWindowLevel"];
+        [window qmui_bindBOOL:NO forKey:@"kWindowLevelChanged"];
     }
 }
 
-- (UIWindow *)menuControllerWindow {
++ (UIWindow *)qmuimc_menuControllerWindow {
     if (kMenuControllerWindow && !kMenuControllerWindow.hidden) {
         return kMenuControllerWindow;
     }
     [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *windowString = [NSString stringWithFormat:@"UI%@%@", @"Text", @"EffectsWindow"];
         if ([window isKindOfClass:NSClassFromString(windowString)] && !window.hidden) {
-            [window.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull subview, NSUInteger idx, BOOL * _Nonnull stop) {
-                NSString *targetView = [NSString stringWithFormat:@"UI%@%@", @"Callout", @"Bar"];
-                if ([subview isKindOfClass:NSClassFromString(targetView)]) {
+            if (@available(iOS 16.0, *)) {
+                UIView *view = [window.subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull item) {
+                    return [NSStringFromClass(item.class) isEqualToString:[NSString qmui_stringByConcat:@"_", @"UI", @"EditMenu", @"ContainerView", nil]];
+                }];
+                if (view) {
                     kMenuControllerWindow = window;
-                    *stop = YES;
                 }
-            }];
+            } else {
+                [window.subviews enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull subview, NSUInteger idx, BOOL * _Nonnull stop) {
+                    NSString *targetView = [NSString stringWithFormat:@"UI%@%@", @"Callout", @"Bar"];
+                    if ([subview isKindOfClass:NSClassFromString(targetView)]) {
+                        kMenuControllerWindow = window;
+                        *stop = YES;
+                    }
+                }];
+            }
         }
     }];
     return kMenuControllerWindow;
 }
 
-- (UIWindow *)windowForFirstResponder {
++ (UIWindow *)qmuimc_firstResponderWindowExceptMainWindow {
     __block UIWindow *resultWindow = nil;
     [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
         if (window != UIApplication.sharedApplication.delegate.window) {
-            UIResponder *responder = [self findFirstResponderInView:window];
+            UIResponder *responder = [UIMenuController qmuimc_findFirstResponderInView:window];
             if (responder) {
                 resultWindow = window;
                 *stop = YES;
@@ -108,12 +148,12 @@ static BOOL kHasAddedMenuControllerNotification = NO;
     return resultWindow;
 }
 
-- (UIResponder *)findFirstResponderInView:(UIView *)view {
++ (UIResponder *)qmuimc_findFirstResponderInView:(UIView *)view {
     if (view.isFirstResponder) {
         return view;
     }
     for (UIView *subView in view.subviews) {
-        id responder = [self findFirstResponderInView:subView];
+        id responder = [UIMenuController qmuimc_findFirstResponderInView:subView];
         if (responder) {
             return responder;
         }

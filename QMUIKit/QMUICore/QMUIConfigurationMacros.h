@@ -250,15 +250,11 @@
 #define BadgeContentEdgeInsets                          [QMUICMI badgeContentEdgeInsets]
 #define BadgeOffset                                     [QMUICMI badgeOffset]
 #define BadgeOffsetLandscape                            [QMUICMI badgeOffsetLandscape]
-#define BadgeCenterOffset                               [QMUICMI badgeCenterOffset]
-#define BadgeCenterOffsetLandscape                      [QMUICMI badgeCenterOffsetLandscape]
 
 #define UpdatesIndicatorColor                           [QMUICMI updatesIndicatorColor]
 #define UpdatesIndicatorSize                            [QMUICMI updatesIndicatorSize]
 #define UpdatesIndicatorOffset                          [QMUICMI updatesIndicatorOffset]
 #define UpdatesIndicatorOffsetLandscape                 [QMUICMI updatesIndicatorOffsetLandscape]
-#define UpdatesIndicatorCenterOffset                    [QMUICMI updatesIndicatorCenterOffset]
-#define UpdatesIndicatorCenterOffsetLandscape           [QMUICMI updatesIndicatorCenterOffsetLandscape]
 
 #pragma mark - Others
 

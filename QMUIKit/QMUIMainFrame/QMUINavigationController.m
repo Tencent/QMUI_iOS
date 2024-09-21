@@ -393,12 +393,12 @@ static char kAssociatedObjectKey_qmui_viewWillAppearNotifyDelegate;
     
     if (state == UIGestureRecognizerStateEnded) {
         if (self.transitionCoordinator.cancelled) {
-            QMUILog(NSStringFromClass(self.class), @"手势返回放弃了");
+            QMUILog(NSStringFromClass(self.class), @"interactivePopGestureRecognizer canceled");
             UIViewController<QMUINavigationControllerTransitionDelegate> *temp = viewControllerWillDisappear;
             viewControllerWillDisappear = viewControllerWillAppear;
             viewControllerWillAppear = temp;
         } else {
-            QMUILog(NSStringFromClass(self.class), @"执行手势返回");
+            QMUILog(NSStringFromClass(self.class), @"interactivePopGestureRecognizer triggered");
         }
     }
     
@@ -630,16 +630,18 @@ QMUISynthesizeIdStrongProperty(qmuibbbt_backItem, setQmuibbbt_backItem);
     dispatch_once(&onceToken, ^{
         // 在先设置了 title 再设置 titleView 时，保证 titleView 的样式能正确。
         OverrideImplementation([UINavigationItem class], @selector(setTitleView:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UINavigationItem *selfObject, QMUINavigationTitleView *titleView) {
+            return ^(UINavigationItem *selfObject, UIView *titleView) {
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, UIView *);
                 originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, titleView);
                 
-                if ([titleView isKindOfClass:QMUINavigationTitleView.class]) {
+                if (titleView.qmui_useAsNavigationTitleView) {
                     if ([selfObject.qmui_viewController respondsToSelector:@selector(qmui_titleViewTintColor)]) {
                         titleView.tintColor = ((id<QMUINavigationControllerDelegate>)selfObject.qmui_viewController).qmui_titleViewTintColor;
+                    } else if (QMUICMIActivated) {
+                        titleView.tintColor = NavBarTitleColor;
                     }
                 }
             };

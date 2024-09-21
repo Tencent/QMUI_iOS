@@ -15,19 +15,16 @@
 
 #import <UIKit/UIKit.h>
 
-@interface UIActivityIndicatorView (QMUI)
+NS_ASSUME_NONNULL_BEGIN
 
 /**
- * 创建一个指定大小的UIActivityIndicatorView
- *
- * 系统的UIActivityIndicatorView尺寸是由UIActivityIndicatorViewStyle决定的，固定不变。因此创建后通过CGAffineTransformMakeScale将其缩放到指定大小。self.frame获取的值也是缩放后的值，不影响布局。
- * init 后也可以通过 UIView(QMUI).qmui_size 修改大小。
- *
- * @param style UIActivityIndicatorViewStyle
- * @param size  UIActivityIndicatorView的大小
- *
- * @return UIActivityIndicatorView对象
+ 内部通过重写系统方法来让 UIActivityIndicatorView 支持 setFrame: 方式修改尺寸，业务就像使用一个普通 UIView 一样去使用它即可。
  */
-- (instancetype)initWithActivityIndicatorStyle:(UIActivityIndicatorViewStyle)style size:(CGSize)size;
+@interface UIActivityIndicatorView (QMUI)
+
+/// 内部转圈的那个 imageView
+@property(nonatomic, strong, readonly) UIImageView *qmui_animatingView;
 
 @end
+
+NS_ASSUME_NONNULL_END

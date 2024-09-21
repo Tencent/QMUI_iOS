@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
 *  转换数组元素，将每个 item 都经过 block 转换成一遍后返回一个等长的数组。
 */
-- (NSArray *)qmui_mapWithBlock:(id (NS_NOESCAPE^)(ObjectType item))block;
+- (NSArray *)qmui_mapWithBlock:(id (NS_NOESCAPE^)(ObjectType item, NSInteger index))block;
 
 /**
 *  转换数组元素，将每个 item 经过 block 转换为另一个元素，如果希望移除该 item，可返回 nil。当所有元素都被移除时，本方法返回空的容器。

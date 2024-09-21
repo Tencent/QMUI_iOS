@@ -68,6 +68,26 @@ UIKIT_EXTERN NSAttributedStringKey const QMUIImageMarginsAttributeName;
  */
 + (instancetype)qmui_attributedStringWithFixedSpace:(CGFloat)width;
 
+/**
+ 获取当前富文本里的文字水平对齐方式，如果存在多个 paragraphStyle 则以第一个的 alignment 值为准。
+ 如果当前文本长度为0或不存在 paragraphStyle 属性，则返回默认的 NSTextAlignmentLeft。
+ */
+@property(nonatomic, assign, readonly) NSTextAlignment qmui_textAlignment;
+
+@end
+
+@interface NSMutableAttributedString (QMUI)
+
+/**
+ 通过修改 paragraphStyle 来为当前富文本设置水平对齐方式，若不存在 paragraphStyle 则会帮你创建一个。
+ */
+@property(nonatomic, assign) NSTextAlignment qmui_textAlignment;
+
+/**
+ 修改当前富文本里的 paragraphStyle 属性，若存在多个不同 paragraphStyle 则每个都会调用一次 block。
+ 若不存在 paragraphStyle 则会帮你创建一个，且 range 为整个文本长度。
+ */
+- (void)qmui_applyParagraphStyle:(void (^)(NSMutableParagraphStyle *aParagraphStyle, NSRange aRange))block;
 @end
 
 @interface UIImage (QMUI_NSAttributedStringSupports)

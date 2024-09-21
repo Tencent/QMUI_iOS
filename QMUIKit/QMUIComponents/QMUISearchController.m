@@ -24,6 +24,8 @@
 #import "NSObject+QMUI.h"
 #import "UIView+QMUI.h"
 #import "UIViewController+QMUI.h"
+#import "UISearchController+QMUI.h"
+#import "UIGestureRecognizer+QMUI.h"
 
 BeginIgnoreDeprecatedWarning
 
@@ -67,89 +69,25 @@ BeginIgnoreDeprecatedWarning
 
 @end
 
-@interface QMUICustomSearchController : UISearchController
-
-@property(nonatomic, strong) UIView *customDimmingView;
-@property(nonatomic, strong) UIColor *dimmingColor;
-@end
-
-@implementation QMUICustomSearchController
-
-- (instancetype)initWithSearchResultsController:(UIViewController *)searchResultsController {
-    if (self = [super initWithSearchResultsController:searchResultsController]) {
-        if (@available(iOS 15.0, *)) {
-            self.dimsBackgroundDuringPresentation = YES;// iOS 15 开始该默认值为 NO 了，为了保持与旧版本一致的表现，这里改默认值
-        }
-    }
-    return self;
-}
-
-- (void)setCustomDimmingView:(UIView *)customDimmingView {
-    if (_customDimmingView != customDimmingView) {
-        [_customDimmingView removeFromSuperview];
-    }
-    _customDimmingView = customDimmingView;
-    
-    self.dimsBackgroundDuringPresentation = !_customDimmingView;
-    if ([self isViewLoaded]) {
-        [self addCustomDimmingView];
-    }
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [self addCustomDimmingView];
-}
-
-- (void)addCustomDimmingView {
-    UIView *superviewOfDimmingView = self.searchResultsController.view.superview;
-    if (self.customDimmingView && self.customDimmingView.superview != superviewOfDimmingView) {
-        [superviewOfDimmingView insertSubview:self.customDimmingView atIndex:0];
-        [self layoutCustomDimmingView];
-    }
-}
-
-- (void)layoutCustomDimmingView {
-    UIView *searchBarContainerView = nil;
-    for (UIView *subview in self.view.subviews) {
-        if ([NSStringFromClass(subview.class) isEqualToString:@"_UISearchBarContainerView"]) {
-            searchBarContainerView = subview;
-            break;
-        }
-    }
-    
-    self.customDimmingView.frame = CGRectInsetEdges(self.customDimmingView.superview.bounds, UIEdgeInsetsMake(searchBarContainerView ? CGRectGetMaxY(searchBarContainerView.frame) : 0, 0, 0, 0));
-}
-
-- (void)viewDidLayoutSubviews {
-    [super viewDidLayoutSubviews];
-    
-    if (self.customDimmingView) {
-        [UIView animateWithDuration:[CATransaction animationDuration] animations:^{
-            [self layoutCustomDimmingView];
-        }];
-    }
-}
-
-@end
-
-@interface QMUISearchController () <QMUISearchResultsTableViewControllerDelegate>
-
-@property(nonatomic,strong) QMUICustomSearchController *searchController;
+@interface QMUISearchController () <QMUISearchResultsTableViewControllerDelegate, UIGestureRecognizerDelegate>
+@property(nonatomic, strong) UIView *snapshotView;
+@property(nonatomic, strong) UIView *snapshotMaskView;
+@property(nonatomic, assign) BOOL dismissBySwipe;
+@property(nonatomic, assign) BOOL hasSetShowsCancelButton;
 @end
 
 @implementation QMUISearchController
 
-- (instancetype)initWithContentsViewController:(UIViewController *)viewController resultsTableViewStyle:(UITableViewStyle)resultsTableViewStyle {
-    if (self = [self initWithNibName:nil bundle:nil]) {
+- (instancetype)initWithContentsViewController:(UIViewController *)viewController resultsViewController:(__kindof UIViewController *)resultsViewController {
+    if (self = [super initWithNibName:nil bundle:nil]) {
         // 将 definesPresentationContext 置为 YES 有两个作用：
         // 1、保证从搜索结果界面进入子界面后，顶部的searchBar不会依然停留在navigationBar上
         // 2、使搜索结果界面的tableView的contentInset.top正确适配searchBar
         viewController.definesPresentationContext = YES;
+        [QMUISearchController fixDefinesPresentationContextBug];
         
-        QMUISearchResultsTableViewController *searchResultsViewController = [[QMUISearchResultsTableViewController alloc] initWithStyle:resultsTableViewStyle];
-        searchResultsViewController.delegate = self;
-        self.searchController = [[QMUICustomSearchController alloc] initWithSearchResultsController:searchResultsViewController];
+        _searchController = [[UISearchController alloc] initWithSearchResultsController:resultsViewController];
+        self.searchController.obscuresBackgroundDuringPresentation = YES;// iOS 15 开始该默认值为 NO 了，为了保持与旧版本一致的表现，这里改默认值
         self.searchController.searchResultsUpdater = self;
         self.searchController.delegate = self;
         _searchBar = self.searchController.searchBar;
@@ -164,8 +102,39 @@ BeginIgnoreDeprecatedWarning
     return self;
 }
 
+- (instancetype)initWithContentsViewController:(UIViewController *)viewController resultsTableViewStyle:(UITableViewStyle)resultsTableViewStyle {
+    QMUISearchResultsTableViewController *searchResultsViewController = [[QMUISearchResultsTableViewController alloc] initWithStyle:resultsTableViewStyle];
+    if (self = [self initWithContentsViewController:viewController resultsViewController:searchResultsViewController]) {
+        searchResultsViewController.delegate = self;
+    }
+    return self;
+}
+
 - (instancetype)initWithContentsViewController:(UIViewController *)viewController {
     return [self initWithContentsViewController:viewController resultsTableViewStyle:UITableViewStylePlain];
+}
+
++ (void)fixDefinesPresentationContextBug {
+    [QMUIHelper executeBlock:^{
+        // 修复当处于搜索状态时被 -[UINavigationController popToRootViewControllerAnimated:] 强制切走界面可能引发内存泄露的问题
+        // https://github.com/Tencent/QMUI_iOS/issues/1541
+        OverrideImplementation([UIViewController class], @selector(didMoveToParentViewController:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIViewController *selfObject, UIViewController *parentViewController) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIViewController *);
+                originSelectorIMP = (void (*)(id, SEL, UIViewController *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, parentViewController);
+                
+                if (!parentViewController) {
+                    if (selfObject.definesPresentationContext && selfObject.presentedViewController.presentingViewController == selfObject && [selfObject.presentedViewController isKindOfClass:UISearchController.class]) {
+                        QMUILogWarn(@"QMUISearchController", @"fix #1541, didMoveToParent, %@", selfObject);
+                        [selfObject dismissViewControllerAnimated:NO completion:nil];
+                    }
+                }
+            };
+        });
+    } oncePerIdentifier:@"QMUISearchController presentation"];
 }
 
 - (void)viewDidLoad {
@@ -182,37 +151,7 @@ BeginIgnoreDeprecatedWarning
 
 - (void)setDimmingColor:(UIColor *)dimmingColor {
     _dimmingColor = dimmingColor;
-    self.searchController.dimmingColor = dimmingColor;
-    [QMUIHelper executeBlock:^{
-        // - [UIDimmingView updateBackgroundColor]
-        OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"UI", @"Dimming", @"View", nil]), NSSelectorFromString([NSString qmui_stringByConcat:@"update", @"Background", @"Color", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIView *selfObject) {
-                
-                for (UIView *subview in selfObject.superview.subviews) {
-                    if ([NSStringFromClass(subview.class) isEqualToString:[NSString qmui_stringByConcat:@"_", @"UISearchController", @"View", nil]]) {
-                        UISearchController *searchController = subview.qmui_viewController;
-                        if ([searchController isKindOfClass:UISearchController.class]) {
-                            if ([searchController respondsToSelector:@selector(dimmingColor)]) {
-                                BeginIgnorePerformSelectorLeaksWarning
-                                UIColor *color = [searchController performSelector:@selector(dimmingColor)];
-                                EndIgnorePerformSelectorLeaksWarning
-                                if (color) {
-                                    [selfObject qmui_performSelector:@selector(setDimmingColor:) withArguments:&color, nil];
-                                }
-                            }
-                        }
-                        
-                        break;
-                    }
-                }
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL);
-                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD);
-            };
-        });
-    } oncePerIdentifier:@"QMUISearchController dimmingColor"];
+    self.searchController.qmui_dimmingColor = dimmingColor;
 }
 
 - (BOOL)isActive {
@@ -224,16 +163,38 @@ BeginIgnoreDeprecatedWarning
 }
 
 - (void)setActive:(BOOL)active animated:(BOOL)animated {
-    self.searchController.active = active;
+    if (!animated) {
+        [UIView performWithoutAnimation:^{
+            self.searchController.active = active;
+            // animated:NO 的情况下设置 active:NO，取消按钮无法自动消失（系统 bug），所以这里手动管理
+            // 如果是 animated:YES 或者 active:YES 则没这个问题
+            // 这里修改了 searchBar.showsCancelButton 属性会让 automaticallyShowsCancelButton 变为 NO，且不能在这时候立马把它改为 YES，否则会立马出现取消按钮，所以改为在下一次 willPresentSearchController: 里重置为系统自动管理。
+            if (!active && self.searchController.automaticallyShowsCancelButton) {
+                self.searchController.searchBar.showsCancelButton = NO;
+                self.hasSetShowsCancelButton = YES;
+            }
+        }];
+    } else {
+        self.searchController.active = active;
+    }
 }
 
 - (UITableView *)tableView {
-    return ((QMUICommonTableViewController *)self.searchController.searchResultsController).tableView;
+    if ([self.searchResultsController respondsToSelector:@selector(tableView)]) {
+        BeginIgnorePerformSelectorLeaksWarning
+        return [self.searchResultsController performSelector:@selector(tableView)];
+        EndIgnorePerformSelectorLeaksWarning
+    }
+    return nil;
 }
 
-- (void)setLaunchView:(UIView *)dimmingView {
-    _launchView = dimmingView;
-    self.searchController.customDimmingView = _launchView;
+- (__kindof UIViewController *)searchResultsController {
+    return self.searchController.searchResultsController;
+}
+
+- (void)setLaunchView:(UIView *)launchView {
+    _launchView = launchView;
+    self.searchController.qmui_launchView = launchView;
 }
 
 - (BOOL)hidesNavigationBarDuringPresentation {
@@ -252,6 +213,113 @@ BeginIgnoreDeprecatedWarning
 - (void)setQmui_preferredStatusBarStyleBlock:(UIStatusBarStyle (^)(void))qmui_preferredStatusBarStyleBlock {
     [super setQmui_preferredStatusBarStyleBlock:qmui_preferredStatusBarStyleBlock];
     self.searchController.qmui_preferredStatusBarStyleBlock = qmui_preferredStatusBarStyleBlock;
+}
+
+- (void)handleSwipe:(UIScreenEdgePanGestureRecognizer *)gestureRecognizer {
+    if (!self.launchView && (!self.searchController.searchResultsController.viewLoaded || self.searchController.searchResultsController.view.hidden)) return;
+    CGFloat snapshotInitialX = -112;
+    switch (gestureRecognizer.state) {
+        case UIGestureRecognizerStatePossible:
+            return;
+        case UIGestureRecognizerStateBegan: {
+            [self.searchController.view endEditing:YES];
+            [self.searchController.view.superview insertSubview:self.snapshotView belowSubview:self.searchController.view];
+            self.snapshotView.transform = CGAffineTransformMakeTranslation(snapshotInitialX, 0);
+            self.snapshotMaskView.alpha = 1;
+            QMUILogInfo(@"QMUISearchController", @"swipeGesture snapshot added to search view");
+        }
+            return;
+        case UIGestureRecognizerStateChanged: {
+            CGFloat transition = MIN(MAX(0, [gestureRecognizer translationInView:gestureRecognizer.view].x), CGRectGetWidth(self.searchController.view.superview.bounds));
+            self.searchController.view.transform = CGAffineTransformMakeTranslation(transition, 0);
+            double percent = transition / CGRectGetWidth(self.searchController.view.superview.bounds);
+            self.snapshotView.transform = CGAffineTransformMakeTranslation(snapshotInitialX * (1 - percent), 0);
+            self.snapshotMaskView.alpha = 1 - percent;
+        }
+            return;
+        case UIGestureRecognizerStateEnded: {
+            CGPoint velocity = [gestureRecognizer velocityInView:gestureRecognizer.view];
+            if (CGRectGetMinX(self.searchController.view.frame) > CGRectGetWidth(self.searchController.view.superview.bounds) / 4 && velocity.x > 0) {
+                NSTimeInterval duration = 0.2 * (CGRectGetWidth(self.searchController.view.superview.bounds) - CGRectGetMinX(self.searchController.view.frame)) / CGRectGetWidth(self.searchController.view.superview.bounds);
+                [UIApplication.sharedApplication beginIgnoringInteractionEvents];
+                [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    self.searchController.view.transform = CGAffineTransformMakeTranslation(CGRectGetWidth(self.searchController.view.superview.bounds), 0);
+                    self.snapshotView.transform = CGAffineTransformIdentity;
+                    self.snapshotMaskView.alpha = 0;
+                } completion:^(BOOL finished) {
+                    self.dismissBySwipe = YES;
+                    // 盖到最上面，挡住退出搜索过程中可能出现的界面闪烁
+                    [self.snapshotView removeFromSuperview];
+                    [UIApplication.sharedApplication.delegate.window addSubview:self.snapshotView];
+                    QMUILogInfo(@"QMUISearchController", @"swipeGesture snapshot change superview to window");
+                    self.active = NO;
+                    self.searchController.view.transform = CGAffineTransformIdentity;
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.15 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        [self cleanSnapshotObjects];
+                        self.dismissBySwipe = NO;
+                        [UIApplication.sharedApplication endIgnoringInteractionEvents];
+                    });
+                }];
+                return;
+            }
+        }
+        default:
+            break;
+    }
+    
+    // reset to active:YES
+    [UIApplication.sharedApplication beginIgnoringInteractionEvents];
+    NSTimeInterval duration = 0.2 * CGRectGetMinX(self.searchController.view.frame) / CGRectGetWidth(self.searchController.view.superview.bounds);
+    [UIView animateWithDuration:duration delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+        self.searchController.view.transform = CGAffineTransformIdentity;
+        self.snapshotView.transform = CGAffineTransformMakeTranslation(snapshotInitialX, 0);
+        self.snapshotMaskView.alpha = 1;
+    } completion:^(BOOL finished) {
+        [UIApplication.sharedApplication endIgnoringInteractionEvents];
+        QMUILogInfo(@"QMUISearchController", @"swipeGesture cancelled");
+    }];
+}
+
+- (void)createSnapshotObjects {
+    if (!self.snapshotMaskView) {
+        self.snapshotMaskView = [[UIView alloc] init];
+        self.snapshotMaskView.backgroundColor = [UIColor.blackColor colorWithAlphaComponent:.1];
+    }
+    self.snapshotView = [UIApplication.sharedApplication.delegate.window snapshotViewAfterScreenUpdates:NO];
+    self.snapshotMaskView.frame = self.snapshotView.bounds;
+    [self.snapshotView addSubview:self.snapshotMaskView];
+    if (!self.swipeGestureRecognizer) {
+        _swipeGestureRecognizer = [[UIScreenEdgePanGestureRecognizer alloc] initWithTarget:self action:@selector(handleSwipe:)];
+        self.swipeGestureRecognizer.edges = UIRectEdgeLeft;
+        self.swipeGestureRecognizer.delegate = self;
+    }
+    [UIApplication.sharedApplication.delegate.window addGestureRecognizer:self.swipeGestureRecognizer];
+}
+
+- (void)resetSnapshotObjects {
+    self.snapshotView.transform = CGAffineTransformIdentity;
+    [self.snapshotView removeFromSuperview];
+}
+
+- (void)cleanSnapshotObjects {
+    [self.snapshotView removeFromSuperview];
+    [self.snapshotMaskView removeFromSuperview];
+    self.snapshotView = nil;
+    [UIApplication.sharedApplication.delegate.window removeGestureRecognizer:self.swipeGestureRecognizer];
+    QMUILogInfo(@"QMUISearchController", @"swipeGesture clean all objects");
+}
+
+#pragma mark - <UIGestureRecognizerDelegate>
+
+// 由于手势是加在 window 上的，所以任何时候都可能被触发（比如在搜索结果里弹出 toast 或 present 到新的界面），所以这里要做保护，只有在搜索结果肉眼可见的情况下才响应手势
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer == self.swipeGestureRecognizer) {
+        UIView *targetView = [gestureRecognizer qmui_targetView];
+        if (![targetView isDescendantOfView:self.searchController.view]) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 #pragma mark - QMUIEmptyView
@@ -292,6 +360,11 @@ BeginIgnoreDeprecatedWarning
 #pragma mark - <UISearchResultsUpdating>
 
 - (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+    // 先触发手势返回再取消，从而让截图添加到屏幕上。然后再点搜索框的×按钮清空列表，此时要保证背后的截图也一起去除
+    NSString *text = searchController.searchBar.text;
+    if (self.supportsSwipeToDismissSearch && !text.length && !searchController.qmui_alwaysShowSearchResultsController) {
+        [self resetSnapshotObjects];
+    }
     if ([self.searchResultsDelegate respondsToSelector:@selector(searchController:updateResultsForSearchString:)]) {
         [self.searchResultsDelegate searchController:self updateResultsForSearchString:searchController.searchBar.text];
     }
@@ -300,6 +373,17 @@ BeginIgnoreDeprecatedWarning
 #pragma mark - <UISearchControllerDelegate>
 
 - (void)willPresentSearchController:(UISearchController *)searchController {
+    if (self.supportsSwipeToDismissSearch) {
+        [self createSnapshotObjects];
+        QMUILogInfo(@"QMUISearchController", @"swipeGesture added");
+    }
+    
+    // 走到这里意味着曾经因为 setActive:NO animated:NO 而不得不手动修改 searchBar.showsCancelButton 属性，导致 automaticallyShowsCancelButton 为 NO，系统无法自动显示取消按钮，所以这里在进入搜索前恢复自动管理
+    if (self.hasSetShowsCancelButton) {
+        self.searchController.automaticallyShowsCancelButton = YES;
+        self.hasSetShowsCancelButton = NO;
+    }
+    
     if (self.searchController.qmui_prefersStatusBarHiddenBlock || self.searchController.qmui_preferredStatusBarStyleBlock) {
         [self.searchController setNeedsStatusBarAppearanceUpdate];
     }
@@ -321,6 +405,11 @@ BeginIgnoreDeprecatedWarning
     if ([self.searchResultsDelegate respondsToSelector:@selector(willDismissSearchController:)]) {
         [self.searchResultsDelegate willDismissSearchController:self];
     }
+    
+    // 先手势返回触发各种对象的初始化，然后又取消手势，正常点取消按钮退出搜索，此时就不应该看到背后有截图存在了
+    if (!self.dismissBySwipe) {
+        [self cleanSnapshotObjects];
+    }
 }
 
 - (void)didDismissSearchController:(UISearchController *)searchController {
@@ -329,6 +418,10 @@ BeginIgnoreDeprecatedWarning
     
     if ([self.searchResultsDelegate respondsToSelector:@selector(didDismissSearchController:)]) {
         [self.searchResultsDelegate didDismissSearchController:self];
+    }
+    
+    if (self.supportsSwipeToDismissSearch && !self.dismissBySwipe) {
+        [self cleanSnapshotObjects];
     }
 }
 
@@ -422,6 +515,22 @@ static char kAssociatedObjectKey_shouldShowSearchBar;
 
 - (void)searchController:(QMUISearchController *)searchController updateResultsForSearchString:(NSString *)searchString {
     
+}
+
+@end
+
+@implementation UINavigationController (Search)
+
+// 修复当处于搜索状态时被 window.rootViewController = xxx 强制切走界面可能引发内存泄露的问题
+// 这种场景会调用 nav 的 dealloc 但不会触发 child 的 didMoveToParentViewController:，所以只能重写 dealloc 处理一遍
+// https://github.com/Tencent/QMUI_iOS/issues/1541
+- (void)dealloc {
+    [self.childViewControllers.copy enumerateObjectsUsingBlock:^(__kindof UIViewController * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.definesPresentationContext && obj.presentedViewController.presentingViewController == obj && [obj.presentedViewController isKindOfClass:UISearchController.class]) {
+            QMUILogWarn(@"QMUISearchController", @"fix #1541, dealloc, %@", obj);
+            [obj dismissViewControllerAnimated:NO completion:nil];
+        }
+    }];
 }
 
 @end

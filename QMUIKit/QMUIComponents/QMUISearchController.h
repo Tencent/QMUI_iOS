@@ -16,6 +16,8 @@
 #import "QMUICommonViewController.h"
 #import "QMUICommonTableViewController.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class QMUIEmptyView;
 @class QMUISearchController;
 
@@ -32,7 +34,7 @@
  *  搜索框文字发生变化时的回调，请自行调用 `[tableView reloadData]` 来更新界面。
  *  @warning 搜索框文字为空（例如第一次点击搜索框进入搜索状态时，或者文字全被删掉了，或者点击搜索框的×）也会走进来，此时参数searchString为@""，这是为了和系统的UISearchController保持一致
  */
-- (void)searchController:(QMUISearchController *)searchController updateResultsForSearchString:(NSString *)searchString;
+- (void)searchController:(QMUISearchController *)searchController updateResultsForSearchString:(nullable NSString *)searchString;
 
 @optional
 - (void)willPresentSearchController:(QMUISearchController *)searchController;
@@ -56,6 +58,11 @@
  */
 @interface QMUISearchController : QMUICommonViewController<UISearchResultsUpdating, UISearchControllerDelegate>
 
+- (nullable instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(nullable NSString *)nibNameOrNil bundle:(nullable NSBundle *)nibBundleOrNil NS_UNAVAILABLE;
+
+- (instancetype)initWithContentsViewController:(UIViewController *)viewController resultsViewController:(__kindof UIViewController *)resultsViewController NS_DESIGNATED_INITIALIZER;
+
 /**
  *  在某个指定的 UIViewController 上创建一个与其绑定的 searchController，并指定结果列表的 style。
  *  @param viewController 要在哪个viewController上添加搜索功能
@@ -70,18 +77,24 @@
 
 @property(nonatomic, weak) id<QMUISearchControllerDelegate> searchResultsDelegate;
 
+/// 内部使用的系统的 UISearchController 的引用
+@property(nonatomic, strong, readonly) UISearchController *searchController;
+
+/// 等价于 self.searchController.searchResultsController，展示搜索结果的 viewController。若通过 initWithContentsViewController:resultsTableViewStyle: 初始化，则默认的 searchResultsController 为 QMUICommonTableViewController 的子类。
+@property(nonatomic, strong, readonly, nullable) __kindof UIViewController *searchResultsController;
+
 /// 搜索框
 @property(nonatomic, strong, readonly) UISearchBar *searchBar;
 
-/// 搜索结果列表
-@property(nonatomic, strong, readonly) QMUITableView *tableView;
+/// 搜索结果列表，仅当通过 initWithContentsViewController: 或 initWithContentsViewController:resultsTableViewStyle: 初始化时才有效。
+@property(nonatomic, strong, readonly, nullable) QMUITableView *tableView;
 
 /// 在搜索文字为空时会展示的一个 view，通常用于实现“最近搜索”之类的功能。launchView 最终会被布局为撑满搜索框以下的所有空间。
-@property(nonatomic, strong) UIView *launchView;
+@property(nonatomic, strong, nullable) UIView *launchView;
 
 /// 升起键盘时的半透明遮罩，nil 表示用系统的，非 nil 则用自己的。默认为 nil。
 /// @note 如果使用了 launchView 则该属性无效。
-@property(nonatomic, strong) UIColor *dimmingColor;
+@property(nonatomic, strong, nullable) UIColor *dimmingColor;
 
 /// 控制以无动画的形式进入/退出搜索状态
 @property(nonatomic, assign, getter=isActive) BOOL active;
@@ -95,6 +108,14 @@
 
 /// 进入搜索状态时是否要把原界面的 navigationBar 推走，默认为 YES
 @property(nonatomic, assign) BOOL hidesNavigationBarDuringPresentation;
+
+/// 在展示搜索结果或者 launchView 时是否支持左侧屏幕边缘向右滑退出搜索，默认为 NO
+/// @warning 使用截图的方式实现，所以暂不支持横竖屏切换，请自行屏蔽横竖屏场景
+@property(nonatomic, assign) BOOL supportsSwipeToDismissSearch;
+
+/// 当开启了 supportsSwipeToDismissSearch 则在 willPresentSearchController: 里会创建这个手势对象
+@property(nonatomic, strong, readonly, nullable) UIScreenEdgePanGestureRecognizer *swipeGestureRecognizer;
+
 @end
 
 
@@ -115,7 +136,7 @@
  *
  *  @see QMUITableViewDelegate
  */
-@property(nonatomic, strong, readonly) QMUISearchController *searchController;
+@property(nonatomic, strong, readonly, nullable) QMUISearchController *searchController;
 
 /**
  *  获取当前的 searchBar，注意只有当 `shouldShowSearchBar` 为 `YES` 时才有用
@@ -124,7 +145,7 @@
  *
  *  @see QMUITableViewDelegate
  */
-@property(nonatomic, strong, readonly) UISearchBar *searchBar;
+@property(nonatomic, strong, readonly, nullable) UISearchBar *searchBar;
 
 /**
  *  是否应该在显示空界面时自动隐藏搜索框
@@ -143,3 +164,5 @@
 - (void)initSearchController;
 
 @end
+
+NS_ASSUME_NONNULL_END

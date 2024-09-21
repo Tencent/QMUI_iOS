@@ -15,21 +15,73 @@
 
 #import "UIActivityIndicatorView+QMUI.h"
 #import "UIView+QMUI.h"
+#import "QMUICore.h"
+
+@interface UIActivityIndicatorView ()
+@property(nonatomic, assign) CGSize qmuiai_size;
+@end
 
 @implementation UIActivityIndicatorView (QMUI)
 
-- (instancetype)initWithActivityIndicatorStyle:(UIActivityIndicatorViewStyle)style size:(CGSize)size {
-    if (self = [self initWithActivityIndicatorStyle:style]) {
-        self.qmui_size = size;
-    }
-    return self;
+QMUISynthesizeCGSizeProperty(qmuiai_size, setQmuiai_size)
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        /**
+         系统会在你调用 setFrame: 时把 loading 设置为你希望的 rect，但 sizeToFit 又回去了，所以这里需要通过重写 setFrame: 来记录希望的 size，在 sizeThatFits: 里返回。
+         另外内部的 animatingImageView 始终会保持默认大小，所以需要重写 layoutSubviews 让 animatingImageView 可改变尺寸。
+         */
+        OverrideImplementation([UIActivityIndicatorView class], @selector(setFrame:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIActivityIndicatorView *selfObject, CGRect firstArgv) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, CGRect);
+                originSelectorIMP = (void (*)(id, SEL, CGRect))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                selfObject.qmuiai_size = firstArgv.size;
+            };
+        });
+        
+        OverrideImplementation([UIActivityIndicatorView class], @selector(sizeThatFits:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^CGSize(UIActivityIndicatorView *selfObject, CGSize firstArgv) {
+                if (selfObject.qmuiai_size.width > 0) {
+                    return selfObject.qmuiai_size;
+                }
+                
+                // call super
+                CGSize (*originSelectorIMP)(id, SEL, CGSize);
+                originSelectorIMP = (CGSize (*)(id, SEL, CGSize))originalIMPProvider();
+                CGSize result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                return result;
+            };
+        });
+        
+        OverrideImplementation([UIActivityIndicatorView class], @selector(layoutSubviews), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIActivityIndicatorView *selfObject) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+                
+                if (selfObject.qmuiai_size.width > 0) {
+                    selfObject.qmui_animatingView.frame = selfObject.bounds;
+                }
+            };
+        });
+    });
 }
 
-- (void)setQmui_size:(CGSize)size {
-//    [super setQmui_size:qmui_size];
-    CGSize initialSize = self.bounds.size;
-    CGFloat scale = size.width / initialSize.width;
-    self.transform = CGAffineTransformMakeScale(scale, scale);
+- (UIImageView *)qmui_animatingView {
+    SEL sel = NSSelectorFromString(@"_animatingImageView");
+    if ([self respondsToSelector:sel]) {
+        BeginIgnorePerformSelectorLeaksWarning
+        return [self performSelector:sel];
+        EndIgnorePerformSelectorLeaksWarning
+    }
+    return nil;
 }
 
 @end

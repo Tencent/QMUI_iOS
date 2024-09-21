@@ -234,13 +234,13 @@
     [self.containerView addSubview:self.toolbar];
     
     __weak __typeof(self)weakSelf = self;
-    self.levelMenu = [self generatePopupMenuView];
+    self.levelMenu = [self generatePopupMenuViewWithSelectedArray:self.selectedLevels];
     self.levelMenu.willHideBlock = ^(BOOL hidesByUserTap, BOOL animated) {
         weakSelf.toolbar.levelButton.selected = weakSelf.selectedLevels.count > 0;
     };
     self.levelMenu.sourceView = self.toolbar.levelButton;
     
-    self.nameMenu = [self generatePopupMenuView];
+    self.nameMenu = [self generatePopupMenuViewWithSelectedArray:self.selectedNames];
     self.nameMenu.willHideBlock = ^(BOOL hidesByUserTap, BOOL animated) {
         weakSelf.toolbar.nameButton.selected = weakSelf.selectedNames.count > 0;
     };
@@ -365,7 +365,7 @@
             NSArray<QMUIConsoleLogItem *> *matchedItems = [self.showingLogItems qmui_filterWithBlock:^BOOL(QMUIConsoleLogItem * _Nonnull item) {
                 return item.searchResults.count > 0;
             }];
-            NSArray<NSArray<NSTextCheckingResult *> *> *matchedResults = [matchedItems qmui_mapWithBlock:^id _Nonnull(QMUIConsoleLogItem * _Nonnull item) {
+            NSArray<NSArray<NSTextCheckingResult *> *> *matchedResults = [matchedItems qmui_mapWithBlock:^id _Nonnull(QMUIConsoleLogItem * _Nonnull item, NSInteger index) {
                 return item.searchResults;
             }];
             self.searchResultsTotalCount = 0;
@@ -541,52 +541,52 @@
     self.toolbar.nameButton.enabled = self.logItems.count > 0;
 }
 
-- (QMUIPopupMenuView *)generatePopupMenuView {
+- (QMUIPopupMenuView *)generatePopupMenuViewWithSelectedArray:(NSArray<NSString *> *)selectedArray {
     QMUIPopupMenuView *menuView = [[QMUIPopupMenuView alloc] init];
     menuView.padding = UIEdgeInsetsMake(3, 6, 3, 6);
     menuView.cornerRadius = 3;
     menuView.arrowSize = CGSizeMake(8, 4);
     menuView.borderWidth = 0;
     menuView.itemHeight = 28;
-    menuView.itemTitleFont = UIFontMake(12);
-    menuView.itemTitleColor = UIColorMake(53, 60, 70);
     menuView.maskViewBackgroundColor = nil;
     menuView.backgroundColor = UIColorWhite;
-    menuView.itemConfigurationHandler = ^(QMUIPopupMenuView *aMenuView, QMUIPopupMenuButtonItem *aItem, NSInteger section, NSInteger index) {
-        aItem.highlightedBackgroundColor = [[UIColor blackColor] colorWithAlphaComponent:.15];
-        QMUIButton *button = aItem.button;
+    menuView.itemViewConfigurationHandler = ^(QMUIPopupMenuView * _Nonnull aMenuView, __kindof QMUIPopupMenuItem * _Nonnull aItem, QMUIPopupMenuItemView * _Nonnull aItemView, NSInteger section, NSInteger index) {
+        aItemView.button.highlightedBackgroundColor = [[UIColor blackColor] colorWithAlphaComponent:.15];
+        QMUIButton *button = aItemView.button;
+        button.titleLabel.font = UIFontMake(12);
+        button.tintColorAdjustsTitleAndImage = UIColorMake(53, 60, 70);
         button.imagePosition = QMUIButtonImagePositionRight;
         button.spacingBetweenImageAndTitle = 10;
-        UIImage *selectedImage = [UIImage qmui_imageWithShape:QMUIImageShapeCheckmark size:CGSizeMake(12, 9) lineWidth:1 tintColor:aMenuView.itemTitleColor];
+        UIImage *selectedImage = [[UIImage qmui_imageWithShape:QMUIImageShapeCheckmark size:CGSizeMake(12, 9) lineWidth:1 tintColor:UIColor.blackColor] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
         UIImage *normalImage = [UIImage qmui_imageWithColor:UIColorClear size:selectedImage.size cornerRadius:0];
         [button setImage:normalImage forState:UIControlStateNormal];// 无图像也弄一张空白图，以保证 state 变化时布局不跳动
         [button setImage:selectedImage forState:UIControlStateSelected];
         [button setImage:selectedImage forState:UIControlStateSelected|UIControlStateHighlighted];
+        button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentFill;
+        button.selected = [selectedArray containsObject:aItem.title];
     };
     menuView.hidden = YES;
     [self.view addSubview:menuView];
     return menuView;
 }
 
-- (NSArray<QMUIPopupMenuButtonItem *> *)popupMenuItemsByTitleBlock:(nullable NSString * (^)(QMUIConsoleLogItem *logItem))titleBlock selectedArray:(NSMutableArray<NSString *> *)selectedArray {
+- (NSArray<QMUIPopupMenuItem *> *)popupMenuItemsByTitleBlock:(nullable NSString * (^)(QMUIConsoleLogItem *logItem))titleBlock selectedArray:(NSMutableArray<NSString *> *)selectedArray {
     __weak __typeof(self)weakSelf = self;
-    NSMutableArray<QMUIPopupMenuButtonItem *> *items = [[NSMutableArray alloc] init];
+    NSMutableArray<QMUIPopupMenuItem *> *items = [[NSMutableArray alloc] init];
     NSMutableSet<NSString *> *itemTitles = [[NSMutableSet alloc] init];
     [self.logItems enumerateObjectsUsingBlock:^(QMUIConsoleLogItem * _Nonnull logItem, NSUInteger idx, BOOL * _Nonnull stop) {
         [itemTitles addObject:titleBlock(logItem)];
     }];
     [[itemTitles sortedArrayUsingDescriptors:@[[NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(description)) ascending:YES]]] enumerateObjectsUsingBlock:^(NSString * _Nonnull title, NSUInteger idx, BOOL * _Nonnull stop) {
-        QMUIPopupMenuButtonItem *item = [QMUIPopupMenuButtonItem itemWithImage:nil title:title handler:^(QMUIPopupMenuButtonItem *aItem) {
-            aItem.button.selected = !aItem.button.selected;
-            if (aItem.button.selected) {
+        QMUIPopupMenuItem *item = [QMUIPopupMenuItem itemWithTitle:title handler:^(__kindof QMUIPopupMenuItem * _Nonnull aItem, QMUIPopupMenuItemView * _Nonnull aItemView, NSInteger section, NSInteger index) {
+            aItemView.button.selected = !aItemView.button.selected;
+            if (aItemView.button.selected) {
                 [selectedArray addObject:title];
             } else {
                 [selectedArray removeObject:title];
             }
             [weakSelf printLog];
         }];
-        item.button.contentHorizontalAlignment = UIControlContentHorizontalAlignmentFill;
-        item.button.selected = [selectedArray containsObject:title];
         [items addObject:item];
     }];
     return items.copy;

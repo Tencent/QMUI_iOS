@@ -54,4 +54,78 @@ QMUISynthesizeBOOLProperty(qmui_capturesStatusBarAppearance, setQmui_capturesSta
     });
 }
 
+static char kAssociatedObjectKey_canBecomeKeyWindow;
+- (void)setQmui_canBecomeKeyWindow:(BOOL)qmui_canBecomeKeyWindow {
+    [self qmuiw_hookIfNeeded];
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_canBecomeKeyWindow, @(qmui_canBecomeKeyWindow), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)qmui_canBecomeKeyWindow {
+    NSNumber *value = objc_getAssociatedObject(self, &kAssociatedObjectKey_canBecomeKeyWindow);
+    if (!value) {
+        return YES;
+    }
+    return value.boolValue;
+}
+
+static char kAssociatedObjectKey_canResignKeyWindowBlock;
+- (void)setQmui_canResignKeyWindowBlock:(BOOL (^)(UIWindow *, UIWindow *))qmui_canResignKeyWindowBlock {
+    [self qmuiw_hookIfNeeded];
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_canResignKeyWindowBlock, qmui_canResignKeyWindowBlock, OBJC_ASSOCIATION_COPY_NONATOMIC);
+}
+
+- (BOOL (^)(UIWindow *, UIWindow *))qmui_canResignKeyWindowBlock {
+    return (BOOL (^)(UIWindow *, UIWindow *))objc_getAssociatedObject(self, &kAssociatedObjectKey_canResignKeyWindowBlock);
+}
+
+- (void)qmuiw_hookIfNeeded {
+    [QMUIHelper executeBlock:^{
+        // - [UIWindow canBecomeKeyWindow]
+        SEL sel1 = @selector(canBecomeKeyWindow);
+        // - [UIWindow _canBecomeKeyWindow]
+        SEL sel2 = NSSelectorFromString([NSString stringWithFormat:@"_%@", NSStringFromSelector(sel1)]);
+        SEL sel = [self respondsToSelector:sel1] ? sel1 : ([self respondsToSelector:sel2] ? sel2 : nil);
+        if (sel) {
+            OverrideImplementation([UIWindow class], sel, ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^BOOL(UIWindow *selfObject) {
+                    // call super
+                    BOOL (*originSelectorIMP)(id, SEL);
+                    originSelectorIMP = (BOOL (*)(id, SEL))originalIMPProvider();
+                    BOOL result = originSelectorIMP(selfObject, originCMD);
+                    
+                    BOOL hasSet = !!objc_getAssociatedObject(selfObject, &kAssociatedObjectKey_canBecomeKeyWindow);
+                    if (hasSet) {
+                        result = selfObject.qmui_canBecomeKeyWindow;
+                    }
+                    
+                    BeginIgnoreDeprecatedWarning
+                    UIWindow *keyWindow = UIApplication.sharedApplication.keyWindow;
+                    if (result && keyWindow && keyWindow != selfObject && keyWindow.qmui_canResignKeyWindowBlock) {
+                        result = keyWindow.qmui_canResignKeyWindowBlock(keyWindow, selfObject);
+                    }
+                    EndIgnoreDeprecatedWarning
+                    
+                    return result;
+                };
+            });
+        } else {
+            QMUIAssert(NO, @"UIWindow (QMUI)", @"%f 不存在方法 -[UIWindow _canBecomeKeyWindow]", IOS_VERSION);
+        }
+        
+        OverrideImplementation([UIWindow class], @selector(resignKeyWindow), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIWindow *selfObject) {
+                
+                if (selfObject.isKeyWindow && selfObject.qmui_canResignKeyWindowBlock && !selfObject.qmui_canResignKeyWindowBlock(selfObject, selfObject)) {
+                    return;
+                }
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+            };
+        });
+    } oncePerIdentifier:@"UIWindow (QMUI) keyWindow"];
+}
+
 @end

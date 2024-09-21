@@ -21,8 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  *  双击 tabBarItem 时的回调，默认为 nil。
- *  @arg tabBarItem 被双击的 UITabBarItem
- *  @arg index      被双击的 UITabBarItem 的序号
+ *  @param tabBarItem 被双击的 UITabBarItem，若需要拿到当前的 view 则通过 qmui_view 获取。
+ *  @param index 被双击的 UITabBarItem 的序号
  */
 @property(nonatomic, copy, nullable) void (^qmui_doubleTapBlock)(UITabBarItem *tabBarItem, NSInteger index);
 

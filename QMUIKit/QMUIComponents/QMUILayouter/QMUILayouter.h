@@ -7,30 +7,13 @@
  */
 
 //
-//  QMUIPopupMenuBaseItem.m
+//  QMUILayouter.h
 //  QMUIKit
 //
-//  Created by QMUI Team on 2018/8/21.
+//  Created by QMUI Team on 2024/1/2.
 //
 
-#import "QMUIPopupMenuBaseItem.h"
-
-@implementation QMUIPopupMenuBaseItem
-
-@synthesize title = _title;
-@synthesize height = _height;
-@synthesize handler = _handler;
-@synthesize menuView = _menuView;
-
-- (instancetype)init {
-    if (self = [super init]) {
-        self.height = -1;
-    }
-    return self;
-}
-
-- (void)updateAppearance {
-    
-}
-
-@end
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+#import "QMUILayouterLinearHorizontal.h"
+#import "QMUILayouterLinearVertical.h"

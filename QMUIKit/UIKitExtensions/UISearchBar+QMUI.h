@@ -51,6 +51,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// 支持根据 active 的值的不同来设置不一样的输入框位置偏移，当使用这个 block 后 @c qmui_textFieldMargins 无效。
 @property(nonatomic, copy) UIEdgeInsets (^qmui_textFieldMarginsBlock)(__kindof UISearchBar *searchBar, BOOL active);
 
+/// 当 UITableView 右侧出现 A-Z 那种索引条时，必要的情况下（例如全面屏 iPhone 的横屏状态，右侧已经存在较大的 safeAreaInsets，足以容纳 indexBar，则这种情况下系统就不会再调整了）系统会自动调整列表内容的布局（包括 sectionHeaderFooter、cell、作为 tableHeaderView 使用的 UISearchBar），在右侧腾出空间，以避免列表内容与 indexBar 重叠。
+/// 这个属性用于控制这种行为在 UISearchBar 里是否生效，默认为 YES，置为 NO 则可确保 UISearchBar 的布局在 indexBar 显示、隐藏时均保持一致，不产生跳动。弊端是如果屏幕较矮，且 indexBar 内容较多，则 searchBar 输入框右侧可能与 indexBar 产生重叠，请知悉。
+@property(nonatomic, assign) BOOL qmui_adjustTextFieldLayoutForIndexBar;
+
 /// 获取 searchBar 的背景 view，为一个 UIImageView 的子类 UISearchBarBackground，在 searchBar 初始化完即可被获取
 @property(nullable, nonatomic, weak, readonly) UIView *qmui_backgroundView;
 
@@ -94,6 +98,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// 修复当 UISearchController.searchBar 被当做 tableHeaderView 使用时可能产生的布局问题
 /// https://github.com/Tencent/QMUI_iOS/issues/950
 @property(nonatomic, assign) BOOL qmui_fixMaskViewLayoutBugAutomatically;
+
+/// 是否需要自动修复 UISearchController.searchBar 作为 UITableView.tableHeaderView 时进入搜索状态，搜索结果列表顶部有一大片空白的 bug，默认为 YES。
+/// https://github.com/Tencent/QMUI_iOS/issues/1473
+@property(nonatomic, assign) BOOL qmui_shouldFixSearchResultsContentInset;
 
 - (void)qmui_styledAsQMUISearchBar;
 

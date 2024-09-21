@@ -143,6 +143,12 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 @property(nullable, nonatomic, strong, readonly) UIWindow *window;
 
 /**
+ 如果 modal 是以 window 形式显示的话，通过这个属性来决定 window 是否需要以 keyWindow 形式存在（keyWindow 一般用于与键盘交互的场景，没输入框可以不用开启它）
+ 默认为 YES。
+ */
+@property(nonatomic, assign) BOOL shouldBecomeKeyWindow;
+
+/**
  如果 modal 是以 window 形式显示的话，控制在 modal 显示时是否要自动把 App 主界面置灰。
  默认为 YES。
  该属性在非 window 形式显示的情况下无意义。

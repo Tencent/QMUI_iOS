@@ -376,7 +376,7 @@ static char kAssociatedObjectKey_stepControlConfiguration;
     // 根据当前 thumbView 的位置，控制重叠的那个 stepControl 的事件响应和显隐，由于 slider 可能是 continuous 的，所以这段逻辑必须每次 layout 都调用，不能放在 layoutCachedKey 的保护里
     CGRect thumbRect = self.qmui_thumbView.frame;
     CGRect trackRect = [self trackRectForBounds:self.bounds];
-    NSUInteger step = (CGRectGetMidX(thumbRect) - CGRectGetMinX(trackRect)) / CGRectGetWidth(trackRect) * (count - 1);
+    NSUInteger step = round((CGRectGetMidX(thumbRect) - CGRectGetMinX(trackRect)) / CGRectGetWidth(trackRect) * (count - 1));
     [self.qmuisl_stepControls enumerateObjectsUsingBlock:^(QMUISliderStepControl * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         obj.userInteractionEnabled = idx != step;// 让 stepControl 不要影响 thumbView 的事件
         obj.indicator.hidden = idx == step;

@@ -15,6 +15,13 @@
 
 #import <UIKit/UIKit.h>
 
+typedef NS_ENUM(NSInteger, QMUIScrollPosition) {
+    QMUIScrollPositionNone,    // 滚动到临近的区域（可能是 Top 也可能是 Bottom）
+    QMUIScrollPositionTop,     // 滚动到可视区域最顶部
+    QMUIScrollPositionMiddle,  // 滚动到可视区域中间
+    QMUIScrollPositionBottom,  // 滚动到可视区域底部
+};
+
 @interface UIScrollView (QMUI)
 
 /// 判断UIScrollView是否已经处于顶部（当UIScrollView内容不够多不可滚动时，也认为是在顶部）
@@ -68,7 +75,10 @@
 /// 等同于[self qmui_scrollToBottomAnimated:NO]
 - (void)qmui_scrollToBottom;
 
-// 立即停止滚动，用于那种手指已经离开屏幕但列表还在滚动的情况。
+/// 将 scroll 坐标系内的指定 rect 滚动到指定位置。
+- (void)qmui_scrollToRect:(CGRect)rect atPosition:(QMUIScrollPosition)scrollPosition animated:(BOOL)animated;
+
+/// 立即停止滚动，用于那种手指已经离开屏幕但列表还在滚动的情况。
 - (void)qmui_stopDeceleratingIfNeeded;
 
 /**

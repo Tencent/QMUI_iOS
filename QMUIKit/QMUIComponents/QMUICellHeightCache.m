@@ -383,8 +383,8 @@ QMUISynthesizeBOOLProperty(qmui_invalidateIndexPathHeightCachedAutomatically, se
         // 没有的话，则需要通过register来注册一个cell，否则会crash
         if (!templateCell) {
             templateCell = [self dequeueReusableCellWithIdentifier:identifier];
-            QMUIAssert(templateCell != nil, @"QMUICellHeightCache", @"通过 %s %@ 无法得到一个 cell 对象", __func__, identifier);
         }
+        QMUIAssert(templateCell != nil, @"QMUICellHeightCache", @"通过 %s %@ 无法得到一个 cell 对象", __func__, identifier);
         templateCell.contentView.translatesAutoresizingMaskIntoConstraints = NO;
         templateCellsByIdentifiers[identifier] = templateCell;
     }

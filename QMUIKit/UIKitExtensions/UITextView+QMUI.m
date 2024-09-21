@@ -19,6 +19,39 @@
 
 @implementation UITextView (QMUI)
 
+#ifdef IOS17_SDK_ALLOWED
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        // UIScrollView.clipsToBounds 默认值为 YES，但如果是 Xcode 15 编译的包，UITextView.scrollEnabled = NO 时会强制把 clipsToBounds 置为 NO，导致 UITextView 设置了 backgroundColor 和 cornerRadius 时会看不到圆角（因为背景色溢出了），所以这里统一改回去 clipsToBounds = YES
+        if (@available(iOS 17.0, *)) {
+            OverrideImplementation([UITextView class], @selector(setScrollEnabled:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UITextView *selfObject, BOOL firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if (!firstArgv) {
+                        selfObject.clipsToBounds = YES;
+                    }
+                };
+            });
+        }
+    });
+}
+#endif
+
+- (void)qmui_updateContentSize {
+    SEL selector = NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"updateContentSize", nil]);
+    if ([self respondsToSelector:selector]) {
+        BeginIgnorePerformSelectorLeaksWarning
+        [self performSelector:selector];
+        EndIgnorePerformSelectorLeaksWarning
+    }
+}
+
 - (NSRange)qmui_selectedRange {
     return [self qmui_convertNSRangeFromUITextRange:self.selectedTextRange];
 }

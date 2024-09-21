@@ -43,22 +43,23 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         
-        OverrideImplementation([UITabBar class], @selector(setItems:animated:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^void(UITabBar *selfObject, NSArray<UITabBarItem *> *items, BOOL animated) {
+        // -[UITabBar addSubview:]
+        OverrideImplementation([UITabBar class], @selector(addSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UITabBar *selfObject, UIView *firstArgv) {
                 
                 // call super
-                void (*originSelectorIMP)(id, SEL, NSArray<UITabBarItem *> *, BOOL);
-                originSelectorIMP = (void (*)(id, SEL, NSArray<UITabBarItem *> *, BOOL))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, items, animated);
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
                 
-                [items enumerateObjectsUsingBlock:^(UITabBarItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
-                    // 双击 tabBarItem 的功能需要在设置完 item 后才能获取到 qmui_view 来实现
-                    UIControl *itemView = (UIControl *)item.qmui_view;
-                    [itemView addTarget:selfObject action:@selector(handleTabBarItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
-                }];
+                if ([NSStringFromClass(firstArgv.class) isEqualToString:@"UITabBarButton"]) {
+                    UIControl *button = (UIControl *)firstArgv;
+                    [button addTarget:selfObject action:@selector(qmuitb_handleTabBarItemViewEvent:) forControlEvents:UIControlEventTouchUpInside];
+                }
             };
         });
         
+        // -[UITabBar setSelectedItem:]
         OverrideImplementation([UITabBar class], @selector(setSelectedItem:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UITabBar *selfObject, UITabBarItem *selectedItem) {
                 
@@ -243,7 +244,7 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
     });
 }
 
-- (void)handleTabBarItemViewEvent:(UIControl *)itemView {
+- (void)qmuitb_handleTabBarItemViewEvent:(UIControl *)itemView {
     
     if (!self.canItemRespondDoubleTouch) {
         return;
@@ -255,7 +256,7 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
     
     // 如果一定时间后仍未触发双击，则废弃当前的点击状态
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self revertTabBarItemTouch];
+        [self qmuitb_revertTabBarItemTouch];
     });
     
     NSInteger selectedIndex = [self.items indexOfObject:self.selectedItem];
@@ -265,7 +266,7 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
         self.lastTouchedTabBarItemViewIndex = selectedIndex;
     } else if (self.lastTouchedTabBarItemViewIndex != selectedIndex) {
         // 后续的点击如果与第一次点击的 index 不一致，则认为是重新开始一次新的点击
-        [self revertTabBarItemTouch];
+        [self qmuitb_revertTabBarItemTouch];
         self.lastTouchedTabBarItemViewIndex = selectedIndex;
         return;
     }
@@ -277,11 +278,11 @@ QMUISynthesizeNSIntegerProperty(tabBarItemViewTouchCount, setTabBarItemViewTouch
         if (item.qmui_doubleTapBlock) {
             item.qmui_doubleTapBlock(item, selectedIndex);
         }
-        [self revertTabBarItemTouch];
+        [self qmuitb_revertTabBarItemTouch];
     }
 }
 
-- (void)revertTabBarItemTouch {
+- (void)qmuitb_revertTabBarItemTouch {
     self.lastTouchedTabBarItemViewIndex = kLastTouchedTabBarItemIndexNone;
     self.tabBarItemViewTouchCount = 0;
 }

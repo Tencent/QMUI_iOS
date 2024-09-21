@@ -62,9 +62,15 @@ extern const CGFloat QMUILineHeightIdentity;
 
 /**
  获取当前 font.capHeight 的中心点在 label.bounds.size.height 里的y值（代表字符的中心点位置），从而令业务在试图将文本垂直居中时可以基于该属性的返回值去计算。
- @warning 仅对单行文本有意义
+ @warning 仅对单行文本有意义，对 label 的高度没有要求，但 label 不应该调整过 baselineOffset
  */
 @property(nonatomic, assign, readonly) CGFloat qmui_centerOfCapHeight;
+
+/**
+ 获取当前 font.xHeight 的中心点在 label.bounds.size.height 里的y值（代表x这种矮的字符的中心点位置），从而令业务在试图将文本垂直居中时可以基于该属性的返回值去计算。
+ @warning 仅对单行文本有意义，对 label 的高度没有要求，但 label 不应该调整过 baselineOffset
+ */
+@property(nonatomic, assign, readonly) CGFloat qmui_centerOfXHeight;
 
 /**
  * 将目标UILabel的样式属性设置到当前UILabel上

@@ -197,7 +197,7 @@ QMUISynthesizeIdStrongProperty(qmui_interactiveGestureDelegator, setQmui_interac
                     originSelectorIMP(selfObject, originCMD, viewController, animated);
                 };
                 
-                BOOL willPushActually = viewController && ![viewController isKindOfClass:UITabBarController.class] && ![selfObject.viewControllers containsObject:viewController];
+                BOOL willPushActually = viewController && ![selfObject.viewControllers containsObject:viewController];
                 
                 if (!willPushActually) {
                     QMUIAssert(NO, @"UINavigationController (QMUI)", @"调用了 pushViewController 但实际上没 push 成功，viewController：%@", viewController);
@@ -488,7 +488,17 @@ static char kAssociatedObjectKey_navigationAction;
 }
 
 - (nullable UIViewController *)qmui_rootViewController {
-    return self.viewControllers.firstObject;
+    UIViewController *rootViewController = self.viewControllers.firstObject;
+    // 系统 UINavigationController 的 popToViewController、popToRootViewController、setViewControllers 三种 pop 的方式都有一个共同的特点，假如此时有3个及以上的 vc 例如 [A,B,C]，从当前界面 pop 到非相邻的界面，例如C到A，执行完 pop 操作后立马访问 UINavigationController.viewControllers 预期应该得到 [A]，实际上会得到 [C,A]，过一会（nav.view layoutIfNeeded 之后）才变成正确的 [A]。同理，[A,B,C,D]时从 D pop 到 B，预期得到[A,B]，实际得到[D,A,B]，也即这种情况它总是会把当前界面塞到 viewControllers 数组里的第一个，这就导致这期间访问基于 viewControllers 数组实现的功能（例如 qmui_rootViewController、qmui_previousViewController），都可能出错，所以这里对上述情况做特殊保护。
+    // 如果 pop 操作时只有2个vc，则没这种问题。
+    if (self.viewControllers.count > 1 && self.qmui_isPopping && self.transitionCoordinator) {
+        id<UIViewControllerTransitionCoordinator> transitionCoordinator = self.transitionCoordinator;
+        UIViewController *fromVc = [transitionCoordinator viewControllerForKey:UITransitionContextFromViewControllerKey];
+        if (rootViewController == fromVc) {
+            rootViewController = self.viewControllers[1];
+        }
+    }
+    return rootViewController;
 }
 
 - (void)qmui_pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion {
@@ -578,6 +588,7 @@ static char kAssociatedObjectKey_navigationAction;
                 && [self.parentViewController shouldForceEnableInteractivePopGestureRecognizer]) {
                 return YES;
             }
+            
             return originalValue;
         }
     }

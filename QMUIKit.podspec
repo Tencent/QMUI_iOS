@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "QMUIKit"
-  s.version          = "4.7.0"
+  s.version          = "4.8.0"
   s.summary          = "致力于提高项目 UI 开发效率的解决方案"
   s.description      = <<-DESC
                        QMUI iOS 是一个致力于提高项目 UI 开发效率的解决方案，其设计目的是用于辅助快速搭建一个具备基本设计还原效果的 iOS 项目，同时利用自身提供的丰富控件及兼容处理， 让开发者能专注于业务需求而无需耗费精力在基础代码的设计上。不管是新项目的创建，或是已有项目的维护，均可使开发效率和项目质量得到大幅度提升。
@@ -83,6 +83,7 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUIButton' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIButton/QMUIButton.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILayouter'
     end
 
     ss.subspec 'QMUINavigationButton' do |sss|
@@ -111,6 +112,16 @@ Pod::Spec.new do |s|
 
     ss.subspec 'QMUILabel' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUILabel.{h,m}'
+    end
+
+    ss.subspec 'QMUILayouter' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUILayouter/*.{h,m}'
+    end
+    
+    ss.subspec 'QMUISheetPresentation' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUISheetPresentation/*.{h,m}'
+      sss.dependency 'QMUIKit/QMUIMainFrame'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
     end
 
     ss.subspec 'QMUIKeyboardManager' do |sss|
@@ -244,6 +255,9 @@ Pod::Spec.new do |s|
     ss.subspec 'QMUIPopupMenuView' do |sss|
       sss.source_files = 'QMUIKit/QMUIComponents/QMUIPopupMenuView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUITableView'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILabel'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUILayouter'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIPopupContainerView'
     end
     
@@ -390,6 +404,12 @@ Pod::Spec.new do |s|
       sss.source_files = 'QMUIKit/QMUIComponents/StaticTableView/*.{h,m}'
       sss.dependency 'QMUIKit/QMUIComponents/QMUITableViewCell'
       sss.dependency 'QMUIKit/QMUIComponents/QMUIMultipleDelegates'
+    end
+
+    ss.subspec 'QMUICheckbox' do |sss|
+      sss.source_files = 'QMUIKit/QMUIComponents/QMUICheckbox.{h,m}'
+      sss.dependency 'QMUIKit/QMUIComponents/QMUIButton'
+      sss.dependency 'QMUIKit/QMUIResources'
     end
 
   end

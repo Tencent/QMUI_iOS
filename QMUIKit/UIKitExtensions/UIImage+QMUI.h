@@ -70,6 +70,9 @@ typedef NS_ENUM(NSInteger, QMUIImageGradientType) {
  */
 + (nullable UIImage *)qmui_imageWithSize:(CGSize)size opaque:(BOOL)opaque scale:(CGFloat)scale actions:(void (^)(CGContextRef contextRef))actionBlock;
 
+/// 获取当前图片在 ImageAsset 里的名字（若有），且即便经过 imageWithRenderingMode 转换后也依然可以正常保留该名字（系统默认转换后就丢失名字了）
+@property(nonatomic, copy, readonly, nullable) NSString *qmui_name;
+
 /// 当前图片是否是可拉伸/平铺的，也即通过 resizableImageWithCapInsets: 处理过的图片
 @property(nonatomic, assign, readonly) BOOL qmui_resizable;
 

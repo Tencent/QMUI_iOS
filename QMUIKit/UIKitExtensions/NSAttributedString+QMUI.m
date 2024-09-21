@@ -65,6 +65,14 @@ NSString *const kQMUIImageOriginalAttributedStringKey = @"QMUI_attributedString"
     return [self qmui_attributedStringWithImage:image];
 }
 
+- (NSTextAlignment)qmui_textAlignment {
+    if (!self.length) return NSTextAlignmentLeft;
+    NSParagraphStyle *p = [self attribute:NSParagraphStyleAttributeName atIndex:0 effectiveRange:nil];
+    if (!p) return NSTextAlignmentLeft;
+    NSTextAlignment alignment = p.alignment;
+    return alignment;
+}
+
 #pragma mark - <QMUIStringProtocol>
 
 - (NSUInteger)qmui_lengthWhenCountingNonASCIICharacterAsTwo {
@@ -101,6 +109,34 @@ NSString *const kQMUIImageOriginalAttributedStringKey = @"QMUI_attributedString"
 
 - (instancetype)qmui_stringByRemoveLastCharacter {
     return [self qmui_stringByRemoveCharacterAtIndex:self.length - 1];
+}
+
+@end
+
+@implementation NSMutableAttributedString (QMUI)
+
+- (void)qmui_applyParagraphStyle:(void (^)(NSMutableParagraphStyle * _Nonnull, NSRange))block {
+    if (!self.length || !block) return;
+    __block BOOL applied = NO;
+    [self enumerateAttribute:NSParagraphStyleAttributeName inRange:NSMakeRange(0, self.length) options:NSAttributedStringEnumerationLongestEffectiveRangeNotRequired usingBlock:^(NSParagraphStyle *  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        applied = YES;
+        NSMutableParagraphStyle *p = value.mutableCopy;
+        block(p, range);
+        [self addAttribute:NSParagraphStyleAttributeName value:p.copy range:range];
+    }];
+    if (!applied) {
+        NSMutableParagraphStyle *p = NSMutableParagraphStyle.new;
+        NSRange range = NSMakeRange(0, self.length);
+        block(p, range);
+        [self addAttribute:NSParagraphStyleAttributeName value:p.copy range:range];
+    }
+}
+
+
+- (void)setQmui_textAlignment:(NSTextAlignment)qmui_textAlignment {
+    [self qmui_applyParagraphStyle:^(NSMutableParagraphStyle * _Nonnull aParagraphStyle, NSRange aRange) {
+        aParagraphStyle.alignment = qmui_textAlignment;
+    }];
 }
 
 @end

@@ -98,6 +98,8 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTextChanged:) name:UITextViewTextDidChangeNotification object:nil];
     
     self.postInitializationMethodCalled = YES;
+    
+    [self hookKeyboardDeleteEventIfNeeded];
 }
 
 - (void)dealloc {
@@ -368,6 +370,33 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     }
 }
 
+- (void)hookKeyboardDeleteEventIfNeeded {
+    // - [UITextView keyboardInputShouldDelete:]
+    // - (BOOL) keyboardInputShouldDelete:(id)arg1;
+    SEL selector = NSSelectorFromString([NSString qmui_stringByConcat:@"keyboard", @"Input", @"ShouldDelete", @":", nil]);
+    if (![self respondsToSelector:selector]) {
+        QMUIAssert(NO, @"QMUITextView", @"-[UITextView %@] not found.", NSStringFromSelector(selector));
+        return;
+    }
+    [QMUIHelper executeBlock:^{
+        OverrideImplementation([QMUITextView class], selector, ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^BOOL(QMUITextView *selfObject, id firstArgv) {
+                
+                selfObject.isDeletingDuringTextChange = YES;
+                
+                // call super
+                BOOL (*originSelectorIMP)(id, SEL, id);
+                originSelectorIMP = (BOOL (*)(id, SEL, id))originalIMPProvider();
+                BOOL result = originSelectorIMP(selfObject, originCMD, firstArgv);// 这里会触发 shouldChangeText
+                
+                selfObject.isDeletingDuringTextChange = NO;
+                
+                return result;
+            };
+        });
+    } oncePerIdentifier:@"QMUITextView delete"];
+}
+
 #pragma mark - <UIResponderStandardEditActions>
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
@@ -411,9 +440,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符）
         // 注意当点击了候选词后触发的那一次 textView:shouldChangeTextInRange:replacementText:，此时的 marktedTextRange 依然存在，尚未被清除，所以这种情况下的字符长度限制逻辑会交给 handleTextChanged: 那边处理。
         if (textView.markedTextRange) {
-            if ([textView.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:originalValue:)]) {
-                return [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:YES];
-            }
             return YES;
         }
         
@@ -432,9 +458,6 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
         
         if (!text.length && range.length > 0) {
             // 允许删除，这段必须放在上面 #377、#1170 的逻辑后面
-            if ([textView.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:originalValue:)]) {
-                return [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:YES];
-            }
             return YES;
         }
         
@@ -453,7 +476,7 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
                 if ([textView lengthWithString:allowedText] <= substringLength) {
                     BOOL shouldChange = YES;
                     if ([textView.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:originalValue:)]) {
-                        shouldChange = [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:YES];
+                        shouldChange = [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:shouldChange];
                     }
                     if (!shouldChange) {
                         return NO;
@@ -477,7 +500,8 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
     }
     
     if ([textView.delegate respondsToSelector:@selector(textView:shouldChangeTextInRange:replacementText:originalValue:)]) {
-        return [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:YES];
+        BOOL delegateValue = [textView.delegate textView:textView shouldChangeTextInRange:range replacementText:text originalValue:YES];
+        return delegateValue;
     }
     
     return YES;

@@ -106,6 +106,9 @@ static char kAssociatedObjectKey_cellPosition;
     if (shouldShowSeparatorInTableView) {
         [self qmuiTbc_createSeparatorLayerIfNeeded];
         [self qmuiTbc_createTopSeparatorLayerIfNeeded];
+    } else {
+        self.qmuiTbc_separatorLayer.hidden = YES;
+        self.qmuiTbc_topSeparatorLayer.hidden = YES;
     }
 }
 
@@ -232,6 +235,19 @@ static char kAssociatedObjectKey_selectedBackgroundColor;
 }
 
 - (UIView *)qmui_accessoryView {
+    // 优先获取当前肉眼可见的 view，包括系统的排序、删除、checkbox 等，仅在 willDisplayCell 内有效，cellForRow 太早了拿不到
+    BeginIgnorePerformSelectorLeaksWarning
+    SEL managerSEL = NSSelectorFromString(@"_accessoryManager");
+    if ([self respondsToSelector:managerSEL]) {
+        id manager = [self performSelector:managerSEL];
+        NSDictionary *accessoryViews = [manager performSelector:NSSelectorFromString(@"accessoryViews")];
+        UIView *view = accessoryViews.allValues.firstObject;
+        if (view) {
+            return view;
+        }
+    }
+    EndIgnorePerformSelectorLeaksWarning
+    
     if (self.editing) {
         if (self.editingAccessoryView) {
             return self.editingAccessoryView;

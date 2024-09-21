@@ -19,9 +19,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// TODO: molice 等废弃 qmui_badgeCenterOffset 系列接口后再删除
-extern const CGPoint QMUIBadgeInvalidateOffset;
-
 @interface QMUIHelper : NSObject
 
 + (instancetype)sharedInstance;
@@ -178,6 +175,9 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
 /// iPhone 12 / 12 Pro
 @property(class, nonatomic, readonly) BOOL is61InchScreenAndiPhone12Later;
 
+/// iPhone 14 Pro / 15 Pro
+@property(class, nonatomic, readonly) BOOL is61InchScreenAndiPhone14ProLater;
+
 /// iPhone XR / 11
 @property(class, nonatomic, readonly) BOOL is61InchScreen;
 
@@ -202,6 +202,7 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
 @property(class, nonatomic, readonly) CGSize screenSizeFor67InchAndiPhone14Later;
 @property(class, nonatomic, readonly) CGSize screenSizeFor67Inch;
 @property(class, nonatomic, readonly) CGSize screenSizeFor65Inch;
+@property(class, nonatomic, readonly) CGSize screenSizeFor61InchAndiPhone14ProLater;
 @property(class, nonatomic, readonly) CGSize screenSizeFor61InchAndiPhone12Later;
 @property(class, nonatomic, readonly) CGSize screenSizeFor61Inch;
 @property(class, nonatomic, readonly) CGSize screenSizeFor58Inch;
@@ -224,6 +225,10 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
 /// @NEW_DEVICE_CHECKER
 @property(class, nonatomic, readonly) BOOL isZoomedMode;
 
+/// 当前设备是否拥有灵动岛
+/// @NEW_DEVICE_CHECKER
+@property(class, nonatomic, readonly) BOOL isDynamicIslandDevice;
+
 /**
  在 iPad 分屏模式下可获得实际运行区域的窗口大小，如需适配 iPad 分屏，建议用这个方法来代替 [UIScreen mainScreen].bounds.size
  @return 应用运行的窗口大小
@@ -232,8 +237,14 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
 
 /**
  静态的状态栏高度，在状态栏不可见时也会根据机型返回状态栏的固定高度
+ @NEW_DEVICE_CHECKER
  */
 @property(class, nonatomic, readonly) CGFloat statusBarHeightConstant;
+
+/**
+ 静态的导航栏高度，在导航栏不可见时也会根据机型返回导航栏的固定高度
+ */
+@property(class, nonatomic, readonly) CGFloat navigationBarMaxYConstant;
 
 @end
 
@@ -268,6 +279,17 @@ extern const CGPoint QMUIBadgeInvalidateOffset;
  */
 + (void)executeAnimationBlock:(nonnull __attribute__((noescape)) void (^)(void))animationBlock completionBlock:(nullable __attribute__((noescape)) void (^)(void))completionBlock;
 
+@end
+
+@interface QMUIHelper (Text)
+
+/**
+ 该方法计算一个 baselineOffset，使得指定字体的文本在指定高度里能达到视觉上的垂直居中（系统默认是底对齐）。
+ @param height 单行文本占据的高度，通常可传入文本的 lineHeight 或者 UILabel 的 height。
+ @param font 当前文本的字体。
+ @return 可使文本垂直居中的 baselineOffset 偏移值，正值往上，负值往下。注意如果某段 NSAttributedString 通过 NSParagraphStyle 指定了行高，则负值的 baselineOffset 对其无效。
+ */
++ (CGFloat)baselineOffsetWhenVerticalAlignCenterInHeight:(CGFloat)height withFont:(UIFont *)font;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -143,6 +143,7 @@
 
 #pragma mark - Positioning Overrides
 
+// 这样写已经可以让 sizeThatFits 时高度加上 textInsets 的值了
 - (CGRect)textRectForBounds:(CGRect)bounds {
     bounds = CGRectInsetEdges(bounds, self.textInsets);
     CGRect resultRect = [super textRectForBounds:bounds];
@@ -192,9 +193,6 @@
         
         // 如果是中文输入法正在输入拼音的过程中（markedTextRange 不为 nil），是不应该限制字数的（例如输入“huang”这5个字符，其实只是为了输入“黄”这一个字符），所以在 shouldChange 这里不会限制，而是放在 didChange 那里限制。
         if (textField.markedTextRange) {
-            if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
-                return [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:string originalValue:YES];
-            }
             return YES;
         }
         
@@ -213,9 +211,6 @@
         
         if (!string.length && range.length > 0) {
             // 允许删除，这段必须放在上面 #377、#1170 的逻辑后面
-            if ([textField.delegate respondsToSelector:@selector(textField:shouldChangeCharactersInRange:replacementString:originalValue:)]) {
-                return [textField.delegate textField:textField shouldChangeCharactersInRange:range replacementString:string originalValue:YES];
-            }
             return YES;
         }
         
@@ -273,8 +268,20 @@
     
     if (!textField.markedTextRange) {
         if ([textField lengthWithString:textField.text] > textField.maximumTextLength) {
-            textField.text = [textField.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textField.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:textField.shouldCountingNonASCIICharacterAsTwo];
-            
+            NSString *text = nil;
+            NSInteger lastLength = textField.text.length - NSMaxRange(textField.qmui_selectedRange);// selectedRange 是系统的，所以这里按 shouldCountingNonASCIICharacterAsTwo = NO 来计算
+            if (lastLength > 0) {
+                // 光标在中间就触发了最长文本限制，要从前面截断，不要影响光标后面的原始文本
+                NSString *lastText = [textField.text substringFromIndex:NSMaxRange(textField.qmui_selectedRange)];
+                NSInteger lastLengthInQMUI = [textField lengthWithString:lastText];
+                NSInteger preLengthInQMUI = textField.maximumTextLength - lastLengthInQMUI;
+                NSString *preText = [textField.text qmui_substringAvoidBreakingUpCharacterSequencesToIndex:preLengthInQMUI lessValue:YES countingNonASCIICharacterAsTwo:textField.shouldCountingNonASCIICharacterAsTwo];
+                text = [preText stringByAppendingString:lastText];
+            } else {
+                text = [textField.text qmui_substringAvoidBreakingUpCharacterSequencesWithRange:NSMakeRange(0, textField.maximumTextLength) lessValue:YES countingNonASCIICharacterAsTwo:textField.shouldCountingNonASCIICharacterAsTwo];
+            }
+            textField.text = text;
+            textField.qmui_selectedRange = NSMakeRange(textField.text.length - lastLength, 0);
             if ([textField.delegate respondsToSelector:@selector(textField:didPreventTextChangeInRange:replacementString:)]) {
                 [textField.delegate textField:textField didPreventTextChangeInRange:textField.qmui_selectedRange replacementString:nil];
             }

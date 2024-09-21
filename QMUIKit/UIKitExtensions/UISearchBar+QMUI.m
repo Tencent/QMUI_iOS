@@ -31,6 +31,7 @@
 QMUISynthesizeBOOLProperty(qmui_usedAsTableHeaderView, setQmui_usedAsTableHeaderView)
 QMUISynthesizeBOOLProperty(qmui_alwaysEnableCancelButton, setQmui_alwaysEnableCancelButton)
 QMUISynthesizeBOOLProperty(qmui_fixMaskViewLayoutBugAutomatically, setQmui_fixMaskViewLayoutBugAutomatically)
+QMUISynthesizeBOOLProperty(qmui_shouldFixSearchResultsContentInset, setQmui_shouldFixSearchResultsContentInset)
 QMUISynthesizeUIEdgeInsetsProperty(qmuisb_customTextFieldMargins, setQmuisb_customTextFieldMargins)
 QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth1, setQmuisb_centerPlaceholderCachedWidth1)
 QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_centerPlaceholderCachedWidth2)
@@ -242,7 +243,7 @@ QMUISynthesizeCGFloatProperty(qmuisb_centerPlaceholderCachedWidth2, setQmuisb_ce
     self.qmui_alwaysEnableCancelButton = YES;
     self.qmui_showsLeftAccessoryView = YES;
     self.qmui_showsRightAccessoryView = YES;
-    
+    self.qmui_shouldFixSearchResultsContentInset = YES;
     if (QMUICMIActivated && ShouldFixSearchBarMaskViewLayoutBug) {
         self.qmui_fixMaskViewLayoutBugAutomatically = YES;
     }
@@ -375,6 +376,35 @@ static char kAssociatedObjectKey_textFieldMarginsBlock;
 
 - (UIEdgeInsets (^)(__kindof UISearchBar * _Nonnull, BOOL))qmui_textFieldMarginsBlock {
     return (UIEdgeInsets (^)(__kindof UISearchBar * _Nonnull, BOOL))objc_getAssociatedObject(self, &kAssociatedObjectKey_textFieldMarginsBlock);
+}
+
+static char kAssociatedObjectKey_adjustTextFieldLayoutForIndexBar;
+- (void)setQmui_adjustTextFieldLayoutForIndexBar:(BOOL)adjustTextFieldLayoutForIndexBar {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_adjustTextFieldLayoutForIndexBar, @(adjustTextFieldLayoutForIndexBar), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    if (!adjustTextFieldLayoutForIndexBar) {
+        [QMUIHelper executeBlock:^{
+            // 系统内部的调用关系是：-[UITableView reloadData]→-[UITableView _updateIndexFrame]→[tableHeaderView isKindOfClass:UISearchBar]→-[UISearchBar _updateInsetsForTableView:]→-[UITableView _indexBarExtentFromEdge]，所以只需要跳过 _updateInsetsForTableView: 即可屏蔽该特性
+            // - [UISearchBar _updateInsetsForTableView:]
+            // - (void) _updateInsetsForTableView:(id)arg1; (0x184a14f24)
+            OverrideImplementation([UISearchBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"updateInsets", @"ForTableView",  @":", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UISearchBar *selfObject, UITableView *firstArgv) {
+                    
+                    if (!selfObject.qmui_adjustTextFieldLayoutForIndexBar) return;
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UITableView *);
+                    originSelectorIMP = (void (*)(id, SEL, UITableView *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                };
+            });
+        } oncePerIdentifier:@"UISearchBar (QMUI) adjustIndexBar"];
+    }
+}
+
+- (BOOL)qmui_adjustTextFieldLayoutForIndexBar {
+    NSNumber *value = (NSNumber *)objc_getAssociatedObject(self, &kAssociatedObjectKey_adjustTextFieldLayoutForIndexBar);
+    if (!value) return YES;
+    return value.boolValue;
 }
 
 - (UISegmentedControl *)qmui_segmentedControl {
@@ -816,6 +846,7 @@ static char kAssociatedObjectKey_rightAccessoryViewMargins;
                 CGPathAddRect(path, NULL, CGRectMake(0, 0, searchBarContainerView.qmui_width, previousHeight));
                 maskLayer.path = path;
                 searchBarContainerView.layer.mask = maskLayer;
+                CGPathRelease(path);
             }
         }
     }
@@ -825,7 +856,7 @@ static char kAssociatedObjectKey_rightAccessoryViewMargins;
 // 不要让系统自适应了，否则在搜索结果（navigationBar 隐藏）push 进入下一级界面（navigationBar 显示）过程中系统自动调整的 contentInset 会跳来跳去
 // https://github.com/Tencent/QMUI_iOS/issues/1473
 - (void)qmuisb_fixSearchResultsScrollViewContentInsetIfNeeded {
-    if (!self.qmuisb_shouldFixLayoutWhenUsedAsTableHeaderView) return;
+    if (!self.qmuisb_shouldFixLayoutWhenUsedAsTableHeaderView || !self.qmui_shouldFixSearchResultsContentInset) return;
     if (self.qmui_isActive) {
         UIViewController *searchResultsController = self.qmui_searchController.searchResultsController;
         if (searchResultsController && [searchResultsController isViewLoaded]) {

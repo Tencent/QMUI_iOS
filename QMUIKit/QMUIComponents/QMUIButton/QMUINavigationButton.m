@@ -490,7 +490,9 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
                 originSelectorIMP = (UIView * (*)(id, SEL, CGPoint, UIEvent *))originalIMPProvider();
                 UIView * result = originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
                 
-                BOOL hitNothing = !result || result == selfObject.qmui_contentView || [NSStringFromClass(result.class) containsString:@"StackView"];
+                // result 有值意味着该事件本应属于 bar 的，这时候才干预。
+                // 属于 bar 但又分配给容器而不是精准的某个内容 view，此时才考虑扩大点击范围的识别。
+                BOOL hitNothing = result == selfObject.qmui_contentView || [NSStringFromClass(result.class) containsString:@"StackView"];
                 if (!hitNothing) return result;
                 
                 NSMutableArray<UIView *> *customViews = [[NSMutableArray alloc] init];

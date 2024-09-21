@@ -38,7 +38,6 @@
 #import "QMUIImagePreviewView.h"
 #import "QMUILabel.h"
 #import "QMUIPopupContainerView.h"
-#import "QMUIPopupMenuButtonItem.h"
 #import "QMUIPopupMenuView.h"
 #import "QMUITextField.h"
 #import "QMUITextView.h"
@@ -130,10 +129,10 @@
                                                                                                       NSStringFromSelector(@selector(maskViewBackgroundColor)),
                                                                                                       NSStringFromSelector(@selector(borderColor)),
                                                                                                       NSStringFromSelector(@selector(arrowImage)),],
-                                       NSStringFromClass(QMUIPopupMenuButtonItem.class):            @[NSStringFromSelector(@selector(highlightedBackgroundColor)),],
                                        NSStringFromClass(QMUIPopupMenuView.class):                  @[NSStringFromSelector(@selector(itemSeparatorColor)),
                                                                                                       NSStringFromSelector(@selector(sectionSeparatorColor)),
-                                                                                                      NSStringFromSelector(@selector(itemTitleColor))],
+                                                                                                      NSStringFromSelector(@selector(sectionSpacingColor)),],
+                                       NSStringFromClass(QMUIPopupMenuItemView.class):              @[NSStringFromSelector(@selector(highlightedBackgroundColor))],
                                        NSStringFromClass(QMUITextField.class):                      @[NSStringFromSelector(@selector(placeholderColor)),],
                                        NSStringFromClass(QMUITextView.class):                       @[NSStringFromSelector(@selector(placeholderColor)),],
                                        NSStringFromClass(QMUIToastBackgroundView.class):            @[NSStringFromSelector(@selector(styleColor)),],

@@ -135,7 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param pattern 正则表达式
  @return 匹配到的第一个结果，如果没有匹配成功则返回 nil
  */
-- (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern;
+- (nullable NSString *)qmui_stringMatchedByPattern:(NSString *)pattern;
 
 /**
  用正则表达式匹配字符串，返回匹配到的第一个结果里的指定分组（由参数 index 指定）。
@@ -144,7 +144,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param index 要返回第几个分组，0表示整个正则表达式匹配到的结果，1表示匹配到的结果里的第1个分组（第1个括号）
  @return 返回匹配到的第一个结果里的指定分组，如果 index 超过总分组数则返回 nil。匹配失败也返回 nil。
  */
-- (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupIndex:(NSInteger)index;
+- (nullable NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupIndex:(NSInteger)index;
 
 /**
  用正则表达式匹配字符串，返回匹配到的第一个结果里的指定分组（由参数 name 指定）。
@@ -153,7 +153,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param name 要返回的分组名称，可通过 pattern 里的 ?<name> 语法对分组进行命名。
  @return 返回匹配到的第一个结果里的指定分组，如果 name 不存在则返回 nil。匹配失败也返回 nil。
  */
-- (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupName:(NSString *)name;
+- (nullable NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupName:(NSString *)name;
 
 /**
  *  用正则表达式匹配字符串并将其替换为指定的另一个字符串，大小写不敏感

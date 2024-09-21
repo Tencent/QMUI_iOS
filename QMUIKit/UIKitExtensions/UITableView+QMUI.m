@@ -93,32 +93,29 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
             };
         });
         
-        // [UIKit Bug] 将 UISearchBar 作为 tableHeaderView 使用的 UITableView，如果同时设置了 estimatedRowHeight，则 contentSize 会错乱，导致滚动异常
+        // [UIKit Bug] iOS 14 及以下版本，将 UISearchBar 作为 tableHeaderView 使用的 UITableView，如果同时设置了 estimatedRowHeight，则 contentSize 会错乱，导致滚动异常
         // https://github.com/Tencent/QMUI_iOS/issues/1161
-        void (^fixBugOfTableViewContentSize)(UITableView *) = ^void(UITableView *tableView) {
-            BOOL estimatesRowHeight = NO;
-            [tableView qmui_performSelector:NSSelectorFromString(@"_estimatesRowHeights") withPrimitiveReturnValue:&estimatesRowHeight];
-            if (estimatesRowHeight && [tableView.tableHeaderView isKindOfClass:UISearchBar.class]) {
-                BeginIgnorePerformSelectorLeaksWarning
-                [tableView performSelector:NSSelectorFromString(@"_updateContentSize")];
-                EndIgnorePerformSelectorLeaksWarning
-            }
-        };
-        
-        /* - (void)_coalesceContentSizeUpdateWithDelta:(double)arg1; */
-        OverrideImplementation([UITableView class], NSSelectorFromString(@"_coalesceContentSizeUpdateWithDelta:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UITableView *selfObject, CGFloat firstArgv) {
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, CGFloat);
-                originSelectorIMP = (void (*)(id, SEL, CGFloat))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, firstArgv);
-                
-                if (fixBugOfTableViewContentSize) {
-                    fixBugOfTableViewContentSize(selfObject);
-                }
-            };
-        });
+        if (@available(iOS 15.0, *)) {
+        } else {
+            /* - (void)_coalesceContentSizeUpdateWithDelta:(double)arg1; */
+            OverrideImplementation([UITableView class], NSSelectorFromString(@"_coalesceContentSizeUpdateWithDelta:"), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UITableView *selfObject, CGFloat firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, CGFloat);
+                    originSelectorIMP = (void (*)(id, SEL, CGFloat))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    BOOL estimatesRowHeight = NO;
+                    [selfObject qmui_performSelector:NSSelectorFromString(@"_estimatesRowHeights") withPrimitiveReturnValue:&estimatesRowHeight];
+                    if (estimatesRowHeight && [selfObject.tableHeaderView isKindOfClass:UISearchBar.class]) {
+                        BeginIgnorePerformSelectorLeaksWarning
+                        [selfObject performSelector:NSSelectorFromString(@"_updateContentSize")];
+                        EndIgnorePerformSelectorLeaksWarning
+                    }
+                };
+            });
+        }
         
         OverrideImplementation([UITableView class], @selector(reloadData), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UITableView *selfObject) {
@@ -474,13 +471,14 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     BOOL usingEstimatedSectionHeaderHeight = [self.delegate respondsToSelector:@selector(tableView:estimatedHeightForHeaderInSection:)] || self.estimatedSectionHeaderHeight > 0;
     BOOL usingEstimatedSectionFooterHeight = [self.delegate respondsToSelector:@selector(tableView:estimatedHeightForFooterInSection:)] || self.estimatedSectionFooterHeight > 0;
     
+    if (!IS_DEBUG) return;
     if (usingEstimatedRowHeight || usingEstimatedSectionHeaderHeight || usingEstimatedSectionFooterHeight) {
         [self QMUISymbolicUsingTableViewEstimatedHeightMakeWarning];
     }
 }
 
 - (void)QMUISymbolicUsingTableViewEstimatedHeightMakeWarning {
-    QMUILog(@"UITableView (QMUI)", @"当开启了 UITableView 的 estimatedRow(SectionHeader / SectionFooter)Height 功能后，不应该手动修改 contentOffset 和 contentSize，也会影响 contentSize、sizeThatFits:、rectForXxx 等方法的计算，请注意确认当前是否存在不合理的业务代码。可添加 '%@' 的 Symbolic Breakpoint 以捕捉此类信息\n%@", NSStringFromSelector(_cmd), [NSThread callStackSymbols]);
+    QMUILog(@"UITableView (QMUI)", @"当开启了 UITableView 的 estimatedRow(SectionHeader / SectionFooter)Height 功能后，不应该手动修改 contentOffset 和 contentSize，也会影响 contentSize、sizeThatFits:、rectForXxx 等方法的计算，请注意确认当前是否存在不合理的业务代码。可添加 'QMUISymbolicUsingTableViewEstimatedHeightMakeWarning' 的 Symbolic Breakpoint 以捕捉此类信息。");
 }
 
 - (void)qmui_performBatchUpdates:(void (NS_NOESCAPE ^ _Nullable)(void))updates completion:(void (^ _Nullable)(BOOL finished))completion {

@@ -64,7 +64,7 @@
     
     XCTAssertNil([string qmui_stringMatchedByPattern:@"str" groupName:@"number"]);
     XCTAssertEqualObjects([string qmui_stringMatchedByPattern:@"ing(?<number>[\\d\\.]+)" groupName:@"number"], @"0.05");
-    XCTAssertNil([string qmui_stringMatchedByPattern:@"ing(?<number>[\\d\\.]+)" groupName:@"num"]);
+    XCTAssertThrows([string qmui_stringMatchedByPattern:@"ing(?<number>[\\d\\.]+)" groupName:@"num"]);
 }
 
 - (void)testSubstring1 {
@@ -143,12 +143,13 @@
     BOOL countingNonASCIICharacterAsTwo = NO;
     
     NSString *text2 = [text qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
-    XCTAssertEqual(text2.length, toIndex + 1);
+    XCTAssertEqual(text2.length, toIndex);
     
     NSString *zh2 = [zh qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
-    XCTAssertEqual(zh2.length, toIndex + 1);
+    XCTAssertEqual(zh2.length, toIndex);
+    
     NSString *zh3 = [zh substringToIndex:toIndex];
-    XCTAssertTrue((lessValue && zh2.length == zh3.length) || (!lessValue && zh2.length > zh3.length));
+    XCTAssertTrue((!countingNonASCIICharacterAsTwo && zh2.length == zh3.length) || (countingNonASCIICharacterAsTwo && zh2.length > zh3.length));
     
     NSString *emoji2 = [emoji qmui_substringAvoidBreakingUpCharacterSequencesToIndex:toIndex lessValue:lessValue countingNonASCIICharacterAsTwo:countingNonASCIICharacterAsTwo];
     NSString *emoji3 = [emoji substringToIndex:[emoji rangeOfComposedCharacterSequenceAtIndex:toIndex].location];
@@ -279,6 +280,32 @@
         testingBlock(obj, NO, NO);
         testingBlock(obj, NO, YES);
     }];
+}
+
+- (void)testAttributedString2 {
+    NSAttributedString *nilString = nil;
+    NSAttributedString *emptyString = NSAttributedString.new;
+    NSAttributedString *emptyString2 = [[NSAttributedString alloc] initWithString:@"" attributes:@{NSFontAttributeName: UIFontMake(16), NSParagraphStyleAttributeName: [NSParagraphStyle qmui_paragraphStyleWithLineHeight:20 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]}];
+    NSAttributedString *paraString = [[NSAttributedString alloc] initWithString:@"你好啊" attributes:@{NSParagraphStyleAttributeName: [NSParagraphStyle qmui_paragraphStyleWithLineHeight:20 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter]}];
+    NSAttributedString *nonParaString = [[NSAttributedString alloc] initWithString:@"你好啊" attributes:@{NSFontAttributeName: UIFontMake(16)}];
+    NSMutableAttributedString *multiParaString = [[NSMutableAttributedString alloc] initWithString:@"片段1片段2" attributes:@{NSFontAttributeName: UIFontMake(16)}];
+    [multiParaString addAttribute:NSParagraphStyleAttributeName value:[NSParagraphStyle qmui_paragraphStyleWithLineHeight:20 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentCenter] range:NSMakeRange(0, 3)];
+    [multiParaString addAttribute:NSParagraphStyleAttributeName value:[NSParagraphStyle qmui_paragraphStyleWithLineHeight:40 lineBreakMode:NSLineBreakByWordWrapping textAlignment:NSTextAlignmentRight] range:NSMakeRange(3, 3)];
+    
+    XCTAssertEqual(nilString.qmui_textAlignment, NSTextAlignmentLeft);
+    XCTAssertEqual(emptyString.qmui_textAlignment, NSTextAlignmentLeft);
+    XCTAssertEqual(emptyString2.qmui_textAlignment, NSTextAlignmentLeft);// 就算显式写了文本属性，但因为文本长度为0，所以得到的也是默认值 Left
+    XCTAssertEqual(paraString.qmui_textAlignment, NSTextAlignmentCenter);
+    XCTAssertEqual(nonParaString.qmui_textAlignment, NSTextAlignmentLeft);
+    XCTAssertEqual(multiParaString.qmui_textAlignment, NSTextAlignmentCenter);// 子字符串拥有不同段落属性的，取第一个子字符串的段落属性的值
+    
+    
+    NSMutableAttributedString *paraString2 = (NSMutableAttributedString *)paraString.mutableCopy;
+    paraString2.qmui_textAlignment = NSTextAlignmentRight;
+    XCTAssertEqual(paraString2.qmui_textAlignment, NSTextAlignmentRight);
+    
+    multiParaString.qmui_textAlignment = NSTextAlignmentRight;
+    XCTAssertEqual(multiParaString.qmui_textAlignment, NSTextAlignmentRight);
 }
 
 @end

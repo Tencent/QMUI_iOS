@@ -180,7 +180,7 @@ static NSUInteger alertControllerCount = 0;
 
 @property(nonatomic, strong) UIView *containerView;
 
-@property(nonatomic, strong) UIControl *maskView;
+@property(nonatomic, strong) UIControl *dimmingView;
 
 @property(nonatomic, strong) UIView *scrollWrapView;
 @property(nonatomic, strong) UIScrollView *headerScrollView;
@@ -498,7 +498,7 @@ static NSUInteger alertControllerCount = 0;
         
         self.preferredStyle = preferredStyle;
     
-        self.shouldRespondMaskViewTouch = preferredStyle == QMUIAlertControllerStyleActionSheet;
+        self.shouldRespondDimmingViewTouch = preferredStyle == QMUIAlertControllerStyleActionSheet;
         
         self.alertActions = [[NSMutableArray alloc] init];
         self.alertTextFields = [[NSMutableArray alloc] init];
@@ -520,7 +520,7 @@ static NSUInteger alertControllerCount = 0;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    [self.view addSubview:self.maskView];
+    [self.view addSubview:self.dimmingView];
     [self.view addSubview:self.containerView];
     [self.containerView addSubview:self.scrollWrapView];
     [self.scrollWrapView addSubview:self.headerScrollView];
@@ -539,7 +539,7 @@ static NSUInteger alertControllerCount = 0;
     BOOL shouldShowSeparatorAtTopOfButtonAtFirstLine = hasTitle || hasMessage || hasCustomView;
     CGFloat contentOriginY = 0;
     
-    self.maskView.frame = self.view.bounds;
+    self.dimmingView.frame = self.view.bounds;
     
     if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
         
@@ -631,7 +631,7 @@ static NSUInteger alertControllerCount = 0;
         self.buttonScrollView.contentSize = CGSizeMake(CGRectGetWidth(self.buttonScrollView.bounds), contentOriginY);
         // 容器最后布局
         CGFloat contentHeight = CGRectGetHeight(self.headerScrollView.bounds) + CGRectGetHeight(self.buttonScrollView.bounds);
-        CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds) - UIEdgeInsetsGetVerticalValue(SafeAreaInsetsConstantForDeviceWithNotch);
+        CGFloat screenSpaceHeight = CGRectGetHeight(self.view.bounds) - UIEdgeInsetsGetVerticalValue(SafeAreaInsetsConstantForDeviceWithNotch) - self.keyboardHeight;
         if (contentHeight > screenSpaceHeight - 20) {
             screenSpaceHeight -= 20;
             CGFloat contentH = fmin(CGRectGetHeight(self.headerScrollView.bounds), screenSpaceHeight / 2);
@@ -655,7 +655,7 @@ static NSUInteger alertControllerCount = 0;
         self.scrollWrapView.frame =  CGRectMake(0, 0, CGRectGetWidth(self.scrollWrapView.bounds), contentHeight);
         self.mainVisualEffectView.frame = self.scrollWrapView.bounds;
         
-        self.containerView.qmui_frameApplyTransform = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.frame)) / 2, SafeAreaInsetsConstantForDeviceWithNotch.top + (screenSpaceHeight - contentHeight - self.keyboardHeight) / 2, CGRectGetWidth(self.containerView.frame), CGRectGetHeight(self.scrollWrapView.bounds));
+        self.containerView.qmui_frameApplyTransform = CGRectMake((CGRectGetWidth(self.view.bounds) - CGRectGetWidth(self.containerView.frame)) / 2, SafeAreaInsetsConstantForDeviceWithNotch.top + (screenSpaceHeight - contentHeight) / 2, CGRectGetWidth(self.containerView.frame), CGRectGetHeight(self.scrollWrapView.bounds));
     }
     
     else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
@@ -845,7 +845,7 @@ static NSUInteger alertControllerCount = 0;
             weakSelf.containerView.alpha = 0;
             weakSelf.containerView.layer.transform = CATransform3DMakeScale(1.2, 1.2, 1.0);
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
-                weakSelf.maskView.alpha = 1;
+                weakSelf.dimmingView.alpha = 1;
                 weakSelf.containerView.alpha = 1;
                 weakSelf.containerView.layer.transform = CATransform3DMakeScale(1.0, 1.0, 1.0);
             } completion:^(BOOL finished) {
@@ -856,7 +856,7 @@ static NSUInteger alertControllerCount = 0;
         } else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
             weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
-                weakSelf.maskView.alpha = 1;
+                weakSelf.dimmingView.alpha = 1;
                 weakSelf.containerView.layer.transform = CATransform3DIdentity;
             } completion:^(BOOL finished) {
                 if (completion) {
@@ -869,7 +869,7 @@ static NSUInteger alertControllerCount = 0;
     self.modalPresentationViewController.hidingAnimation = ^(UIView *dimmingView, CGRect containerBounds, CGFloat keyboardHeight, void(^completion)(BOOL finished)) {
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
-                weakSelf.maskView.alpha = 0;
+                weakSelf.dimmingView.alpha = 0;
                 weakSelf.containerView.alpha = 0;
             } completion:^(BOOL finished) {
                 weakSelf.containerView.alpha = 1;
@@ -879,7 +879,7 @@ static NSUInteger alertControllerCount = 0;
             }];
         } else if (self.preferredStyle == QMUIAlertControllerStyleActionSheet) {
             [UIView animateWithDuration:0.25f delay:0 options:QMUIViewAnimationOptionsCurveOut animations:^{
-                weakSelf.maskView.alpha = 0;
+                weakSelf.dimmingView.alpha = 0;
                 weakSelf.containerView.layer.transform = CATransform3DMakeTranslation(0, CGRectGetHeight(weakSelf.view.bounds) - CGRectGetMinY(weakSelf.containerView.frame), 0);
             } completion:^(BOOL finished) {
                 if (completion) {
@@ -919,7 +919,7 @@ static NSUInteger alertControllerCount = 0;
     __weak __typeof(self)weakSelf = self;
     
     [self.modalPresentationViewController showWithAnimated:animated completion:^(BOOL finished) {
-        weakSelf.maskView.alpha = 1;
+        weakSelf.dimmingView.alpha = 1;
         weakSelf.willShow = NO;
         weakSelf.showing = YES;
         if (weakSelf.isNeedsHideAfterAlertShowed) {
@@ -963,7 +963,7 @@ static NSUInteger alertControllerCount = 0;
         weakSelf.modalPresentationViewController = nil;
         weakSelf.willShow = NO;
         weakSelf.showing = NO;
-        weakSelf.maskView.alpha = 0;
+        weakSelf.dimmingView.alpha = 0;
         if (self.preferredStyle == QMUIAlertControllerStyleAlert) {
             weakSelf.containerView.alpha = 0;
         } else {
@@ -1166,22 +1166,22 @@ static NSUInteger alertControllerCount = 0;
     return [self.alertTextFields copy];
 }
 
-- (void)handleMaskViewEvent:(id)sender {
-    if (_shouldRespondMaskViewTouch) {
+- (void)handleDimmingViewEvent:(id)sender {
+    if (_shouldRespondDimmingViewTouch) {
         [self hideWithAnimated:YES completion:NULL];
     }
 }
 
 #pragma mark - Getters & Setters
 
-- (UIControl *)maskView {
-    if (!_maskView) {
-        _maskView = [[UIControl alloc] init];
-        _maskView.alpha = 0;
-        _maskView.backgroundColor = UIColorMask;
-        [_maskView addTarget:self action:@selector(handleMaskViewEvent:) forControlEvents:UIControlEventTouchUpInside];
+- (UIControl *)dimmingView {
+    if (!_dimmingView) {
+        _dimmingView = [[UIControl alloc] init];
+        _dimmingView.alpha = 0;
+        _dimmingView.backgroundColor = UIColorMask;
+        [_dimmingView addTarget:self action:@selector(handleDimmingViewEvent:) forControlEvents:UIControlEventTouchUpInside];
     }
-    return _maskView;
+    return _dimmingView;
 }
 
 - (UIView *)containerView {

@@ -19,6 +19,7 @@
 #import "NSArray+QMUI.h"
 #import "NSCharacterSet+QMUI.h"
 #import "QMUIStringPrivate.h"
+#import "NSRegularExpression+QMUI.h"
 
 @implementation NSString (QMUI)
 
@@ -58,7 +59,9 @@
 - (NSString *)qmui_md5 {
     const char *cStr = [self UTF8String];
     unsigned char result[CC_MD5_DIGEST_LENGTH];
+    BeginIgnoreDeprecatedWarning
     CC_MD5(cStr, (CC_LONG)strlen(cStr), result);
+    EndIgnoreDeprecatedWarning
     return [NSString stringWithFormat:
             @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
             result[0], result[1], result[2], result[3],
@@ -156,8 +159,7 @@
         return self;
     }
     
-    NSError *error = nil;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"[\u0300-\u036F]" options:NSRegularExpressionCaseInsensitive error:&error];
+    NSRegularExpression *regex = [NSRegularExpression qmui_cachedRegularExpressionWithPattern:@"[\u0300-\u036F]"];
     NSString *modifiedString = [regex stringByReplacingMatchesInString:self options:NSMatchingReportProgress range:NSMakeRange(0, self.length) withTemplate:@""];
     return modifiedString;
 }
@@ -169,7 +171,7 @@
 - (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupIndex:(NSInteger)index {
     if (pattern.length <= 0 || index < 0) return nil;
     
-    NSRegularExpression *regx = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
+    NSRegularExpression *regx = [NSRegularExpression qmui_cachedRegularExpressionWithPattern:pattern];
     NSTextCheckingResult *result = [regx firstMatchInString:self options:NSMatchingReportCompletion range:NSMakeRange(0, self.length)];
     if (result.numberOfRanges > index) {
         NSRange range = [result rangeAtIndex:index];
@@ -181,7 +183,7 @@
 - (NSString *)qmui_stringMatchedByPattern:(NSString *)pattern groupName:(NSString *)name {
     if (pattern.length <= 0) return nil;
     
-    NSRegularExpression *regx = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:nil];
+    NSRegularExpression *regx = [NSRegularExpression qmui_cachedRegularExpressionWithPattern:pattern];
     NSTextCheckingResult *result = [regx firstMatchInString:self options:NSMatchingReportCompletion range:NSMakeRange(0, self.length)];
     if (result.numberOfRanges > 1) {
         NSRange range = [result rangeWithName:name];
@@ -195,9 +197,8 @@
 }
 
 - (NSString *)qmui_stringByReplacingPattern:(NSString *)pattern withString:(NSString *)replacement {
-    NSError *error = nil;
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
-    if (error) {
+    NSRegularExpression *regex = [NSRegularExpression qmui_cachedRegularExpressionWithPattern:pattern];
+    if (!regex) {
         return self;
     }
     return [regex stringByReplacingMatchesInString:self options:NSMatchingReportCompletion range:NSMakeRange(0, self.length) withTemplate:replacement];

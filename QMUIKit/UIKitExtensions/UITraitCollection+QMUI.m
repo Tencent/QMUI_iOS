@@ -14,7 +14,6 @@
 
 #import "UITraitCollection+QMUI.h"
 #import "QMUICore.h"
-#import <dlfcn.h>
 
 @implementation UITraitCollection (QMUI)
 

@@ -21,7 +21,7 @@
 #import "UIImage+QMUI.h"
 #import <objc/message.h>
 
-@interface UIImage (QMUITheme)
+@interface UIImage ()
 
 @property(nonatomic, assign) BOOL qmui_shouldUseSystemIMP;
 + (nullable UIImage *)qmui_dynamicImageWithOriginalImage:(UIImage *)image tintColor:(UIColor *)tintColor originalActionBlock:(UIImage * (^)(UIImage *aImage, UIColor *aTintColor))originalActionBlock;
@@ -161,6 +161,10 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 
 - (instancetype)init {
     return ((id (*)(id, SEL))[NSObject instanceMethodForSelector:_cmd])(self, _cmd);
+}
+
+- (NSString *)qmui_name {
+    return self.name;
 }
 
 - (BOOL)respondsToSelector:(SEL)aSelector {
@@ -338,10 +342,6 @@ static IMP qmui_getMsgForwardIMP(NSObject *self, SEL selector) {
 }
 
 #pragma mark - <QMUIDynamicImageProtocol>
-
-- (NSString *)qmui_name {
-    return self.name;
-}
 
 - (UIImage *)qmui_rawImage {
     if (!_themeProvider) return nil;
@@ -547,10 +547,6 @@ static BOOL generatorSupportsDynamicColor = NO;
 }
 
 #pragma mark - <QMUIDynamicImageProtocol>
-
-- (NSString *)qmui_name {
-    return nil;
-}
 
 - (UIImage *)qmui_rawImage {
     return self;

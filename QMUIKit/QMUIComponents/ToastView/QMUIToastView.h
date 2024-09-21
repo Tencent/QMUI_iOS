@@ -111,7 +111,7 @@ typedef NS_ENUM(NSInteger, QMUIToastViewPosition) {
 /**
  * 会盖住整个superView，防止手指可以点击到ToastView下面的内容，默认透明。
  */
-@property(nonatomic, strong, readonly) UIView *maskView;
+@property(nonatomic, strong, readonly) UIView *dimmingView;
 
 /**s
  * 承载Toast内容的UIView，可以自定义并赋值给contentView。如果contentView需要跟随ToastView的tintColor变化而变化，可以重写自定义view的`tintColorDidChange`来实现。默认使用`QMUIToastContentView`实现。

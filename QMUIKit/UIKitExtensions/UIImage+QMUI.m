@@ -55,6 +55,22 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
                 return result;
             };
         });
+        
+        OverrideImplementation([UIImage class], @selector(imageWithRenderingMode:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^UIImage *(UIImage *selfObject, UIImageRenderingMode mode) {
+                
+                // call super
+                UIImage * (*originSelectorIMP)(id, SEL, UIImageRenderingMode);
+                originSelectorIMP = (UIImage * (*)(id, SEL, UIImageRenderingMode))originalIMPProvider();
+                UIImage * result = originSelectorIMP(selfObject, originCMD, mode);
+                
+                NSString *name = selfObject.qmui_name;
+                if (![result.qmui_name isEqualToString:name]) {
+                    [result qmui_bindObject:name forKey:kQMUIImageNameKey];
+                }
+                return result;
+            };
+        });
     });
 }
 
@@ -72,6 +88,25 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
         actionBlock(context);
     }];
     return imageOut;
+}
+
+static NSString * const kQMUIImageNameKey = @"kQMUIImageNameKey";
+- (NSString *)qmui_name {
+    NSString *name = [self qmui_getBoundObjectForKey:kQMUIImageNameKey];
+    if (name.length) {
+        return name;
+    }
+    UIImageAsset *asset = [self valueForKey:@"_imageAsset"];// UIImage.imageAsset 是懒加载的，如果当前 image 并非从 Asset 里获取的，直接访问 getter 也会导致它构造一个 UIImageAsset 对象出来，导致后续的 assetName 为随机字符串，所以这里通过 valueForKey: 的方式直接访问 Ivar
+    SEL selector = NSSelectorFromString(@"assetName");
+    if ([asset respondsToSelector:selector]) {
+        BeginIgnorePerformSelectorLeaksWarning
+        name = [asset performSelector:selector];
+        EndIgnorePerformSelectorLeaksWarning
+        if (name.length) {
+            return name;
+        }
+    }
+    return nil;
 }
 
 - (BOOL)qmui_resizable {
@@ -620,7 +655,7 @@ CGSizeFlatSpecificScale(CGSize size, float scale) {
             cLocations[i] = locations[i].qmui_CGFloatValue;
         }
 
-        CGGradientRef gradient = CGGradientCreateWithColors(spaceRef, (CFArrayRef)[colors qmui_mapWithBlock:^id _Nonnull(UIColor * _Nonnull item) {
+        CGGradientRef gradient = CGGradientCreateWithColors(spaceRef, (CFArrayRef)[colors qmui_mapWithBlock:^id _Nonnull(UIColor * _Nonnull item, NSInteger index) {
             return (id)item.CGColor;
         }], cLocations);
         if (type == QMUIImageGradientTypeRadial) {

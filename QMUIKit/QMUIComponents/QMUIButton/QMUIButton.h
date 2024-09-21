@@ -48,6 +48,11 @@ extern const CGFloat QMUIButtonCornerRadiusAdjustsBounds;
  */
 - (void)didInitialize NS_REQUIRES_SUPER;
 
+@property(nonatomic, strong, nullable) NSString *subtitle;
+@property(nonatomic, strong, readonly) UILabel *subtitleLabel;
+@property(nonatomic, assign) IBInspectable UIEdgeInsets subtitleEdgeInsets;
+@property(nonatomic, strong, nullable) IBInspectable UIColor *subtitleColor;
+
 /**
  * 让按钮的文字颜色自动跟随tintColor调整（系统默认titleColor是不跟随的）<br/>
  * 默认为NO

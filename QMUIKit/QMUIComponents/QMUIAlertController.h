@@ -93,7 +93,7 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
     UIView          *_scrollWrapView;   // 包含上下两个 scrollView 的容器
     UIScrollView    *_headerScrollView; // 上半部分的内容的 scrollView，例如 title、message
     UIScrollView    *_buttonScrollView; // 所有按钮的容器，特别的，actionSheet 下的取消按钮不放在这里面，因为它不参与滚动
-    UIControl       *_maskView;         // 背后占满整个屏幕的半透明黑色遮罩
+    UIControl       *_dimmingView;      // 背后占满整个屏幕的半透明黑色遮罩
 }
 
 /// alert距离屏幕四边的间距，默认UIEdgeInsetsMake(0, 0, 0, 0)。alert的宽度最终是通过屏幕宽度减去水平的 alertContentMargin 和 alertContentMaximumWidth 决定的。
@@ -278,8 +278,8 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
  */
 @property(nonatomic, assign) BOOL orderActionsByAddedOrdered;
 
-/// maskView是否响应点击，alert默认为NO，sheet默认为YES
-@property(nonatomic, assign) BOOL shouldRespondMaskViewTouch;
+/// dimmingView 是否响应点击，alert 默认为NO，sheet 默认为YES
+@property(nonatomic, assign) BOOL shouldRespondDimmingViewTouch;
 
 /// 在 iPhoneX 机器上是否延伸底部背景色。因为在 iPhoneX 上我们会把整个面板往上移动 safeArea 的距离，如果你的面板本来就配置成撑满全屏的样式，那么就会露出底部的空隙，isExtendBottomLayout 可以帮助你把空暇填补上。默认为NO。
 /// @warning: 只对 sheet 类型有效
