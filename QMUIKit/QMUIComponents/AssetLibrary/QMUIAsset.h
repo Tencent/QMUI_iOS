@@ -78,6 +78,8 @@ typedef NS_ENUM(NSUInteger, QMUIAssetDownloadStatus) {
  */
 - (UIImage *)previewImage;
 
+- (NSInteger)requestOriginalImageWithCompletion:(void (^)(UIImage *image,NSDictionary *info,BOOL isDegraded))completion progressHandler:(void (^)(double progress, NSError *error, BOOL *stop, NSDictionary *info))progressHandler networkAccessAllowed:(BOOL)networkAccessAllowed;
+
 /**
  *  异步请求 Asset 的原图，包含了系统照片“编辑”功能处理后的效果（剪裁，旋转和滤镜等），可能会有网络请求
  *
