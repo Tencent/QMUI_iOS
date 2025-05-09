@@ -111,6 +111,8 @@
     self.textView.backgroundColor = [UIColor clearColor];
     self.textView.scrollsToTop = NO;
     self.textView.editable = NO;
+    self.textView.layoutManager.usesFontLeading = NO;
+    self.textView.layoutManager.allowsNonContiguousLayout = NO;
     self.textView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
     [self.contentView addSubview:self.textView];
 }
