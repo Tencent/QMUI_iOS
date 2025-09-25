@@ -310,6 +310,7 @@ static CGFloat pixelOne = -1.0f;
             @"iPhone14,5" : @"iPhone 13",
             @"iPhone14,2" : @"iPhone 13 Pro",
             @"iPhone14,3" : @"iPhone 13 Pro Max",
+            @"iPhone14,6" : @"iPhone SE (3rd generation)",
             @"iPhone14,7" : @"iPhone 14",
             @"iPhone14,8" : @"iPhone 14 Plus",
             @"iPhone15,2" : @"iPhone 14 Pro",
@@ -318,10 +319,15 @@ static CGFloat pixelOne = -1.0f;
             @"iPhone15,5" : @"iPhone 15 Plus",
             @"iPhone16,1" : @"iPhone 15 Pro",
             @"iPhone16,2" : @"iPhone 15 Pro Max",
-            @"iPhone17,1" : @"iPhone 16 Pro",
-            @"iPhone17,2" : @"iPhone 16 Pro Max",
             @"iPhone17,3" : @"iPhone 16",
             @"iPhone17,4" : @"iPhone 16 Plus",
+            @"iPhone17,1" : @"iPhone 16 Pro",
+            @"iPhone17,2" : @"iPhone 16 Pro Max",
+            @"iPhone17,5" : @"iPhone 16e",
+            @"iPhone18,3" : @"iPhone 17",
+            @"iPhone18,1" : @"iPhone 17 Pro",
+            @"iPhone18,2" : @"iPhone 17 Pro Max",
+            @"iPhone18,4" : @"iPhone Air",
             
             @"iPad1,1" : @"iPad 1",
             @"iPad2,1" : @"iPad 2 (WiFi)",
@@ -417,6 +423,7 @@ static CGFloat pixelOne = -1.0f;
             
             @"i386" : @"Simulator x86",
             @"x86_64" : @"Simulator x64",
+            @"arm64" : @"Simulator arm64",
             
             @"Watch1,1" : @"Apple Watch 38mm",
             @"Watch1,2" : @"Apple Watch 42mm",
@@ -462,6 +469,19 @@ static CGFloat pixelOne = -1.0f;
             @"Watch7,3" : @"Apple Watch Series 9 41mm case (GPS+Cellular)",
             @"Watch7,4" : @"Apple Watch Series 9 45mm case (GPS+Cellular)",
             @"Watch7,5" : @"Apple Watch Ultra 2",
+            @"Watch7,8" : @"Apple Watch Series 10 42mm",
+            @"Watch7,10" : @"Apple Watch Series 10 42mm",
+            @"Watch7,9" : @"Apple Watch Series 10 46mm",
+            @"Watch7,11" : @"Apple Watch Series 10 46mm",
+            @"Watch7,12" : @"Apple Watch Ultra 3",
+            @"Watch7,13" : @"Apple Watch SE 3 40mm",
+            @"Watch7,14" : @"Apple Watch SE 3 44mm",
+            @"Watch7,15" : @"Apple Watch SE 3 40mm (GPS+Cellular)",
+            @"Watch7,16" : @"Apple Watch SE 3 44mm (GPS+Cellular)",
+            @"Watch7,17" : @"Apple Watch Series 11 42mm",
+            @"Watch7,18" : @"Apple Watch Series 11 46mm",
+            @"Watch7,19" : @"Apple Watch Series 11 42mm (GPS+Celllular)",
+            @"Watch7,20" : @"Apple Watch Series 11 46mm (GPS+Celllular)",
             
             @"AudioAccessory1,1" : @"HomePod",
             @"AudioAccessory1,2" : @"HomePod",
@@ -476,6 +496,8 @@ static CGFloat pixelOne = -1.0f;
             @"AppleTV3,2" : @"Apple TV 3",
             @"AppleTV5,3" : @"Apple TV 4",
             @"AppleTV6,2" : @"Apple TV 4K",
+            @"AppleTV11,1" : @"Apple TV 4K (2nd generation)",
+            @"AppleTV14,1" : @"Apple TV 4K (3rd generation)",
         };
         name = dict[model];
         if (!name) name = model;
