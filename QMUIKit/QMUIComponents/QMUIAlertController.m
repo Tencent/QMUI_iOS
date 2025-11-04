@@ -604,11 +604,15 @@ static NSUInteger alertControllerCount = 0;
                 }
             }
             if (!verticalLayout) {
-                // 对齐系统，先 add 的在右边，后 add 的在左边
-                QMUIAlertAction *leftAction = newOrderActions[1];
+                /**
+                 * 对齐系统，先 add 的在右边，后 add 的在左边, 前提是存在 Cancel
+                 * newOrderActions 已经是将Cancel 重排在最后了
+                 */
+                BOOL needSwap = (newOrderActions.firstObject.style == QMUIAlertActionStyleCancel) || (newOrderActions.lastObject.style == QMUIAlertActionStyleCancel);
+                QMUIAlertAction *leftAction = needSwap ? newOrderActions[1] : newOrderActions[0];
                 leftAction.button.frame = CGRectMake(0, contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
                 leftAction.button.qmui_borderPosition = QMUIViewBorderPositionRight;
-                QMUIAlertAction *rightAction = newOrderActions[0];
+                QMUIAlertAction *rightAction = needSwap ? newOrderActions[0] : newOrderActions[1];
                 rightAction.button.frame = CGRectMake(CGRectGetMaxX(leftAction.button.frame), contentOriginY, CGRectGetWidth(self.buttonScrollView.bounds) / 2, self.alertButtonHeight);
                 if (shouldShowSeparatorAtTopOfButtonAtFirstLine) {
                     leftAction.button.qmui_borderPosition |= QMUIViewBorderPositionTop;
