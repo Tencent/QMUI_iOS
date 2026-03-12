@@ -262,7 +262,25 @@
 - (id)qmui_valueForKey:(NSString *)key {
     if ([self isKindOfClass:[UIView class]] && QMUICMIActivated && !IgnoreKVCAccessProhibited) {
         BeginIgnoreUIKVCAccessProhibited
-        id value = [self valueForKey:key];
+        
+        id value = nil;
+        // 修复：增加 KVC 键合法性校验，避免访问未定义的 key 导致崩溃
+        if ([self respondsToSelector:NSSelectorFromString(key)] ||
+            [self.class instancesRespondToSelector:NSSelectorFromString(key)] ||
+            [self.class accessInstanceVariablesDirectly]) {
+            // 方式1：优先通过 selector 访问（方法/属性）
+            SEL getterSel = NSSelectorFromString(key);
+            if ([self respondsToSelector:getterSel]) {
+                value = ((id (*)(id, SEL))objc_msgSend)(self, getterSel);
+            } else {
+                // 方式2：校验实例变量存在性后再通过 KVC 访问
+                Ivar ivar = class_getInstanceVariable([self class], [key UTF8String]);
+                if (ivar) {
+                    value = [self valueForKey:key];
+                }
+            }
+        }
+        
         EndIgnoreUIKVCAccessProhibited
         return value;
     }

@@ -359,6 +359,25 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
 }
 
 - (UIView *)qmui_contentView {
+    if (@available(iOS 26.0, *)) {
+        // 如果 contentView 已经被构造出来，则通过遍历 view 层级树的方式获取
+        UIView *contentView = [self.subviews qmui_firstMatchWithBlock:^BOOL(__kindof UIView * _Nonnull item) {
+            return [NSStringFromClass(item.class) containsString:@"ContentView"];
+        }];
+        if (contentView) return contentView;
+        
+        // Xcode 26 编译在 iOS 26 上时，无法用以前的 KVC 方式获取 contentView，所以改为通过 Ivar 获取
+        NSObject *provider = [self valueForKey:@"visualProvider"];
+        __block UIView *result = nil;
+        [provider qmui_enumrateIvarsUsingBlock:^(Ivar  _Nonnull ivar, NSString * _Nonnull ivarDescription) {
+            if (!result && [ivarDescription containsString:@"contentView"]) {
+                result = getObjectIvarValue(provider, ivar);
+            }
+        }];
+        return result;
+    }
+    
+    // 在 bar init 完即可获取到 contentView，虽然此时尚未被添加到 view 上
     return [self valueForKeyPath:@"visualProvider.contentView"];
 }
 
