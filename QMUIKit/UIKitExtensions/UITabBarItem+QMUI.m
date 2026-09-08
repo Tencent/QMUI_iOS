@@ -30,7 +30,16 @@ QMUISynthesizeIdCopyProperty(qmui_doubleTapBlock, setQmui_doubleTapBlock)
     if (!tabBarButton) {
         return nil;
     }
-    return [tabBarButton qmui_valueForKey:@"_imageView"];
+    if (QMUIHelper.isUsedLiquidGlass) {
+        for (UIView *subview in tabBarButton.subviews) {
+            if ([subview isKindOfClass:UIImageView.class]) {
+                return (UIImageView *)subview;
+            }
+        }
+        return nil;
+    } else {
+        return [tabBarButton qmui_valueForKey:@"_imageView"];
+    }
 }
 
 @end

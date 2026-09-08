@@ -128,6 +128,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)showWithAnimated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
 
 /**
+ 显示弹窗
+ 
+ @param window      所在的window，默认为delegate.window
+ @param animated    是否以动画的形式显示
+ @param completion  显示动画结束后的回调
+ */
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
+
+/**
  以动画形式隐藏弹窗，等同于 [self hideWithAnimated:YES completion:nil]
  */
 - (void)hide;

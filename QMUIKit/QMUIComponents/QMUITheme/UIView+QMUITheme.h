@@ -42,6 +42,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, copy, nullable) void (^qmui_themeDidChangeBlock)(void);
 
+/**
+ 判断view在`qmui_themeDidChangeByManager`里应该调用`qmui_registerThemeColorProperties`注册的方法
+ 业务可以根据此属性判断是否需要执行相关逻辑
+ */
+@property(nonatomic, readonly) BOOL qmui_themePropertiesShouldBeCalled;
+
 @end
 
 NS_ASSUME_NONNULL_END

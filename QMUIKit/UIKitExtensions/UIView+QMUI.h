@@ -132,7 +132,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  当前的 view 是否是某个 UIViewController.view
  */
-@property(nonatomic, assign) BOOL qmui_isControllerRootView;
+@property(nonatomic, assign, readonly) BOOL qmui_isControllerRootView;
 
 /**
  获取当前 view 所在的 UIViewController，会递归查找 superview，因此注意使用场景不要有过于频繁的调用

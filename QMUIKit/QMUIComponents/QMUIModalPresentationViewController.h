@@ -251,6 +251,14 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 - (void)showWithAnimated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
 
 /**
+ *  将浮层以 UIWindow 的方式显示出来
+ *  @param window      所在的window，默认为delegate.window
+ *  @param animated    是否以动画的形式显示
+ *  @param completion  显示动画结束后的回调
+ */
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion;
+
+/**
  *  将浮层隐藏掉
  *  @param animated    是否以动画的形式隐藏
  *  @param completion  隐藏动画结束后的回调
@@ -314,7 +322,7 @@ typedef NS_ENUM(NSUInteger, QMUIModalPresentationAnimationStyle) {
 
 @end
 
-/// 专用于QMUIModalPresentationViewController的UIWindow，这样才能在`UIApplication.sharedApplication.windows`里方便地区分出来
+/// 专用于QMUIModalPresentationViewController的UIWindow，这样才能在`UIApplication.sharedApplication.qmui_windows`里方便地区分出来
 @interface QMUIModalPresentationWindow : UIWindow
 
 @end

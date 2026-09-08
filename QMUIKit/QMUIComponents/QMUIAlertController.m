@@ -891,6 +891,10 @@ static NSUInteger alertControllerCount = 0;
 }
 
 - (void)showWithAnimated:(BOOL)animated {
+   [self showInWindow:nil animated:animated];
+}
+
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated {
     if (self.willShow || self.showing) {
         return;
     }
@@ -918,7 +922,7 @@ static NSUInteger alertControllerCount = 0;
     
     __weak __typeof(self)weakSelf = self;
     
-    [self.modalPresentationViewController showWithAnimated:animated completion:^(BOOL finished) {
+    [self.modalPresentationViewController showInWindow:window animated:animated completion:^(BOOL finished) {
         weakSelf.dimmingView.alpha = 1;
         weakSelf.willShow = NO;
         weakSelf.showing = YES;

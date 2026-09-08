@@ -20,6 +20,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 判断当前的 App 是否已经完全启动
 @property(nonatomic, assign, readonly) BOOL qmui_didFinishLaunching;
+
+@property (nonatomic, readonly) NSArray<__kindof UIWindow *> *qmui_windows;
+
+@property (nullable, nonatomic, readonly) __kindof UIWindow *qmui_keyWindow;
+@property (nullable, nonatomic, readonly) __kindof UIWindow *qmui_delegateWindow;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -378,90 +378,135 @@
 #pragma mark - setter / getter
 
 - (void)setMaximumWidth:(CGFloat)maximumWidth {
-    _maximumWidth = maximumWidth;
-    [self refreshLayout];
+    if (_maximumWidth != maximumWidth) {
+        _maximumWidth = maximumWidth;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setPadding:(UIEdgeInsets)padding {
-    _padding = padding;
-    [self refreshLayout];
+    if (!UIEdgeInsetsEqualToEdgeInsets(_padding, padding)) {
+        _padding = padding;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setContentHorizontalAlignment:(UIControlContentHorizontalAlignment)contentHorizontalAlignment {
+    UIControlContentHorizontalAlignment previous = self.contentHorizontalAlignment;
     [super setContentHorizontalAlignment:contentHorizontalAlignment];
-    [self refreshLayout];
+    if (contentHorizontalAlignment != previous) {
+        [self refreshLayout];
+    }
 }
 
 - (void)setNeedsLoadingPlaceholderSpace:(BOOL)needsLoadingPlaceholderSpace {
-    _needsLoadingPlaceholderSpace = needsLoadingPlaceholderSpace;
-    [self refreshLayout];
+    if (_needsLoadingPlaceholderSpace != needsLoadingPlaceholderSpace) {
+        _needsLoadingPlaceholderSpace = needsLoadingPlaceholderSpace;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setNeedsAccessoryPlaceholderSpace:(BOOL)needsAccessoryPlaceholderSpace {
-    _needsAccessoryPlaceholderSpace = needsAccessoryPlaceholderSpace;
-    [self refreshLayout];
+    if (_needsAccessoryPlaceholderSpace != needsAccessoryPlaceholderSpace) {
+        _needsAccessoryPlaceholderSpace = needsAccessoryPlaceholderSpace;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setAccessoryViewOffset:(CGPoint)accessoryViewOffset {
-    _accessoryViewOffset = accessoryViewOffset;
-    [self refreshLayout];
+    if (!CGPointEqualToPoint(_accessoryViewOffset, accessoryViewOffset)) {
+        _accessoryViewOffset = accessoryViewOffset;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setNeedsSubAccessoryPlaceholderSpace:(BOOL)needsSubAccessoryPlaceholderSpace {
-    _needsSubAccessoryPlaceholderSpace = needsSubAccessoryPlaceholderSpace;
-    [self refreshLayout];
+    if (_needsSubAccessoryPlaceholderSpace != needsSubAccessoryPlaceholderSpace) {
+        _needsSubAccessoryPlaceholderSpace = needsSubAccessoryPlaceholderSpace;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setSubAccessoryViewOffset:(CGPoint)subAccessoryViewOffset {
-    _subAccessoryViewOffset = subAccessoryViewOffset;
-    [self refreshLayout];
+    if (!CGPointEqualToPoint(_subAccessoryViewOffset, subAccessoryViewOffset)) {
+        _subAccessoryViewOffset = subAccessoryViewOffset;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setLoadingViewMarginRight:(CGFloat)loadingViewMarginRight {
-    _loadingViewMarginRight = loadingViewMarginRight;
-    [self refreshLayout];
+    if (_loadingViewMarginRight != loadingViewMarginRight) {
+        _loadingViewMarginRight = loadingViewMarginRight;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setHorizontalTitleFont:(UIFont *)horizontalTitleFont {
-    _horizontalTitleFont = horizontalTitleFont;
-    if (self.style == QMUINavigationTitleViewStyleDefault) {
-        self.titleLabel.font = horizontalTitleFont;
-        [self refreshLayout];
+    if (_horizontalTitleFont != horizontalTitleFont) {
+        _horizontalTitleFont = horizontalTitleFont;
+        
+        if (self.style == QMUINavigationTitleViewStyleDefault) {
+            self.titleLabel.font = horizontalTitleFont;
+            [self refreshLayout];
+        }
     }
 }
 
 - (void)setHorizontalSubtitleFont:(UIFont *)horizontalSubtitleFont {
-    _horizontalSubtitleFont = horizontalSubtitleFont;
-    if (self.style == QMUINavigationTitleViewStyleDefault) {
-        self.subtitleLabel.font = horizontalSubtitleFont;
-        [self refreshLayout];
+    if (_horizontalSubtitleFont != horizontalSubtitleFont) {
+        _horizontalSubtitleFont = horizontalSubtitleFont;
+        
+        if (self.style == QMUINavigationTitleViewStyleDefault) {
+            self.subtitleLabel.font = horizontalSubtitleFont;
+            [self refreshLayout];
+        }
     }
 }
 
 - (void)setVerticalTitleFont:(UIFont *)verticalTitleFont {
-    _verticalTitleFont = verticalTitleFont;
-    if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
-        self.titleLabel.font = verticalTitleFont;
-        [self refreshLayout];
+    if (_verticalTitleFont != verticalTitleFont) {
+        _verticalTitleFont = verticalTitleFont;
+        
+        if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
+            self.titleLabel.font = verticalTitleFont;
+            [self refreshLayout];
+        }
     }
 }
 
 - (void)setVerticalSubtitleFont:(UIFont *)verticalSubtitleFont {
-    _verticalSubtitleFont = verticalSubtitleFont;
-    if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
-        self.subtitleLabel.font = verticalSubtitleFont;
-        [self refreshLayout];
+    if (_verticalSubtitleFont != verticalSubtitleFont) {
+        _verticalSubtitleFont = verticalSubtitleFont;
+        
+        if (self.style == QMUINavigationTitleViewStyleSubTitleVertical) {
+            self.subtitleLabel.font = verticalSubtitleFont;
+            [self refreshLayout];
+        }
     }
 }
 
 - (void)setTitleEdgeInsets:(UIEdgeInsets)titleEdgeInsets {
-    _titleEdgeInsets = titleEdgeInsets;
-    [self refreshLayout];
+    if (!UIEdgeInsetsEqualToEdgeInsets(_titleEdgeInsets, titleEdgeInsets)) {
+        _titleEdgeInsets = titleEdgeInsets;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setSubtitleEdgeInsets:(UIEdgeInsets)subtitleEdgeInsets {
-    _subtitleEdgeInsets = subtitleEdgeInsets;
-    [self refreshLayout];
+    if (!UIEdgeInsetsEqualToEdgeInsets(_subtitleEdgeInsets, subtitleEdgeInsets)) {
+        _subtitleEdgeInsets = subtitleEdgeInsets;
+        
+        [self refreshLayout];
+    }
 }
 
 - (void)setTitle:(NSString *)title {
@@ -578,10 +623,13 @@
 }
 
 - (void)setLoadingViewSize:(CGSize)loadingViewSize {
-    _loadingViewSize = loadingViewSize;
-    if (self.loadingView) {
-        self.loadingView.qmui_size = loadingViewSize;
-        [self refreshLayout];
+    if (!CGSizeEqualToSize(_loadingViewSize, loadingViewSize)) {
+        _loadingViewSize = loadingViewSize;
+        
+        if (self.loadingView) {
+            self.loadingView.qmui_size = loadingViewSize;
+            [self refreshLayout];
+        }
     }
 }
 

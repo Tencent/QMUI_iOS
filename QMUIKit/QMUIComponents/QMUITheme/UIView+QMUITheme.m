@@ -33,24 +33,23 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
 + (void)load {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        
+        // UIView
         OverrideImplementation([UIView class], @selector(setHidden:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, BOOL firstArgv) {
                 
-                BOOL valueChanged = selfObject.hidden != firstArgv;
+                BOOL willShow = selfObject.hidden && !firstArgv;
                 
                 // call super
                 void (*originSelectorIMP)(id, SEL, BOOL);
                 originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
                 originSelectorIMP(selfObject, originCMD, firstArgv);
                 
-                if (valueChanged) {
+                if (willShow) {
                     // UIView.qmui_currentThemeIdentifier 只是为了实现判断当前的 theme 是否有发生变化，所以可以构造成一个 string，但怎么避免每次 hidden 切换时都要遍历所有的 subviews？
                     [selfObject _qmui_themeDidChangeByManager:nil identifier:nil theme:nil shouldEnumeratorSubviews:YES];
                 }
             };
         });
-        
         OverrideImplementation([UIView class], @selector(setAlpha:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIView *selfObject, CGFloat firstArgv) {
                 
@@ -67,7 +66,6 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
                 }
             };
         });
-        
         // 这几个 class 实现了自己的 didMoveToWindow 且没有调用 super，所以需要每个都替换一遍方法
         NSArray<Class> *classes = @[UIView.class,
                                     UICollectionView.class,
@@ -85,6 +83,44 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
                 }
             });
         }];
+        // UIWindow
+        ExtendImplementationOfVoidMethodWithoutArguments([UIWindow class], @selector(makeKeyAndVisible), ^(UIWindow *selfObject) {
+            if (selfObject.windowScene) {
+                // enumerateSubviews 为 NO，系统会自动调用didMoveToWindow
+                [selfObject _qmui_themeDidChangeByManager:nil identifier:nil theme:nil shouldEnumeratorSubviews:NO];
+            }
+        });
+        OverrideImplementation([UIWindow class], @selector(setHidden:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIWindow *selfObject, BOOL firstArgv) {
+                
+                BOOL willShow = selfObject.hidden && !firstArgv;
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, BOOL);
+                originSelectorIMP = (void (*)(id, SEL, BOOL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                if (willShow) {
+                    // enumerateSubviews 为 NO，系统会自动调用didMoveToWindow
+                    [selfObject _qmui_themeDidChangeByManager:nil identifier:nil theme:nil shouldEnumeratorSubviews:NO];
+                }
+            };
+        });
+        OverrideImplementation([UIWindow class], @selector(setWindowScene:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIWindow *selfObject, UIWindowScene *firstArgv) {
+                
+                BOOL willShow = !selfObject.windowScene && !!firstArgv;
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIWindowScene *);
+                originSelectorIMP = (void (*)(id, SEL, UIWindowScene *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, firstArgv);
+                
+                if (willShow) {
+                    [selfObject _qmui_themeDidChangeByManager:nil identifier:nil theme:nil shouldEnumeratorSubviews:YES];
+                }
+            };
+        });
     });
 }
 
@@ -112,7 +148,7 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
 }
 
 - (void)qmui_themeDidChangeByManager:(QMUIThemeManager *)manager identifier:(__kindof NSObject<NSCopying> *)identifier theme:(__kindof NSObject *)theme {
-    if (![self _qmui_visible]) return;
+    if (![self qmui_themePropertiesShouldBeCalled]) return;
     
     // 常见的 view 在 QMUIThemePrivate 里注册了 getter，在这里被调用
     [self.qmuiTheme_themeColorProperties enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull getterString, NSString * _Nonnull setterString, BOOL * _Nonnull stop) {
@@ -139,6 +175,7 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
         BOOL isValidatedImage = [value isKindOfClass:QMUIThemeImage.class] && (!manager || [((QMUIThemeImage *)value).managerName isEqual:manager.name]);
         BOOL isValidatedEffect = [value isKindOfClass:QMUIThemeVisualEffect.class] && (!manager || [((QMUIThemeVisualEffect *)value).managerName isEqual:manager.name]);
         BOOL isOtherObject = ![value isKindOfClass:UIColor.class] && ![value isKindOfClass:UIImage.class] && ![value isKindOfClass:UIVisualEffect.class];// 支持所有非 color、image、effect 的其他对象，例如 NSAttributedString
+        
         if (isOtherObject || isValidatedColor || isValidatedImage || isValidatedEffect) {
             [self performSelector:setter withObject:value];
         }
@@ -146,14 +183,13 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
     }];
     
     // 特殊的 view 特殊处理
-    // iOS 10-11 里当 UILabel.attributedText 的文字颜色都相同时，也无法使用 setNeedsDisplay 刷新样式，但只要某个 range 颜色不同就没问题，iOS 9、12-13 也没问题，这个通过 UILabel (QMUIThemeCompatibility) 兼容。
     if ([self isKindOfClass:UILabel.class]) {
         [self setNeedsDisplay];
-    }
-    
-    if ([self isKindOfClass:UITextView.class]) {
-#ifdef IOS16_SDK_ALLOWED
+    } else if ([self isKindOfClass:UITextView.class]) {
+        [self setNeedsDisplay];
+        
         if (@available(iOS 16.0, *)) {
+            // 同UITextField
             // iOS 16 里使用 TextKit 2 的输入框无法通过 setNeedsDisplay 去刷新文本颜色了，所以改为用这种方式去刷新
             // 以下语句对 iOS 16 里因为访问 UITextView.layoutManager 而回退到 TextKit 1 的输入框无效，但由于 TextKit 1 本来就可以正常刷新，所以没问题。
             // 注意要考虑输入框内可能存在多种颜色的富文本场景
@@ -162,12 +198,20 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
             if (textRange) {
                 [textView.textLayoutManager invalidateLayoutForRange:textRange];
             }
-        } else {
-#endif
-            [self setNeedsDisplay];
-#ifdef IOS16_SDK_ALLOWED
         }
-#endif
+    } else if ([self isKindOfClass:UITextField.class]) {
+        [self setNeedsDisplay];
+        
+        if (@available(iOS 16.0, *)) {
+            UITextField *textField = (UITextField *)self;
+            NSTextContainer *textContainer = [textField qmui_valueForKey:@"textContainer"];
+            if ([textContainer isKindOfClass:NSTextContainer.class]) {
+                NSTextRange *textRange = textContainer.textLayoutManager.textContentManager.documentRange;
+                if (textRange) {
+                    [textContainer.textLayoutManager invalidateLayoutForRange:textRange];
+                }
+            }
+        }
     }
     
     // 输入框、搜索框的键盘跟随主题变化
@@ -200,19 +244,31 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
     }
 }
 
+- (BOOL)qmui_themePropertiesShouldBeCalled {
+    BOOL isHidden;
+    if ([self isKindOfClass:UITableViewCell.class] || [self isKindOfClass:UICollectionReusableView.class]) {
+        /// UITableViewCell等Cell 在 prepareForReuse 前会被 setHidden:YES，然后再被 setHidden:NO，然而后者是无效的，执行完之后依然是 hidden 为 YES，导致认为非 visible 而无法触发 themeDidChange，所以这里对 UITableViewCell 做特殊处理
+        isHidden = NO;
+    } else {
+        isHidden = self.isHidden;
+    }
+    BOOL hasWindow;
+    BOOL hasWindowScene;
+    if ([self isKindOfClass:UIWindow.class]) {
+        hasWindow = YES;
+        hasWindowScene = !!((UIWindow *)self).windowScene;
+    } else {
+        hasWindow = !!self.window;
+        hasWindowScene = !!self.window.windowScene;
+    }
+    return !isHidden && hasWindow && hasWindowScene && self.alpha > 0.01;
+}
+
 @end
 
 @implementation UIView (QMUITheme_Private)
 
 QMUISynthesizeIdStrongProperty(qmuiTheme_themeColorProperties, setQmuiTheme_themeColorProperties)
-
-- (BOOL)_qmui_visible {
-    BOOL hidden = self.hidden;
-    if ([self respondsToSelector:@selector(prepareForReuse)]) {
-        hidden = NO;// UITableViewCell 在 prepareForReuse 前会被 setHidden:YES，然后再被 setHidden:NO，然而后者是无效的，执行完之后依然是 hidden 为 YES，导致认为非 visible 而无法触发 themeDidChange，所以这里对 UITableViewCell 做特殊处理
-    }
-    return !hidden && self.alpha > 0.01 && self.window;
-}
 
 - (void)_qmui_themeDidChangeByManager:(QMUIThemeManager *)manager identifier:(__kindof NSObject<NSCopying> *)identifier theme:(__kindof NSObject *)theme shouldEnumeratorSubviews:(BOOL)shouldEnumeratorSubviews {
     [self qmui_themeDidChangeByManager:manager identifier:identifier theme:theme];

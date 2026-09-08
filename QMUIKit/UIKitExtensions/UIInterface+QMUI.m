@@ -15,6 +15,7 @@
 
 #import "UIInterface+QMUI.h"
 #import "QMUICore.h"
+#import "UIApplication+QMUI.h"
 
 @implementation QMUIHelper (QMUI_Interface)
 
@@ -189,7 +190,7 @@ QMUISynthesizeNSIntegerProperty(lastOrientationChangedByHelper, setLastOrientati
         
         __block BOOL result = YES;
         UIInterfaceOrientationMask mask = 1 << interfaceOrientation;
-        UIWindow *window = self.view.window ?: UIApplication.sharedApplication.delegate.window;
+        UIWindow *window = self.view.window ?: UIApplication.sharedApplication.qmui_delegateWindow;
         [window.windowScene requestGeometryUpdateWithPreferences:[[UIWindowSceneGeometryPreferencesIOS alloc] initWithInterfaceOrientations:mask] errorHandler:^(NSError * _Nonnull error) {
             if (error) {
                 result = NO;

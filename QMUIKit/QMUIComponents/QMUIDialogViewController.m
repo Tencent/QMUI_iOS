@@ -373,10 +373,14 @@ EndIgnoreClangWarning
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    [self showInWindow:nil animated:animated completion:completion];
+}
+
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion {
     self.modalPresentationViewController.contentViewMargins = self.dialogViewMargins;
     self.modalPresentationViewController.maximumContentViewWidth = self.maximumContentViewWidth;
     self.modalPresentationViewController.contentViewController = self;
-    [self.modalPresentationViewController showWithAnimated:YES completion:completion];
+    [self.modalPresentationViewController showInWindow:window animated:animated completion:completion];
 }
 
 - (void)hide {

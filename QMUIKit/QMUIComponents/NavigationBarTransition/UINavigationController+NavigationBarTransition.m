@@ -231,6 +231,8 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     }
     
     _QMUITransitionNavigationBar *customBar = [[_QMUITransitionNavigationBar alloc] init];
+    /// iOS 26不设置items时子视图不会添加
+    customBar.items = @[[[UINavigationItem alloc] initWithTitle:@""]];
     customBar.parentViewController = self;
     self.transitionNavigationBar = customBar;
     
@@ -238,12 +240,13 @@ QMUISynthesizeIdStrongProperty(qmui_specifiedTextColor, setQmui_specifiedTextCol
     // 经测试只有 push 或 push 动画的 set 需要这么处理，pop 及 pop 动画的 set 没问题
     // iOS 14 及以下没这种问题。
     // https://github.com/Tencent/QMUI_iOS/issues/1501
+    // 经测试，使用Xcode 26.x编译的App好像又没问题了，反而加上shouldPreventAppearance有问题🤷‍♂️
     if (@available(iOS 15.0, *)) {
         BOOL isPush = self.navigationController.qmui_navigationAction == QMUINavigationActionDidPush;
         BOOL isSet = self.navigationController.qmui_navigationAction == QMUINavigationActionDidSet;
         BOOL isPopAnimation = isSet && self.navigationController.qmui_lastOperation == UINavigationControllerOperationPop;
         if (isPush || (isSet && !isPopAnimation)) {
-            customBar.shouldPreventAppearance = YES;
+            // customBar.shouldPreventAppearance = YES;
         }
     }
     [self.view addSubview:customBar];

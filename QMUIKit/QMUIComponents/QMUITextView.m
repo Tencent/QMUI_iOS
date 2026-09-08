@@ -25,9 +25,6 @@
 /// 系统 textView 默认的字号大小，用于 placeholder 默认的文字大小。实测得到，请勿修改。
 const CGFloat kSystemTextViewDefaultFontPointSize = 12.0f;
 
-/// 当系统的 textView.textContainerInset 为 UIEdgeInsetsZero 时，文字与 textView 边缘的间距。实测得到，请勿修改（在输入框font大于13时准确，小于等于12时，y有-1px的偏差）。
-const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
-
 // 私有的类，专用于实现 QMUITextViewDelegate，避免 self.delegate = self 的写法（以前是 QMUITextView 自己实现了 delegate）
 @interface _QMUITextViewDelegator : NSObject <QMUITextViewDelegate>
 
@@ -304,7 +301,16 @@ const UIEdgeInsets kSystemTextViewFixTextInsets = {0, 5, 0, 5};
 }
 
 - (UIEdgeInsets)allInsets {
-    return UIEdgeInsetsConcat(UIEdgeInsetsConcat(UIEdgeInsetsConcat(self.textContainerInset, self.placeholderMargins), kSystemTextViewFixTextInsets), self.adjustedContentInset);
+    CGFloat padding = self.textContainer.lineFragmentPadding;
+    UIEdgeInsets textContainerInset = self.textContainerInset;
+    /// https://github.com/Tencent/QMUI_iOS/issues/1601
+    if (@available(iOS 17.0, *)) {
+        textContainerInset.top = MAX(textContainerInset.top, 0);
+        textContainerInset.left = MAX(textContainerInset.left, 0);
+        textContainerInset.bottom = MAX(textContainerInset.bottom, 0);
+        textContainerInset.right = MAX(textContainerInset.right, 0);
+    }
+    return UIEdgeInsetsConcat(UIEdgeInsetsConcat(UIEdgeInsetsConcat(textContainerInset, self.placeholderMargins), UIEdgeInsetsMake(0, padding, 0, padding)), self.adjustedContentInset);
 }
 
 - (void)setFrame:(CGRect)frame {

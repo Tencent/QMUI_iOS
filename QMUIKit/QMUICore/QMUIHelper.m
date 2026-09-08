@@ -24,6 +24,9 @@
 #import <AVFoundation/AVFoundation.h>
 #import <math.h>
 #import <sys/utsname.h>
+#import "UIApplication+QMUI.h"
+#import "QMUICommonDefines.h"
+#import "UIWindow+QMUI.h"
 
 NSString *const kQMUIResourcesBundleName = @"QMUIResources";
 
@@ -546,7 +549,7 @@ static NSInteger isNotchedScreen = -1;
         UIEdgeInsets peripheryInsets = UIEdgeInsetsZero;
         [[UIScreen mainScreen] qmui_performSelector:peripheryInsetsSelector withPrimitiveReturnValue:&peripheryInsets];
         if (peripheryInsets.bottom <= 0) {
-            UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
+            UIWindow *window = [UIWindow qmui_windowWithWindowScene:UIApplication.sharedApplication.qmui_delegateWindow.windowScene];
             peripheryInsets = window.safeAreaInsets;
             if (peripheryInsets.bottom <= 0) {
                 // 使用一个强制竖屏的 rootViewController，避免一个仅支持竖屏的 App 在横屏启动时会受这里创建的 window 的影响，导致状态栏、safeAreaInsets 等错乱
@@ -755,7 +758,7 @@ static CGFloat preferredLayoutWidth = -1;
                                         @([self screenSizeFor58Inch].width),
                                         @([self screenSizeFor40Inch].width)];
         preferredLayoutWidth = SCREEN_WIDTH;
-        UIWindow *window = UIApplication.sharedApplication.delegate.window ?: [[UIWindow alloc] init];// iOS 9 及以上的系统，新 init 出来的 window 自动被设置为当前 App 的宽度
+        UIWindow *window = UIApplication.sharedApplication.qmui_delegateWindow ?: [[UIWindow alloc] init];// iOS 9 及以上的系统，新 init 出来的 window 自动被设置为当前 App 的宽度
         CGFloat windowWidth = CGRectGetWidth(window.bounds);
         for (NSInteger i = 0; i < widths.count; i++) {
             if (windowWidth <= widths[i].qmui_CGFloatValue) {
@@ -1059,7 +1062,7 @@ static NSInteger isHighPerformanceDevice = -1;
     CGSize applicationSize = CGSizeMake(applicationFrame.size.width + applicationFrame.origin.x, applicationFrame.size.height + applicationFrame.origin.y);
     if (CGSizeEqualToSize(applicationSize, CGSizeZero)) {
         // 实测 MacCatalystApp 通过 [UIScreen mainScreen].applicationFrame 拿不到大小，这里做一下保护
-        UIWindow *window = UIApplication.sharedApplication.delegate.window;
+        UIWindow *window = UIApplication.sharedApplication.qmui_delegateWindow;
         if (window) {
             applicationSize = window.bounds.size;
         } else {
@@ -1136,13 +1139,13 @@ static NSInteger isHighPerformanceDevice = -1;
 @implementation QMUIHelper (UIApplication)
 
 + (void)dimmedApplicationWindow {
-    UIWindow *window = UIApplication.sharedApplication.delegate.window;
+    UIWindow *window = UIApplication.sharedApplication.qmui_delegateWindow;
     window.tintAdjustmentMode = UIViewTintAdjustmentModeDimmed;
     [window tintColorDidChange];
 }
 
 + (void)resetDimmedApplicationWindow {
-    UIWindow *window = UIApplication.sharedApplication.delegate.window;
+    UIWindow *window = UIApplication.sharedApplication.qmui_delegateWindow;
     window.tintAdjustmentMode = UIViewTintAdjustmentModeAutomatic;
     [window tintColorDidChange];
 }
@@ -1162,6 +1165,23 @@ static NSInteger isHighPerformanceDevice = -1;
         return NO;
     }
     return YES;
+}
+
++ (BOOL)isUsedLiquidGlass {
+    static BOOL result = NO;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+#ifdef IOS26_SDK_ALLOWED
+        if (@available(iOS 26.0, *)) {
+            result = ![[NSBundle.mainBundle objectForInfoDictionaryKey:@"UIDesignRequiresCompatibility"] boolValue];
+        } else {
+            result = NO;
+        }
+#else
+        result = NO;
+#endif
+    });
+    return result;
 }
 
 @end

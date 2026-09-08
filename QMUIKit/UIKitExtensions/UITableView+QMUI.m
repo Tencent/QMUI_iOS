@@ -21,6 +21,7 @@
 #import "QMUILog.h"
 #import "NSObject+QMUI.h"
 #import "CALayer+QMUI.h"
+#import "QMUICommonDefines.h"
 
 const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
 
@@ -238,6 +239,15 @@ const NSUInteger kFloatValuePrecision = 4;// 统一一个小数点运算精度
     
     self.qmui_insetGroupedCornerRadius = TableViewInsetGroupedCornerRadius;
     self.qmui_insetGroupedHorizontalInset = TableViewInsetGroupedHorizontalInset;
+    
+#ifdef IOS26_SDK_ALLOWED
+    if (@available(iOS 26.0, *)) {
+        self.topEdgeEffect.hidden = YES;
+        self.leftEdgeEffect.hidden = YES;
+        self.bottomEdgeEffect.hidden = YES;
+        self.rightEdgeEffect.hidden = YES;
+    }
+#endif
 }
 
 - (void)_qmui_configEstimatedRowHeight {

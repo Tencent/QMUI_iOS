@@ -24,6 +24,7 @@
 #import "QMUIAppearance.h"
 #import "CALayer+QMUI.h"
 #import "NSShadow+QMUI.h"
+#import "UIApplication+QMUI.h"
 
 @interface QMUIPopupContainerViewWindow : UIWindow
 
@@ -48,7 +49,6 @@
 }
 
 @property(nonatomic, strong) QMUIPopupContainerViewWindow *popupWindow;
-@property(nonatomic, weak) UIWindow *previousKeyWindow;
 @property(nonatomic, assign) BOOL hidesByUserTap;
 @end
 
@@ -101,6 +101,7 @@
 }
 
 - (void)setBackgroundView:(UIView *)backgroundView {
+    NSAssert(![backgroundView isKindOfClass:UIVisualEffectView.class], @"不支持UIVisualEffectView，请使用一个UIView代替，其subview可添加UIVisualEffectView");
     if (_backgroundView && _backgroundView != backgroundView) {
         [_backgroundView removeFromSuperview];
     }
@@ -379,7 +380,7 @@
     // 每次都要重新定义 block，否则当不同的 popup 在同一个 sourceBarItem 显示，这个 block 内部得到的 weakSelf 可能是前一次的
     sourceBarItem.qmui_viewLayoutDidChangeBlock = ^(__kindof UIBarItem * _Nonnull item, UIView * _Nullable view) {
         if (!view.window || !weakSelf.superview) return;
-        UIView *convertToView = weakSelf.popupWindow ? UIApplication.sharedApplication.delegate.window : weakSelf.superview;// 对于以 window 方式显示的情况，由于横竖屏旋转时，不同 window 的旋转顺序不同，所以可能导致 sourceBarItem 所在的 window 已经旋转了但 popupWindow 还没旋转（iOS 11 及以后），那么计算出来的坐标就错了，所以这里改为用 UIApplication window
+        UIView *convertToView = weakSelf.popupWindow ? UIApplication.sharedApplication.qmui_delegateWindow : weakSelf.superview;// 对于以 window 方式显示的情况，由于横竖屏旋转时，不同 window 的旋转顺序不同，所以可能导致 sourceBarItem 所在的 window 已经旋转了但 popupWindow 还没旋转（iOS 11 及以后），那么计算出来的坐标就错了，所以这里改为用 UIApplication window
         CGRect rect = [view qmui_convertRect:view.bounds toView:convertToView];
         weakSelf.sourceRect = rect;
     };
@@ -399,7 +400,7 @@
     __weak __typeof(self)weakSelf = self;
     sourceView.qmui_frameDidChangeBlock = ^(__kindof UIView * _Nonnull view, CGRect precedingFrame) {
         if (!view.window || !weakSelf.superview) return;
-        UIView *convertToView = weakSelf.popupWindow ? UIApplication.sharedApplication.delegate.window : weakSelf.superview;// 对于以 window 方式显示的情况，由于横竖屏旋转时，不同 window 的旋转顺序不同，所以可能导致 sourceBarItem 所在的 window 已经旋转了但 popupWindow 还没旋转（iOS 11 及以后），那么计算出来的坐标就错了，所以这里改为用 UIApplication window
+        UIView *convertToView = weakSelf.popupWindow ? UIApplication.sharedApplication.qmui_delegateWindow : weakSelf.superview;// 对于以 window 方式显示的情况，由于横竖屏旋转时，不同 window 的旋转顺序不同，所以可能导致 sourceBarItem 所在的 window 已经旋转了但 popupWindow 还没旋转（iOS 11 及以后），那么计算出来的坐标就错了，所以这里改为用 UIApplication window
         CGRect rect = [view qmui_convertRect:view.bounds toView:convertToView];
         weakSelf.sourceRect = rect;
     };
@@ -530,11 +531,11 @@
             // 上下都没有足够的空间，所以要调整maximumHeight
             CGFloat maximumHeightAbove = CGRectGetMinY(targetRect) - CGRectGetMinY(containerRect) - self.distanceBetweenSource - self.safetyMarginsAvoidSafeAreaInsets.top;
             CGFloat maximumHeightBelow = CGRectGetMaxY(containerRect) - self.safetyMarginsAvoidSafeAreaInsets.bottom - self.distanceBetweenSource - CGRectGetMaxY(targetRect);
-            self.maximumHeight = MAX(self.minimumHeight, MAX(maximumHeightAbove, maximumHeightBelow));
-            tipSize.height = self.maximumHeight;
+            CGFloat maximumHeight = MAX(self.minimumHeight, MAX(maximumHeightAbove, maximumHeightBelow));
+            tipSize.height = maximumHeight;
             _currentLayoutDirection = maximumHeightAbove > maximumHeightBelow ? QMUIPopupContainerViewLayoutDirectionAbove : QMUIPopupContainerViewLayoutDirectionBelow;
             
-            QMUILog(NSStringFromClass(self.class), @"%@, 因为上下都不够空间，所以最大高度被强制改为%@, 位于目标的%@", self, @(self.maximumHeight), maximumHeightAbove > maximumHeightBelow ? @"上方" : @"下方");
+            QMUILog(NSStringFromClass(self.class), @"%@, 因为上下都不够空间，所以最大高度被强制改为%@, 位于目标的%@", self, @(maximumHeight), maximumHeightAbove > maximumHeightBelow ? @"上方" : @"下方");
             
         } else if (_currentLayoutDirection == QMUIPopupContainerViewLayoutDirectionAbove && !canShowAtAbove) {
             _currentLayoutDirection = QMUIPopupContainerViewLayoutDirectionBelow;
@@ -598,11 +599,11 @@
             // 左右都没有足够的空间，所以要调整maximumWidth
             CGFloat maximumWidthLeft = CGRectGetMinX(targetRect) - CGRectGetMinX(containerRect) - self.distanceBetweenSource - self.safetyMarginsAvoidSafeAreaInsets.left;
             CGFloat maximumWidthRight = CGRectGetMaxX(containerRect) - self.safetyMarginsAvoidSafeAreaInsets.right - self.distanceBetweenSource - CGRectGetMaxX(targetRect);
-            self.maximumWidth = MAX(self.minimumWidth, MAX(maximumWidthLeft, maximumWidthRight));
-            tipSize.width = self.maximumWidth;
+            CGFloat maximumWidth = MAX(self.minimumWidth, MAX(maximumWidthLeft, maximumWidthRight));
+            tipSize.width = maximumWidth;
             _currentLayoutDirection = maximumWidthLeft > maximumWidthRight ? QMUIPopupContainerViewLayoutDirectionLeft : QMUIPopupContainerViewLayoutDirectionRight;
             
-            QMUILog(NSStringFromClass(self.class), @"%@, 因为左右都不够空间，所以最大宽度被强制改为%@, 位于目标的%@", self, @(self.maximumWidth), maximumWidthLeft > maximumWidthRight ? @"左边" : @"右边");
+            QMUILog(NSStringFromClass(self.class), @"%@, 因为左右都不够空间，所以最大宽度被强制改为%@, 位于目标的%@", self, @(maximumWidth), maximumWidthLeft > maximumWidthRight ? @"左边" : @"右边");
             
         } else if (_currentLayoutDirection == QMUIPopupContainerViewLayoutDirectionLeft && !canShowAtLeft) {
             _currentLayoutDirection = QMUIPopupContainerViewLayoutDirectionLeft;
@@ -689,16 +690,18 @@
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
-    
+    [self showInWindow:nil animated:animated completion:completion];
+}
+
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated completion:(void (^ __nullable)(BOOL finished))completion {
     BOOL isShowingByWindowMode = NO;
     if (!self.superview) {
-        [self initPopupContainerViewWindowIfNeeded];
+        [self initPopupContainerViewWindowInWindow:window];
         
         QMUICommonViewController *viewController = (QMUICommonViewController *)self.popupWindow.rootViewController;
         viewController.supportedOrientationMask = [QMUIHelper visibleViewController].supportedInterfaceOrientations;
         
-        self.previousKeyWindow = UIApplication.sharedApplication.keyWindow;
-        [self.popupWindow makeKeyAndVisible];
+        self.popupWindow.hidden = NO;
         
         isShowingByWindowMode = YES;
     } else {
@@ -797,17 +800,13 @@
 
 - (void)hideCompletionWithWindowMode:(BOOL)windowMode completion:(void (^)(BOOL))completion {
     if (windowMode) {
-        // 恢复 keyWindow 之前做一下检查，避免类似问题 https://github.com/Tencent/QMUI_iOS/issues/90
-        if (UIApplication.sharedApplication.keyWindow == self.popupWindow) {
-            [self.previousKeyWindow makeKeyWindow];
-        }
-        
         // iOS 9 下（iOS 8 和 10 都没问题）需要主动移除，才能令 rootViewController 和 popupWindow 立即释放，不影响后续的 layout 判断，如果不加这两句，虽然 popupWindow 指针被置为 nil，但其实对象还存在，View 层级关系也还在
         // https://github.com/Tencent/QMUI_iOS/issues/75
         [self removeFromSuperview];
         self.popupWindow.rootViewController = nil;
         
         self.popupWindow.hidden = YES;
+        self.popupWindow.windowScene = nil;
         self.popupWindow = nil;
     } else {
         self.hidden = YES;
@@ -833,9 +832,10 @@
     return subview && !subview.hidden && subview.superview;
 }
 
-- (void)initPopupContainerViewWindowIfNeeded {
+- (void)initPopupContainerViewWindowInWindow:(nullable UIWindow *)window {
     if (!self.popupWindow) {
-        self.popupWindow = [[QMUIPopupContainerViewWindow alloc] init];
+        UIWindowScene *windowScene = window.windowScene ? : UIApplication.sharedApplication.qmui_delegateWindow.windowScene;
+        self.popupWindow = [QMUIPopupContainerViewWindow qmui_windowWithWindowScene:windowScene];
         self.popupWindow.qmui_capturesStatusBarAppearance = NO;
         self.popupWindow.backgroundColor = UIColorClear;
         self.popupWindow.windowLevel = UIWindowLevelQMUIAlertView;

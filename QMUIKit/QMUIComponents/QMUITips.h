@@ -17,10 +17,7 @@
 #import "QMUIToastView.h"
 
 // 自动计算秒数的标志符，在 delay 里面赋值 QMUITipsAutomaticallyHideToastSeconds 即可通过自动计算 tips 消失的秒数
-extern const NSInteger QMUITipsAutomaticallyHideToastSeconds;
-
-/// 默认的 parentView
-#define DefaultTipsParentView (UIApplication.sharedApplication.delegate.window)
+UIKIT_EXTERN const NSInteger QMUITipsAutomaticallyHideToastSeconds;
 
 /**
  * 简单封装了 QMUIToastView，支持弹出纯文本、loading、succeed、error、info 等五种 tips。如果这些接口还满足不了业务的需求，可以通过 QMUITips 的分类自行添加接口。

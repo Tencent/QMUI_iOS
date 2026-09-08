@@ -110,7 +110,7 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutAlignment) {
 /// 最小宽度（指整个控件的宽度，而不是contentView部分），默认为0
 @property(nonatomic, assign) CGFloat minimumWidth UI_APPEARANCE_SELECTOR;
 
-/// 最大高度（指整个控件的高度，而不是contentView部分），默认为CGFLOAT_MAX，会在布局时被动态修改。
+/// 最大高度（指整个控件的高度，而不是contentView部分），默认为CGFLOAT_MAX
 @property(nonatomic, assign) CGFloat maximumHeight UI_APPEARANCE_SELECTOR;
 
 /// 最小高度（指整个控件的高度，而不是contentView部分），默认为0
@@ -176,6 +176,8 @@ typedef NS_ENUM(NSUInteger, QMUIPopupContainerViewLayoutAlignment) {
 
 - (void)showWithAnimated:(BOOL)animated;
 - (void)showWithAnimated:(BOOL)animated completion:(void (^ __nullable)(BOOL finished))completion;
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated completion:(void (^ __nullable)(BOOL finished))completion;
+
 - (void)hideWithAnimated:(BOOL)animated;
 - (void)hideWithAnimated:(BOOL)animated completion:(void (^ __nullable)(BOOL finished))completion;
 - (BOOL)isShowing;

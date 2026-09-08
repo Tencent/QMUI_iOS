@@ -20,6 +20,7 @@
 #import "NSObject+QMUI.h"
 #import "QMUILog.h"
 #import "UIView+QMUI.h"
+#import "UIApplication+QMUI.h"
 
 NSNotificationName const QMUIAppSizeWillChangeNotification = @"QMUIAppSizeWillChangeNotification";
 NSString *const QMUIPrecedingAppSizeUserInfoKey = @"QMUIPrecedingAppSizeUserInfoKey";
@@ -62,7 +63,7 @@ QMUISynthesizeIdCopyProperty(qmui_prefersHomeIndicatorAutoHiddenBlock, setQmui_p
         OverrideImplementation([UIViewController class], @selector(viewWillTransitionToSize:withTransitionCoordinator:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIViewController *selfObject, CGSize size, id<UIViewControllerTransitionCoordinator> coordinator) {
                 
-                if (selfObject == UIApplication.sharedApplication.delegate.window.rootViewController) {
+                if (selfObject == UIApplication.sharedApplication.qmui_delegateWindow.rootViewController) {
                     CGSize originalSize = selfObject.view.frame.size;
                     BOOL sizeChanged = !CGSizeEqualToSize(originalSize, size);
                     if (sizeChanged) {
@@ -587,7 +588,7 @@ QMUISynthesizeBOOLProperty(qmui_willAppearByInteractivePopGestureRecognizer, set
 @implementation QMUIHelper (ViewController)
 
 + (nullable UIViewController *)visibleViewController {
-    UIViewController *rootViewController = UIApplication.sharedApplication.delegate.window.rootViewController;
+    UIViewController *rootViewController = UIApplication.sharedApplication.qmui_delegateWindow.rootViewController;
     UIViewController *visibleViewController = [rootViewController qmui_visibleViewControllerIfExist];
     return visibleViewController;
 }

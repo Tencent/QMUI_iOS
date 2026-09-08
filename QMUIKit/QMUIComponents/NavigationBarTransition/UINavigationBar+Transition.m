@@ -18,7 +18,9 @@
 #import "UINavigationBar+QMUI.h"
 #import "UINavigationBar+QMUIBarProtocol.h"
 #import "QMUIWeakObjectContainer.h"
+#import "QMUIBarProtocolPrivate.h"
 #import "UIImage+QMUI.h"
+#import "CALayer+QMUI.h"
 
 @implementation UINavigationBar (Transition)
 
@@ -51,7 +53,7 @@
                     originSelectorIMP(selfObject, originCMD, appearance);
                     
                     if (selfObject.qmuinb_copyStylesToBar) {
-                        selfObject.qmuinb_copyStylesToBar.standardAppearance = appearance;
+                        selfObject.qmuinb_copyStylesToBar.scrollEdgeAppearance = appearance;
                     }
                 };
             });
@@ -222,6 +224,21 @@ static char kAssociatedObjectKey_copyStylesToBar;
             });
         }
         
+        OverrideImplementation(NSClassFromString(@"_UIBarBackground"), @selector(didMoveToWindow), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject) {
+                
+                // call super
+                void (*originSelectorIMP)(id, SEL);
+                originSelectorIMP = (void (*)(id, SEL))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD);
+                
+                _QMUITransitionNavigationBar *navigationBar = (_QMUITransitionNavigationBar *)selfObject.superview;
+                if (selfObject.window != nil && [navigationBar isKindOfClass:_QMUITransitionNavigationBar.class]) {
+                    [navigationBar updateLayout];
+                }
+            };
+        });
+        
 #ifdef IOS15_SDK_ALLOWED
         if (@available(iOS 15.0, *)) {
             // - [UINavigationBar _didMoveFromWindow:toWindow:]
@@ -255,9 +272,12 @@ static char kAssociatedObjectKey_copyStylesToBar;
 }
 
 - (void)layoutSubviews {
-    [super layoutSubviews];
-    // 实测 iOS 11 Beta 1-5 里，自己 init 的 navigationBar.backgroundView.height 默认一直是 44，所以才加上这个兼容
-    self.qmui_backgroundView.frame = self.bounds;
+    [CALayer qmui_performWithoutAnimation:^{
+        [super layoutSubviews];
+        // 实测 iOS 11 Beta 1-5 里，自己 init 的 navigationBar.backgroundView.height 默认一直是 44，所以才加上这个兼容
+        self.qmui_backgroundView.frame = self.bounds;
+        [self.qmui_backgroundView layoutIfNeeded];
+    }];
 }
 
 // NavBarRemoveBackgroundEffectAutomatically 在开启了 AutomaticCustomNavigationBarTransitionStyle 时可能对假 bar 无效
@@ -265,7 +285,9 @@ static char kAssociatedObjectKey_copyStylesToBar;
 - (void)didAddSubview:(UIView *)subview {
     [super didAddSubview:subview];
     if (subview == self.qmui_backgroundView) {
-        [subview qmui_performSelector:NSSelectorFromString(@"updateBackground") withArguments:nil];
+        BeginIgnorePerformSelectorLeaksWarning
+        [subview performSelector:NSSelectorFromString(@"updateBackground")];
+        EndIgnorePerformSelectorLeaksWarning
     }
 }
 
@@ -274,7 +296,20 @@ static char kAssociatedObjectKey_copyStylesToBar;
         [self.parentViewController.view bringSubviewToFront:self];
         UIView *backgroundView = self.originalNavigationBar.qmui_backgroundView;
         CGRect rect = [backgroundView.superview convertRect:backgroundView.frame toView:self.parentViewController.view];
-        self.frame = CGRectSetX(rect, 0);// push/pop 过程中系统的导航栏转换过来的 x 可能是 112、-112
+        if (QMUIHelper.isUsedLiquidGlass) {
+            // 不需要处理
+        } else {
+            // Xcode 26.x编译后，灵动岛机型会多出一块，感觉是UIKit的bug🤷‍♂️，暂时这么处理吧
+            if (ceil(CGRectGetMinY(rect)) == -5) {
+                rect.size.height += CGRectGetMinY(rect);
+            }
+        }
+        [CALayer qmui_performWithoutAnimation:^{
+            // push/pop 过程中系统的导航栏转换过来的 x 可能是 112、-112
+            // iOS 26上，y 可能是 -113
+            self.frame = CGRectSetXY(rect, 0, 0);
+            [self layoutIfNeeded];
+        }];
     }
 }
 

@@ -18,8 +18,12 @@
 #import "QMUIToastContentView.h"
 #import "QMUIToastBackgroundView.h"
 #import "NSString+QMUI.h"
+#import "UIApplication+QMUI.h"
 
 const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
+
+/// 默认的 parentView
+#define QMUIDefaultTipsParentView (UIApplication.sharedApplication.qmui_delegateWindow)
 
 @interface QMUITips ()
 
@@ -199,11 +203,11 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showWithText:(nullable NSString *)text {
-    return [self showWithText:text detailText:nil inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showWithText:text detailText:nil inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showWithText:(nullable NSString *)text detailText:(nullable NSString *)detailText {
-    return [self showWithText:text detailText:detailText inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showWithText:text detailText:detailText inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showWithText:(NSString *)text inView:(UIView *)view {
@@ -225,11 +229,11 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showSucceed:(nullable NSString *)text {
-    return [self showSucceed:text detailText:nil inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showSucceed:text detailText:nil inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showSucceed:(nullable NSString *)text detailText:(nullable NSString *)detailText {
-    return [self showSucceed:text detailText:detailText inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showSucceed:text detailText:detailText inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showSucceed:(NSString *)text inView:(UIView *)view {
@@ -251,11 +255,11 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showError:(nullable NSString *)text {
-    return [self showError:text detailText:nil inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showError:text detailText:nil inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showError:(nullable NSString *)text detailText:(nullable NSString *)detailText {
-    return [self showError:text detailText:detailText inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showError:text detailText:detailText inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showError:(NSString *)text inView:(UIView *)view {
@@ -277,11 +281,11 @@ const NSInteger QMUITipsAutomaticallyHideToastSeconds = -1;
 }
 
 + (QMUITips *)showInfo:(nullable NSString *)text {
-    return [self showInfo:text detailText:nil inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showInfo:text detailText:nil inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showInfo:(nullable NSString *)text detailText:(nullable NSString *)detailText {
-    return [self showInfo:text detailText:detailText inView:DefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
+    return [self showInfo:text detailText:detailText inView:QMUIDefaultTipsParentView hideAfterDelay:QMUITipsAutomaticallyHideToastSeconds];
 }
 
 + (QMUITips *)showInfo:(NSString *)text inView:(UIView *)view {

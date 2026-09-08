@@ -231,6 +231,10 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
 }
 
 - (void)showFromBottom {
+    [self showFromBottomInWindow:nil];
+}
+
+- (void)showFromBottomInWindow:(nullable UIWindow *)window {
     
     if (self.showing || self.animating) {
         return;
@@ -285,7 +289,7 @@ static NSInteger const kQMUIMoreOperationItemViewTagOffset = 999;
     };
 
     self.animating = YES;
-    [modalPresentationViewController showWithAnimated:YES completion:NULL];
+    [modalPresentationViewController showInWindow:window animated:YES completion:NULL];
 }
 
 - (void)hideToBottom {

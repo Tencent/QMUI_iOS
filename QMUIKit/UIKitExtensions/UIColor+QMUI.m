@@ -341,7 +341,7 @@ NSString *const QMUICGColorOriginalColorBindKey = @"QMUICGColorOriginalColorBind
                     result = CGColorCreate(spaceRef, (CGFloat[]){color.qmui_red, color.qmui_green, color.qmui_blue, color.qmui_alpha});
                     CGColorSpaceRelease(spaceRef);
                     
-                    [(__bridge id)(result) qmui_bindObject:selfObject forKey:QMUICGColorOriginalColorBindKey];
+                    [(__bridge id)(result) qmui_bindObjectWeakly:selfObject forKey:QMUICGColorOriginalColorBindKey];
                     return (CGColorRef)CFAutorelease(result);
                 }
                 

@@ -15,6 +15,8 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
+
 @interface UIWindow (QMUI)
 
 /**
@@ -37,5 +39,10 @@
 
 /// 当前 window 因各种原因（例如其他 window 显式调用 makeKey、当前 keyWindow 被隐藏导致系统自动流转 keyWindow、主动向自身调用 resignKeyWindow 等）导致从 keyWindow 转变为非 keyWindow 时会询问这个 block，业务可在这个 block 里干预当前的流转。
 /// 实际场景例如，背后 window 正在显示一个带输入框的 webView 网页，输入框聚焦以升起键盘，此时你再新开一个更高 windowLevel 的 window，盖在 webView 上并且 makeKey，就会发现你的 window 依然被键盘挡住，因为 webView 有个特性是如果有输入框聚焦，则 webView 内部会不断地尝试将输入框 becomeFirstResponder 并且让输入框所在的 window makeKey，这就会抢占了我们刚刚手动盖上来的 window 的 key，所以此时就可以给新开的 window 使用本 block，返回 NO，使 webView 无法抢占 keyWindow，从而避免键盘遮挡。
-@property(nonatomic, copy) BOOL (^qmui_canResignKeyWindowBlock)(UIWindow *selfObject, UIWindow *windowWillBecomeKey);
+@property(nonatomic, copy, nullable) BOOL (^qmui_canResignKeyWindowBlock)(UIWindow *selfObject, UIWindow *windowWillBecomeKey);
+
++ (instancetype)qmui_windowWithWindowScene:(nullable UIWindowScene *)windowScene;
+
 @end
+
+NS_ASSUME_NONNULL_END

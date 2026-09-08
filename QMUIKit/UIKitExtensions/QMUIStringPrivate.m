@@ -199,7 +199,13 @@ static BOOL QMUIAvoidSubstring = NO;
 + (void)qmuisafety_UIKeyboardImpl {
     // UIKeyboardImpl
     // - (void) handleKeyWithString:(id)arg1 forKeyEvent:(id)arg2 executionContext:(id)arg3;
-    OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"UIKeyb", @"oard", @"Impl", nil]), NSSelectorFromString([NSString qmui_stringByConcat:@"handleKeyWithString:", @"forKeyEvent:", @"executionContext:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+    Class class;
+    if (@available(iOS 18.0, *)) {
+        class = NSClassFromString([NSString qmui_stringByConcat:@"_UIKeyb", @"oard", @"State", @"Manager", nil]);
+    } else {
+        class = NSClassFromString([NSString qmui_stringByConcat:@"UIKeyb", @"oard", @"Impl", nil]);
+    }
+    OverrideImplementation(class, NSSelectorFromString([NSString qmui_stringByConcat:@"handleKeyWithString:", @"forKeyEvent:", @"executionContext:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
         return ^(NSObject *selfObject, NSString *string, UIPressesEvent *event, NSObject *context) {
             
             QMUIAvoidSubstring = YES;

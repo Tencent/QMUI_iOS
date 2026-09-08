@@ -20,6 +20,7 @@
 #import "QMUIKeyboardManager.h"
 #import "UIWindow+QMUI.h"
 #import "QMUIAppearance.h"
+#import "UIApplication+QMUI.h"
 
 @interface UIViewController ()
 
@@ -75,6 +76,8 @@
 @property(nonatomic, strong) QMUIKeyboardManager *keyboardManager;
 @property(nonatomic, assign) CGFloat keyboardHeight;
 @property(nonatomic, assign) BOOL avoidKeyboardLayout;
+@property(nonatomic, assign) CGFloat initializeKeyboardHeight; // 默认为-1
+
 @end
 
 @implementation QMUIModalPresentationViewController
@@ -96,6 +99,7 @@
 - (void)didInitialize {
     [self qmui_applyAppearance];
     
+    self.initializeKeyboardHeight = -1;
     self.shouldDimmedAppAutomatically = YES;
     self.onlyRespondsToKeyboardEventFromDescendantViews = YES;
     self.shouldBecomeKeyWindow = YES;
@@ -140,6 +144,15 @@
 
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
+    // 获取一次键盘高度，兼容键盘已经弹起时情况
+    if (self.initializeKeyboardHeight == -1) {
+        CGRect keyboardRect = [QMUIKeyboardManager convertKeyboardRect:QMUIKeyboardManager.currentKeyboardFrame toView:self.view];
+        CGRect visibleRect = CGRectIntersection(CGRectFlatted(self.view.bounds), CGRectFlatted(keyboardRect));
+        if (CGRectIsValidated(visibleRect)) {
+            self.keyboardHeight = visibleRect.size.height;
+        }
+        self.initializeKeyboardHeight = self.keyboardHeight;
+    }
     
     self.dimmingView.frame = self.view.bounds;
     
@@ -271,15 +284,16 @@
         
         if (self.shownInWindowMode) {
             // 恢复 keyWindow 之前做一下检查，避免这个问题 https://github.com/Tencent/QMUI_iOS/issues/90
-            if (UIApplication.sharedApplication.keyWindow == self.window) {
+            if (UIApplication.sharedApplication.qmui_keyWindow == self.window) {
                 if (self.previousKeyWindow.hidden) {
                     // 保护了这个 issue 记录的情况，避免主 window 丢失 keyWindow https://github.com/Tencent/QMUI_iOS/issues/315
-                    [UIApplication.sharedApplication.delegate.window makeKeyWindow];
+                    [UIApplication.sharedApplication.qmui_delegateWindow makeKeyWindow];
                 } else {
                     [self.previousKeyWindow makeKeyWindow];
                 }
             }
             self.window.hidden = YES;
+            self.window.windowScene = nil;
             self.window.rootViewController = nil;
             self.previousKeyWindow = nil;
             [self endAppearanceTransition];
@@ -499,15 +513,20 @@
 }
 
 - (void)showWithAnimated:(BOOL)animated completion:(void (^)(BOOL))completion {
+    [self showInWindow:nil animated:animated completion:completion];
+}
+
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated completion:(void (^ _Nullable)(BOOL finished))completion {
     if (self.visible) return;
     self.visible = YES;
     
     // makeKeyAndVisible 导致的 viewWillAppear: 必定 animated 是 NO 的，所以这里用额外的变量保存这个 animated 的值
     self.appearAnimated = animated;
     self.appearCompletionBlock = completion;
-    self.previousKeyWindow = UIApplication.sharedApplication.keyWindow;
+    self.previousKeyWindow = UIApplication.sharedApplication.qmui_keyWindow;
     if (!self.window) {
-        self.window = [[QMUIModalPresentationWindow alloc] init];
+        UIWindowScene *windowScene = window.windowScene ? : UIApplication.sharedApplication.qmui_delegateWindow.windowScene;
+        self.window = [QMUIModalPresentationWindow qmui_windowWithWindowScene:windowScene];
         self.window.windowLevel = UIWindowLevelQMUIAlertView;
         self.window.backgroundColor = UIColorClear;// 避免横竖屏旋转时出现黑色
         [self updateWindowStatusBarCapture];
@@ -672,12 +691,14 @@
 #pragma mark - <QMUIKeyboardManagerDelegate>
 
 - (void)keyboardWillChangeFrameWithUserInfo:(QMUIKeyboardUserInfo *)keyboardUserInfo {
-    if (self.onlyRespondsToKeyboardEventFromDescendantViews) {
+    if (self.onlyRespondsToKeyboardEventFromDescendantViews && self.initializeKeyboardHeight == 0) {
         UIResponder *firstResponder = keyboardUserInfo.targetResponder;
         if (!firstResponder || !([firstResponder isKindOfClass:[UIView class]] && [(UIView *)firstResponder isDescendantOfView:self.view])) {
             return;
         }
     }
+    self.initializeKeyboardHeight = 0;
+    
     CGFloat keyboardHeight = [keyboardUserInfo heightInView:self.view];
     if (self.keyboardHeight != keyboardHeight) {
         self.keyboardHeight = keyboardHeight;
@@ -751,7 +772,7 @@
 @implementation QMUIModalPresentationViewController (Manager)
 
 + (BOOL)isAnyModalPresentationViewControllerVisible {
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.qmui_windows) {
         if ([window isKindOfClass:[QMUIModalPresentationWindow class]] && !window.hidden) {
             return YES;
         }
@@ -763,7 +784,7 @@
     
     BOOL hideAllFinally = YES;
     
-    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+    for (UIWindow *window in UIApplication.sharedApplication.qmui_windows) {
         if (![window isKindOfClass:[QMUIModalPresentationWindow class]]) {
             continue;
         }

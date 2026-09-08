@@ -156,6 +156,7 @@
 }
 
 - (CGRect)clearButtonRectForBounds:(CGRect)bounds {
+    bounds = CGRectInsetEdges(bounds, self.textInsets);
     CGRect result = [super clearButtonRectForBounds:bounds];
     result = CGRectOffset(result, self.clearButtonPositionAdjustment.horizontal, self.clearButtonPositionAdjustment.vertical);
     return result;

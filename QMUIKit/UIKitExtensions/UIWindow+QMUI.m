@@ -15,6 +15,7 @@
 
 #import "UIWindow+QMUI.h"
 #import "QMUICore.h"
+#import "UIApplication+QMUI.h"
 
 @implementation UIWindow (QMUI)
 
@@ -99,7 +100,7 @@ static char kAssociatedObjectKey_canResignKeyWindowBlock;
                     }
                     
                     BeginIgnoreDeprecatedWarning
-                    UIWindow *keyWindow = UIApplication.sharedApplication.keyWindow;
+                    UIWindow *keyWindow = UIApplication.sharedApplication.qmui_keyWindow;
                     if (result && keyWindow && keyWindow != selfObject && keyWindow.qmui_canResignKeyWindowBlock) {
                         result = keyWindow.qmui_canResignKeyWindowBlock(keyWindow, selfObject);
                     }
@@ -126,6 +127,14 @@ static char kAssociatedObjectKey_canResignKeyWindowBlock;
             };
         });
     } oncePerIdentifier:@"UIWindow (QMUI) keyWindow"];
+}
+
++ (instancetype)qmui_windowWithWindowScene:(nullable UIWindowScene *)windowScene {
+    if (windowScene != nil) {
+        return [[self.class alloc] initWithWindowScene:windowScene];
+    } else {
+        return [[self.class alloc] initWithFrame:UIScreen.mainScreen.bounds];
+    }
 }
 
 @end

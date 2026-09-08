@@ -18,6 +18,7 @@
 #import "UIViewController+QMUITheme.h"
 #import "QMUIThemePrivate.h"
 #import "UITraitCollection+QMUI.h"
+#import "UIApplication+QMUI.h"
 
 NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotification";
 
@@ -58,7 +59,7 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
 - (void)setRespondsSystemStyleAutomatically:(BOOL)respondsSystemStyleAutomatically {
     _respondsSystemStyleAutomatically = respondsSystemStyleAutomatically;
     if (_respondsSystemStyleAutomatically && self.identifierForTrait) {
-         self.currentThemeIdentifier = self.identifierForTrait([UITraitCollection currentTraitCollection]);
+        self.currentThemeIdentifier = self.identifierForTrait(UIScreen.mainScreen.traitCollection);
     }
 }
 
@@ -137,10 +138,11 @@ NSString *const QMUIThemeDidChangeNotification = @"QMUIThemeDidChangeNotificatio
 - (void)notifyThemeChanged {
     [[NSNotificationCenter defaultCenter] postNotificationName:QMUIThemeDidChangeNotification object:self];
     
-    [UIApplication.sharedApplication.windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (!window.hidden && window.alpha > 0.01 && window.rootViewController) {
+    [UIApplication.sharedApplication.qmui_windows enumerateObjectsUsingBlock:^(__kindof UIWindow * _Nonnull window, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (window.rootViewController) {
             [window.rootViewController qmui_themeDidChangeByManager:self identifier:self.currentThemeIdentifier theme:self.currentTheme];
-            
+        }
+        if (window.windowScene && !window.hidden && window.alpha > 0.01) {
             // 某些 present style 情况下，window 上可能存在多个 viewController.view，因此需要遍历所有的 subviews，而不只是 window.rootViewController.view
             [window _qmui_themeDidChangeByManager:self identifier:self.currentThemeIdentifier theme:self.currentTheme shouldEnumeratorSubviews:YES];
         }

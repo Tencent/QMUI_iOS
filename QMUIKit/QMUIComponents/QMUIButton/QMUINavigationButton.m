@@ -99,7 +99,11 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             break;
         case QMUINavigationButtonTypeImage:
             // 拓展宽度，以保证用 leftBarButtonItems/rightBarButtonItems 时，按钮与按钮之间间距与系统的保持一致
-            self.contentEdgeInsets = UIEdgeInsetsMake(0, 11, 0, 11);
+            if (QMUIHelper.isUsedLiquidGlass) {
+                self.contentEdgeInsets = UIEdgeInsetsZero;
+            } else {
+                self.contentEdgeInsets = UIEdgeInsetsMake(0, 11, 0, 11);
+            }
             break;
         case QMUINavigationButtonTypeBold: {
             font = NavBarButtonFontBold;
@@ -122,14 +126,18 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
             
             self.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
             
-            // @warning 这些数值都是每个iOS版本核对过没问题的，如果修改则要检查要每个版本里与系统UIBarButtonItem的布局是否一致
-            UIOffset titleOffsetBaseOnSystem = UIOffsetMake(6, 0);// 经过这些数值的调整后，自定义返回按钮的位置才能和系统默认返回按钮的位置对准，而配置表里设置的值是在这个调整的基础上再调整
-            UIOffset configurationOffset = NavBarBarBackButtonTitlePositionAdjustment;
-            self.titleEdgeInsets = UIEdgeInsetsMake(titleOffsetBaseOnSystem.vertical + configurationOffset.vertical, titleOffsetBaseOnSystem.horizontal + configurationOffset.horizontal, -titleOffsetBaseOnSystem.vertical - configurationOffset.vertical, -titleOffsetBaseOnSystem.horizontal - configurationOffset.horizontal);
-            self.contentEdgeInsets = UIEdgeInsetsMake(0,
-                                                      0,
-                                                      0,
-                                                      self.titleEdgeInsets.left);
+            if (QMUIHelper.isUsedLiquidGlass) {
+                self.contentEdgeInsets = UIEdgeInsetsZero;
+            } else {
+                // @warning 这些数值都是每个iOS版本核对过没问题的，如果修改则要检查要每个版本里与系统UIBarButtonItem的布局是否一致
+                UIOffset titleOffsetBaseOnSystem = UIOffsetMake(6, 0);// 经过这些数值的调整后，自定义返回按钮的位置才能和系统默认返回按钮的位置对准，而配置表里设置的值是在这个调整的基础上再调整
+                UIOffset configurationOffset = NavBarBarBackButtonTitlePositionAdjustment;
+                self.titleEdgeInsets = UIEdgeInsetsMake(titleOffsetBaseOnSystem.vertical + configurationOffset.vertical, titleOffsetBaseOnSystem.horizontal + configurationOffset.horizontal, -titleOffsetBaseOnSystem.vertical - configurationOffset.vertical, -titleOffsetBaseOnSystem.horizontal - configurationOffset.horizontal);
+                self.contentEdgeInsets = UIEdgeInsetsMake(0,
+                                                          0,
+                                                          0,
+                                                          self.titleEdgeInsets.left);
+            }
         }
             break;
             
@@ -207,29 +215,31 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
 
 // 对按钮内容添加偏移，让UIBarButtonItem适配最新设备的系统行为，统一位置。注意 iOS 11 及以后，只有 image 类型的才会走进来
 - (UIEdgeInsets)alignmentRectInsets {
-    
-    UIEdgeInsets insets = [super alignmentRectInsets];
-    
-    if (self.type == QMUINavigationButtonTypeNormal || self.type == QMUINavigationButtonTypeBold) {
-        // 对于奇数大小的字号，不同 iOS 版本的偏移策略不同，统一一下
-        if (self.titleLabel.font.pointSize / 2.0 > 0) {
-            insets.top = -PixelOne;
-            insets.bottom = PixelOne;
-        }
-    } else if (self.type == QMUINavigationButtonTypeImage) {
-        // 图片类型的按钮，分别对最左、最右那个按钮调整 inset（这里与 UINavigationItem(QMUINavigationButton) 里的 position 赋值配合使用）
-        if (self.buttonPosition == QMUINavigationButtonPositionLeft) {
-            insets.left = 11;
-        } else if (self.buttonPosition == QMUINavigationButtonPositionRight) {
-            insets.right = 11;
+    if (QMUIHelper.isUsedLiquidGlass) {
+        return [super alignmentRectInsets];
+    } else {
+        UIEdgeInsets insets = [super alignmentRectInsets];
+        if (self.type == QMUINavigationButtonTypeNormal || self.type == QMUINavigationButtonTypeBold) {
+            // 对于奇数大小的字号，不同 iOS 版本的偏移策略不同，统一一下
+            if (self.titleLabel.font.pointSize / 2.0 > 0) {
+                insets.top = -PixelOne;
+                insets.bottom = PixelOne;
+            }
+        } else if (self.type == QMUINavigationButtonTypeImage) {
+            // 图片类型的按钮，分别对最左、最右那个按钮调整 inset（这里与 UINavigationItem(QMUINavigationButton) 里的 position 赋值配合使用）
+            if (self.buttonPosition == QMUINavigationButtonPositionLeft) {
+                insets.left = 11;
+            } else if (self.buttonPosition == QMUINavigationButtonPositionRight) {
+                insets.right = 11;
+            }
+            
+            insets.top = 1;
+        } else if (self.type == QMUINavigationButtonTypeBack) {
+            insets.top = PixelOne;
         }
         
-        insets.top = 1;
-    } else if (self.type == QMUINavigationButtonTypeBack) {
-        insets.top = PixelOne;
+        return insets;
     }
-    
-    return insets;
 }
 
 @end
@@ -452,8 +462,12 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
         // 强制修改 contentView 的 directionalLayoutMargins.leading，在使用自定义返回按钮时减小 8
         // Xcode11 beta2 修改私有 view 的 directionalLayoutMargins 会 crash，换个方式
         // -[_UINavigationBarContentView directionalLayoutMargins]
-        NSString *barContentViewString = [NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil];
-        
+        NSString *barContentViewString;
+        if (QMUIHelper.isUsedLiquidGlass) {
+            barContentViewString = [NSString qmui_stringByConcat:@"UIKit.", @"NavigationBar", @"ContentView", nil];
+        } else {
+            barContentViewString = [NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil];
+        }
         OverrideImplementation(NSClassFromString(barContentViewString), @selector(directionalLayoutMargins), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^NSDirectionalEdgeInsets(UIView *selfObject) {
                 
@@ -492,7 +506,7 @@ typedef NS_ENUM(NSInteger, QMUINavigationButtonPosition) {
                 
                 // result 有值意味着该事件本应属于 bar 的，这时候才干预。
                 // 属于 bar 但又分配给容器而不是精准的某个内容 view，此时才考虑扩大点击范围的识别。
-                BOOL hitNothing = result == selfObject.qmui_contentView || [NSStringFromClass(result.class) containsString:@"StackView"];
+                BOOL hitNothing = result == selfObject.qmui_contentView || ([NSStringFromClass(result.class) containsString:@"StackView"] && result.superview == selfObject.qmui_contentView);
                 if (!hitNothing) return result;
                 
                 NSMutableArray<UIView *> *customViews = [[NSMutableArray alloc] init];

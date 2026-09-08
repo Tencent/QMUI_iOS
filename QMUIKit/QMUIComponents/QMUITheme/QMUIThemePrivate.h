@@ -28,8 +28,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 记录当前 view 总共有哪些 property 需要在 theme 变化时重新设置
 @property(nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *qmuiTheme_themeColorProperties;
 
-- (BOOL)_qmui_visible;
-
 @end
 
 /// @warning 由于支持 NSCopying，增加属性时必须在 copyWithZone: 里复制一次

@@ -322,7 +322,7 @@ static char kAssociatedObjectKey_updatesIndicatorView;
 // 不管 image 还是 text 的 UIBarButtonItem 都获取内部的 _UIModernBarButton 即可
 - (UIView *)findBarButtonContentView {
     NSString *classString = NSStringFromClass(self.class);
-    if ([classString isEqualToString:@"UITabBarButton"]) {
+    if ([classString isEqualToString:@"UITabBarButton"] || [classString isEqualToString:@"_UITabButton"]) {
         // 特别的，对于 UITabBarItem，将 imageView 作为参考 view
         UIView *imageView = [UITabBarItem qmui_imageViewInTabBarButton:self];
         return imageView;

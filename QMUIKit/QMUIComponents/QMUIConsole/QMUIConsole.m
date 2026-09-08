@@ -20,6 +20,7 @@
 #import "UIWindow+QMUI.h"
 #import "UIColor+QMUI.h"
 #import "QMUITextView.h"
+#import "UIApplication+QMUI.h"
 
 /// 定义一个 class 只是为了在 Lookin 里表达这是一个 console window 而已，不需要实现什么东西
 @interface QMUIConsoleWindow : UIWindow
@@ -27,17 +28,28 @@
 
 @implementation QMUIConsoleWindow
 
-- (instancetype)init {
-    if (self = [super init]) {
-        self.backgroundColor = nil;
-        if (QMUICMIActivated) {
-            self.windowLevel = UIWindowLevelQMUIConsole;
-        } else {
-            self.windowLevel = 1;
-        }
-        self.qmui_capturesStatusBarAppearance = NO;
+- (instancetype)initWithWindowScene:(UIWindowScene *)windowScene {
+    if (self = [super initWithWindowScene:windowScene]) {
+        [self didInitialize];
     }
     return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    if (self = [super initWithFrame:frame]) {
+        [self didInitialize];
+    }
+    return self;
+}
+
+- (void)didInitialize {
+    self.backgroundColor = nil;
+    if (QMUICMIActivated) {
+        self.windowLevel = UIWindowLevelQMUIConsole;
+    } else {
+        self.windowLevel = 1;
+    }
+    self.qmui_capturesStatusBarAppearance = NO;
 }
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
@@ -121,6 +133,7 @@
             [console initConsoleWindowIfNeeded];
             console.consoleWindow.alpha = 0;
             console.consoleWindow.hidden = NO;
+            console.consoleWindow.windowScene = UIApplication.sharedApplication.qmui_delegateWindow.windowScene;
         }];
         [UIView animateWithDuration:.25 delay:.2 options:QMUIViewAnimationOptionsCurveOut animations:^{
             console.consoleWindow.alpha = 1;
@@ -130,11 +143,12 @@
 
 + (void)hide {
     [QMUIConsole sharedInstance].consoleWindow.hidden = YES;
+    [QMUIConsole sharedInstance].consoleWindow.windowScene = nil;
 }
 
 - (void)initConsoleWindowIfNeeded {
     if (!self.consoleWindow) {
-        self.consoleWindow = [[QMUIConsoleWindow alloc] init];
+        self.consoleWindow = [QMUIConsoleWindow qmui_windowWithWindowScene:UIApplication.sharedApplication.qmui_delegateWindow.windowScene];
         self.consoleViewController = [[QMUIConsoleViewController alloc] init];
         self.consoleWindow.rootViewController = self.consoleViewController;
     }

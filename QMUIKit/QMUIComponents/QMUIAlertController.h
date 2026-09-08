@@ -241,6 +241,9 @@ typedef NS_ENUM(NSInteger, QMUIAlertControllerStyle) {
 /// 显示`QMUIAlertController`
 - (void)showWithAnimated:(BOOL)animated;
 
+/// 显示`QMUIAlertController`
+- (void)showInWindow:(nullable UIWindow *)window animated:(BOOL)animated;
+
 /// 隐藏`QMUIAlertController`
 - (void)hideWithAnimated:(BOOL)animated;
 

@@ -82,80 +82,84 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
             }
 //#endif
         
-        // [UIKit Bug] iOS 12 及以上的系统，如果设置了自己的 leftBarButtonItem，且 title 很长时，则当 pop 的时候，title 会瞬间跳到左边，与 leftBarButtonItem 重叠
-        // https://github.com/Tencent/QMUI_iOS/issues/1217
-        // _UITAMICAdaptorView
-        Class adaptorClass = NSClassFromString([NSString qmui_stringByConcat:@"_", @"UITAMIC", @"Adaptor", @"View", nil]);
-        
-        // -[_UINavigationBarContentView didAddSubview:]
-        OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil]), @selector(didAddSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UIView *selfObject, UIView *firstArgv) {
+        if (QMUIHelper.isUsedLiquidGlass) {
+            // 不处理
+        } else {
+            // [UIKit Bug] iOS 12 及以上的系统，如果设置了自己的 leftBarButtonItem，且 title 很长时，则当 pop 的时候，title 会瞬间跳到左边，与 leftBarButtonItem 重叠
+            // https://github.com/Tencent/QMUI_iOS/issues/1217
+            // _UITAMICAdaptorView
+            Class adaptorClass = NSClassFromString([NSString qmui_stringByConcat:@"_", @"UITAMIC", @"Adaptor", @"View", nil]);
+            
+            // -[_UINavigationBarContentView didAddSubview:]
+            OverrideImplementation(NSClassFromString([NSString qmui_stringByConcat:@"_", @"UINavigationBar", @"ContentView", nil]), @selector(didAddSubview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UIView *selfObject, UIView *firstArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, UIView *);
+                    originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv);
+                    
+                    if ([firstArgv isKindOfClass:adaptorClass] || [firstArgv isKindOfClass:UILabel.class]) {
+                        firstArgv.qmui_frameWillChangeBlock = ^CGRect(__kindof UIView * _Nonnull view, CGRect followingFrame) {
+                            if ([view qmui_getBoundObjectForKey:kShouldFixTitleViewBugKey]) {
+                                followingFrame = [[view qmui_getBoundObjectForKey:kShouldFixTitleViewBugKey] CGRectValue];
+                            }
+                            return followingFrame;
+                        };
+                    }
+                };
+            });
+            
+            void (^boundTitleViewMinXBlock)(UINavigationBar *, BOOL) = ^void(UINavigationBar *navigationBar, BOOL cleanup) {
                 
-                // call super
-                void (*originSelectorIMP)(id, SEL, UIView *);
-                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, firstArgv);
+                if (!navigationBar.topItem.leftBarButtonItem) return;
                 
-                if ([firstArgv isKindOfClass:adaptorClass] || [firstArgv isKindOfClass:UILabel.class]) {
-                    firstArgv.qmui_frameWillChangeBlock = ^CGRect(__kindof UIView * _Nonnull view, CGRect followingFrame) {
-                        if ([view qmui_getBoundObjectForKey:kShouldFixTitleViewBugKey]) {
-                            followingFrame = [[view qmui_getBoundObjectForKey:kShouldFixTitleViewBugKey] CGRectValue];
-                        }
-                        return followingFrame;
-                    };
+                UIView *titleView = nil;
+                UIView *adapterView = navigationBar.topItem.titleView.superview;
+                if ([adapterView isKindOfClass:adaptorClass]) {
+                    titleView = adapterView;
+                } else {
+                    titleView = [navigationBar.qmui_contentView.subviews qmui_filterWithBlock:^BOOL(__kindof UIView * _Nonnull item) {
+                        return [item isKindOfClass:UILabel.class];
+                    }].firstObject;
+                }
+                if (!titleView) return;
+                
+                if (cleanup) {
+                    [titleView qmui_bindObject:nil forKey:kShouldFixTitleViewBugKey];
+                } else if (CGRectGetWidth(titleView.frame) > CGRectGetWidth(navigationBar.bounds) / 2) {
+                    [titleView qmui_bindObject:[NSValue valueWithCGRect:titleView.frame] forKey:kShouldFixTitleViewBugKey];
                 }
             };
-        });
-        
-        void (^boundTitleViewMinXBlock)(UINavigationBar *, BOOL) = ^void(UINavigationBar *navigationBar, BOOL cleanup) {
             
-            if (!navigationBar.topItem.leftBarButtonItem) return;
+            // // - [UINavigationBar _popNavigationItemWithTransition:]
+            // - (id) _popNavigationItemWithTransition:(int)arg1; (0x1a15513a0)
+            OverrideImplementation([UINavigationBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"popNavigationItem", @"With", @"Transition:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^id(UINavigationBar *selfObject, NSInteger firstArgv) {
+                    
+                    boundTitleViewMinXBlock(selfObject, NO);
+                    
+                    // call super
+                    id (*originSelectorIMP)(id, SEL, NSInteger);
+                    originSelectorIMP = (id (*)(id, SEL, NSInteger))originalIMPProvider();
+                    id result = originSelectorIMP(selfObject, originCMD, firstArgv);
+                    return result;
+                };
+            });
             
-            UIView *titleView = nil;
-            UIView *adapterView = navigationBar.topItem.titleView.superview;
-            if ([adapterView isKindOfClass:adaptorClass]) {
-                titleView = adapterView;
-            } else {
-                titleView = [navigationBar.qmui_contentView.subviews qmui_filterWithBlock:^BOOL(__kindof UIView * _Nonnull item) {
-                    return [item isKindOfClass:UILabel.class];
-                }].firstObject;
-            }
-            if (!titleView) return;
-            
-            if (cleanup) {
-                [titleView qmui_bindObject:nil forKey:kShouldFixTitleViewBugKey];
-            } else if (CGRectGetWidth(titleView.frame) > CGRectGetWidth(navigationBar.bounds) / 2) {
-                [titleView qmui_bindObject:[NSValue valueWithCGRect:titleView.frame] forKey:kShouldFixTitleViewBugKey];
-            }
-        };
-        
-        // // - [UINavigationBar _popNavigationItemWithTransition:]
-        // - (id) _popNavigationItemWithTransition:(int)arg1; (0x1a15513a0)
-        OverrideImplementation([UINavigationBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"popNavigationItem", @"With", @"Transition:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^id(UINavigationBar *selfObject, NSInteger firstArgv) {
-                
-                boundTitleViewMinXBlock(selfObject, NO);
-                
-                // call super
-                id (*originSelectorIMP)(id, SEL, NSInteger);
-                originSelectorIMP = (id (*)(id, SEL, NSInteger))originalIMPProvider();
-                id result = originSelectorIMP(selfObject, originCMD, firstArgv);
-                return result;
-            };
-        });
-        
-        // - (void) _completePopOperationAnimated:(BOOL)arg1 transitionAssistant:(id)arg2; (0x1a1551668)
-        OverrideImplementation([UINavigationBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"complete", @"PopOperationAnimated:", @"transitionAssistant:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
-            return ^(UINavigationBar *selfObject, BOOL firstArgv, id secondArgv) {
-                
-                // call super
-                void (*originSelectorIMP)(id, SEL, BOOL, id);
-                originSelectorIMP = (void (*)(id, SEL, BOOL, id))originalIMPProvider();
-                originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
-                
-                boundTitleViewMinXBlock(selfObject, YES);
-            };
-        });
+            // - (void) _completePopOperationAnimated:(BOOL)arg1 transitionAssistant:(id)arg2; (0x1a1551668)
+            OverrideImplementation([UINavigationBar class], NSSelectorFromString([NSString qmui_stringByConcat:@"_", @"complete", @"PopOperationAnimated:", @"transitionAssistant:", nil]), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+                return ^(UINavigationBar *selfObject, BOOL firstArgv, id secondArgv) {
+                    
+                    // call super
+                    void (*originSelectorIMP)(id, SEL, BOOL, id);
+                    originSelectorIMP = (void (*)(id, SEL, BOOL, id))originalIMPProvider();
+                    originSelectorIMP(selfObject, originCMD, firstArgv, secondArgv);
+                    
+                    boundTitleViewMinXBlock(selfObject, YES);
+                };
+            });
+        }
         
         // 以下是将 iOS 12 修改 UINavigationBar 样式的接口转换成用 iOS 13 的新接口去设置（因为新旧方法是互斥的，所以统一在新系统都用新方法）
         // 虽然系统的新接口是 iOS 13 就已经存在，但由于 iOS 13、14 都没必要用新接口，所以 QMUI 里在 iOS 15 才开始使用新接口，所以下方的 @available 填的是 iOS 15 而非 iOS 13（与 QMUIConfiguration.m 对应）。
@@ -329,6 +333,7 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
                 };
             });
             
+#ifdef DEBUG
             // 尚未应用 UIAppearance 就已经修改 bar 的样式的场景，可能导致 bar 样式无法与全局保持一致，所以这里做个提醒
             // https://github.com/Tencent/QMUI_iOS/issues/1451
             // - [UINavigationBar setStandardAppearance:]
@@ -341,25 +346,39 @@ NSString *const kShouldFixTitleViewBugKey = @"kShouldFixTitleViewBugKey";
                     originSelectorIMP(selfObject, originCMD, firstArgv);
                     
                     // 这里只希望识别 UINavigationController 自带的 navigationBar，不希望处理业务自己 new 的 bar，所以用 superview 是否为 UILayoutContainerView 来作为判断条件。
-                    BOOL isSystemBar = [NSStringFromClass(selfObject.superview.class) hasPrefix:@"UILayoutContainer"];
+                    BOOL isSystemBar = [NSStringFromClass(selfObject.superview.class) hasPrefix:@"UILayoutContainer"] && [selfObject.superview.qmui_viewController isKindOfClass:UINavigationController.class];
                     BOOL alreadyMoveToWindow = !!selfObject.window;
                     BOOL isPresenting = NO;
                     if (!alreadyMoveToWindow) {
                         UINavigationController *nav = [selfObject.qmui_viewController isKindOfClass:UINavigationController.class] ? selfObject.qmui_viewController : nil;
-                         isPresenting = nav && nav.presentedViewController;
+                        isPresenting = nav && nav.presentedViewController;
                     }
                     if (isSystemBar && !alreadyMoveToWindow && !isPresenting) {
                         QMUIAssert(NO, @"UINavigationBar (QMUI)", @"试图在 UINavigationBar 尚未添加到 window 上时就修改它的样式，可能导致 UINavigationBar 的样式无法与全局保持一致。");
                     }
                 };
             });
+#endif
         }
 #endif
     });
 }
 
 - (UIView *)qmui_contentView {
-    return [self valueForKeyPath:@"visualProvider.contentView"];
+    if (QMUIHelper.isUsedLiquidGlass) {
+        for (UIView *subview in self.subviews) {
+            static NSString *clsString = nil;
+            if (!clsString) {
+                clsString = [NSString stringWithFormat:@"%@.%@%@", @"UIKit", @"NavigationBar", @"ContentView"];
+            }
+            if ([subview isKindOfClass:NSClassFromString(clsString)]) {
+                return subview;
+            }
+        }
+        return nil;
+    } else {
+        return [self valueForKeyPath:@"visualProvider.contentView"];
+    }
 }
 
 - (void)qmuinb_fixTitleViewLayoutInIOS16 {
