@@ -55,7 +55,9 @@ QMUISynthesizeBOOLProperty(qmui_didFinishLaunching, setQmui_didFinishLaunching)
         }
     }];
     if (!windows || windows.count == 0) {
+        BeginIgnoreDeprecatedWarning
         windows = self.windows;
+        EndIgnoreDeprecatedWarning
     }
     return windows ? : @[];
 }

@@ -84,6 +84,12 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
             });
         }];
         // UIWindow
+        ExtendImplementationOfVoidMethodWithoutArguments([UIWindow class], @selector(makeKeyAndVisible), ^(UIWindow *selfObject) {
+            if (selfObject.windowScene) {
+                // enumerateSubviews 为 NO，系统会自动调用didMoveToWindow
+                [selfObject _qmui_themeDidChangeByManager:nil identifier:nil theme:nil shouldEnumeratorSubviews:NO];
+            }
+        });
         OverrideImplementation([UIWindow class], @selector(setHidden:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
             return ^(UIWindow *selfObject, BOOL firstArgv) {
                 
@@ -95,8 +101,8 @@ QMUISynthesizeIdCopyProperty(qmui_themeDidChangeBlock, setQmui_themeDidChangeBlo
                 originSelectorIMP(selfObject, originCMD, firstArgv);
                 
                 if (willShow) {
-                    // UIView.qmui_currentThemeIdentifier 只是为了实现判断当前的 theme 是否有发生变化，所以可以构造成一个 string，但怎么避免每次 hidden 切换时都要遍历所有的 subviews？
-                    [selfObject _qmui_themeDidChangeByManager:nil identifier:nil theme:nil shouldEnumeratorSubviews:YES];
+                    // enumerateSubviews 为 NO，系统会自动调用didMoveToWindow
+                    [selfObject _qmui_themeDidChangeByManager:nil identifier:nil theme:nil shouldEnumeratorSubviews:NO];
                 }
             };
         });
